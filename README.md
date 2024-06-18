@@ -1,1 +1,7 @@
-# Learning-Experience-App
+# Prepare to Play Station Learning Experience Application
+
+## List of Contributors:
+- name
+
+## Description:
+
