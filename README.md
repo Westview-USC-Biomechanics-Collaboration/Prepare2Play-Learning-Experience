@@ -7,4 +7,9 @@ View the application deployed through github pages **[here](https://westview-usc
 - Delete your branches that are no longer in use
 
 ## List of Contributors:
-- name
+- James Guo
+- Rayyan Hussain
+- Ayaan Irshad
+- Christopher Yuan
+- Jessie Bao
+- Breanna Thayillam
