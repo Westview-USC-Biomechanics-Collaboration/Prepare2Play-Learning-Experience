@@ -14,3 +14,4 @@ View the application deployed through github pages **[here](https://westview-usc
 - Christopher Yuan
 - Jessie Bao
 - Breanna Thayillam
+- Nishk Shah
