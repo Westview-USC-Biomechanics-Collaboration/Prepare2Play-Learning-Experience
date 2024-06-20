@@ -1,17 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title></title>
-    <!--- Link Stylesheet --->
-    <!--- Link Sript --->
-    <!--- Link Favicon --->
-  </head>
-  <body>
-    <main>
-        <h1>Prepare2Play Learning Experience App</h1>  
-    </main>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://med.nyu.edu/departments-institutes/orthopedic-surgery/specialty-programs/occupational-industrial-orthopedic-center/sites/default/files/styles/rectangle_1580w_x_760h__ratio_48_09/public/2019-08/oioc-phd-degree-ergonomics-gateway-with-links.jpg?h=18fd87b8&itok=B15ZD12P') no-repeat center center fixed;
+    background-size: cover;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .content {
+    text-align: center;
+    padding: 20px;
+    margin-top: 200px;
+  }
+  
+  h1 {
+    font-size: 50px;
+    
+  }
+
+  p {
+    font-size: 20px;
+  }
+
+  .top-right-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #2a58d6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  .top-right-button:hover {
+    background-color: #1741b3;
+
+  }
+  .navbar {
+    background-color: rgb(15, 100, 136);
+    overflow: hidden;
+  }
+  .navbar a {
+    float: left;
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 20px;
+    text-decoration: none;
+    font-size: 17px;
+  }
+  .dropdown {
+    float: left;
+    overflow: hidden;
+  }
+  .dropdown .dropbtn {
+    font-size: 17px;
+    border: none;
+    outline: none;
+    color: white;
+    padding: 14px 20px;
+    background-color: inherit;
+    font-family: inherit;
+    margin: 0;
+  }
+  .navbar a:hover, .dropdown:hover .dropbtn {
+    background-color: #ddd;
+    color: black;
+  }
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  .dropdown-content a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+  }
+  .dropdown-content a:hover {
+    background-color: #ddd;
+  }
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<button class="top-right-button" onclick="document.getElementById('fileInput').click()">Upload File</button>
+<div hidden>
+<input type="file" id="fileInput" class="file-input">
+</div>
+
+<script>
+  // JavaScript to handle file input change
+  document.getElementById('fileInput').addEventListener('change', function() {
+    var file = this.files[0]; // Get the selected file
+    if (file) {
+      alert('Selected file: ' + file.name);
+      // You can handle the file upload logic here, such as sending it to a server
+    }
+  });
+</script>
+
+<div class="navbar">
+  <a href="DEMOsite.html">Home</a>
+  <div class="dropdown">
+    <button class="dropbtn">Sports 
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">
+      <a href="DEMOsite2.html">Soccer</a>
+      <a href="#">Basketball</a>
+      <a href="#">Tennis</a>
+    </div>
+  </div>
+  <div class="dropdown">
+    <button class="dropbtn">Movements 
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">
+      <a href="#">Lay Up</a>
+      <a href="#">Corner Kick</a>
+      <a href="#">Backhand Stroke</a>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+  
+  <h1 style="color: #ddd;">Prepare To Play</h1>
+  <p style="color: #ddd;">Improve your own movement!</p>
+</div>
+
+</body>
 </html>
