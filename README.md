@@ -17,3 +17,4 @@ View the application deployed through github pages **[here](https://westview-usc
 - Nishk Shah
 - Chase Chen
 - Imri Fernandes
+- Ross Brown
