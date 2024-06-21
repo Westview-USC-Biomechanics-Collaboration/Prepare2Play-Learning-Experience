@@ -19,3 +19,7 @@ View the application deployed through github pages **[here](https://westview-usc
 - Imri Fernandes
 - Ross Brown
 - Deren Erdem
+
+##
+Link to .csv file: https://docs.google.com/spreadsheets/d/1qBQn315Ii5pMCvPHkIBUR8svjCHVcP9pMjqS9ZCz4Bk/edit?gid=2138994499#gid=2138994499
+
