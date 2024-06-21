@@ -18,3 +18,4 @@ View the application deployed through github pages **[here](https://westview-usc
 - Chase Chen
 - Imri Fernandes
 - Ross Brown
+- Deren Erdem
