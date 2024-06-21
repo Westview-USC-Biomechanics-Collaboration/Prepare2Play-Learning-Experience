@@ -7,7 +7,7 @@ View the application deployed through github pages **[here](https://westview-usc
 - Delete your branches that are no longer in use
 - Please make your commit messages and pull request descriptions detailed and descriptive of what changes you made
 
-## List of Contributors:
+## Contributors:
 - James Guo
 - Rayyan Hussain
 - Ayaan Irshad
@@ -15,3 +15,6 @@ View the application deployed through github pages **[here](https://westview-usc
 - Jessie Bao
 - Breanna Thayillam
 - Nishk Shah
+- Chase Chen
+- Imri Fernandes
+- Ross Brown
