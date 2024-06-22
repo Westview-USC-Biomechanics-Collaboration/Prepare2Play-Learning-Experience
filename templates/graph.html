@@ -16,16 +16,26 @@
     <div id="plot-container">
         <div id="plot" style="width: 50%; height: 500px;"></div>
         <!-- Adjust height and width as needed -->
+        <label for="selectY">Select Y-Axis Variable:</label>
+        <select id="selectY" onchange="updatePlot()">
+            <option value="forcey">Force Y</option>
+            <option value="forcez">Force Z</option>
+            <option value="forcex">Force X</option>
+        </select>
         <button onclick="goBack()">Back to Home</button>
     </div>
 
     <script>
+        // Initial data from backend (assuming it's passed as JSON strings)
         var forcex = JSON.parse('{{ forcex | tojson | safe }}');
-        var timey = JSON.parse('{{ timey | tojson | safe }}');
+        var forcey = JSON.parse('{{ forcey | tojson | safe }}');
+        var forcez = JSON.parse('{{ forcez | tojson | safe }}');
+        var time = JSON.parse('{{ time | tojson | safe }}');
 
+        // Initial trace using 'forcey' as default y-axis variable
         var trace1 = {
-            x: forcex,
-            y: timey,
+            x: time,
+            y: forcey,  // Initial y-axis data
             mode: 'lines+markers',  // or 'lines' for connecting points without markers
             type: 'scatter'
         };
@@ -37,12 +47,27 @@
             },
             yaxis: {
                 range: [-0.25, 0.25],
-                title: 'Force (N)'
+                title: 'Force Y (N)'  // Initial y-axis title
             },
             title: 'Force (X-Direction) vs. Time Graph'
         };
 
+        // Function to update the plot based on dropdown selection
+        function updatePlot() {
+            var dropdown = document.getElementById('selectY');
+            var selectedValue = dropdown.value; // Get selected value from dropdown
+
+            // Update trace based on selected value
+            trace1.y = eval(selectedValue);  
+            layout.yaxis.title = selectedValue.charAt(0).toUpperCase() + selectedValue.slice(1) + ' (N)';  // Update y-axis title
+
+            // Replot with updated data and layout
+            Plotly.react('plot', [trace1], layout);
+        }
+
+        // Initial plot creation and call updatePlot() to initialize the plot
         Plotly.newPlot('plot', [trace1], layout);
+        updatePlot(); // Call updatePlot() initially to set the plot based on the default value
 
         // Function to navigate back to the landing page
         function goBack() {
@@ -51,3 +76,4 @@
     </script>
 </body>
 </html>
+
