@@ -13,10 +13,11 @@ def graph():
     df = pd.read_csv('data.csv')
 
     # Select subset of data for plotting
-    forcex_subset = df.iloc[18:30, 0].tolist() # This data is limited to 11 data points for the Force and Time
-    timey_subset = df.iloc[18:30, 1].tolist()
-
-    return render_template('graph.html', forcex=forcex_subset, timey=timey_subset)
+    time_subset = df.iloc[18:30, 0].tolist() # This data is limited to 11 data points for the Force and Time
+    forcex_subset = df.iloc[18:30, 1].tolist()
+    forcey_subset = df.iloc[18:30, 2].tolist()
+    forcez_subset = df.iloc[18:30, 3].tolist()
+    return render_template('graph.html', forcex=forcex_subset, forcey = forcey_subset, forcez= forcez_subset ,time=time_subset)
 
 if __name__ == '__main__':
     app.run(debug=True)
