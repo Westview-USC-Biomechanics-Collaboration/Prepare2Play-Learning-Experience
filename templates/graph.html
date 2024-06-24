@@ -48,15 +48,15 @@
 
         Plotly.newPlot('plot', [trace1], layout);
 
-        // Function to update value display
+        // Function used to display value of Impulse
         function updateValue(value) {
             document.getElementById('value-container').innerHTML = '<b>Impulse:</b> ' + value + ' J';
         }
 
-        // Example: Update value when clicking on a point (replace with your logic)
+        // Must click on datapoint you want integration to go up to
         plot.on('plotly_click', function(data){
             var pointIndex = data.points[0].pointIndex;
-            var value = timey[pointIndex]; // Example: Display y value on click
+            var value = timey[pointIndex]; 
             updateValue(value);
         });
 
