@@ -2,6 +2,7 @@ let sport;
 let movement;
 let vid;
 const progressBar = document.getElementsByClassName("progress-bar")[0];
+var ctx = document.getElementById('lineChart').getContext('2d');
 
 function selectedVideo(self) {
     var file = self.files[0];
@@ -84,7 +85,42 @@ document.addEventListener('DOMContentLoaded', function() {
                     progressBar.style.setProperty('--width', 1); 
                     informationContainer.style.display = "block";
                     text.textContent = `Sport: ${sport}, Movement: ${movement}` + "put graph here";
-                   
+                 
+                    var heightTime = new Chart(ctx, {
+                        type: 'line',  // Specifies the type of chart
+                        data: {
+                          labels: ['0', '1', '2', '3', '4', '5', '6'], 
+                          datasets: [{
+                            label: 'Height (cm)', 
+                            data: [150, 155, 160, 165, 170, 175, 180],
+                            fill: true, 
+                            borderColor: 'rgb(243, 58, 106)', 
+                            tension: 0.1 
+                          }]
+                        },
+                        options: {
+                          scales: {
+                            x: {
+                              beginAtZero: false 
+                            },
+                            y: {
+                              beginAtZero: true, 
+                              title: {
+                                display: true,
+                                text: 'Height (cm)'
+                              }
+                            }
+                          },
+                          plugins: {
+                            title: {
+                              display: true,
+                              text: 'Time (sec)'
+                            }
+                          }
+                        }
+                      });
+
+
                 }
 
                 
