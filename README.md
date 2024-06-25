@@ -1,4 +1,4 @@
-Check out our UI [here](https://westview-usc-biomechanics-collaboration.github.io/Prepare2Play-Learning-Experience/index.html)
+Check out our UI [here](https://westview-usc-biomechanics-collaboration.github.io/Prepare2Play-Learning-Experience/templates/index.html)
 
 ## RULES:
 - Must make changes on a separate branch and open a pull request before merging to main
