@@ -1,10 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  body {
+body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
     margin: 0;
     padding: 0;
@@ -94,34 +88,3 @@
   .dropdown:hover .dropdown-content {
     display: block;
   }
-</style>
-</head>
-<body>
-
-
-    <div class="navbar">
-        <div class="Main-Options">
-          <div class="Home">
-            <a href="index.html">Home</a>
-          </div>
-          <div class="About-Us">
-            <a href="#">About Us</a>
-          </div>
-        </div>
-        <div class="dropdown">
-          <button class="dropbtn">Sports 
-            <i class="fa fa-caret-down"></i>
-          </button>
-          <div class="dropdown-content">
-            <a href="Soccer.html">Soccer</a>
-            <a>Basketball</a>
-            <a href="#">Tennis</a>
-          </div>
-        </div>
-      </div>
-
-<div class="Soccer">
-    <h1 style="color: #ddd;">Soccer</h1>
-</div>
-</body>
-</html>
