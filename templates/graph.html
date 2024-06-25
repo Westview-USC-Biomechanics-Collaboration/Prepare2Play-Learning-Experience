@@ -23,6 +23,7 @@
             <option value="forcex">Force X</option>
         </select>
         <button onclick="goBack()">Back to Home</button>
+        <div id="value-container"></div> <!-- Container to display impulse value -->
     </div>
 
     <script>
@@ -52,7 +53,7 @@
             title: 'Force (X-Direction) vs. Time Graph'
         };
 
-        // Function to update the plot based on dropdown selection
+        //Function to update the plot based on dropdown selection
         function updatePlot() {
             var dropdown = document.getElementById('selectY');
             var selectedValue = dropdown.value; // Get selected value from dropdown
@@ -75,12 +76,13 @@
         }
 
         // Must click on datapoint you want integration to go up to
+        var plot = document.getElementById('plot');
         plot.on('plotly_click', function(data){
             var pointIndex = data.points[0].pointIndex;
-            var value = timey[pointIndex]; 
+            var value = trace1.y[pointIndex]; 
             updateValue(value);
         });
-        
+
         // Function to navigate back to the landing page
         function goBack() {
             window.location.href = '/';
@@ -88,4 +90,3 @@
     </script>
 </body>
 </html>
-
