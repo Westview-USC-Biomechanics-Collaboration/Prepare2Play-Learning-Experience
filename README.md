@@ -9,10 +9,10 @@ View the application deployed through github pages **[here](https://westview-usc
 
 ## INSTRUCTIONS:
 - Download Python 3.11.X from **https://www.python.org/downloads/**
-- Download git from **git-scm.com/download/**
+- Download git from **https://git-scm.com/download/**
 - Run the program and select "create .venv file" and select the Python version on your machien
 - In terminal run "pip install flask" and "pip install pandas"
-- Access the program at **localhost:5000** to test local changes
+- Access the program at **https://localhost:5000** to test local changes
 
 
 ## Contributors:
