@@ -13,15 +13,20 @@ if not cap.isOpened():
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 out = cv2.VideoWriter('output_video.avi', fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
 
-#87, 138, 252
+#orange: 87, 138, 252
 lower_color = np.array([0, 100, 155])
 upper_color = np.array([100, 250, 255])
 
+#slow the video down
 fps = cap.get(cv2.CAP_PROP_FPS)
 slow_factor = 2
 
 delay = int((1000/fps)*slow_factor)
 
+#scale size down
+scale_factor = 0.5
+
+#go over the video frame by frame
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
@@ -36,11 +41,14 @@ while cap.isOpened():
     # Apply the mask to the frame
     result = cv2.bitwise_and(frame, frame, mask=mask)
 
+    # resize the frame
+    small_result = cv2.resize(result, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_AREA)
+
     # Write the frame to the output video file
-    out.write(result)
+    out.write(small_result)
 
     # Display the resulting frame (optional)
-    cv2.imshow('Frame', result)
+    cv2.imshow('Frame', small_result)
     if cv2.waitKey(delay) & 0xFF == ord('q'):
         break
 
