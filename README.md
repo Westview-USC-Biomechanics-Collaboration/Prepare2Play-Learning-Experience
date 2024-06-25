@@ -1,3 +1,5 @@
+Check out our UI [here](https://westview-usc-biomechanics-collaboration.github.io/Prepare2Play-Learning-Experience/index.html)
+
 ## RULES:
 - Must make changes on a separate branch and open a pull request before merging to main
 - All pull requests require 1 approval from a designated "code owner" (TBD) before it can be merged 
