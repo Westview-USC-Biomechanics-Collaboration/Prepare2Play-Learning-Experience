@@ -10,12 +10,16 @@
             margin: auto;
             text-align: left;
         }
+        #value-container {
+            margin-top: 20px; /* Adjust spacing as needed */
+        }
     </style>
 </head>
 <body>
     <div id="plot-container">
         <div id="plot" style="width: 50%; height: 500px;"></div>
         <!-- Adjust height and width as needed -->
+        <div id="value-container"></div> <!-- Container for displaying value -->
         <button onclick="goBack()">Back to Home</button>
     </div>
 
@@ -43,6 +47,18 @@
         };
 
         Plotly.newPlot('plot', [trace1], layout);
+
+        // Function used to display value of Impulse
+        function updateValue(value) {
+            document.getElementById('value-container').innerHTML = '<b>Impulse:</b> ' + value + ' J';
+        }
+
+        // Must click on datapoint you want integration to go up to
+        plot.on('plotly_click', function(data){
+            var pointIndex = data.points[0].pointIndex;
+            var value = timey[pointIndex]; 
+            updateValue(value);
+        });
 
         // Function to navigate back to the landing page
         function goBack() {
