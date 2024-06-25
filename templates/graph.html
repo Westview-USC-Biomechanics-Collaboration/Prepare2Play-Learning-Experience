@@ -69,6 +69,18 @@
         Plotly.newPlot('plot', [trace1], layout);
         updatePlot(); // Call updatePlot() initially to set the plot based on the default value
 
+        // Function used to display value of Impulse
+        function updateValue(value) {
+            document.getElementById('value-container').innerHTML = '<b>Impulse:</b> ' + value + ' J';
+        }
+
+        // Must click on datapoint you want integration to go up to
+        plot.on('plotly_click', function(data){
+            var pointIndex = data.points[0].pointIndex;
+            var value = timey[pointIndex]; 
+            updateValue(value);
+        });
+        
         // Function to navigate back to the landing page
         function goBack() {
             window.location.href = '/';
