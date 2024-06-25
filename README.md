@@ -1,11 +1,16 @@
-
-View the application deployed through github pages **[here](https://westview-usc-biomechanics-collaboration.github.io/Prepare2Play-Learning-Experience/templates/index.html)**.
-
 ## RULES:
 - Must make changes on a separate branch and open a pull request before merging to main
 - All pull requests require 1 approval from a designated "code owner" (TBD) before it can be merged 
 - Delete your branches that are no longer in use
 - Please make your commit messages and pull request descriptions detailed and descriptive of what changes you made
+
+## INSTRUCTIONS:
+- Download Python 3.11.X from **https://www.python.org/downloads/**
+- Download git from **https://git-scm.com/download/**
+- Run the program and select "create .venv file" and select the Python version on your machine
+- In terminal run "pip install flask" and "pip install pandas"
+- Access the program at **https://localhost:5000** to test local changes
+
 
 ## Contributors:
 - James Guo
