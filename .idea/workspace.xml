@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="">
+    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="python backend instead of javascript in html">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/filled-animation-graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/filled-animation-graph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/filled-area-animation.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/filled-area-animation.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -110,6 +109,19 @@
       <option name="presentableId" value="Default" />
       <updated>1719349570219</updated>
     </task>
+    <task id="LOCAL-00001" summary="python backend instead of javascript in html">
+      <option name="closed" value="true" />
+      <created>1719439715500</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1719439715500</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="python backend instead of javascript in html" />
+    <option name="LAST_COMMIT_MESSAGE" value="python backend instead of javascript in html" />
   </component>
 </project>

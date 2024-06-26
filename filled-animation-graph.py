@@ -25,6 +25,10 @@ app.layout = html.Div([
         value='force x'
     ),
     dcc.Graph(id="graph"),
+
+# Back to Home button
+    html.Br(),
+    html.A('Back to Home', href='/'),
 ])
 
 
