@@ -2,100 +2,155 @@
 <html>
 <head>
   <!-- Plotly.js -->
+  <title>Plotting Graph</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    /* Optional: CSS for centering the plot */
+    #plot-container {
+        width: 100%; /* Adjust as needed */
+        margin: auto;
+        text-align: left;
+    }
+  </style>
 </head>
 <body>
 <!-- Plotly chart will be drawn inside this DIV -->
   <div id="plot-container">
     <div id="myDiv" style="width: 50%; height: 500px;"></div>
+    <label for="selectY">Select Y-Axis Variable:</label>
+    <select id="selectY" onchange="updatePlot()">
+        <option value="forcey">Force Y</option>
+        <option value="forcez">Force Z</option>
+        <option value="forcex">Force X</option>
+    </select>
     <button onclick="goBack()">Back to Home</button>
   </div>
   
   <script>
-    d3.csv("https://raw.githubusercontent.com/plotly/datasets/master/2014_apple_stock.csv", function(err, rows){
+    var forcex = JSON.parse('{{ forcex | tojson | safe }}');
+    var forcey = JSON.parse('{{ forcey | tojson | safe }}');
+    var forcez = JSON.parse('{{ forcez | tojson | safe }}');
+    var time = JSON.parse('{{ time | tojson | safe }}');
 
-    function unpack(rows, key) {
-    return rows.map(function(row) { return row[key]; });
+    // function unpack(rows, key) {
+    // return rows.map(function(row) { return row[key]; });
+    // }
+
+    // var frames = []
+    // var x = unpack(rows, 'AAPL_x')
+    // var y = unpack(rows, 'AAPL_y')
+
+    // var n = 100;
+    // for (var i = 0; i < n; i++) {
+    //   frames[i] = {data: [{x: [], y: []}]}
+    //   frames[i].data[0].x = x.slice(0, i+1);
+    //   frames[i].data[0].y = y.slice(0, i+1);
+    // }
+    var trace1 = {
+            x: time,
+            y: forcey,  // Initial y-axis data
+            fill: 'tozeroy',
+            type: 'scatter',
+            mode: 'lines',  // or 'lines' for connecting points without markers
+            line: {color: 'green'}
+        };   
+    var layout = {
+        xaxis: {
+            range: [0, 0.05],
+            title: 'Time (s.)'
+        },
+        yaxis: {
+            range: [-0.25, 0.25],
+            title: 'Force (N)'  // Initial y-axis title
+        },
+        title: 'Force (X-Direction) vs. Time Graph'
+    };
+    Plotly.newPlot('myDive',[trace1],layout)
+    updatePlot()
+
+    function updatePlot() {
+        var dropdown = document.getElementById('selectY');
+        var selectedValue = dropdown.value; // Get selected value from dropdown
+
+            // Update trace based on selected value
+        trace1.y = eval(selectedValue);  
+        layout.yaxis.title = selectedValue.charAt(0).toUpperCase() + selectedValue.slice(1) + ' (N)';  // Update y-axis title
+
+            // Replot with updated data and layout
+        Plotly.react('myDive', [trace1], layout);
     }
-
-    var frames = []
-    var x = unpack(rows, 'AAPL_x')
-    var y = unpack(rows, 'AAPL_y')
-
-    var n = 100;
-    for (var i = 0; i < n; i++) {
-      frames[i] = {data: [{x: [], y: []}]}
-      frames[i].data[0].x = x.slice(0, i+1);
-      frames[i].data[0].y = y.slice(0, i+1);
-    }
-
-    Plotly.newPlot('myDiv', [{
-      x: frames[1].data[0].x,
-      y: frames[1].data[0].y,
-      fill: 'tozeroy',
-      type: 'scatter',
-      mode: 'lines',
-      line: {color: 'green'}
-    }], {
-      title: "Filled-Area Animation",
-      xaxis: {
-        type: 'date',
-        range: [
-          frames[99].data[0].x[0],
-          frames[99].data[0].x[99]
-        ]
-      },
-      yaxis: {
-        range: [
-          0,
-          90
-        ]
-      },
-      updatemenus: [{
-        x: 0.1,
-        y: 0,
-        yanchor: "top",
-        xanchor: "right",
-        showactive: false,
-        direction: "left",
-        type: "buttons",
-        pad: {"t": 87, "r": 10},
-        buttons: [{
-          method: "animate",
-          args: [null, {
-            fromcurrent: true,
-            transition: {
-              duration: 0,
-            },
-            frame: {
-              duration: 40,
-              redraw: false
-            }
-          }],
-          label: "Play"
-        }, {
-          method: "animate",
-          args: [
-            [null],
-            {
-              mode: "immediate",
-              transition: {
-                duration: 0
-              },
-              frame: {
-                duration: 0,
-                redraw: false
-              }
-            }
-          ],
-          label: "Pause"
-        }]
-      }]
-    }).then(function() {
-      Plotly.addFrames('myDiv', frames);
-    });
-
-    })
+    // Plotly.newPlot('myDiv', [{
+    //   x: time,
+    //   y: forcez,
+    //   fill: 'tozeroy',
+    //   type: 'scatter',
+    //   mode: 'lines',
+    //   line: {color: 'green'}
+    // }], {
+    //   title: "Filled-Area Animation",
+    //   xaxis: {
+    //     type: 'time',
+    //     range: [
+    //       0,
+    //       1
+    //     ]
+    //   },
+    //   yaxis: {
+    //     range: [
+    //       -0.25,
+    //       0.25
+    //     ]
+    //   }}
+    // )
+      
+    //   updatemenus: [{
+    //     x: 0.1,
+    //     y: 0,
+    //     yanchor: "top",
+    //     xanchor: "right",
+    //     showactive: false,
+    //     direction: "left",
+    //     type: "buttons",
+    //     pad: {"t": 87, "r": 10},
+    //     buttons: [{
+    //       method: "animate",
+    //       args: [null, {
+    //         fromcurrent: true,
+    //         transition: {
+    //           duration: 0,
+    //         },
+    //         frame: {
+    //           duration: 40,
+    //           redraw: false
+    //         }
+    //       }],
+    //       label: "Play"
+    //     }, {
+    //       method: "animate",
+    //       args: [
+    //         [null],
+    //         {
+    //           mode: "immediate",
+    //           transition: {
+    //             duration: 0
+    //           },
+    //           frame: {
+    //             duration: 0,
+    //             redraw: false
+    //           }
+    //         }
+    //       ],
+    //       label: "Pause"
+    //     }]
+    //   }]
+    // }).then(function() {
+    //   Plotly.addFrames('myDiv', frames);
+    // });
+  // Function to navigate back to the landing page
+  function goBack() {
+      window.location.href = '/';
+  }
+    
 
   </script>
 </body>
