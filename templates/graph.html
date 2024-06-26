@@ -19,7 +19,7 @@
             text-align: center;
         }
         #videoPlayer {
-            width: 300px;
+            width: 500px;
         }
     </style>
 </head>
@@ -113,10 +113,11 @@
             window.location.href = '/';
         }
 
-        // Add animation
+        // Add animation with adjusted step for 30 fps
         function animatePlot() {
             var frames = [];
-            var step = Math.max(1, Math.floor(timex.length / 29.97));  // Larger step to reduce frames
+            var fps = 30; // Frame rate of the video
+            var step = Math.max(1, Math.floor(timex.length / (timex[timex.length - 1] * fps * 2)));
             for (var i = 0; i < timex.length; i += step) {
                 frames.push({
                     data: [{x: timex.slice(0, i+1), y: forcex.slice(0, i+1)}]
@@ -127,7 +128,7 @@
                     duration: 0
                 },
                 frame: {
-                    duration: 20,  // Decrease duration to speed up animation
+                    duration: 10,  // Decrease duration to speed up animation
                     redraw: true
                 }
             });
@@ -135,7 +136,8 @@
 
         function animatePlot2() {
             var frames = [];
-            var step = Math.max(1, Math.floor(timey.length / 29.97));  // Larger step to reduce frames
+            var fps = 30; // Frame rate of the video
+            var step = Math.max(1, Math.floor(timey.length / (timey[timey.length - 1] * fps * 2)));
             for (var i = 0; i < timey.length; i += step) {
                 frames.push({
                     data: [{x: timey.slice(0, i+1), y: forcey.slice(0, i+1)}]
@@ -146,7 +148,7 @@
                     duration: 0
                 },
                 frame: {
-                    duration: 20,  // Decrease duration to speed up animation
+                    duration: 10,  // Decrease duration to speed up animation
                     redraw: true
                 }
             });
