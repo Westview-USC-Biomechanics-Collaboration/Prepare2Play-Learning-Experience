@@ -76,7 +76,7 @@
 
         var layout2 = {
             xaxis: {
-                range: [0, 5],
+                range: [0, 3],
                 title: 'Time (s.)'
             },
             yaxis: {
@@ -117,7 +117,7 @@
         function animatePlot() {
             var frames = [];
             var fps = 30; // Frame rate of the video
-            var step = Math.max(1, Math.floor(timex.length / (timex[timex.length - 1] * fps * 2)));
+            var step = Math.max(1, Math.floor(timex.length / (timex[timex.length - 1])));
             for (var i = 0; i < timex.length; i += step) {
                 frames.push({
                     data: [{x: timex.slice(0, i+1), y: forcex.slice(0, i+1)}]
@@ -128,7 +128,7 @@
                     duration: 0
                 },
                 frame: {
-                    duration: 10,  // Decrease duration to speed up animation
+                    duration: 1000/fps,  // Decrease duration to speed up animation
                     redraw: true
                 }
             });
@@ -137,7 +137,7 @@
         function animatePlot2() {
             var frames = [];
             var fps = 30; // Frame rate of the video
-            var step = Math.max(1, Math.floor(timey.length / (timey[timey.length - 1] * fps * 2)));
+            var step = Math.max(1, Math.floor(timey.length / (timey[timey.length - 1])));
             for (var i = 0; i < timey.length; i += step) {
                 frames.push({
                     data: [{x: timey.slice(0, i+1), y: forcey.slice(0, i+1)}]
@@ -148,7 +148,7 @@
                     duration: 0
                 },
                 frame: {
-                    duration: 10,  // Decrease duration to speed up animation
+                    duration: 1000/fps,  // Decrease duration to speed up animation
                     redraw: true
                 }
             });
