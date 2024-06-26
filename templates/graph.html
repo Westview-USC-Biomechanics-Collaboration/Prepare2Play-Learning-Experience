@@ -12,6 +12,15 @@
         #value-container {
             margin-top: 20px;
         }
+        #video-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            text-align: center;
+        }
+        #videoPlayer {
+            width: 300px;
+        }
     </style>
 </head>
 <body>
@@ -20,6 +29,14 @@
         <div id="plot2" style="width: 50%; height: 500px;"></div>
         <div id="value-container"></div>
         <button onclick="goBack()">Back to Home</button>
+    </div>
+    
+    <div id="video-container">
+        <video id="videoPlayer" controls>
+            Your browser does not support the video tag.
+        </video>
+        <br>
+        <input type="file" id="videoInput" accept="video/*" onchange="playSelectedVideo()">
     </div>
 
     <script>
@@ -99,7 +116,7 @@
         // Add animation
         function animatePlot() {
             var frames = [];
-            var step = Math.max(1, Math.floor(timex.length / 25));  // Larger step to reduce frames
+            var step = Math.max(1, Math.floor(timex.length / 29.97));  // Larger step to reduce frames
             for (var i = 0; i < timex.length; i += step) {
                 frames.push({
                     data: [{x: timex.slice(0, i+1), y: forcex.slice(0, i+1)}]
@@ -118,7 +135,7 @@
 
         function animatePlot2() {
             var frames = [];
-            var step = Math.max(1, Math.floor(timey.length / 25));  // Larger step to reduce frames
+            var step = Math.max(1, Math.floor(timey.length / 29.97));  // Larger step to reduce frames
             for (var i = 0; i < timey.length; i += step) {
                 frames.push({
                     data: [{x: timey.slice(0, i+1), y: forcey.slice(0, i+1)}]
@@ -135,9 +152,23 @@
             });
         }
 
-        // Call animation functions
-        animatePlot();
-        animatePlot2();
+        // Function to play the selected video
+        function playSelectedVideo() {
+            var videoInput = document.getElementById('videoInput');
+            var videoPlayer = document.getElementById('videoPlayer');
+            var file = videoInput.files[0];
+            var url = URL.createObjectURL(file);
+            videoPlayer.src = url;
+
+            videoPlayer.addEventListener('loadeddata', function() {
+                if (videoPlayer.readyState >= 3) { 
+                    animatePlot();
+                    animatePlot2();
+                }
+            });
+
+            videoPlayer.play();
+        }
     </script>
 </body>
 </html>
