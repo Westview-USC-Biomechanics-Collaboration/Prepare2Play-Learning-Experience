@@ -1,5 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
+    font-family: "Poppins", sans-serif;
     margin: 0;
     padding: 0;
     background: linear-gradient(rgba(5, 11, 197, 0.5), rgba(3, 35, 129, 0.5));
@@ -79,7 +82,7 @@ body {
     display: block;
     text-align: left;
     border-radius: 10px;
-    font-weight: lighter;
+    font-weight: 300;
     transition: background-color 0.3s, color 0.3s;
   }
   .dropdown-content a:hover {
@@ -88,3 +91,55 @@ body {
   .dropdown:hover .dropdown-content {
     display: block;
   }
+
+  .MovementPage {
+    padding: 2vw;
+    align-items: center;
+    text-align: center;
+  }
+
+  .MovementPage > h1 {
+    color: white;
+  }
+
+  .FileUpload {
+    background-color: #ddd;
+    padding: 20px;
+    border-radius: 20px;
+    align-content: center;
+  }
+
+  .Results {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    font-weight: 500;
+}
+
+.Results > div {
+  flex: 1;
+  margin: 0 10px;
+  padding: 2vw;
+  background-color: #f0f0f0;
+  text-align: center;
+  box-sizing: border-box;
+  border-radius: 20px;
+}
+
+#uploadButton {
+  background-color: rgba(25, 30, 180, 0.5);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 40px;
+  font-weight: bold;
+  margin-top: 17px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+#uploadButton:hover {
+
+  background-color: rgba(16, 20, 121, 0.5);
+}
