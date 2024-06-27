@@ -95,7 +95,7 @@ p {
   display: block;
   text-align: left;
   border-radius: 10px;
-  font-weight: lighter;
+  font-weight: 300;
   transition: background-color 0.3s, color 0.3s;
 }
 .dropdown-content a:hover {
