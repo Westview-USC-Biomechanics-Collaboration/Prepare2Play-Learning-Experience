@@ -5,10 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="python backend instead of javascript in html">
-      <change afterPath="$PROJECT_DIR$/animations.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/testingfile.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/animations.py" beforeDir="false" afterPath="$PROJECT_DIR$/animations.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/filled-animation-graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/filled-animation-graph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/testingfile.py" beforeDir="false" afterPath="$PROJECT_DIR$/testingfile.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,7 +51,7 @@
     "Python.animations.executor": "Run",
     "Python.filled-animation-graph.executor": "Run",
     "Python.testinganimation.executor": "Run",
-    "Python.testingfile.executor": "Run",
+    "Python.testingfile.executor": "Debug",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "chase-backend",
     "last_opened_file_path": "C:/Users/16199/Documents/GitHub/Prepare2Play-Learning-Experience-3"
@@ -62,7 +62,7 @@
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.testingfile">
+  <component name="RunManager" selected="Python.filled-animation-graph">
     <configuration name="ForceTimeGraphs" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -176,10 +176,10 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.testingfile" />
-        <item itemvalue="Python.animations" />
-        <item itemvalue="Python.testinganimation" />
         <item itemvalue="Python.filled-animation-graph" />
+        <item itemvalue="Python.animations" />
+        <item itemvalue="Python.testingfile" />
+        <item itemvalue="Python.testinganimation" />
         <item itemvalue="Python.ForceTimeGraphs" />
       </list>
     </recent_temporary>
@@ -222,5 +222,21 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="python backend instead of javascript in html" />
     <option name="LAST_COMMIT_MESSAGE" value="python backend instead of javascript in html" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/testingfile.py</url>
+          <line>51</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/testingfile.py</url>
+          <line>52</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

@@ -1,44 +1,82 @@
-from dash import Dash, dcc, html, Input, Output
-import plotly.express as px
 import pandas as pd
+from dash import Dash, dcc, html, Input, Output
+import plotly.graph_objs as go
 
+# Initialize the Dash app
 app = Dash(__name__)
 
+# Specify the maximum number of rows to read
+max_rows_to_read = 1000  # Example: Limit to 1000 rows
 
+# Load the data from the CSV file, starting from row 20, and assign column names
+# Only select and name the columns you need
+# Adjust 'usecols' and 'names' according to your CSV structure
+df = pd.read_csv('data.csv', skiprows=19, usecols=[0, 1, 2, 3], names=["time (s)", "Fx", "Fy", "Fz"], header=0,
+                 nrows=max_rows_to_read,
+                 dtype={'time (s)': float, 'Fx': float, 'Fy': float, 'Fz': float})
+
+# Define the app layout
 app.layout = html.Div([
-    html.H4('Force vs time'),
-    html.P("Select an animation:"),
+    html.H4('Animated Force Components Over Time'),
+    dcc.Graph(id="animation-graph"),
+    html.P("Select a force component:"),
     dcc.RadioItems(
-        id='animations-x-selection',
-        options=["GDP - Scatter", "Population - Bar"],
-        value='GDP - Scatter',
+        id='force-component-selection',
+        options=[
+            {'label': 'Fx', 'value': 'Fx'},
+            {'label': 'Fy', 'value': 'Fy'},
+            {'label': 'Fz', 'value': 'Fz'}
+        ],
+        value='Fx',
     ),
-    dcc.Loading(dcc.Graph(id="animations-x-graph"), type="cube")
 ])
 
 
+# Define the callback to update the graph
 @app.callback(
-    Output("animations-x-graph", "figure"), 
-    Input("animations-x-selection", "value"))
-def display_animated_graph(selection):
-    # Specify column names
-    column_names = ["country", "continent", "year", "lifeExp", "pop", "gdpPercap"]
+    Output("animation-graph", "figure"),
+    Input("force-component-selection", "value"))
+def update_graph(selected_force):
+    # Create initial figure layout
+    figure = go.Figure()
+    figure.update_layout(
+        title=f'{selected_force} vs Time',
+        xaxis_title='Time (s)',
+        yaxis_title='Force (N)',
+        template='plotly_white',
+        showlegend=False,
+    )
 
-    # Read the CSV file and assign column names
-    df = pd.read_csv('data.csv', names=column_names, header=None)
-    animations = {
-        'GDP - Scatter': px.scatter(
-            df, x="time", y="lifeExp", animation_frame="second",
-            animation_group="country", size="pop", color="continent", 
-            hover_name="country", log_x=True, size_max=55, 
-            range_x=[100,100000], range_y=[25,90]),
-        'Population - Bar': px.bar(
-            df, x="continent", y="pop", color="continent", 
-            animation_frame="year", animation_group="country", 
-            range_y=[0,4000000000]),
-    }
-    return animations[selection]
+    # Add scatter trace for the initial data
+    figure.add_trace(
+        go.Scatter(
+            x=df["time (s)"], y=df[selected_force],
+            mode='lines+markers',  # Change mode to markers
+            marker=dict(color='blue', size=10),
+            name=selected_force
+        )
+    )
+
+    # Update animation frames
+    frames = []
+    for i in range(len(df)):
+        frame_data = go.Frame(
+            data=[go.Scatter(
+                x=df["time (s)"][:i + 1], y=df[selected_force][:i + 1],
+                mode='lines+markers',
+                marker=dict(color='blue', size=10),
+                name=selected_force
+            )],
+            name=str(i)  # Frame name as string
+        )
+        frames.append(frame_data)
+
+    # Add frames to the figure
+    figure.frames = frames
+
+    return figure
 
 
+# Run the app
 if __name__ == "__main__":
     app.run_server(debug=True)

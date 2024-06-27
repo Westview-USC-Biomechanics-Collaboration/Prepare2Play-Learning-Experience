@@ -15,14 +15,14 @@ app = dash.Dash(__name__, server=server, url_base_pathname='/TestGraph/')
 column_names = ["time", "forcex", "forcey", "forcez"]
 
 # Read the CSV file and assign column names
-df = pd.read_csv('data.csv', names=column_names, header=None)
+# df = pd.read_csv('data.csv', names=column_names, header=None)
 
 # Example data (replace with your actual data loading)
-# df = pd.read_csv('data.csv')
-# time_subset = df.iloc[18:18696, 0].tolist()
-# forcex_subset = df.iloc[19:18696, 1].tolist()
-# forcey_subset = df.iloc[19:18696, 2].tolist()
-# forcez_subset = df.iloc[19:18696, 3].tolist()
+df = pd.read_csv('data.csv')
+time_subset = df.iloc[18:18696, 0].tolist()
+forcex_subset = df.iloc[19:18696, 1].tolist()
+forcey_subset = df.iloc[19:18696, 2].tolist()
+forcez_subset = df.iloc[19:18696, 3].tolist()
 
 
 # Define Dash app layout
