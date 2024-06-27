@@ -102,11 +102,12 @@ body {
     color: white;
   }
 
-  .FileUpload {
+  .FileUpload video {
     background-color: #ddd;
     padding: 20px;
     border-radius: 20px;
     align-content: center;
+    height: 325px;
   }
 
   .Results {
@@ -135,8 +136,11 @@ body {
   font-size: 14px;
   border-radius: 40px;
   font-weight: bold;
-  margin-top: 17px;
   transition: background-color 0.3s, color 0.3s;
+}
+
+.videoContaining {
+  margin-top: 20px;
 }
 
 #uploadButton:hover {
