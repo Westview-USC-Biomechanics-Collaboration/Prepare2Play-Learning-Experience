@@ -113,64 +113,68 @@
             window.location.href = '/';
         }
 
-        // Add animation with adjusted step for 30 fps
-        function animatePlot() {
-            var frames = [];
-            var fps = 30; // Frame rate of the video
-            var step = Math.max(1, Math.floor(timex.length / (timex[timex.length - 1])));
-            for (var i = 0; i < timex.length; i += step) {
-                frames.push({
-                    data: [{x: timex.slice(0, i+1), y: forcex.slice(0, i+1)}]
-                });
-            }
-            Plotly.animate('plot', frames, {
-                transition: {
-                    duration: 0
-                },
-                frame: {
-                    duration: 1000/fps,  // Decrease duration to speed up animation
-                    redraw: true
-                }
-            });
+        function animatePlot(videoTime) {
+        var frameIndex = findNearestFrameIndex(timex, videoTime); // Find nearest frame index based on video time
+        var frames = [{
+        data: [{x: timex.slice(0, frameIndex+1), y: forcex.slice(0, frameIndex+1)}]
+        }];
+    
+        Plotly.animate('plot', frames, {
+        transition: {
+            duration: 0
+        },
+        frame: {
+            duration: 0, // Instantly change to the new frame
+            redraw: false
         }
+        });
+    }
 
-        function animatePlot2() {
-            var frames = [];
-            var fps = 30; // Frame rate of the video
-            var step = Math.max(1, Math.floor(timey.length / (timey[timey.length - 1])));
-            for (var i = 0; i < timey.length; i += step) {
-                frames.push({
-                    data: [{x: timey.slice(0, i+1), y: forcey.slice(0, i+1)}]
-                });
-            }
-            Plotly.animate('plot2', frames, {
-                transition: {
-                    duration: 0
-                },
-                frame: {
-                    duration: 1000/fps,  // Decrease duration to speed up animation
-                    redraw: true
-                }
-            });
+    // Function to animate the second plot based on video time
+    function animatePlot2(videoTime) {
+    var frameIndex = findNearestFrameIndex(timey, videoTime); // Find nearest frame index based on video time
+    var frames = [{
+        data: [{x: timey.slice(0, frameIndex+1), y: forcey.slice(0, frameIndex+1)}]
+    }];
+
+    Plotly.animate('plot2', frames, {
+        transition: {
+            duration: 0
+        },
+        frame: {
+            duration: 0, // Instantly change to the new frame
+            redraw: false
         }
+    });
+}
 
-        // Function to play the selected video
-        function playSelectedVideo() {
-            var videoInput = document.getElementById('videoInput');
-            var videoPlayer = document.getElementById('videoPlayer');
-            var file = videoInput.files[0];
-            var url = URL.createObjectURL(file);
-            videoPlayer.src = url;
-
-            videoPlayer.addEventListener('loadeddata', function() {
-                if (videoPlayer.readyState >= 3) { 
-                    animatePlot();
-                    animatePlot2();
-                }
-            });
-
-            videoPlayer.play();
+    // Helper function to find nearest frame index based on video time
+    function findNearestFrameIndex(timeArray, videoTime) {
+    for (var i = 0; i < timeArray.length; i++) {
+        if (timeArray[i] >= videoTime) {
+            return i;
         }
+    }
+    return timeArray.length - 1; // Default to the last frame if no match found (should not happen)
+}
+
+    // Function to play the selected video
+    function playSelectedVideo() {
+    var videoInput = document.getElementById('videoInput');
+    var videoPlayer = document.getElementById('videoPlayer');
+    var file = videoInput.files[0];
+    var url = URL.createObjectURL(file);
+    videoPlayer.src = url;
+
+    videoPlayer.addEventListener('timeupdate', function() {
+        var currentTime = videoPlayer.currentTime;
+        animatePlot(currentTime);
+        animatePlot2(currentTime);
+    });
+
+    videoPlayer.play();
+}
+        
     </script>
 </body>
 </html>
