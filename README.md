@@ -28,5 +28,5 @@ Check out our UI [here](https://westview-usc-biomechanics-collaboration.github.i
 - Deren Erdem
 
 ##
-Link to .csv file: https://docs.google.com/spreadsheets/d/1qBQn315Ii5pMCvPHkIBUR8svjCHVcP9pMjqS9ZCz4Bk/edit?gid=2138994499#gid=2138994499
+Link to the .csv file: https://docs.google.com/spreadsheets/d/1qBQn315Ii5pMCvPHkIBUR8svjCHVcP9pMjqS9ZCz4Bk/edit?gid=2138994499#gid=2138994499
 
