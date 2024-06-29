@@ -113,40 +113,39 @@
             window.location.href = '/';
         }
 
-        function animatePlot(videoTime) {
-        var frameIndex = findNearestFrameIndex(timex, videoTime); // Find nearest frame index based on video time
+        function animatePlot(videoTime) { //videotime describes the time in the video that is input into the program
+        var frameIndex = findNearestFrameIndex(timex, videoTime); // This line does a search (like binary or cheetah) looking for a index that matches the videoTime varaible 
         var frames = [{
-        data: [{x: timex.slice(0, frameIndex+1), y: forcex.slice(0, frameIndex+1)}]
+        data: [{x: timex.slice(0, frameIndex+1), y: forcex.slice(0, frameIndex+1)}] //Creates array with frameIndex
         }];
     
         Plotly.animate('plot', frames, {
         transition: {
-            duration: 0
+            duration: 0 //transitions right away
         },
         frame: {
-            duration: 0, // Instantly change to the new frame
+            duration: 0, // Instantly change to the new frame without any animation effect
             redraw: false
         }
         });
     }
 
-    // Function to animate the second plot based on video time
-    function animatePlot2(videoTime) {
-    var frameIndex = findNearestFrameIndex(timey, videoTime); // Find nearest frame index based on video time
-    var frames = [{
-        data: [{x: timey.slice(0, frameIndex+1), y: forcey.slice(0, frameIndex+1)}]
-    }];
-
-    Plotly.animate('plot2', frames, {
+    function animatePlot(videoTime) { //videotime describes the time in the video that is input into the program
+        var frameIndex = findNearestFrameIndex(timex, videoTime); // This line does a search (like binary or cheetah) looking for a index that matches the videoTime varaible 
+        var frames = [{
+        data: [{x: timex.slice(0, frameIndex+1), y: forcex.slice(0, frameIndex+1)}] //Creates array with frameIndex
+        }];
+    
+        Plotly.animate('plot2', frames, {
         transition: {
-            duration: 0
+            duration: 0 //transitions right away
         },
         frame: {
-            duration: 0, // Instantly change to the new frame
+            duration: 0, // Instantly change to the new frame without any animation effect
             redraw: false
         }
-    });
-}
+        });
+    }
 
     // Helper function to find nearest frame index based on video time
     function findNearestFrameIndex(timeArray, videoTime) {
