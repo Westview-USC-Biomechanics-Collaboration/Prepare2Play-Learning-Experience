@@ -32,7 +32,6 @@ while cap.isOpened():
     if not ret:
         break
 
-
     # Convert the frame to HSV color space
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
