@@ -1,60 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="stylesheet" href="../static/style.css"> 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your Website Title</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://westview-usc-biomechanics-collaboration.github.io/Prepare2Play-Learning-Experience/static/styleindex.css">
 </head>
 <body>
 
-<button class="top-right-button" onclick="document.getElementById('fileInput').click()">Upload File</button>
-<div hidden>
-<input type="file" id="fileInput" class="file-input">
-</div>
 
-<script>
-  // JavaScript to handle file input change
-  document.getElementById('fileInput').addEventListener('change', function() {
-    var file = this.files[0]; // Get the selected file
-    if (file) {
-      alert('Selected file: ' + file.name);
-      // You can handle the file upload logic here, such as sending it to a server
-    }
-  });
-</script>
 
 <div class="navbar">
-  <a href="DEMOsite.html">Home</a>
+  <div class="Main-Options">
+    <div class="Home">
+      <a href="index.html">Home</a>
+    </div>
+    <div class="About-Us">
+      <a href="#">About Us</a>
+    </div>
+    <div class="BOM Videos">
+      <a href="Library.html">BOM Videos</a>
+    </div>
+  </div>
   <div class="dropdown">
     <button class="dropbtn">Sports 
       <i class="fa fa-caret-down"></i>
     </button>
     <div class="dropdown-content">
-      <a href="DEMOsite2.html">Soccer</a>
-      <a href="#">Basketball</a>
+      <a href="SportsTemplate.html">Soccer</a>
+      <a>Basketball</a>
       <a href="#">Tennis</a>
     </div>
   </div>
-  <div class="dropdown">
-    <button class="dropbtn">Movements 
-      <i class="fa fa-caret-down"></i>
-    </button>
-    <div class="dropdown-content">
-      <a href="#">Lay Up</a>
-      <a href="#">Corner Kick</a>
-      <a href="#">Backhand Stroke</a>
+  
+</div>
+
+<div class="content">
+  
+  <h1 style="color: white;">Prepare To Play</h1>
+  <p style="color: white;">Improve your own movement!</p>
+  <button class="scroll-down-btn" onclick="scrollToDiv('scrollToHere')">Discover</button>
+</div>
+
+<div id="scrollToHere" class="the-flip-cards">
+    <h4>Select Your Sport</h4>
+<a href="SportsTemplate.html">
+
+<div class="flip-card" tabIndex="0">
+
+  <div class="flip-card-inner">
+    <div class="flip-card-front">
+      <img src="https://i.etsystatic.com/42991745/r/il/4b809e/4955194907/il_1588xN.4955194907_c9h6.jpg" width="230" height="300">
+    </div>
+    <div class="flip-card-back">
+      <h3 style="color: white;">Soccer</h3>
     </div>
   </div>
 </div>
 
-<div class="content">
-  <h1>Prepare To Play</h1>
-  <p>Improve your own movement!</p>
+</a>
+
+<div class="flip-card2" tabIndex="0">
+  <div class="flip-card-inner2">
+    <div class="flip-card-front2">
+      <img src="https://m.media-amazon.com/images/I/61XEwW3TnhL.__AC_SX300_SY300_QL70_ML2_.jpg" width="275" height="300">
+    </div>
+    <div class="flip-card-back2">
+      <h3 style="color: white;">Basketball</h3>
+    </div>
+  </div>
 </div>
 
-<p>Click below to view the graph:</p>
-<a href="/graph">Go to Graph</a>
+</div>
+
+<script>
+    function scrollToDiv(divId) {
+        var element = document.getElementById(divId);
+        element.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    
+</script>
+
+<hr>
+<footer><p>Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer 
+
+</p></footer>
 
 </body>
 </html>

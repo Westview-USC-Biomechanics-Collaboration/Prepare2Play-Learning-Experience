@@ -1,0 +1,215 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(rgba(5, 11, 197, 0.5), rgba(3, 35, 129, 0.5));
+  height: auto;
+  min-height: 100vh;
+  
+  
+  
+}
+
+.sport-title {
+  margin-top: 300px;
+  text-align: center;
+  position: relative;
+}
+.content {
+  text-align: center;
+  padding: 20px;
+  margin-top: 150px;
+}
+
+h1 {
+  font-size: 50px;
+  
+}
+
+p {
+  font-size: 20px;
+}
+
+.navbar {
+  background-color: white;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  border-radius: 10px;
+  z-index: 3;
+}
+.navbar a {
+  float: left;
+  display: block;
+  color: black;
+  text-align: center;
+  padding: 25px;
+  text-decoration: none;
+  font-size: 17px;
+  font-weight: bold;
+  transition: background-color 0.3s, color 0.3s;
+}
+.dropdown {
+  float: left;
+  overflow: hidden;
+  margin-left: 0px;
+  transition: background-color 0.3s, color 0.3s;
+}
+.dropdown .dropbtn {
+  font-size: 17px;
+  border: none;
+  outline: none;
+  color: black;
+  padding: 25px;
+  background-color: inherit;
+  font-family: inherit;
+  margin: 0;
+  border-radius: 20px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.dropbtn {
+  font-weight: bold;
+}
+
+.navbar a:hover, .dropdown:hover .dropbtn {
+  background-color: #ddd;
+  color: rgb(51, 50, 50);
+
+}
+.Main-Options a:hover {
+  border-radius: 10px;
+}
+.dropdown-content {
+  display: none;
+  position: fixed;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 3;
+  padding: 10px;
+  border-radius: 10px;
+  transition: background-color 0.3s, color 0.3s;
+}
+.dropdown-content a {
+  float: none;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+  border-radius: 10px;
+  font-weight: lighter;
+  transition: background-color 0.3s, color 0.3s;
+}
+.dropdown-content a:hover {
+  background-color: #ddd;
+}
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+
+
+img {
+border-radius: 10px;
+}
+
+
+h3 {
+font-size: 40px;
+font-weight: bold;
+color: #fff;
+}
+
+footer {
+text-align: center;
+color: #fff;
+}
+
+h4 {
+font-size: 40px;
+color: black;
+}
+
+.scroll-down-btn {
+
+background-color: rgba(25, 30, 180, 0.5);
+color: white;
+border: none;
+padding: 15px 30px;
+cursor: pointer;
+font-size: 25px;
+border-radius: 5px;
+font-weight: bold;
+margin-top: 17px;
+transition: background-color 0.3s, color 0.3s;
+}
+
+
+.browse-btn {
+
+  background-color: rgba(25, 30, 180, 0.5);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  padding-left: 20px 40px;
+  cursor: pointer;
+  font-size: 25px;
+  border-radius: 5px;
+  font-weight: bold;
+  margin-top: 17px;
+  margin-left: 20px;
+  transition: background-color 0.3s, color 0.3s;
+  }
+
+.browse-btn:hover {
+  background-color: rgba(16, 20, 121, 0.5);
+}
+
+.scroll-down-btn:hover {
+
+  background-color: rgba(16, 20, 121, 0.5);
+}
+
+.bomDescription{
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+
+}
+.bom-text-container{
+  font-family: Poppins, sans-serif;
+  font-size: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding-top: 50px ;
+  margin-top: 50px;
+  opacity:0;
+  transition:1s ease;
+}
+
+.bom-video-container{
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  font-family: Poppins, sans-serif;
+  font-size: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding-top: 50px ;
+  margin-top: 50px;
+  padding-bottom: 50px;
+  background-color: white;
+}
+
+.bom-text-container--visible{
+  transform:translateY(0);
+  opacity:1;
+}
+
