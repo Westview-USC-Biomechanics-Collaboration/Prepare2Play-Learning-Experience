@@ -46,7 +46,8 @@
         <div id="plot-container">
             <h2>Force vs. Time Graph</h2>
             <div id="plot"></div>
-            <div id="value-container"></div>
+            <p>Integral of Force (X-Direction): {{ integral_forcex }} J</p>
+            <p>Integral of Force (Y-Direction): {{ integral_forcey }} J</p>
         </div>
     </div>
 
@@ -87,15 +88,16 @@
 
         Plotly.newPlot('plot', [trace1, trace2], layout);
 
-        function updateValue(value) {
-            document.getElementById('value-container').innerHTML = '<b>Impulse:</b> ' + value + ' J';
-        }
+        // function updateValue(value) {
+        //     document.getElementById('value-container').innerHTML = '<b>Impulse:</b> ' + value + ' J';
+        // }
 
-        document.getElementById('plot').on('plotly_click', function(data){
-            var pointIndex = data.points[0].pointIndex;
-            var value = timex[pointIndex];
-            updateValue(value);
-        });
+        // document.getElementById('plot').on('plotly_click', function(data){
+        //     //var pointIndex = data.points[0].pointIndex;
+        //     //var value = timex[pointIndex];
+        //     var value = np.trapz(forcex, timex)
+        //     updateValue(value);
+        // });
 
         function goBack() {
             window.location.href = '/';
