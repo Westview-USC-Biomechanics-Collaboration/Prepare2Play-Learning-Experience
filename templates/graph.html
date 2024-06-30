@@ -4,176 +4,144 @@
     <title>Plotting Graph</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        #plot-container {
-            width: 100%;
-            margin: auto;
-            text-align: left;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
-        #value-container {
-            margin-top: 20px;
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         #video-container {
-            position: absolute;
-            top: 10px;
-            right: 10px;
             text-align: center;
         }
-        #videoPlayer {
-            width: 500px;
+        #plot-container {
+            margin-top: 20px;
+        }
+        #plot {
+            width: 100%;
+            height: 300px;
+        }
+        #value-container {
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div id="plot-container">
-        <div id="plot" style="width: 50%; height: 500px;"></div>
-        <div id="plot2" style="width: 50%; height: 500px;"></div>
-        <div id="value-container"></div>
-        <button onclick="goBack()">Back to Home</button>
-    </div>
-    
-    <div id="video-container">
-        <video id="videoPlayer" controls>
-            Your browser does not support the video tag.
-        </video>
-        <br>
-        <input type="file" id="videoInput" accept="video/*" onchange="playSelectedVideo()">
+    <div class="container">
+        <button id="go-back-btn" onclick="goBack()">Back To Home</button>
+        <div id="video-container">
+            <h2>Enter Video Below</h2>
+            <video id="videoPlayer" controls style="width: 80%; max-width: 800px; display: block; margin: 0 auto;">
+                Your browser does not support the video tag.
+            </video>
+            <br>
+            <input type="file" id="videoInput" accept="video/*" onchange="playSelectedVideo()">
+        </div>
+        
+        <div id="plot-container">
+            <h2>Force vs. Time Graph</h2>
+            <div id="plot"></div>
+            <div id="value-container"></div>
+        </div>
     </div>
 
     <script>
         var forcex = JSON.parse('{{ forcex | tojson | safe }}');
         var timex = JSON.parse('{{ timex | tojson | safe }}');
-
         var forcey = JSON.parse('{{ forcey | tojson | safe }}');
-        var timey = JSON.parse('{{ timey | tojson | safe }}');
 
         var trace1 = {
             x: timex,
             y: forcex,
             mode: 'lines+markers',
             type: 'scatter',
-            fill: 'tozeroy'
+            fill: 'tozeroy',
+            name: 'Force (X-Direction)'
         };
 
         var trace2 = {
-            x: timey,
+            x: timex,
             y: forcey,
             mode: 'lines+markers',
             type: 'scatter',
-            fill: 'tozeroy'
+            fill: 'tozeroy',
+            name: 'Force (Y-Direction)'
         };
 
-        var layout1 = {
+        var layout = {
             xaxis: {
                 range: [0, 3],
                 title: 'Time (s.)'
             },
             yaxis: {
-                range: [-15, 10],
+                range: [-35, 35],  // Adjust y-axis range as needed
                 title: 'Force (N)'
             },
-            title: 'Force (X-Direction) vs. Time Graph'
+            title: 'Force vs. Time Graph'
         };
 
-        var layout2 = {
-            xaxis: {
-                range: [0, 3],
-                title: 'Time (s.)'
-            },
-            yaxis: {
-                range: [-25, 25],
-                title: 'Force (N)'
-            },
-            title: 'Force (Y-Direction) vs. Time Graph'
-        };
+        Plotly.newPlot('plot', [trace1, trace2], layout);
 
-        Plotly.newPlot('plot', [trace1], layout1);
-        Plotly.newPlot('plot2', [trace2], layout2);
-
-        function updateValueX(value) {
-            document.getElementById('value-container').innerHTML = '<b>Impulse (X-Direction):</b> ' + value + ' J';
-        }
-
-        function updateValueY(value) {
-            document.getElementById('value-container').innerHTML = '<b>Impulse (Y-Direction):</b> ' + value + ' J';
+        function updateValue(value) {
+            document.getElementById('value-container').innerHTML = '<b>Impulse:</b> ' + value + ' J';
         }
 
         document.getElementById('plot').on('plotly_click', function(data){
             var pointIndex = data.points[0].pointIndex;
-            var value = timex[pointIndex]; 
-            updateValueX(value);
-        });
-
-        document.getElementById('plot2').on('plotly_click', function(data){
-            var pointIndex = data.points[0].pointIndex;
-            var value = timey[pointIndex]; 
-            updateValueY(value);
+            var value = timex[pointIndex];
+            updateValue(value);
         });
 
         function goBack() {
             window.location.href = '/';
         }
 
-        function animatePlot(videoTime) { //videotime describes the time in the video that is input into the program
-        var frameIndex = findNearestFrameIndex(timex, videoTime); // This line does a search (like binary or cheetah) looking for a index that matches the videoTime varaible 
-        var frames = [{
-        data: [{x: timex.slice(0, frameIndex+1), y: forcex.slice(0, frameIndex+1)}] //Creates array with frameIndex
-        }];
-    
-        Plotly.animate('plot', frames, {
-        transition: {
-            duration: 0 //transitions right away
-        },
-        frame: {
-            duration: 0, // Instantly change to the new frame without any animation effect
-            redraw: false
+        function animatePlot(videoTime) {
+            var frameIndex = findNearestFrameIndex(timex, videoTime);
+            var frames = [{
+                data: [{x: timex.slice(0, frameIndex+1), y: forcex.slice(0, frameIndex+1)},
+                       {x: timex.slice(0, frameIndex+1), y: forcey.slice(0, frameIndex+1)}]
+            }];
+
+            Plotly.animate('plot', frames, {
+                transition: {
+                    duration: 0
+                },
+                frame: {
+                    duration: 0,
+                    redraw: false
+                }
+            });
         }
-        });
-    }
 
-    function animatePlot(videoTime) { //videotime describes the time in the video that is input into the program
-        var frameIndex = findNearestFrameIndex(timex, videoTime); // This line does a search (like binary or cheetah) looking for a index that matches the videoTime varaible 
-        var frames = [{
-        data: [{x: timex.slice(0, frameIndex+1), y: forcex.slice(0, frameIndex+1)}] //Creates array with frameIndex
-        }];
-    
-        Plotly.animate('plot2', frames, {
-        transition: {
-            duration: 0 //transitions right away
-        },
-        frame: {
-            duration: 0, // Instantly change to the new frame without any animation effect
-            redraw: false
+        function findNearestFrameIndex(timeArray, videoTime) {
+            for (var i = 0; i < timeArray.length; i++) {
+                if (timeArray[i] >= videoTime) {
+                    return i;
+                }
+            }
+            return timeArray.length - 1;
         }
-        });
-    }
 
-    // Helper function to find nearest frame index based on video time
-    function findNearestFrameIndex(timeArray, videoTime) {
-    for (var i = 0; i < timeArray.length; i++) {
-        if (timeArray[i] >= videoTime) {
-            return i;
+        function playSelectedVideo() {
+            var videoInput = document.getElementById('videoInput');
+            var videoPlayer = document.getElementById('videoPlayer');
+            var file = videoInput.files[0];
+            var url = URL.createObjectURL(file);
+            videoPlayer.src = url;
+
+            videoPlayer.addEventListener('timeupdate', function() {
+                var currentTime = videoPlayer.currentTime;
+                animatePlot(currentTime);
+            });
+
+            videoPlayer.play();
         }
-    }
-    return timeArray.length - 1; // Default to the last frame if no match found (should not happen)
-}
-
-    // Function to play the selected video
-    function playSelectedVideo() {
-    var videoInput = document.getElementById('videoInput');
-    var videoPlayer = document.getElementById('videoPlayer');
-    var file = videoInput.files[0];
-    var url = URL.createObjectURL(file);
-    videoPlayer.src = url;
-
-    videoPlayer.addEventListener('timeupdate', function() {
-        var currentTime = videoPlayer.currentTime;
-        animatePlot(currentTime);
-        animatePlot2(currentTime);
-    });
-
-    videoPlayer.play();
-}
-        
     </script>
 </body>
 </html>
