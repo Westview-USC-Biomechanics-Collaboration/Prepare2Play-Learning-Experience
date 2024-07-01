@@ -10,77 +10,93 @@
             margin: auto;
             text-align: left;
         }
+        #value-container {
+            margin-top: 20px; /* Adjust spacing as needed */
+        }
     </style>
 </head>
 <body>
     <div id="plot-container">
         <div id="plot" style="width: 50%; height: 500px;"></div>
+        <div id="plot2" style="width: 50%; height: 500px;"></div> <!-- New div for the second plot -->
         <!-- Adjust height and width as needed -->
-        <label for="selectY">Select Y-Axis Variable:</label>
-        <select id="selectY" onchange="updatePlot()">
-            <option value="forcey">Force Y</option>
-            <option value="forcez">Force Z</option>
-            <option value="forcex">Force X</option>
-        </select>
+        <div id="value-container"></div> <!-- Container for displaying value -->
         <button onclick="goBack()">Back to Home</button>
-        <div id="value-container"></div> <!-- Container to display impulse value -->
     </div>
 
     <script>
-        // Initial data from backend (assuming it's passed as JSON strings)
         var forcex = JSON.parse('{{ forcex | tojson | safe }}');
-        var forcey = JSON.parse('{{ forcey | tojson | safe }}');
-        var forcez = JSON.parse('{{ forcez | tojson | safe }}');
-        var time = JSON.parse('{{ time | tojson | safe }}');
+        var timex = JSON.parse('{{ timex | tojson | safe }}');
 
-        // Initial trace using 'forcey' as default y-axis variable
+        // New data for the second plot
+        var forcey = JSON.parse('{{ forcey | tojson | safe }}');
+        var timey = JSON.parse('{{ timey | tojson | safe }}');
+
         var trace1 = {
-            x: time,
-            y: forcey,  // Initial y-axis data
+            x: timex,
+            y: forcex,
             mode: 'lines+markers',  // or 'lines' for connecting points without markers
             type: 'scatter'
         };
 
-        var layout = {
+        var trace2 = {
+            x: timey,
+            y: forcey,
+            mode: 'lines+markers',  // or 'lines' for connecting points without markers
+            type: 'scatter'
+        };
+
+        var layout1 = {
             xaxis: {
                 range: [0, 0.005],
                 title: 'Time (s.)'
             },
             yaxis: {
                 range: [-0.25, 0.25],
-                title: 'Force Y (N)'  // Initial y-axis title
+                title: 'Force (N)'
             },
             title: 'Force (X-Direction) vs. Time Graph'
         };
 
-        //Function to update the plot based on dropdown selection
-        function updatePlot() {
-            var dropdown = document.getElementById('selectY');
-            var selectedValue = dropdown.value; // Get selected value from dropdown
+        var layout2 = {
+            xaxis: {
+                range: [0, 0.005],
+                title: 'Time (s.)'
+            },
+            yaxis: {
+                range: [-0.25, 0.25],
+                title: 'Force (N)'
+            },
+            title: 'Force (Y-Direction) vs. Time Graph'  // Different title for the second plot
+        };
 
-            // Update trace based on selected value
-            trace1.y = eval(selectedValue);  
-            layout.yaxis.title = selectedValue.charAt(0).toUpperCase() + selectedValue.slice(1) + ' (N)';  // Update y-axis title
+        Plotly.newPlot('plot', [trace1], layout1);
+        Plotly.newPlot('plot2', [trace2], layout2);  // Render the second plot
 
-            // Replot with updated data and layout
-            Plotly.react('plot', [trace1], layout);
+
+
+          // Function used to display value of Impulse for X-Direction
+          function updateValueX(value) {
+            document.getElementById('value-container').innerHTML = '<b>Impulse (X-Direction):</b> ' + value + ' J';
         }
 
-        // Initial plot creation and call updatePlot() to initialize the plot
-        Plotly.newPlot('plot', [trace1], layout);
-        updatePlot(); // Call updatePlot() initially to set the plot based on the default value
-
-        // Function used to display value of Impulse
-        function updateValue(value) {
-            document.getElementById('value-container').innerHTML = '<b>Impulse:</b> ' + value + ' J';
+        // Function used to display value of Impulse for Y-Direction
+        function updateValueY(value) {
+            document.getElementById('value-container').innerHTML = '<b>Impulse (Y-Direction):</b> ' + value + ' J';
         }
 
-        // Must click on datapoint you want integration to go up to
-        var plot = document.getElementById('plot');
-        plot.on('plotly_click', function(data){
+        // Must click on datapoint you want integration to go up to for the first plot
+        document.getElementById('plot').on('plotly_click', function(data){
             var pointIndex = data.points[0].pointIndex;
-            var value = trace1.y[pointIndex]; 
-            updateValue(value);
+            var value = timex[pointIndex]; 
+            updateValueX(value);
+        });
+
+        // Must click on datapoint you want integration to go up to for the second plot
+        document.getElementById('plot2').on('plotly_click', function(data){
+            var pointIndex = data.points[0].pointIndex;
+            var value = timey[pointIndex]; 
+            updateValueY(value);
         });
 
         // Function to navigate back to the landing page
