@@ -4,34 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="python backend instead of javascript in html">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/GraphAnimationChaseVersion.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/colorMask.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/5.5min_120Hz_SSRun_Fa19_OL_skele.mp4" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/SM_SbS_02_Raw_Data - SM_SoftballSwing_Trial2_Raw_Data.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/derenBasketballTest1.mp4" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output_video.avi" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/styleSportsTemplate.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/styleindex.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/syncing/forceplate_detect.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/FileUpload.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/SportsTemplate.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/testing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.github/CODEOWNERS" beforeDir="false" afterPath="$PROJECT_DIR$/.github/CODEOWNERS" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/animations.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/deleteme.md" beforeDir="false" afterPath="$PROJECT_DIR$/assets/deleteme.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/filled-animation-graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/ForceTimeGraphChaseVersion.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/ForcePlate.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/ForcePlate.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/filled-area-animation.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/graph.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/graph.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/testingfile.py" beforeDir="false" />
-    </list>
+    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="python backend instead of javascript in html" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
