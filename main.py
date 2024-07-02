@@ -4,7 +4,6 @@ import numpy as np
 
 app = Flask(__name__)
 
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -31,5 +30,20 @@ def graph():
                            integral_forcex=formatted_integral_forcex,
                            integral_forcey=formatted_integral_forcey)
                            
+
+    timex_subset = df.iloc[18:30, 0].tolist()  # This data is limited to 11 data points for the Force and Time
+    forcex_subset = df.iloc[18:30, 1].tolist()
+
+    timey_subset = df.iloc[18:30, 0].tolist()  # This data is limited to 11 data points for the Force and Time
+    forcey_subset = df.iloc[18:30, 2].tolist()
+
+    return render_template('graph.html',
+                           forcex=forcex_subset,
+                           timey=timey_subset,
+                           forcey=forcey_subset,
+                           timex=timex_subset)
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
