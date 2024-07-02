@@ -34,14 +34,39 @@
     </div>
 
     <div class="bom-video-container" id="bomVideos">
-        <div class="bom-video-row1">
-            <button class="bom-button">Volleyball</button> 
-            <button class="bom-button">Soccer</button>
+        <div id="button-container">
+            <h4 id="bom-text-desc">Choose Your Sport</h4>
+            <div class="bom-video-right">
+                <button class="bom-button bom-button-right" id="volleyball-button">
+                    Volleyball
+                   <!-- <div class="button-description">Watch Volleyball Videos</div>-->
+                </button>
+                <button class="bom-button bom-button-left" id="soccer-button">
+                    Soccer
+                  <!--  <div class="button-description">Watch Soccer Videos</div>-->
+                </button>
+            </div>
+
+            <div class="bom-video-left">
+                <button class="bom-button bom-button-right" id="fun4kids-button">
+                    Fun 4 Kids
+                  <!--  <div class="button-description">Watch Fun 4 Kids Videos</div>-->
+                </button>
+                <button class="bom-button bom-button-left" id="dancing-button">
+                    Dancing
+                   <!-- <div class="button-description">Watch Dancing Videos</div>-->
+                </button>
+            </div>
         </div>
-        <!--<iframe width="420" height="315" src="https://www.youtube.com/embed/QtHbqf2lGaw?si=vd62eYmHnhDR9Zus" frameborder="0" allowfullscreen></iframe>-->
+
+        <div class="bom-video-box" id="video-container" style="display: none; ">
+            <h4 id="bom-text-desc">Choose your sport</h4>
+            <iframe id="video-iframe" width="420" height="315" src="" frameborder="0" allowfullscreen></iframe>
+            <button class="bom-button" id="back-button">Back</button>
+        </div>
     </div>
 
-    <div id="bomDescription" class="bomDescription" style="background-color: white; ">
+    <div id="bomDescription" class="bomDescription" style="background-color: white;">
         <div class="bom-text-container">
             <h4 style="color:indigo;" class="bom-text">What is the Biomechanics of Movement?</h4>
             <p style="color:indigo;" class="bom-text">Description of BOM videos</p>
@@ -68,6 +93,25 @@
             var element = document.getElementById(divId);
             element.scrollIntoView({ behavior: 'smooth' });
         }
+
+        document.getElementById('volleyball-button').addEventListener('click', function() {
+            document.getElementById('button-container').style.display = 'none';
+            document.getElementById('video-container').style.display = 'block';
+            document.getElementById('video-iframe').src = 'https://www.youtube.com/embed/QtHbqf2lGaw?si=vd62eYmHnhDR9Zus';
+        });
+
+        document.getElementById('soccer-button').addEventListener('click', function() {
+            document.getElementById('button-container').style.display = 'none';
+            document.getElementById('video-container').style.display = 'block';
+            document.getElementById('video-iframe').src = 'https://www.youtube.com/embed/Y7i124fZumE?si=mMavM1VEz7jUA4rK';
+        });
+
+        document.getElementById('back-button').addEventListener('click', function() {
+            document.getElementById('button-container').style.display = 'block';
+            document.getElementById('video-container').style.display = 'none';
+            document.getElementById('video-iframe').src = 'https://www.youtube.com/embed/Y7i124fZumE?si=mMavM1VEz7jUA4rK';
+        });
+
     </script>
 </body>
 </html>
