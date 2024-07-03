@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # Open the video file
-# image = cv2.imread('data/widePicTest.png')
+# image = cv2.imread('data/derenShoot.png')
 
 posX = []
 posY = []
@@ -18,26 +18,27 @@ if not cap.isOpened():
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 out = cv2.VideoWriter('output_video.avi', fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
 
-#orange: 87, 138, 252
-lower_color = np.array([9, 150, 155])
+# orange: 87, 138, 252
+lower_color = np.array([0, 150, 155])
 upper_color = np.array([100, 250, 255])
 
-#slow the video down
+# slow the video down
 fps = cap.get(cv2.CAP_PROP_FPS)
 slow_factor = 2
 
-delay = int((1000/fps)*slow_factor)
+delay = int((1000 / fps) * slow_factor)
 
-#scale size down
+# #scale size down
 scale_factor = 0.5
 
-#go over the video frame by frame
+# go over the video frame by frame
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         break
 
     # Convert the frame to HSV color space
+
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     # Create a mask for the defined color range
@@ -45,34 +46,17 @@ while cap.isOpened():
 
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+    # cv2.drawContours(frame, contours, -1, (0, 255, 0), 2)
+
     for contour in contours:
-        for point in contour:
-            x, y = map(int, point[0])
-            posX.append(x)
-            posY.append(y)
-            # print(f"Contour Point: ({x}, {y})")
+        M = cv2.moments(contour)
+        if M["m00"] != 0:
+            cX = int(M["m10"] / M["m00"])
+            cY = int(M["m01"] / M["m00"])
+            posX.append(cX)
+            posY.append(cY)
 
-    posX.sort()
-    posY.sort()
-
-
-
-    print('lowest x value:', posX[0])
-    print('highest x value:', posX[-1])
-    print('lowest y value:', posY[0])
-    print('highest y value:', posY[-1])
-
-
-    mid_x = int((posX[0] + posX[-1]) / 2)
-    mid_y = int((posY[0] + posY[-1]) / 2)
-
-    midpointColor = (0, 255, 0)
-
-    cv2.circle(frame, (mid_x, mid_y), 3, midpointColor, -1)
-
-
-
-
+            cv2.circle(frame, (cX, cY), 5, (0, 255, 0), -1)
 
     # Apply the mask to the frame
     result = cv2.bitwise_and(frame, frame, mask=mask)
@@ -83,16 +67,10 @@ while cap.isOpened():
     # Write the frame to the output video file
     out.write(small_result)
 
-
-
-
-
     # Display the resulting frame (optional)
     cv2.imshow('Frame', frame)
     if cv2.waitKey(delay) & 0xFF == ord('q'):
         break
-
-
 
 # Release the video capture and writer objects
 cap.release()
