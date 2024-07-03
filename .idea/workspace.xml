@@ -5,8 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="python backend instead of javascript in html">
+      <change afterPath="$PROJECT_DIR$/COM_humanbody.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/CalcCOM/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/CalcCOM/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/CalcCOM/calc_centermass.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/CalcCOM/displayskeleton.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/CalcCOM/segdim_deleva.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Mediapipe-pose_landmarker/pose_landmarker_full.task" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Mediapipe-pose_landmarker/pose_landmarker_heavy.task" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/bcp_lr_CC_vid02.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/outputs/output_skeleton_video.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/testing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Prepare2Play-Learning-Experience-3.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Prepare2Play-Learning-Experience-3.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/output_video.avi" beforeDir="false" afterPath="$PROJECT_DIR$/output_video.avi" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/colorMask.py" beforeDir="false" afterPath="$PROJECT_DIR$/colorMask.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output_video.avi" beforeDir="false" afterPath="$PROJECT_DIR$/outputs/output_video.avi" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,37 +53,46 @@
   &quot;associatedIndex&quot;: 2
 }</component>
   <component name="ProjectId" id="2iO73YEJEuXXNuKpLWZgRWwab8c" />
-  <component name="ProjectLevelVcsManager">
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Python.ForceTimeGraphs.executor&quot;: &quot;Run&quot;,
-    &quot;Python.GraphAnimationChaseVersion (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.animations.executor&quot;: &quot;Run&quot;,
-    &quot;Python.colorMask.executor&quot;: &quot;Run&quot;,
-    &quot;Python.filled-animation-graph.executor&quot;: &quot;Run&quot;,
-    &quot;Python.testing.executor&quot;: &quot;Run&quot;,
-    &quot;Python.testinganimation.executor&quot;: &quot;Run&quot;,
-    &quot;Python.testingfile.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;#41 on chase-backend&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/16199/Desktop/Prepare2Play-Learning-Experience-Deren-BackEnd-FrontEnd&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python.COM_humanbody.executor": "Run",
+    "Python.ForceTimeGraphs.executor": "Run",
+    "Python.GraphAnimationChaseVersion (1).executor": "Run",
+    "Python.animations.executor": "Run",
+    "Python.colorMask.executor": "Run",
+    "Python.filled-animation-graph.executor": "Run",
+    "Python.segdim_deleva.executor": "Run",
+    "Python.skeletonChaseVersion (1).executor": "Run",
+    "Python.testing.executor": "Run",
+    "Python.testinganimation.executor": "Run",
+    "Python.testingfile.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "chase-backend",
+    "last_opened_file_path": "C:/Users/16199/Documents/GitHub/Prepare2Play-Learning-Experience-3",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs" />
+      <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\Mediapipe-pose_landmarker" />
+      <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data" />
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.colorMask">
-    <configuration name="ForceTimeGraphChaseVersion" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.skeletonChaseVersion (1)">
+    <configuration name="COM_humanbody" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -82,7 +105,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\ForceTimeGraphChaseVersion.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/COM_humanbody.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -113,7 +136,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="GraphAnimationChaseVersion" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="segdim_deleva" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -122,11 +145,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/CalcCOM" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\GraphAnimationChaseVersion.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/CalcCOM/segdim_deleva.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -135,7 +158,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="colorMask" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="skeletonChaseVersion (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -148,7 +171,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/colorMask.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/skeletonChaseVersion.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -181,11 +204,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.colorMask" />
+        <item itemvalue="Python.skeletonChaseVersion (1)" />
         <item itemvalue="Python.testing" />
+        <item itemvalue="Python.COM_humanbody" />
+        <item itemvalue="Python.segdim_deleva" />
         <item itemvalue="Python.GraphAnimationChaseVersion (1)" />
-        <item itemvalue="Python.GraphAnimationChaseVersion" />
-        <item itemvalue="Python.ForceTimeGraphChaseVersion" />
       </list>
     </recent_temporary>
   </component>
@@ -226,6 +249,9 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <ignored-roots>
+      <path value="$PROJECT_DIR$/USClabcodes" />
+    </ignored-roots>
     <MESSAGE value="python backend instead of javascript in html" />
     <option name="LAST_COMMIT_MESSAGE" value="python backend instead of javascript in html" />
   </component>
