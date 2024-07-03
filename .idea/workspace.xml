@@ -5,8 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="python backend instead of javascript in html">
+      <change afterPath="$PROJECT_DIR$/data/data.mov" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/syncing/plt_graph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/output_video.avi" beforeDir="false" afterPath="$PROJECT_DIR$/output_video.avi" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GraphAnimationChaseVersion.py" beforeDir="false" afterPath="$PROJECT_DIR$/GraphAnimationChaseVersion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/saved.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/saved.mp4" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syncing/sync.py" beforeDir="false" afterPath="$PROJECT_DIR$/syncing/sync.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/graph.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/graph.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,25 +53,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Python.ForceTimeGraphs.executor&quot;: &quot;Run&quot;,
-    &quot;Python.GraphAnimationChaseVersion (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.animations.executor&quot;: &quot;Run&quot;,
-    &quot;Python.colorMask.executor&quot;: &quot;Run&quot;,
-    &quot;Python.filled-animation-graph.executor&quot;: &quot;Run&quot;,
-    &quot;Python.testing.executor&quot;: &quot;Run&quot;,
-    &quot;Python.testinganimation.executor&quot;: &quot;Run&quot;,
-    &quot;Python.testingfile.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;#41 on chase-backend&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/16199/Desktop/Prepare2Play-Learning-Experience-Deren-BackEnd-FrontEnd&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python.ForceTimeGraphs.executor": "Run",
+    "Python.GraphAnimationChaseVersion (1).executor": "Run",
+    "Python.animations.executor": "Run",
+    "Python.colorMask.executor": "Run",
+    "Python.filled-animation-graph.executor": "Run",
+    "Python.testing.executor": "Run",
+    "Python.testinganimation.executor": "Run",
+    "Python.testingfile.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "#41 on chase-backend",
+    "last_opened_file_path": "C:/Users/16199/Desktop/Prepare2Play-Learning-Experience-Deren-BackEnd-FrontEnd",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/data" />
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
@@ -82,6 +96,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\ForceTimeGraphChaseVersion.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -104,6 +119,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/GraphAnimationChaseVersion.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -126,6 +142,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\GraphAnimationChaseVersion.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -148,6 +165,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/colorMask.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -170,6 +188,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/testing.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -192,7 +211,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-5b207ade9991-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.17890.14" />
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.17890.14" />
+        <option value="bundled-python-sdk-5b207ade9991-7e9c3bbb6e34-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.17890.14" />
       </set>
     </attachedChunks>
   </component>
@@ -204,6 +224,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1719349570219</updated>
+      <workItem from="1720024143982" duration="2027000" />
     </task>
     <task id="LOCAL-00001" summary="python backend instead of javascript in html">
       <option name="closed" value="true" />
@@ -224,9 +245,13 @@
     <option name="localTasksCounter" value="3" />
     <servers />
   </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="python backend instead of javascript in html" />
-    <option name="LAST_COMMIT_MESSAGE" value="python backend instead of javascript in html" />
+    <MESSAGE value="Started working with moviepy to trim videos. I will be using this library to stitch the graph and motion videos together." />
+    <option name="LAST_COMMIT_MESSAGE" value="Started working with moviepy to trim videos. I will be using this library to stitch the graph and motion videos together." />
   </component>
 </project>

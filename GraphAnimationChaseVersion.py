@@ -1,6 +1,7 @@
 import pandas as pd
 from dash import Dash, dcc, html, Input, Output
 import plotly.graph_objects as go
+
 TotalFrames = 60
 # Initialize the Dash app
 app = Dash(__name__)
@@ -9,7 +10,8 @@ app = Dash(__name__)
 max_rows_to_read = 1000  # Example: Limit to 100 rows for simplicity
 
 # Load the data from the CSV file, starting from row 20, and assign column names
-df = pd.read_csv('data.csv', skiprows=19, usecols=[0, 1, 2, 3], names=["time (s)", "Fx", "Fy", "Fz"], header=0, nrows=max_rows_to_read,
+df = pd.read_csv('data.csv', skiprows=19, usecols=[0, 1, 2, 3], names=["time (s)", "Fx", "Fy", "Fz"], header=0,
+                 nrows=max_rows_to_read,
                  dtype={'time (s)': float, 'Fx': float, 'Fy': float, 'Fz': float})
 
 # Define the app layout
@@ -31,10 +33,11 @@ app.layout = html.Div([
         id='interval-component',
         interval=16,  # Interval in milliseconds <--- Difference 2
         n_intervals=0,
-        disabled= True
+        disabled=True
 
     ),
 ])
+
 
 # Define the callback to update the graph
 @app.callback(
@@ -45,7 +48,7 @@ app.layout = html.Div([
 def update_graph(selected_force, n_intervals):  # <--- Difference 3
     frames = [
         go.Frame(
-            data = [
+            data=[
                 go.Scatter(
                     x=df["time (s)"][:(k + 1) * (int(len(df["time (s)"]) / TotalFrames))],  # <--- Difference 4
                     y=df[selected_force][:(k + 1) * (int(len(df[selected_force]) / TotalFrames))],  # <--- Difference 4
@@ -128,6 +131,7 @@ def update_graph(selected_force, n_intervals):  # <--- Difference 3
     )
 
     return figure
+
 
 # Run the app
 if __name__ == "__main__":
