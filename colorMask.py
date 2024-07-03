@@ -58,6 +58,9 @@ while cap.isOpened():
 
             cv2.circle(frame, (cX, cY), 5, (0, 255, 0), -1)
 
+    for (x, y) in zip(posX, posY):
+        cv2.circle(frame, (x, y), 3, (0, 255, 0), -1)
+
     # Apply the mask to the frame
     result = cv2.bitwise_and(frame, frame, mask=mask)
 
