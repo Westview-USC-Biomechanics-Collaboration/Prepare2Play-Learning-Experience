@@ -67,6 +67,21 @@ while cap.isOpened():
     # resize the frame
     small_result = cv2.resize(result, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_AREA)
 
+    if len(posX) > 2 and len(posY) > 2:
+        posX_np = np.array(posX)
+        posY_np = np.array(posY)
+
+        coefficients = np.polyfit(posX_np, posY_np, 2)
+
+        a, b, c = coefficients
+
+        x_range = np.linspace(min(posX), max(posX), len(posX))
+
+        y_values = np.polyval(coefficients, x_range)
+
+        for (x, y) in zip(x_range, y_values):
+            cv2.circle(frame, (int(x), int(y)), 3, (255, 0, 0), -1)
+
     # Write the frame to the output video file
     out.write(small_result)
 
