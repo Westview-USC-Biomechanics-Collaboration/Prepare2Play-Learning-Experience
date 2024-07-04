@@ -54,7 +54,7 @@ def draw_landmarks_on_image(rgb_image, detection_result):
 #
 # # STEP 3: Load the input image.
 # # image = mp.Image.create_from_file("image.jpg")
-# image = mp.Image.create_from_file("girl-4051811_960_720.jpg")
+# image = mp.Image.create_from_file("data/girl-4051811_960_720.jpg")
 #
 # # STEP 4: Detect pose landmarks from the input image.
 # detection_result = detector.detect(image)
