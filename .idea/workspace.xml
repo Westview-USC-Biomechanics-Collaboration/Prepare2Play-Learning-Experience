@@ -5,22 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="python backend instead of javascript in html">
-      <change afterPath="$PROJECT_DIR$/COM_humanbody.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CalcCOM/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CalcCOM/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CalcCOM/calc_centermass.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CalcCOM/displayskeleton.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/CalcCOM/segdim_deleva.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Mediapipe-pose_landmarker/pose_landmarker_full.task" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Mediapipe-pose_landmarker/pose_landmarker_heavy.task" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/bcp_lr_CC_vid02.mp4" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/outputs/output_skeleton_video.mp4" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/testing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Prepare2Play-Learning-Experience-3.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Prepare2Play-Learning-Experience-3.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/colorMask.py" beforeDir="false" afterPath="$PROJECT_DIR$/colorMask.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/output_video.avi" beforeDir="false" afterPath="$PROJECT_DIR$/outputs/output_video.avi" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/outputs/output_skeleton_video.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/outputs/output_skeleton_video.mp4" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
