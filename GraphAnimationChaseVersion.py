@@ -9,7 +9,7 @@ app = Dash(__name__)
 max_rows_to_read = 1000  # Example: Limit to 100 rows for simplicity
 
 # Load the data from the CSV file, starting from row 20, and assign column names
-df = pd.read_csv('data.csv', skiprows=19, usecols=[0, 1, 2, 3], names=["time (s)", "Fx", "Fy", "Fz"], header=0, nrows=max_rows_to_read,
+df = pd.read_csv('data/data.csv', skiprows=19, usecols=[0, 1, 2, 3], names=["time (s)", "Fx", "Fy", "Fz"], header=0, nrows=max_rows_to_read,
                  dtype={'time (s)': float, 'Fx': float, 'Fy': float, 'Fz': float})
 
 # Define the app layout
