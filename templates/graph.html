@@ -4,104 +4,145 @@
     <title>Plotting Graph</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
-        /* Optional: CSS for centering the plot */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #video-container {
+            text-align: center;
+        }
         #plot-container {
-            width: 100%; /* Adjust as needed */
-            margin: auto;
-            text-align: left;
+            margin-top: 20px;
+        }
+        #plot {
+            width: 100%;
+            height: 300px;
         }
         #value-container {
-            margin-top: 20px; /* Adjust spacing as needed */
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div id="plot-container">
-        <div id="plot" style="width: 50%; height: 500px;"></div>
-        <div id="plot2" style="width: 50%; height: 500px;"></div> <!-- New div for the second plot -->
-        <!-- Adjust height and width as needed -->
-        <div id="value-container"></div> <!-- Container for displaying value -->
-        <button onclick="goBack()">Back to Home</button>
+    <div class="container">
+        <button id="go-back-btn" onclick="goBack()">Back To Home</button>
+        <div id="video-container">
+            <h2>Enter Video Below</h2>
+            <video id="videoPlayer" controls style="width: 80%; max-width: 800px; display: block; margin: 0 auto;">
+                Your browser does not support the video tag.
+            </video>
+            <br>
+            <input type="file" id="videoInput" accept="video/*" onchange="playSelectedVideo()">
+        </div>
+        
+        <div id="plot-container">
+            <h2>Force vs. Time Graph</h2>
+            <div id="plot"></div>
+            <p>Integral of Force (X-Direction): {{ integral_forcex }} J</p>
+            <p>Integral of Force (Y-Direction): {{ integral_forcey }} J</p>
+        </div>
     </div>
 
     <script>
         var forcex = JSON.parse('{{ forcex | tojson | safe }}');
         var timex = JSON.parse('{{ timex | tojson | safe }}');
-
-        // New data for the second plot
         var forcey = JSON.parse('{{ forcey | tojson | safe }}');
-        var timey = JSON.parse('{{ timey | tojson | safe }}');
 
         var trace1 = {
             x: timex,
             y: forcex,
-            mode: 'lines+markers',  // or 'lines' for connecting points without markers
-            type: 'scatter'
+            mode: 'lines+markers',
+            type: 'scatter',
+            fill: 'tozeroy',
+            name: 'Force (X-Direction)'
         };
 
         var trace2 = {
-            x: timey,
+            x: timex,
             y: forcey,
-            mode: 'lines+markers',  // or 'lines' for connecting points without markers
-            type: 'scatter'
+            mode: 'lines+markers',
+            type: 'scatter',
+            fill: 'tozeroy',
+            name: 'Force (Y-Direction)'
         };
 
-        var layout1 = {
+        var layout = {
             xaxis: {
-                range: [0, 0.005],
+                range: [0, 3],
                 title: 'Time (s.)'
             },
             yaxis: {
-                range: [-0.25, 0.25],
+                range: [-35, 35],  // Adjust y-axis range as needed
                 title: 'Force (N)'
             },
-            title: 'Force (X-Direction) vs. Time Graph'
+            title: 'Force vs. Time Graph'
         };
 
-        var layout2 = {
-            xaxis: {
-                range: [0, 0.005],
-                title: 'Time (s.)'
-            },
-            yaxis: {
-                range: [-0.25, 0.25],
-                title: 'Force (N)'
-            },
-            title: 'Force (Y-Direction) vs. Time Graph'  // Different title for the second plot
-        };
+        Plotly.newPlot('plot', [trace1, trace2], layout);
 
-        Plotly.newPlot('plot', [trace1], layout1);
-        Plotly.newPlot('plot2', [trace2], layout2);  // Render the second plot
+        // function updateValue(value) {
+        //     document.getElementById('value-container').innerHTML = '<b>Impulse:</b> ' + value + ' J';
+        // }
 
+        // document.getElementById('plot').on('plotly_click', function(data){
+        //     //var pointIndex = data.points[0].pointIndex;
+        //     //var value = timex[pointIndex];
+        //     var value = np.trapz(forcex, timex)
+        //     updateValue(value);
+        // });
 
-
-          // Function used to display value of Impulse for X-Direction
-          function updateValueX(value) {
-            document.getElementById('value-container').innerHTML = '<b>Impulse (X-Direction):</b> ' + value + ' J';
-        }
-
-        // Function used to display value of Impulse for Y-Direction
-        function updateValueY(value) {
-            document.getElementById('value-container').innerHTML = '<b>Impulse (Y-Direction):</b> ' + value + ' J';
-        }
-
-        // Must click on datapoint you want integration to go up to for the first plot
-        document.getElementById('plot').on('plotly_click', function(data){
-            var pointIndex = data.points[0].pointIndex;
-            var value = timex[pointIndex]; 
-            updateValueX(value);
-        });
-
-        // Must click on datapoint you want integration to go up to for the second plot
-        document.getElementById('plot2').on('plotly_click', function(data){
-            var pointIndex = data.points[0].pointIndex;
-            var value = timey[pointIndex]; 
-            updateValueY(value);
-        });
-
-        // Function to navigate back to the landing page
         function goBack() {
             window.location.href = '/';
+        }
+
+        function animatePlot(videoTime) {
+            var frameIndex = findNearestFrameIndex(timex, videoTime);
+            var frames = [{
+                data: [{x: timex.slice(0, frameIndex+1), y: forcex.slice(0, frameIndex+1)},
+                       {x: timex.slice(0, frameIndex+1), y: forcey.slice(0, frameIndex+1)}]
+            }];
+
+            Plotly.animate('plot', frames, {
+                transition: {
+                    duration: 0
+                },
+                frame: {
+                    duration: 0,
+                    redraw: false
+                }
+            });
+        }
+
+        function findNearestFrameIndex(timeArray, videoTime) {
+            for (var i = 0; i < timeArray.length; i++) {
+                if (timeArray[i] >= videoTime) {
+                    return i;
+                }
+            }
+            return timeArray.length - 1;
+        }
+
+        function playSelectedVideo() {
+            var videoInput = document.getElementById('videoInput');
+            var videoPlayer = document.getElementById('videoPlayer');
+            var file = videoInput.files[0];
+            var url = URL.createObjectURL(file);
+            videoPlayer.src = url;
+
+            videoPlayer.addEventListener('timeupdate', function() {
+                var currentTime = videoPlayer.currentTime;
+                animatePlot(currentTime);
+            });
+
+            videoPlayer.play();
         }
     </script>
 </body>
