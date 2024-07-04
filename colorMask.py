@@ -11,7 +11,7 @@ if not cap.isOpened():
 
 # Define the codec and create a VideoWriter object to save the output video
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output_video.avi', fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
+out = cv2.VideoWriter('data/output_video.avi', fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
 
 # orange: 87, 138, 252
 lower_color = np.array([0, 110, 155])
