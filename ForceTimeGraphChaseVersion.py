@@ -18,7 +18,7 @@ column_names = ["time", "forcex", "forcey", "forcez"]
 # df = pd.read_csv('data.csv', names=column_names, header=None)
 
 # Example data (replace with your actual data loading)
-df = pd.read_csv('data.csv')
+df = pd.read_csv('Prepare2Play-Learning-Experience/data/data.csv')
 time_subset = df.iloc[18:18696, 0].tolist()
 forcex_subset = df.iloc[19:18696, 1].tolist()
 forcey_subset = df.iloc[19:18696, 2].tolist()
