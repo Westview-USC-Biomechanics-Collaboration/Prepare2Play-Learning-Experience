@@ -104,7 +104,7 @@ p {
 .dropdown:hover .dropdown-content {
   display: block;
 }
-
+/* 
 .the-flip-cards {
 height: 400px;
 margin-top: 220px;
@@ -226,7 +226,7 @@ z-index: 1;
 display: flex;
 justify-content: center;
 align-items: center;
-}
+} */
 
 
 img {
