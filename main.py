@@ -1,13 +1,38 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 import pandas as pd
 import numpy as np
 
 app = Flask(__name__)
 
+# Options for dropdown menu
+data = {
+    'Basketball': ['Jumpshot', 'Free Throw'],
+    'Soccer': ['Corner Kick', 'Goal Kick']
+}
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/dropdown', methods=['POST', 'GET'])
+def dropdown():
+    sport = list(data.keys())
+    selected_sport = None
+    movements = []
+    # If we user selected from the dropdown it'll update our page1w
+    if request.method == 'POST':
+        # Recieves data from the form created in MovementDropDown.html
+        selected_sport = request.form.get('sport')
+        # Opens the data dictionary for all options under the sport they picked
+        movements = data.get(selected_sport, [])
+        # Use lines below once we know where to take the user after they select a movement
+        # if 'movements' in request.form:
+        #     selected_movement = request.form.get('movements')
+            # return redirect(url_for('another_route', sport=selected_sport, movement=selected_ movement))
+        return render_template('MovementDropDown.html', sports=sport, movements=movements, selected_sport=selected_sport)
+    else:
+        # Handle GET request (initial page load)
+        return render_template('MovementDropDown.html',  sports=sport, movements=movements, selected_sport=selected_sport)
 
 @app.route('/graph')
 def graph():
