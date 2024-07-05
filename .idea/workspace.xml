@@ -4,16 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="python backend instead of javascript in html">
-      <change afterPath="$PROJECT_DIR$/data/data.mov" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/syncing/plt_graph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
+    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="sync.py now can merge the two videos at the specified times (I can automatically get the forceplate frame, but am not sure how to get the graph video/frame for the spike). For now I just manually took a video fo the graph, but will need to automate it in the future. It adds a blank frame until the graph starts, and works for the most part. Its a bit rough around the edges, but just needs some tuning.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GraphAnimationChaseVersion.py" beforeDir="false" afterPath="$PROJECT_DIR$/GraphAnimationChaseVersion.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/saved.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/saved.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syncing/sync.py" beforeDir="false" afterPath="$PROJECT_DIR$/syncing/sync.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/graph.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/graph.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,29 +45,29 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Python.ForceTimeGraphs.executor": "Run",
-    "Python.GraphAnimationChaseVersion (1).executor": "Run",
-    "Python.animations.executor": "Run",
-    "Python.colorMask.executor": "Run",
-    "Python.filled-animation-graph.executor": "Run",
-    "Python.testing.executor": "Run",
-    "Python.testinganimation.executor": "Run",
-    "Python.testingfile.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "#41 on chase-backend",
-    "last_opened_file_path": "C:/Users/16199/Desktop/Prepare2Play-Learning-Experience-Deren-BackEnd-FrontEnd",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python.ForceTimeGraphs.executor&quot;: &quot;Run&quot;,
+    &quot;Python.GraphAnimationChaseVersion (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.animations.executor&quot;: &quot;Run&quot;,
+    &quot;Python.colorMask.executor&quot;: &quot;Run&quot;,
+    &quot;Python.filled-animation-graph.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testing.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testinganimation.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testingfile.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;#41 on chase-backend&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/16199/Desktop/Prepare2Play-Learning-Experience-Deren-BackEnd-FrontEnd&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/data" />
@@ -224,7 +216,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1719349570219</updated>
-      <workItem from="1720024143982" duration="2027000" />
+      <workItem from="1720024143982" duration="2910000" />
+      <workItem from="1720125078112" duration="42000" />
     </task>
     <task id="LOCAL-00001" summary="python backend instead of javascript in html">
       <option name="closed" value="true" />
@@ -242,16 +235,36 @@
       <option name="project" value="LOCAL" />
       <updated>1719440650505</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="sync.py now can merge the two videos at the specified times (I can automatically get the forceplate frame, but am not sure how to get the graph video/frame for the spike). For now I just manually took a video fo the graph, but will need to automate it in the future. It adds a blank frame until the graph starts, and works for the most part. Its a bit rough around the edges, but just needs some tuning.">
+      <option name="closed" value="true" />
+      <created>1720026717312</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1720026717312</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="python backend instead of javascript in html" />
     <MESSAGE value="Started working with moviepy to trim videos. I will be using this library to stitch the graph and motion videos together." />
-    <option name="LAST_COMMIT_MESSAGE" value="Started working with moviepy to trim videos. I will be using this library to stitch the graph and motion videos together." />
+    <MESSAGE value="sync.py now can merge the two videos at the specified times (I can automatically get the forceplate frame, but am not sure how to get the graph video/frame for the spike). For now I just manually took a video fo the graph, but will need to automate it in the future. It adds a blank frame until the graph starts, and works for the most part. Its a bit rough around the edges, but just needs some tuning." />
+    <option name="LAST_COMMIT_MESSAGE" value="sync.py now can merge the two videos at the specified times (I can automatically get the forceplate frame, but am not sure how to get the graph video/frame for the spike). For now I just manually took a video fo the graph, but will need to automate it in the future. It adds a blank frame until the graph starts, and works for the most part. Its a bit rough around the edges, but just needs some tuning." />
   </component>
 </project>
