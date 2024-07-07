@@ -4,8 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="sync.py now can merge the two videos at the specified times (I can automatically get the forceplate frame, but am not sure how to get the graph video/frame for the spike). For now I just manually took a video fo the graph, but will need to automate it in the future. It adds a blank frame until the graph starts, and works for the most part. Its a bit rough around the edges, but just needs some tuning.">
+    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="Refactored graph codee">
+      <change afterPath="$PROJECT_DIR$/data_plot.mp4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syncing/plt_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/syncing/plt_graph.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -218,6 +220,8 @@
       <updated>1719349570219</updated>
       <workItem from="1720024143982" duration="2910000" />
       <workItem from="1720125078112" duration="42000" />
+      <workItem from="1720125924592" duration="2145000" />
+      <workItem from="1720382286695" duration="4178000" />
     </task>
     <task id="LOCAL-00001" summary="python backend instead of javascript in html">
       <option name="closed" value="true" />
@@ -243,7 +247,23 @@
       <option name="project" value="LOCAL" />
       <updated>1720026717312</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Got the graphs to work with matplotlib. Need to annimate them, and later refactor all of my code">
+      <option name="closed" value="true" />
+      <created>1720137811795</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1720137811795</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Refactored graph codee">
+      <option name="closed" value="true" />
+      <created>1720382816583</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1720382816583</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -265,6 +285,8 @@
     <MESSAGE value="python backend instead of javascript in html" />
     <MESSAGE value="Started working with moviepy to trim videos. I will be using this library to stitch the graph and motion videos together." />
     <MESSAGE value="sync.py now can merge the two videos at the specified times (I can automatically get the forceplate frame, but am not sure how to get the graph video/frame for the spike). For now I just manually took a video fo the graph, but will need to automate it in the future. It adds a blank frame until the graph starts, and works for the most part. Its a bit rough around the edges, but just needs some tuning." />
-    <option name="LAST_COMMIT_MESSAGE" value="sync.py now can merge the two videos at the specified times (I can automatically get the forceplate frame, but am not sure how to get the graph video/frame for the spike). For now I just manually took a video fo the graph, but will need to automate it in the future. It adds a blank frame until the graph starts, and works for the most part. Its a bit rough around the edges, but just needs some tuning." />
+    <MESSAGE value="Got the graphs to work with matplotlib. Need to annimate them, and later refactor all of my code" />
+    <MESSAGE value="Refactored graph codee" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactored graph codee" />
   </component>
 </project>
