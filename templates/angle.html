@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Angle Tracker</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>Video Angle Tracker</h1>
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept="video/*">
+        <input type="submit" value="Upload Video">
+    </form>
+    <div>
+        <video id="uploadedVideo" width="640" height="480" controls style="display:none;">
+            <source id="videoSource" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div id="angleGraph"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+
+               
+                var videoElement = document.getElementById('uploadedVideo');
+                var videoSource = document.getElementById('videoSource');
+                videoSource.setAttribute('src', data.video_path);
+                videoElement.style.display = 'block';
+                videoElement.load();
+                videoElement.play();
+
+                var angles = data.angle_data;
+                var frames = Array.from(Array(angles.length).keys());
+
+                var trace = {
+                    x: frames,
+                    y: angles,
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    name: 'Angle'
+                };
+
+                var layout = {
+                    title: 'Shoulder-Trunk Angle',
+                    xaxis: {
+                        title: 'Frame'
+                    },
+                    yaxis: {
+                        title: 'Angle (degrees)'
+                    }
+                };
+
+                var plotData = [trace];
+                Plotly.newPlot('angleGraph', plotData, layout);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
