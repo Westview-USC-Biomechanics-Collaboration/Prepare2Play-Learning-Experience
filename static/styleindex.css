@@ -207,7 +207,7 @@ h4 {
   display: flex;
   align-items: center;
   padding: 10px;
-  font-size: 18px;
+  font-size: 24px;
   font-weight: 500;
   cursor: pointer;
 }
@@ -255,7 +255,7 @@ input[type="radio"] {
   display: block; 
   background-color: rgba(255, 255, 255, 0.1); 
   border-radius: 5px;
-  margin: 10px 0px;
+  margin: 10px 0px 0px 0px;
   padding: 15px; 
   color: white;
   text-decoration: none;
