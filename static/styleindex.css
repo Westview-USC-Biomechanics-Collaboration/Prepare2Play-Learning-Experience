@@ -89,9 +89,9 @@ p {
 .dropdown-content {
   display: none;
   position: fixed;
-  background-color: #f9f9f9; /* You can keep or change the background color */
+  background-color: #f9f9f9; 
   min-width: 160px;
-  box-shadow: none; /* Removed the box shadow */
+  box-shadow: none; 
   z-index: 3;
   padding: 10px;
   border-radius: 10px;
@@ -117,14 +117,13 @@ p {
 .dropdown:hover .dropdown-content {
   display: block;
 }
-/* 
-.the-flip-cards {
+.sports-organization {
   margin-top: 220px;
   background-color: #f9f9f9;
   display: flex;
-  flex-direction: column; /* Ensure the flip-cards section stacks vertically */
+  flex-direction: column;
   align-items: center;
-  width: 100%; /* Ensure it takes full width */
+  width: 100%;
 }
 
 img {
@@ -188,7 +187,7 @@ h4 {
 }
 
 .accordion {
-  margin: 20px auto; /* Reduced margin for less space */
+  margin: 20px auto;
   width: 60%;
   max-width: none;
 }
@@ -198,7 +197,7 @@ h4 {
   color: white;
   list-style: none;
   width: 100%;
-  margin: 10px 0; /* Adjusted margin */
+  margin: 10px 0;
   padding: 10px;
   border-radius: 10px;
   box-shadow: 6px 6px 10px -1px rgba(0,0,0,0.15), -6px -6px 10px -1px rgba(255,255,255,0.7);
@@ -226,9 +225,9 @@ input[type="radio"] {
 
 .accordion .content {
   color: #efefef;
-  padding: 0 10px; /* Adjusted padding */
+  padding: 0 10px; 
   line-height: 26px;
-  margin: 0; /* Ensure no extra margin */
+  margin: 0; 
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.5s, padding 0.5s;
@@ -237,7 +236,7 @@ input[type="radio"] {
 }
 
 .accordion>li:hover {
-  background-color: rgba(25, 30, 180, 0.65); /* Hover background */
+  background-color: rgba(25, 30, 180, 0.65);
 }
 
 .accordion>li.active {
@@ -246,32 +245,32 @@ input[type="radio"] {
 
 .nested-dropdown {
   padding: 0;
-  margin: 10px 0 0 0; /* Ensure there's a small space above the dropdown */
-  width: 100%; /* Make sure it takes full width */
-  box-sizing: border-box; /* Ensure padding and borders are included in the width */
+  margin: 10px 0 0 0; 
+  width: 100%; 
+  box-sizing: border-box; 
   box-shadow: none;
 }
 
 .nested-dropdown a {
-  display: block; /* Display as block for full-width clickable area */
-  background-color: rgba(255, 255, 255, 0.1); /* Background color */
+  display: block; 
+  background-color: rgba(255, 255, 255, 0.1); 
   border-radius: 5px;
   margin: 10px 0px;
-  padding: 15px; /* Add padding for better spacing */
+  padding: 15px; 
   color: white;
   text-decoration: none;
   font-size: 18px;
-  text-align: center; /* Center text */
-  transition: background-color 0.3s; /* Smooth background color transition */
+  text-align: center;
+  transition: background-color 0.3s; 
 }
 
 .nested-dropdown a:hover {
-  background-color: rgba(255, 255, 255, 0.2); /* Background color */
+  background-color: rgba(255, 255, 255, 0.2);
   border-radius: 5px;
 }
 
 .nested-dropdown li {
-  list-style: none; /* Remove default list styling */
-  margin: 0; /* Ensure no extra margin */
-  padding: 0; /* Ensure no extra padding */
+  list-style: none; 
+  margin: 0; 
+  padding: 0; 
 }
