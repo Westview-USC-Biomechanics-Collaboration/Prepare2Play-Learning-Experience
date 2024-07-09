@@ -4,9 +4,6 @@ from moviepy.editor import *
 import pandas as pd
 
 
-# TODO: REFACTOR
-
-
 class VideoSync():
     def __init__(self, videoPath, graphPath):
         self.videoPath = videoPath
