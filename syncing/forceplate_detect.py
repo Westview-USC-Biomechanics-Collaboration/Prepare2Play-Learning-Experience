@@ -88,3 +88,7 @@ class ForcePlateDetect:
         self.cam.release()
         cv.destroyAllWindows()
         return frameCount, fps
+
+
+# f = ForcePlateDetect("data/NS_SPU_01.mov")
+# f.detect((550, 800), (247, 97), True)
