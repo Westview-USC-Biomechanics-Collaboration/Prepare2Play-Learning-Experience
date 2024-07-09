@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, jsonify
 import cv2
 import mediapipe as mp
 import numpy as np
-import plotly.graph_objects as go
 
 app = Flask(__name__)
 
@@ -24,15 +23,19 @@ def upload_video():
     file.save(video_path)
 
     # Process video and extract angle data using MediaPipe
-    angle_data = calculate_angle(video_path)
+    angle_data, times = calculate_angle(video_path)
 
-    return jsonify({'angle_data': angle_data, 'video_path': video_path})
+    return jsonify({'angle_data': angle_data, 'times': times, 'video_path': video_path})
 
 def calculate_angle(video_path):
     cap = cv2.VideoCapture(video_path)
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, min_tracking_confidence=0.5)
     angles = []
+    times = []
+
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    frame_idx = 0
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -61,21 +64,13 @@ def calculate_angle(video_path):
             angle_rad = np.arccos(np.dot(shoulder_vector, hip_vector) / (np.linalg.norm(shoulder_vector) * np.linalg.norm(hip_vector)))
             angle_deg = np.degrees(angle_rad)
             angles.append(angle_deg)
+            times.append(frame_idx / fps)
 
-        # Draw landmarks (optional, for visualization)
-        mp_drawing = mp.solutions.drawing_utils
-        annotated_image = frame.copy()
-        mp_drawing.draw_landmarks(annotated_image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-
-        # Show annotated image (optional, for debugging)
-        cv2.imshow('Annotated Frame', annotated_image)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        frame_idx += 1
 
     cap.release()
-    cv2.destroyAllWindows()
 
-    return angles
+    return angles, times
 
 if __name__ == '__main__':
     app.run(debug=True)
