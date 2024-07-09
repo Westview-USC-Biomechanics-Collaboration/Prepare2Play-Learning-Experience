@@ -14,7 +14,7 @@ class VideoSync():
 
     def syncSave(self):
         fp_detect = ForcePlateDetect(self.videoPath)  # 60.0 fps, frame 240
-        movementFrameNum, fps = fp_detect.detect((768, 790), (430, 25), False)
+        movementFrameNum, fps = fp_detect.detect((550, 750), (247, 97), False)
         # runs the main detection loop to find the first frame when the force plate is triggered
 
         movementClip = VideoFileClip(self.videoPath)

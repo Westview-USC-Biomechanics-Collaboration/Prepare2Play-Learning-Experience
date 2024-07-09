@@ -15,6 +15,9 @@ class Graph:
         self.totalFrames = self.targetFPS * (self.x_subset['max'] - self.x_subset['min'])  # seconds * fps
         # TARGET
         # The final video will be at 60fps, and will last for the duration of self.totalFrames
+        self.speedMult = round(
+            len(self.x_subset['data']) / self.totalFrames
+        )  # frames in original data collection / frames in target video
 
     def fixTimeConstraints(self):
         self.x_subset['min'] = self.x_subset['data'][0]
@@ -28,12 +31,8 @@ class Graph:
 
     def animation(self, frame_num):
         print(frame_num)
-        data_points_count = len(self.x_subset["data"])
 
-        speedMult = round(
-             data_points_count / self.totalFrames)  # frames in original data collection / frames in target video
-
-        frame_num *= speedMult
+        frame_num *= self.speedMult
 
         x_data = self.x_subset["data"][: frame_num]
         y_data = self.y_subset["data"][: frame_num]
