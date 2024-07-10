@@ -5,3 +5,4 @@ opencv-python~=4.10.0.84
 numpy~=1.26.1
 pixelmatch~=0.3.0
 watchdog~=3.0
+moviepy~=1.0.3
