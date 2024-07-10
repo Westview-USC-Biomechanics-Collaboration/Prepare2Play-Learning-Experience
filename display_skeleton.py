@@ -46,7 +46,7 @@ def draw_landmarks_on_image(rgb_image, detection_result):
 # from mediapipe.tasks.python import vision
 #
 # # STEP 2: Create an PoseLandmarker object.
-# base_options = python.BaseOptions(model_asset_path='pose_landmarker_lite.task')
+# base_options = python.BaseOptions(model_asset_path='Mediapipe-pose_landmarker/pose_landmarker_heavey.task')
 # options = vision.PoseLandmarkerOptions(
 #     base_options=base_options,
 #     output_segmentation_masks=True)
@@ -68,7 +68,10 @@ def draw_landmarks_on_image(rgb_image, detection_result):
 base_options = python.BaseOptions(model_asset_path='Mediapipe-pose_landmarker/pose_landmarker_full.task')
 options = vision.PoseLandmarkerOptions(
     base_options=base_options,
-    output_segmentation_masks=True)
+    output_segmentation_masks=True,
+    min_pose_detection_confidence= 0.8
+)
+
 detector = vision.PoseLandmarker.create_from_options(options)
 
 # OpenCV video capture

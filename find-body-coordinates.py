@@ -4,7 +4,7 @@ from openpyxl import Workbook
 
 # Initialize Mediapipe Pose.
 mp_pose = mp.solutions.pose
-pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, model_complexity=2)
+pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.8, model_complexity=2)
 
 # Open the video file.
 video_path = 'data/derenBasketballTest1.mp4'
@@ -31,28 +31,28 @@ pose_landmark_names = {
     8: "right_ear",
     9: "mouth_left",
     10: "mouth_right",
-    11: "left_shoulder",
-    12: "right_shoulder",
-    13: "left_elbow",
-    14: "right_elbow",
-    15: "left_wrist",
-    16: "right_wrist",
+    11: "LSHOULDER",
+    12: "RSHOULDER",
+    13: "LELBOW",
+    14: "RELBOW",
+    15: "LWRIST",
+    16: "RWRIST",
     17: "left_pinky",
     18: "right_pinky",
     19: "left_index",
     20: "right_index",
     21: "left_thumb",
     22: "right_thumb",
-    23: "left_hip",
-    24: "right_hip",
-    25: "left_knee",
-    26: "right_knee",
-    27: "left_ankle",
-    28: "right_ankle",
-    29: "left_heel",
-    30: "right_heel",
-    31: "left_foot_index",
-    32: "right_foot_index"
+    23: "LHIP",
+    24: "RHIP",
+    25: "LKNEE",
+    26: "RKNEE",
+    27: "LANKLE",
+    28: "RANKLE",
+    29: "LHEEL",
+    30: "RHEEL",
+    31: "LTOE",
+    32: "RTOE"
 }
 
 # Create a window to display the video frame.
