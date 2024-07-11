@@ -14,17 +14,18 @@
 
 
 ## Contributors:
+- Jessie Bao
+- Ross Brown
+- Chase Chen
+- Deren Erdem
+- Imri Fernandes
 - James Guo
 - Rayyan Hussain
 - Ayaan Irshad
-- Christopher Yuan
-- Jessie Bao
-- Breanna Thayillam
 - Nishk Shah
-- Chase Chen
-- Imri Fernandes
-- Ross Brown
-- Deren Erdem
+- Breanna Thayillam
+- Aarav Yadav
+- Christopher Yuan
 
 ##
 Link to .csv file: https://docs.google.com/spreadsheets/d/1qBQn315Ii5pMCvPHkIBUR8svjCHVcP9pMjqS9ZCz4Bk/edit?gid=2138994499#gid=2138994499
