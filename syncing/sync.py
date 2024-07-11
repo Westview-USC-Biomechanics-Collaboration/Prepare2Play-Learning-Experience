@@ -41,6 +41,7 @@ class VideoSync():
 
 videoPath = "data/NS_SPU_01.mov"
 csvPath = "data/NS_SPU_01_Raw_Data - NS_SurfPopUp_Trial1_Raw_Data.csv"
+
 sync = VideoSync(videoPath, csvPath)
 sync.syncSave()
 print("Video Generated!")

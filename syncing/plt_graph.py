@@ -75,13 +75,14 @@ class Graph:
                 return seconds*self.slowFactor
 
 
-# df = pd.read_csv("data/NS_SPU_01_Raw_Data - NS_SurfPopUp_Trial1_Raw_Data.csv")
+# df = pd.read_csv("data/vst_lr_NN_for01_Raw_Data - vst_lr_NN_for01_Raw_Data.csv")
 #
 # forcey_subset = {"data": df.iloc[18:, 2].astype(float).tolist(), "name": "ForceY"}
 # timex_subset = {"data": df.iloc[18:, 0].astype(float).tolist(), "name": "Time"}
 #
 # saveAs = "syncing/results/graph.mp4"
-#
+
 # g = Graph(timex_subset, forcey_subset)
 # a = g.getForcePlateTime()
+# g.graph()
 # g.animate_graph(True, saveAs)
