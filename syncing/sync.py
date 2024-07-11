@@ -9,7 +9,7 @@ class VideoSync():
         self.videoPath = videoPath
         self.csvPath = csvPath
 
-    def syncSave(self): # camera is 240 fps
+    def syncSave(self) -> str: # camera is 240 fps #returns the path of the syncedVideo
         fp_detect = ForcePlateDetect(self.videoPath)
         movementFrameNum, fps = fp_detect.detect((550, 800), (247, 97), False)
         # runs the main detection loop to find the first frame when the force plate is triggered
@@ -35,13 +35,18 @@ class VideoSync():
         finalizedGraphClip = concatenate_videoclips([blankFrame, graphClip])
         clips = [movementClip], [finalizedGraphClip]
 
+        saveLocation = "static/syncedVideo/syncedVideo.mp4"
         final = clips_array(clips)
-        final.write_videofile("syncing/results/syncedVideo.mp4", fps=fps)
+        final.write_videofile(saveLocation, fps=fps)
 
+        return saveLocation
 
 videoPath = "data/NS_SPU_01.mov"
 csvPath = "data/NS_SPU_01_Raw_Data - NS_SurfPopUp_Trial1_Raw_Data.csv"
 
 sync = VideoSync(videoPath, csvPath)
-sync.syncSave()
+videoPath = sync.syncSave()
 print("Video Generated!")
+
+# videoPath = videoPath.lstrip("../static/")
+
