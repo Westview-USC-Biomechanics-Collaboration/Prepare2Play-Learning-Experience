@@ -1,42 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/static/styleindex.css">
 </head>
+
 <body>
 
-<div class="navbar">
-  <div class="Main-Options">
-    <div class="Home">
-      <a href="index.html">Home</a>
-    </div>
-    <div class="About-Us">
-      <a href="#">About Us</a>
+  <div class="navbar">
+    <div class="Main-Options">
+      <div class="Home">
+        <a href="/templates/index.html">Home</a>
+      </div>
+
+      <div class="About-Us" id="about-us-button">
+        About Us
+      </div>
+
+      <div id="about-us-modal" class="modal">
+        <div class="modal-content">
+          <span class="close-button">&times;</span>
+          <h2>About Us</h2>
+          <p>This website was created by a team of dedicated developers and designers.</p>
+          <p>Team Members:</p>
+          <ul>
+            <li>John Doe - Developer</li>
+            <li>Jane Smith - Designer</li>
+            <li>Jim Brown - Project Manager</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="content">
-  
-  <h1 style="color: white;">Prepare To Play</h1>
-  <p style="color: white;">Improve your own movement!</p>
-  <button class="scroll-down-btn" onclick="scrollToDiv('scrollToHere')">Discover</button>
-</div>
+  <div class="content">
 
-<div id="scrollToHere" class="sports-organization">
+    <h1 style="color: white;">Prepare To Play</h1>
+    <p style="color: white;">Improve your own movement!</p>
+    <button class="scroll-down-btn" onclick="scrollToDiv('scrollToHere')">Discover</button>
+  </div>
+
+  <div id="scrollToHere" class="sports-organization">
     <h4>Select Your Sport</h4>
     <div class="sportsOptions">
-      <ul class="accordion"> 
+      <ul class="accordion">
         <li>
           <input type="radio" name="accordion" id="basketball">
           <label for="basketball"><span>+</span>Basketball</label>
           <div class="content">
             <ul class="nested-dropdown">
-              <li><a href="SportsTemplate.html" onclick="selectMovement('Chest Pass')">Chest Pass</a></li>
-              <li><a href="SportsTemplate.html" onclick="selectMovement('Free Throw')">Free Throw</a></li>
-              <li><a href="SportsTemplate.html" onclick="selectMovement('Jump Shot')">Jump Shot</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Chest Pass')">Chest Pass</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Free Throw')">Free Throw</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Jump Shot')">Jump Shot</a></li>
             </ul>
           </div>
         </li>
@@ -45,7 +62,7 @@
           <label for="football"><span>+</span>Football</label>
           <div class="content">
             <ul class="nested-dropdown">
-              <li><a href="SportsTemplate.html" onclick="selectMovement('Football Throw')">Football Pass</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Football Throw')">Football Pass</a></li>
             </ul>
           </div>
         </li>
@@ -54,7 +71,7 @@
           <label for="iceskating"><span>+</span>Ice Skating</label>
           <div class="content">
             <ul class="nested-dropdown">
-              <li><a href="SportsTemplate.html" onclick="selectMovement('Axel Jump')">Axel Jump</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Axel Jump')">Axel Jump</a></li>
             </ul>
           </div>
         </li>
@@ -63,125 +80,91 @@
           <label for="martialArts"><span>+</span>Martial Arts</label>
           <div class="content">
             <ul class="nested-dropdown">
-              <li><a href="SportsTemplate.html" onclick="selectMovement('Side Kick')">Side Kick</a></li>
-            </ul> 
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Side Kick')">Side Kick</a></li>
+            </ul>
           </div>
-          <li>
-            <input type="radio" name="accordion" id="soccer">
-            <label for="soccer"><span>+</span>Soccer</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Corner Kick')">Corner Kick</a></li>
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Offensive Header')">Offensive Header</a></li>
-              </ul>   
-            </div>
-          </li>
-          <li>
-            <input type="radio" name="accordion" id="softball">
-            <label for="softball"><span>+</span>Softball</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Softball Swing')">Softball Swing</a></li> 
-              </ul>
-            </div>
-          </li>
-          <li>
-            <input type="radio" name="accordion" id="surfing">
-            <label for="surfing"><span>+</span>Surfing</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <p> testing testing testing </p> 
-              </ul>   
-            </div>
-          </li>
-          <li>
-            <input type="radio" name="accordion" id="tennis">
-            <label for="tennis"><span>+</span>Tennis</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Backhand Slice')">Backhand Slice</a></li>
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Forehand')">Forehand</a></li>
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Volley')">Volley</a></li>
-              </ul> 
-            </div>
-          </li>
-          <li>
-            <input type="radio" name="accordion" id="track">
-            <label for="track"><span>+</span>Track & Field</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Sprint Start')">Sprint Start</a></li>
-              </ul> 
-            </div>
-          </li>
-          <li>
-            <input type="radio" name="accordion" id="volleyball">
-            <label for="volleyball"><span>+</span>Volleyball</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Volleyball Block')">Volleyball Block</a></li>
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Volleyball Serve')">Volleyball Serve</a></li>
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Volleyball Serve')">Volleyball Serve</a></li>
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Volleyball Set')">Volleyball Set</a></li>
-              </ul>  
-            </div>
-          </li>
-          <li>
-            <input type="radio" name="accordion" id="other">
-            <label for="other"><span>+</span>Other Fun Movements</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Change in Direction in Tag')">Change in Direction in Tag</a></li>
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Frisbee Pull')">Frisbee Pull</a></li>
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Frisbee Throw')">Frisbee Throw</a></li>
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Hopscotch')">Hopscotch</a></li>
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Jump Rope')">Jump Rope</a></li>
-                <li><a href="SportsTemplate.html" onclick="selectMovement('Yoga Chair Pose')">Yoga Chair Pose</a></li>
-              </ul> 
-            </div>
-          </li>
+        <li>
+          <input type="radio" name="accordion" id="soccer">
+          <label for="soccer"><span>+</span>Soccer</label>
+          <div class="content">
+            <ul class="nested-dropdown">
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Corner Kick')">Corner Kick</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Offensive Header')">Offensive Header</a></li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <input type="radio" name="accordion" id="softball">
+          <label for="softball"><span>+</span>Softball</label>
+          <div class="content">
+            <ul class="nested-dropdown">
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Softball Swing')">Softball Swing</a></li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <input type="radio" name="accordion" id="surfing">
+          <label for="surfing"><span>+</span>Surfing</label>
+          <div class="content">
+            <ul class="nested-dropdown">
+              <p> testing testing testing </p>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <input type="radio" name="accordion" id="tennis">
+          <label for="tennis"><span>+</span>Tennis</label>
+          <div class="content">
+            <ul class="nested-dropdown">
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Backhand Slice')">Backhand Slice</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Forehand')">Forehand</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Volley')">Volley</a></li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <input type="radio" name="accordion" id="track">
+          <label for="track"><span>+</span>Track & Field</label>
+          <div class="content">
+            <ul class="nested-dropdown">
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Sprint Start')">Sprint Start</a></li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <input type="radio" name="accordion" id="volleyball">
+          <label for="volleyball"><span>+</span>Volleyball</label>
+          <div class="content">
+            <ul class="nested-dropdown">
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Volleyball Block')">Volleyball Block</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Volleyball Serve')">Volleyball Serve</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Volleyball Serve')">Volleyball Serve</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Volleyball Set')">Volleyball Set</a></li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <input type="radio" name="accordion" id="other">
+          <label for="other"><span>+</span>Other Fun Movements</label>
+          <div class="content">
+            <ul class="nested-dropdown">
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Change in Direction in Tag')">Change in
+                  Direction in Tag</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Frisbee Pull')">Frisbee Pull</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Frisbee Throw')">Frisbee Throw</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Hopscotch')">Hopscotch</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Jump Rope')">Jump Rope</a></li>
+              <li><a href="/static/SportsTemplate.html" onclick="selectMovement('Yoga Chair Pose')">Yoga Chair Pose</a></li>
+            </ul>
+          </div>
+        </li>
         </li>
       </ul>
     </div>
-</div>
+  </div>
 
-<script>
-  /*function scrollToDiv(divId) {
-      var element = document.getElementById(divId);
-      element.scrollIntoView({ behavior: 'smooth' });
-  }
-  
-  function selectMovement(movement) {
-    localStorage.setItem('selectedMovement', movement);
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-          const accordions = document.querySelectorAll('.accordion li label');
-          accordions.forEach(label => {
-              label.addEventListener('click', function () {
-                  const content = this.nextElementSibling;
-                  const expanded = this.getAttribute('aria-expanded') === 'true';
-
-                  if (expanded) {
-                      content.style.maxHeight = null;
-                      content.style.padding = '0 10px';
-                      this.setAttribute('aria-expanded', 'false');
-                      this.querySelector('span').textContent = '+';
-                  } else {
-                      content.style.maxHeight = content.scrollHeight + 'px';
-                      content.style.padding = '10px 10px 20px';
-                      this.setAttribute('aria-expanded', 'true');
-                      this.querySelector('span').textContent = '-';
-                  }
-              });
-          });
-});*/
-</script>
-
-<hr>
-<footer><p>Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer 
-
-</p></footer>
-<script src="/templates/movementSelection.js"></script>
+  <script src="/static/script.js"></script>
+  <script src="/static/movementSelection.js"></script>
 </body>
+
 </html>
