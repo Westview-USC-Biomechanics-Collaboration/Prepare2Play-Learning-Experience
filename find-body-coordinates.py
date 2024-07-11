@@ -113,3 +113,5 @@ wb.save("outputs/body_landmarks_from_video.xlsx")
 
 # Close all OpenCV windows.
 cv2.destroyAllWindows()
+
+

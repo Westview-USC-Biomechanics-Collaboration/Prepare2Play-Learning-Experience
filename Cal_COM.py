@@ -74,6 +74,6 @@ def calculateCOM(dataIn, sex):
 # test = data["nose_x"]
 # print(test)
 
-# list = calculateCOM("outputs/body_landmarks_from_video.xlsx", "m")
-# print("This is the final result")
-# print(list)
+list = calculateCOM("outputs/body_landmarks_from_video.xlsx", "m")
+print("This is the final result")
+print(list)
