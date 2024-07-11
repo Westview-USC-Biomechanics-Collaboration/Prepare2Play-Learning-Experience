@@ -9,7 +9,7 @@
     <div class="navbar">
         <div class="Main-Options">
           <div class="Home">
-            <a href="index.html">Home</a>
+            <a href="/templates/index.html">Home</a>
           </div>
           <div class="About-Us">
             <a href="#">About Us</a>
@@ -29,6 +29,16 @@
 
 <div class="MovementPage">
     <h1 id="sportTitle">Sports Movement Name</h1>
+    <script>
+      // Retrieve the movement name from localStorage
+      const movement = localStorage.getItem('selectedMovement');
+      console.log(movement);
+
+      // Check if movement exists and update the h1 text
+      if (movement) {
+          document.getElementById('sportTitle').textContent = movement;
+      }
+  </script>
     <div class = "FileUpload">
       <p> Upload your BOM video here!</p>
       <button id="uploadButton" type="button" onclick="document.getElementById('videoFile').click()">Upload File</button>

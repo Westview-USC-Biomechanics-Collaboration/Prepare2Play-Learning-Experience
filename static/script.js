@@ -29,6 +29,11 @@ function scrollToDiv(divId) {
           });
 });
 
+function debugging() {
+    movement = localStorage.getItem('selectedMovement');
+    console.log(movement);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     console.log("Document is ready");
 
@@ -87,6 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function selectMovement(movement) {
     localStorage.setItem('selectedMovement', movement);
+    console.log(localStorage.getItem('selectedMovement'));
     window.location.href = 'SportsTemplate.html'; // Redirect to SportsTemplate.html
 }
 
@@ -96,8 +102,6 @@ const uploadedVideo = document.getElementById('uploadedVideo');
 document.getElementById('videoContainer').style.display = 'block';
 
 videoFileInput.addEventListener('change', function() {
-    movement = localStorage.getItem('selectedMovement');
-    console.log(movement);
     const file = this.files[0];
     
 
@@ -119,3 +123,5 @@ function uploadAndProcessVideo(videoFile) {
         console.error('Error uploading video:', error);
     });
 }
+
+window.onload = debugging;
