@@ -5,21 +5,21 @@ import pandas as pd
 
 
 class VideoSync():
-    def __init__(self, videoPath, graphPath):
+    def __init__(self, videoPath, csvPath):
         self.videoPath = videoPath
-        self.graphPath = graphPath
+        self.csvPath = csvPath
 
-    def syncSave(self):
-        fp_detect = ForcePlateDetect(self.videoPath)  # 60.0 fps, frame 240
-        movementFrameNum, fps = fp_detect.detect((550, 750), (247, 97), False)
+    def syncSave(self) -> str: # camera is 240 fps #returns the path of the syncedVideo
+        fp_detect = ForcePlateDetect(self.videoPath)
+        movementFrameNum, fps = fp_detect.detect((550, 800), (247, 97), False)
         # runs the main detection loop to find the first frame when the force plate is triggered
 
         movementClip = VideoFileClip(self.videoPath)
 
-        df = pd.read_csv(self.graphPath)
+        df = pd.read_csv(self.csvPath)
 
-        forcey_subset = {"data": df.iloc[18:10000, 2].astype(float).tolist(), "name": "ForceY", "min": -15, "max": 15}
-        timex_subset = {"data": df.iloc[18:10000, 0].astype(float).tolist(), "name": "Time", "min": 0, "max": 3}
+        forcey_subset = {"data": df.iloc[18:, 2].astype(float).tolist(), "name": "ForceY"}
+        timex_subset = {"data": df.iloc[18:, 0].astype(float).tolist(), "name": "Time"}
 
         saveAs = "syncing/results/graph.mp4"
         g = Graph(timex_subset, forcey_subset)
@@ -35,10 +35,18 @@ class VideoSync():
         finalizedGraphClip = concatenate_videoclips([blankFrame, graphClip])
         clips = [movementClip], [finalizedGraphClip]
 
+        saveLocation = "static/syncedVideo/syncedVideo.mp4"
         final = clips_array(clips)
-        final.write_videofile("syncing/results/syncedVideo.mp4", fps=fps)
+        final.write_videofile(saveLocation, fps=fps)
 
+        return saveLocation
 
-sync = VideoSync("data/5.5min_120Hz_SSRun_Fa19_OL_skele.mp4", "data/SM_SbS_02_Raw_Data - SM_SoftballSwing_Trial2_Raw_Data.csv")
-sync.syncSave()
+videoPath = "data/NS_SPU_01.mov"
+csvPath = "data/NS_SPU_01_Raw_Data - NS_SurfPopUp_Trial1_Raw_Data.csv"
+
+sync = VideoSync(videoPath, csvPath)
+videoPath = sync.syncSave()
 print("Video Generated!")
+
+# videoPath = videoPath.lstrip("../static/")
+
