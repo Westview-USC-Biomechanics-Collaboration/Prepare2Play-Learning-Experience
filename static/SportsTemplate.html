@@ -6,8 +6,6 @@
     <link rel="stylesheet" href="/static/styleSportsTemplate.css">
 </head>
 <body>
-
-
     <div class="navbar">
         <div class="Main-Options">
           <div class="Home">
@@ -22,7 +20,7 @@
             <i class="fa fa-caret-down"></i>
           </button>
           <div class="dropdown-content">
-            <a href="SportsTemplate.html">Sports Template</a>
+            <a href="/static/SportsTemplate.html">Sports Template</a>
             <a>Basketball</a>
             <a href="#">Tennis</a>
           </div>
@@ -56,36 +54,7 @@
     </div>
 </div>
 
-<script>
-  const videoFileInput = document.getElementById('videoFile');
-  const uploadedVideo = document.getElementById('uploadedVideo');
-  
-  document.getElementById('videoContainer').style.display = 'block';
-
-  videoFileInput.addEventListener('change', function() {
-      const file = this.files[0];
-      
-
-      const fileURL = URL.createObjectURL(file);
-      uploadedVideo.src = fileURL;
-      
-
-      uploadAndProcessVideo(file);
-  });
-  
-  function uploadAndProcessVideo(videoFile) {
-
-      fetch('/process_video', {
-          method: 'POST',
-          body: videoFile
-      }).then(response => {
-
-      }).catch(error => {
-          console.error('Error uploading video:', error);
-      });
-  }
-
-</script>
-<script src="/templates/movementSelection.js"></script>
+<script src="/static/script.js"> </script>
+<!-- <script src="/templates/movementSelection.js"></script> -->
 </body>
 </html>

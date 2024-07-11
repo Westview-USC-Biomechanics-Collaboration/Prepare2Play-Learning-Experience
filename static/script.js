@@ -85,3 +85,37 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 });
 
+function selectMovement(movement) {
+    localStorage.setItem('selectedMovement', movement);
+    window.location.href = 'SportsTemplate.html'; // Redirect to SportsTemplate.html
+}
+
+const videoFileInput = document.getElementById('videoFile');
+const uploadedVideo = document.getElementById('uploadedVideo');
+
+document.getElementById('videoContainer').style.display = 'block';
+
+videoFileInput.addEventListener('change', function() {
+    movement = localStorage.getItem('selectedMovement');
+    console.log(movement);
+    const file = this.files[0];
+    
+
+    const fileURL = URL.createObjectURL(file);
+    uploadedVideo.src = fileURL;
+    
+
+    uploadAndProcessVideo(file);
+});
+
+function uploadAndProcessVideo(videoFile) {
+
+    fetch('/process_video', {
+        method: 'POST',
+        body: videoFile
+    }).then(response => {
+
+    }).catch(error => {
+        console.error('Error uploading video:', error);
+    });
+}
