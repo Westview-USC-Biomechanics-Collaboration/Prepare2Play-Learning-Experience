@@ -88,18 +88,17 @@ p {
 
 .dropdown-content {
   display: none;
-  position: fixed;
-  background-color: #f9f9f9; 
+  position: absolute;
+  background-color: #f9f9f9;
   min-width: 160px;
-  box-shadow: none; 
-  z-index: 3;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1;
   padding: 10px;
   border-radius: 10px;
   transition: background-color 0.3s, color 0.3s;
 }
 
 .dropdown-content a {
-  float: none;
   color: black;
   padding: 12px 16px;
   text-decoration: none;
@@ -117,6 +116,7 @@ p {
 .dropdown:hover .dropdown-content {
   display: block;
 }
+
 .sports-organization {
   margin-top: 220px;
   background-color: #f9f9f9;
@@ -202,6 +202,16 @@ h4 {
   border-radius: 10px;
   box-shadow: 6px 6px 10px -1px rgba(0,0,0,0.15), -6px -6px 10px -1px rgba(255,255,255,0.7);
 }
+.accordion-content > li {
+  background-color: rgba(25, 30, 180, 0.5);
+  color: white;
+  list-style: none;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 6px 6px 10px -1px rgba(0,0,0,0.15), -6px -6px 10px -1px rgba(255,255,255,0.7);
+}
 
 .accordion li label {
   display: flex;
@@ -210,17 +220,6 @@ h4 {
   font-size: 24px;
   font-weight: 500;
   cursor: pointer;
-}
-
-.sportsOptions span {
-  content: "+";
-  margin-right: 10px;
-  font-size: 24px;
-  font-weight: 600;
-}
-
-input[type="radio"] {
-  display: none;
 }
 
 .accordion .content {
@@ -241,6 +240,17 @@ input[type="radio"] {
 
 .accordion>li.active {
   background-color: rgba(25, 30, 180, 0.65);
+}
+
+.sportsOptions span {
+  content: "+";
+  margin-right: 10px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+input[type="radio"] {
+  display: none;
 }
 
 .nested-dropdown {
@@ -325,4 +335,59 @@ input[type="radio"] {
   color: #000;
   text-decoration: none;
   cursor: pointer;
+}
+.MovementPage {
+  padding: 2vw;
+  align-items: center;
+  text-align: center;
+}
+
+.MovementPage > h1 {
+  color: white;
+}
+
+.FileUpload video {
+  background-color: #ddd;
+  padding: 20px;
+  border-radius: 20px;
+  align-content: center;
+  height: 325px;
+}
+
+.Results {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  font-weight: 500;
+}
+
+.Results > div {
+flex: 1;
+margin: 0 10px;
+padding: 2vw;
+background-color: #f0f0f0;
+text-align: center;
+box-sizing: border-box;
+border-radius: 20px;
+}
+
+#uploadButton {
+background-color: rgba(25, 30, 180, 0.5);
+color: white;
+border: none;
+padding: 15px 30px;
+cursor: pointer;
+font-size: 14px;
+border-radius: 40px;
+font-weight: bold;
+transition: background-color 0.3s, color 0.3s;
+}
+
+.videoContaining {
+margin-top: 20px;
+}
+
+#uploadButton:hover {
+
+background-color: rgba(16, 20, 121, 0.5);
 }

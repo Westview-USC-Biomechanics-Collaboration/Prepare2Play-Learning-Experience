@@ -125,3 +125,26 @@ function uploadAndProcessVideo(videoFile) {
 }
 
 window.onload = debugging;
+
+function toggleAccordion(element) {
+    const item = element.parentElement;
+    const content = item.querySelector('.accordion-content');
+    
+    if (item.classList.contains('active')) {
+      item.classList.remove('active');
+      content.style.maxHeight = '0';
+    } else {
+      closeAllAccordions();
+      item.classList.add('active');
+      content.style.maxHeight = content.scrollHeight + 'px';
+    }
+  }
+  
+  function closeAllAccordions() {
+    const items = document.querySelectorAll('.accordion-item');
+    items.forEach(item => {
+      item.classList.remove('active');
+      const content = item.querySelector('.accordion-content');
+      content.style.maxHeight = '0';
+    });
+  }

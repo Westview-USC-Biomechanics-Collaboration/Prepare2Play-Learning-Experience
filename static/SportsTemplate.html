@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/styleSportsTemplate.css">
+    <link rel="stylesheet" href="/static/styleindex.css">
 </head>
 <body>
     <div class="navbar">
@@ -11,18 +11,18 @@
           <div class="Home">
             <a href="/templates/index.html">Home</a>
           </div>
-          <div class="About-Us">
-            <a href="#">About Us</a>
+          <div class="About-Us" id="about-us-button">
+            About Us
           </div>
-        </div>
-        <div class="dropdown">
-          <button class="dropbtn">Sports 
-            <i class="fa fa-caret-down"></i>
-          </button>
-          <div class="dropdown-content">
-            <a href="/static/SportsTemplate.html">Sports Template</a>
-            <a>Basketball</a>
-            <a href="#">Tennis</a>
+          <div class="dropdown">
+            <button class="dropbtn">Sports 
+              <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-content">
+              <a href="/static/SportsTemplate.html">Sports Template</a>
+              <a>Basketball</a>
+              <a href="#">Tennis</a>
+            </div>
           </div>
         </div>
       </div>
@@ -51,16 +51,30 @@
         </video>
       </div>
     </div>
-    <div class="Results">
-      <div>
-        <p>Force Graph</p>
-      </div>
-      <div>
-        <p>Vector Overlay</p>
-      </div>
-      <div>
-        <p>Stats</p>
-      </div>
+    <div class="accordion">
+      <ul class="accordion-content">
+        <li>
+          <input type="radio" name="accordion" id="force-graph">
+          <label for="force-graph"><span>+</span>Force Graph</label>
+          <div class="content">
+            <p>Content for Force Graph...</p>
+          </div>
+        </li>
+        <li>
+          <input type="radio" name="accordion" id="vector-overlay">
+          <label for="vector-overlay"><span>+</span> Vector Overlay</label>
+          <div class="content">
+            <p>Content for Vector Overlay...</p>
+          </div>
+        </li>
+        <li>
+          <input type="radio" name="accordion" id="stats">
+          <label for="stats"><span>+</span> Stats</label>
+          <div class="content">
+            <p>Content for Stats...</p>
+          </div>
+        </li>
+      </ul>
     </div>
 </div>
 
