@@ -1,5 +1,5 @@
 # Inputs:
-#   datain is the path to the xlsx file fetch from the find-body-coordinates.py
+#   datain is a pandas series with proper index label
 #   sex has to be a string variable, either "m" or "f"
 #   author: Chase Chen
 #           chase001cz@gamail.com
@@ -16,7 +16,7 @@ def calculateCOM(dataIn, sex):
     import pandas as pd
     from segments import segments
     from segdim_deleva import segmentdim
-    data = pd.read_excel(dataIn)
+    data = dataIn
     reference = segmentdim(sex)
 
     headobject = segments("head",data, reference)
@@ -74,6 +74,6 @@ def calculateCOM(dataIn, sex):
 # test = data["nose_x"]
 # print(test)
 
-list = calculateCOM("outputs/body_landmarks_from_video.xlsx", "m")
-print("This is the final result")
-print(list)
+# list = calculateCOM("outputs/body_landmarks_from_video.xlsx", "m")
+# print("This is the final result")
+# print(list)
