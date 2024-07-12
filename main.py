@@ -12,7 +12,7 @@ def index():
 @app.route('/graph')
 def graph():
     # Load your CSV file
-    df = pd.read_csv('data/SM_SbS_02_Raw_Data - SM_SoftballSwing_Trial2_Raw_Data.csv')
+    df = pd.read_csv('data/bjs_lr_DE_for01_Raw_Data - bjs_lr_DE_for01_Raw_Data.csv')
 
     # Select subset of data for plotting
     timex_subset = df.iloc[18:10000, 0].astype(float).tolist()
