@@ -76,7 +76,7 @@
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.skeletonChaseVersion (1)">
+  <component name="RunManager" selected="Python.Skeletonoverlay">
     <configuration name="COM_humanbody" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -100,7 +100,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="GraphAnimationChaseVersion (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="Skeletonoverlay" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -113,8 +113,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/GraphAnimationChaseVersion.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Skeletonoverlay.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -194,11 +193,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.Skeletonoverlay" />
         <item itemvalue="Python.skeletonChaseVersion (1)" />
         <item itemvalue="Python.testing" />
         <item itemvalue="Python.COM_humanbody" />
         <item itemvalue="Python.segdim_deleva" />
-        <item itemvalue="Python.GraphAnimationChaseVersion (1)" />
       </list>
     </recent_temporary>
   </component>
