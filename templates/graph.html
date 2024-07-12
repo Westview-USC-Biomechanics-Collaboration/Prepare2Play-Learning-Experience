@@ -56,6 +56,9 @@
         var timex = JSON.parse('{{ timex | tojson | safe }}');
         var forcey = JSON.parse('{{ forcey | tojson | safe }}');
 
+        var playbackSpeed = 1;
+        var initialFrameRendered = false;
+
         var trace1 = {
             x: timex,
             y: forcex,
@@ -76,7 +79,7 @@
 
         var layout = {
             xaxis: {
-                range: [0, 3],
+                range: [0, 6],  // Adjusted x-axis range to go up to 6 seconds
                 title: 'Time (s.)'
             },
             yaxis: {
@@ -88,37 +91,42 @@
 
         Plotly.newPlot('plot', [trace1, trace2], layout);
 
-        // function updateValue(value) {
-        //     document.getElementById('value-container').innerHTML = '<b>Impulse:</b> ' + value + ' J';
-        // }
-
-        // document.getElementById('plot').on('plotly_click', function(data){
-        //     //var pointIndex = data.points[0].pointIndex;
-        //     //var value = timex[pointIndex];
-        //     var value = np.trapz(forcex, timex)
-        //     updateValue(value);
-        // });
-
         function goBack() {
             window.location.href = '/';
         }
 
         function animatePlot(videoTime) {
-            var frameIndex = findNearestFrameIndex(timex, videoTime);
+            var adjustedTime = videoTime / playbackSpeed;
+            var frameIndex = findNearestFrameIndex(timex, adjustedTime);
             var frames = [{
                 data: [{x: timex.slice(0, frameIndex+1), y: forcex.slice(0, frameIndex+1)},
                        {x: timex.slice(0, frameIndex+1), y: forcey.slice(0, frameIndex+1)}]
             }];
 
-            Plotly.animate('plot', frames, {
-                transition: {
-                    duration: 0
-                },
-                frame: {
-                    duration: 0,
-                    redraw: false
-                }
-            });
+            if (!initialFrameRendered) {
+                Plotly.animate('plot', frames, {
+                    transition: {
+                        duration: 0
+                    },
+                    frame: {
+                        duration: 0,  // No delay for the initial frame
+                        redraw: false
+                    }
+                });
+                initialFrameRendered = true;
+            } else {
+                setTimeout(function() {
+                    Plotly.animate('plot', frames, {
+                        transition: {
+                            duration: 0
+                        },
+                        frame: {
+                            duration: 1000,
+                            redraw: false
+                        }
+                    });
+                }, 0);
+            }
         }
 
         function findNearestFrameIndex(timeArray, videoTime) {
