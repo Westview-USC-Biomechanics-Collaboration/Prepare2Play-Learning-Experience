@@ -58,8 +58,8 @@
 
         var playbackSpeed = 1.2; // Slow down by 20%
         var initialFrameRendered = false;
-        var threshold = 4.5; // Force threshold to start plotting
-        var startIndex = 0; // Index to start plotting
+        var threshold = 4; // Force threshold to start plotting
+        var startIndex = threshold; // Index to start plotting
 
         // Find the index where forcex exceeds the threshold
         for (var i = 0; i < forcex.length; i++) {
@@ -92,7 +92,7 @@
                 title: 'Time (s.)'
             },
             yaxis: {
-                range: [-35, 35],  // Adjust y-axis range as needed
+                range: [-50, 50],  // Adjust y-axis range as needed
                 title: 'Force (N)'
             },
             title: 'Force vs. Time Graph'
@@ -137,7 +137,7 @@
                             redraw: false
                         }
                     });
-                }, 1000 / playbackSpeed); // Delay for initial frame
+                }); // Delay for initial frame
             }
         }
 
