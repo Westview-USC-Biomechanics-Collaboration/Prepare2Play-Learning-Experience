@@ -56,12 +56,22 @@
         var timex = JSON.parse('{{ timex | tojson | safe }}');
         var forcey = JSON.parse('{{ forcey | tojson | safe }}');
 
-        var playbackSpeed = 1;
+        var playbackSpeed = 1.2; // Slow down by 20%
         var initialFrameRendered = false;
+        var threshold = 4.5; // Force threshold to start plotting
+        var startIndex = 0; // Index to start plotting
+
+        // Find the index where forcex exceeds the threshold
+        for (var i = 0; i < forcex.length; i++) {
+            if (forcex[i] >= threshold) {
+                startIndex = i;
+                break;
+            }
+        }
 
         var trace1 = {
-            x: timex,
-            y: forcex,
+            x: timex.slice(startIndex),
+            y: forcex.slice(startIndex),
             mode: 'lines+markers',
             type: 'scatter',
             fill: 'tozeroy',
@@ -69,8 +79,8 @@
         };
 
         var trace2 = {
-            x: timex,
-            y: forcey,
+            x: timex.slice(startIndex),
+            y: forcey.slice(startIndex),
             mode: 'lines+markers',
             type: 'scatter',
             fill: 'tozeroy',
@@ -79,7 +89,6 @@
 
         var layout = {
             xaxis: {
-                range: [0, 6],  // Adjusted x-axis range to go up to 6 seconds
                 title: 'Time (s.)'
             },
             yaxis: {
@@ -97,10 +106,13 @@
 
         function animatePlot(videoTime) {
             var adjustedTime = videoTime / playbackSpeed;
-            var frameIndex = findNearestFrameIndex(timex, adjustedTime);
+            var frameIndex = findNearestFrameIndex(timex.slice(startIndex), adjustedTime) + startIndex;
+
             var frames = [{
-                data: [{x: timex.slice(0, frameIndex+1), y: forcex.slice(0, frameIndex+1)},
-                       {x: timex.slice(0, frameIndex+1), y: forcey.slice(0, frameIndex+1)}]
+                data: [
+                    { x: timex.slice(startIndex, frameIndex + 1), y: forcex.slice(startIndex, frameIndex + 1) },
+                    { x: timex.slice(startIndex, frameIndex + 1), y: forcey.slice(startIndex, frameIndex + 1) }
+                ]
             }];
 
             if (!initialFrameRendered) {
@@ -109,23 +121,23 @@
                         duration: 0
                     },
                     frame: {
-                        duration: 0,  // No delay for the initial frame
+                        duration: 0,
                         redraw: false
                     }
                 });
                 initialFrameRendered = true;
             } else {
-                setTimeout(function() {
+                setTimeout(function () {
                     Plotly.animate('plot', frames, {
                         transition: {
-                            duration: 0
+                            duration: 0, // No transition duration
                         },
                         frame: {
-                            duration: 1000,
+                            duration: 1000 / playbackSpeed, // Slow down the animation by 20%
                             redraw: false
                         }
                     });
-                }, 0);
+                }, 1000 / playbackSpeed); // Delay for initial frame
             }
         }
 
