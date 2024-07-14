@@ -11,7 +11,7 @@ print(output_name)
 # function
 
 def VectorOverlay(videopath, forcedata_path, filename):
-    forcedata = pd.read_excel(forcedata_path)
+    forcedata = pd.read_excel(forcedata_path, skiprows=19)
     cap = cv2.VideoCapture(videopath)
     if not cap.isOpened():
         print("Error: Could not open video.")
