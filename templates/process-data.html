@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Data</title>
+</head>
+<body>
+    <h1>Process Data</h1>
+    <form action="{{ url_for('process_data', video_filename=request.args.get('video_filename')) }}" method="post">
+        <button type="submit">Process Data</button>
+    </form>
+</body>
+</html>

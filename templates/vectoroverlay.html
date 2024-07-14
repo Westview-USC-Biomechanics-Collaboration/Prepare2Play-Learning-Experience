@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video with Vector Overlay</title>
+    <style>
+        #container {
+            position: relative;
+            width: 640px;
+            height: 480px;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #video {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload Video</h1>
+    <form action="{{ url_for('index') }}" method="post" enctype="multipart/form-data">
+        <input type="file" name="video" accept="video/*">
+        <button type="submit">Upload</button>
+    </form>
+
+    {% if video_filename %}
+    <div id="container">
+        <video id="video" width="640" height="480" controls>
+            <source src="{{ url_for('static', filename='uploads/' ~ video_filename) }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <canvas id="canvas" width="640" height="480"></canvas>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let data = {};
+
+        const dataUrl = "{{ url_for('static', filename='data.json') }}";
+
+        fetch(dataUrl)
+            .then(response => response.json())
+            .then(json => {
+                data = json;
+                console.log('Data loaded:', data);
+                video.addEventListener('play', draw);
+            });
+
+        function draw() {
+            if (video.paused || video.ended) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const timeIndex = Math.floor(video.currentTime * 30); // Assuming 30 FPS
+            if (timeIndex < data.x_coords.length) {
+                const x = data.x_coords[timeIndex];
+                const y = data.y_coords[timeIndex];
+                const forceX = data.force_x[timeIndex];
+                const forceY = data.force_y[timeIndex];
+
+                console.log(`Time index: ${timeIndex}, x: ${x}, y: ${y}, forceX: ${forceX}, forceY: ${forceY}`);
+
+                // Ensure coordinates are within canvas size
+                const canvasWidth = canvas.width;
+                const canvasHeight = canvas.height;
+                if (x >= 0 && x <= canvasWidth && y >= 0 && y <= canvasHeight) {
+                    // Scale the vectors for better visibility
+                    const scaleFactor = 0.1;
+
+                    // Draw the force vector
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + forceX * scaleFactor, y + forceY * scaleFactor);
+                    ctx.strokeStyle = 'red'; // Change color for visibility
+                    ctx.lineWidth = 2; // Increase line width for visibility
+                    ctx.stroke();
+
+                    // Draw arrowheads
+                    drawArrowhead(ctx, x, y, x + forceX * scaleFactor, y + forceY * scaleFactor);
+                } else {
+                    console.log(`Skipping out-of-bound coordinate: x=${x}, y=${y}`);
+                }
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        function drawArrowhead(context, fromX, fromY, toX, toY) {
+            const headLength = 10; // Length of arrowhead lines
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const angle = Math.atan2(dy, dx);
+            context.beginPath();
+            context.moveTo(toX, toY);
+            context.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+            context.moveTo(toX, toY);
+            context.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+            context.stroke();
+        }
+    </script>
+    {% endif %}
+</body>
+</html>
