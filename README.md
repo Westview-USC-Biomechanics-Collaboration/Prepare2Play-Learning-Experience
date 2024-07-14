@@ -12,20 +12,9 @@
 - Run `python3 main.py` to run the website 
 - Access the program at **https://localhost:5000** or **http://127.0.0.1:5000** (Depending on your machine) to test local changes
 
+## This is the vector overlay branch
 
-## Contributors:
-- James Guo
-- Rayyan Hussain
-- Ayaan Irshad
-- Christopher Yuan
-- Jessie Bao
-- Breanna Thayillam
-- Nishk Shah
+## Contributor:
 - Chase Chen
-- Imri Fernandes
-- Ross Brown
-- Deren Erdem
-
-##
-Link to .csv file: https://docs.google.com/spreadsheets/d/1qBQn315Ii5pMCvPHkIBUR8svjCHVcP9pMjqS9ZCz4Bk/edit?gid=2138994499#gid=2138994499
+- Ayaan Irshad
 
