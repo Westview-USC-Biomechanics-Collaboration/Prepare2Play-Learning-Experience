@@ -4,15 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="updated code">
-      <change afterPath="$PROJECT_DIR$/data/NS_SPU_01 copy.mov" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/NS_SPU_01_Raw_Data - NS_SurfPopUp_Trial1_Raw_Data copy.csv" afterDir="false" />
+    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="Updated frontend code from Aarav">
       <change afterPath="$PROJECT_DIR$/static/syncedVideo/syncedVideo.mp4" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/syncedVideoTEMP_MPY_wvf_snd.mp3" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syncing/plt_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/syncing/plt_graph.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/syncing/results/graph.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/syncing/results/graph.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/syncing/results/syncedVideo.mp4" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/syncing/sync.py" beforeDir="false" afterPath="$PROJECT_DIR$/syncing/sync.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -26,6 +22,9 @@
         <option value="Python Script" />
       </list>
     </option>
+  </component>
+  <component name="Git.Merge.Settings">
+    <option name="BRANCH" value="origin/Aarav-Frontend-backend" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -233,7 +232,8 @@
       <option name="presentableId" value="Default" />
       <updated>1719349570219</updated>
       <workItem from="1720564130692" duration="4681000" />
-      <workItem from="1720731662909" duration="4704000" />
+      <workItem from="1720731662909" duration="8099000" />
+      <workItem from="1720822742661" duration="1273000" />
     </task>
     <task id="LOCAL-00001" summary="python backend instead of javascript in html">
       <option name="closed" value="true" />
@@ -291,7 +291,15 @@
       <option name="project" value="LOCAL" />
       <updated>1720732281477</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Updated frontend code from Aarav">
+      <option name="closed" value="true" />
+      <created>1720736602480</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1720736602480</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -319,6 +327,7 @@
     <MESSAGE value="Slowed down graph to match video speed which is slowed by a factor of 1.9" />
     <MESSAGE value="Ready for web integration (sort of)" />
     <MESSAGE value="updated code" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated code" />
+    <MESSAGE value="Updated frontend code from Aarav" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated frontend code from Aarav" />
   </component>
 </project>

@@ -9,7 +9,7 @@ class Graph:
         self.y_subset = y_axis_subset
         self.fixTimeConstraints()
         self.fixHeightConstraints()
-        self.slowFactor = 1.9  # 1 is no slow
+        self.slowFactor = 2.5  # 1 is no slow
 
         self.targetFPS = 60 / self.slowFactor
         self.originalFPS = 2400
@@ -69,20 +69,21 @@ class Graph:
             plt.show()
 
     def getForcePlateTime(self) -> int:  # returns frame that the user steps on the forceplate
+        firstYval = self.y_subset['data'][0]
         for c, yVal in enumerate(self.y_subset['data']):
-            if yVal >= 15:
+            if yVal >= firstYval+15:
                 seconds = self.x_subset['data'][c] * self.targetFPS
                 return seconds*self.slowFactor
 
 
-# df = pd.read_csv("data/vst_lr_NN_for01_Raw_Data - vst_lr_NN_for01_Raw_Data.csv")
+# df = pd.read_csv("data/NS_SPU_01_Raw_Data - NS_SurfPopUp_Trial1_Raw_Data.csv")
 #
 # forcey_subset = {"data": df.iloc[18:, 2].astype(float).tolist(), "name": "ForceY"}
+# forcex_subset = {"data": df.iloc[18:, 1].astype(float).tolist(), "name": "ForceX"}
 # timex_subset = {"data": df.iloc[18:, 0].astype(float).tolist(), "name": "Time"}
 #
 # saveAs = "syncing/results/graph.mp4"
-
-# g = Graph(timex_subset, forcey_subset)
-# a = g.getForcePlateTime()
+#
+# g = Graph(forcex_subset, forcey_subset)
+# # a = g.getForcePlateTime()
 # g.graph()
-# g.animate_graph(True, saveAs)
