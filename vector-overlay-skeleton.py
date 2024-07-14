@@ -5,13 +5,13 @@ import pandas as pd
 # initialization
 topview = "data/gis_lr_CC_top_vid02.mp4"
 sideview = "data/gis_lr_CC_vid02.mp4"
-forcedata_path ="data/gis_lr_CC_for02_Raw_Data.xlsx"
+forcedata_path ="data/gis_lr_CC_for02_Raw_Data.csv"
 output_name = topview[5:-4] + "_vector_overlay"
 print(output_name)
 # function
 
 def VectorOverlay(videopath, forcedata_path, filename):
-    forcedata = pd.read_excel(forcedata_path)
+    forcedata = pd.read_csv(forcedata_path)
     cap = cv2.VideoCapture(videopath)
     if not cap.isOpened():
         print("Error: Could not open video.")
