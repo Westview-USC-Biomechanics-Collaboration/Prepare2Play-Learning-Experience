@@ -39,6 +39,14 @@ def VectorOverlay(videopath, forcedata_path, filename):
 
 
 
+    # Release video capture and writer objects
+    cap.release()
+    out.release()
+    cv2.destroyAllWindows()
+
+
+
+
 # call funciton
 VectorOverlay(topview, forcedata_path, output_name)
 
