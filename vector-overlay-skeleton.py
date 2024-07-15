@@ -1,6 +1,9 @@
 #Import libraries
 import cv2
 import pandas as pd
+# Where we import our python script
+import contact_point
+
 
 # initialization
 topview = "data/gis_lr_CC_top_vid02.mp4"
@@ -31,6 +34,11 @@ def VectorOverlay(videopath, forcedata_path, filename):
         if not ret:
             print("Can't find frame")
             break
+        # Where our code start
+
+
+
+
 
 
 

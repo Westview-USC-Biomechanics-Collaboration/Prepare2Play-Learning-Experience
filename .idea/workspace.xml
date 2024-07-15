@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="python backend instead of javascript in html">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/contact-point.py" beforeDir="false" afterPath="$PROJECT_DIR$/contact-point.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/contact-point.py" beforeDir="false" afterPath="$PROJECT_DIR$/contact_point.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector-overlay-skeleton.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -81,7 +81,7 @@
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.contact-point">
+  <component name="RunManager" selected="Python.vector-overlay-skeleton">
     <configuration name="Skeletonoverlay" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -104,7 +104,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="contact-point" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="contact_point" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -117,7 +117,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/contact-point.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\contact_point.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -196,8 +196,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.contact-point" />
         <item itemvalue="Python.vector-overlay-skeleton" />
+        <item itemvalue="Python.contact_point" />
         <item itemvalue="Python.Skeletonoverlay" />
         <item itemvalue="Python.skeletonChaseVersion (1)" />
         <item itemvalue="Python.testing" />

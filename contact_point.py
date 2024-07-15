@@ -7,6 +7,7 @@
 #   forceplate location: a list containing two lists
 #
 # Outputs:
+#   To Be Determined
 #   contact point location: a list with 2 lists inside
 #   force vector endpoint: a list with 2 lists inside
 #
@@ -37,13 +38,15 @@ def find_contact_top(locationin, forcedata):
     x_diff = float(force_plate["plate2"].iloc[0][0]) - float(force_plate["plate1"].iloc[0][0])
     y_diff = float(force_plate["plate2"].iloc[0][1]) - float(force_plate["plate1"].iloc[0][1])
 
+    meter_pixel_ratio = 1
+
     # forceplate 1 coords remember to convert meters to pixels
-    a1_coords = float(forcedata.iloc[5])
-    b1_coords = float(forcedata.iloc[6])
+    a1_coords = float(forcedata.iloc[5]) * meter_pixel_ratio
+    b1_coords = float(forcedata.iloc[6]) * meter_pixel_ratio
 
     # forceplate 2 coords
-    a2_coords = float(forcedata.iloc[14])
-    b2_coords = float(forcedata.iloc[15])
+    a2_coords = float(forcedata.iloc[14]) * meter_pixel_ratio
+    b2_coords = float(forcedata.iloc[15]) * meter_pixel_ratio
 
     # Calculate angles
     angle_delta = math.atan(y_diff / x_diff)
@@ -110,7 +113,7 @@ def find_contact_top(locationin, forcedata):
     endpoint2 = find_deltaxy(vector2_angle, HYPOTENUSE4) + force_plate["plate1"]
 
     # Decide return format
-    return  
+    return
 
 
 
