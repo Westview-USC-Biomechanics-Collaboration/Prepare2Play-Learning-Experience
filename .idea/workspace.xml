@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="python backend instead of javascript in html">
+`    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="I refactored the code in vector-overlay-skeleton.py.Ready for me to add the corner detection. The videos we are testing with aren't working but everything else is though.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Skeletonoverlay.py" beforeDir="false" afterPath="$PROJECT_DIR$/Skeletonoverlay.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/outputs/output_skeleton.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/outputs/output_skeleton.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates~Stashed changes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector-overlay/vector-overlay-skeleton.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector-overlay/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector-overlay/vector-overlay-skeleton.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,8 +66,12 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;vector-overlay&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/16199/Documents/GitHub/Prepare2Play-Learning-Experience-3&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -213,7 +215,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-5b207ade9991-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.17890.14" />
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.17890.14" />
+        <option value="bundled-python-sdk-5b207ade9991-7e9c3bbb6e34-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.17890.14" />
       </set>
     </attachedChunks>
   </component>
@@ -225,6 +228,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1719349570219</updated>
+      <workItem from="1721001202031" duration="1388000" />
+      <workItem from="1721059990104" duration="969000" />
     </task>
     <task id="LOCAL-00001" summary="python backend instead of javascript in html">
       <option name="closed" value="true" />
@@ -242,8 +247,19 @@
       <option name="project" value="LOCAL" />
       <updated>1719440650505</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="I refactored the code in vector-overlay-skeleton.py.Ready for me to add the corner detection. The videos we are testing with aren't working but everything else is though.">
+      <option name="closed" value="true" />
+      <created>1721001568782</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1721001568782</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
@@ -251,6 +267,7 @@
       <path value="$PROJECT_DIR$/USClabcodes" />
     </ignored-roots>
     <MESSAGE value="python backend instead of javascript in html" />
-    <option name="LAST_COMMIT_MESSAGE" value="python backend instead of javascript in html" />
+    <MESSAGE value="I refactored the code in vector-overlay-skeleton.py.Ready for me to add the corner detection. The videos we are testing with aren't working but everything else is though." />
+    <option name="LAST_COMMIT_MESSAGE" value="I refactored the code in vector-overlay-skeleton.py.Ready for me to add the corner detection. The videos we are testing with aren't working but everything else is though." />
   </component>
 </project>
