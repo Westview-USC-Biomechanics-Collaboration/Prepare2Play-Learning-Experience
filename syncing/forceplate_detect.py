@@ -75,8 +75,7 @@ class ForcePlateDetect:
             if showView:
                 bounding = self.CreateBoundingBox()
                 cv.imshow("Stream", bounding)
-
-            if diff > 1000:  # 100 is shadow, 1000 is foot
+            if diff > 900:  # 100 is shadow, 1000 is foot
                 break
 
             print(f"Checked Frame {frameCount}")
@@ -88,3 +87,7 @@ class ForcePlateDetect:
         self.cam.release()
         cv.destroyAllWindows()
         return frameCount, fps
+
+
+# f = ForcePlateDetect("data/vst_lr_NN_vid01.mov")
+# f.detect((950, 950), (437, 70), True)
