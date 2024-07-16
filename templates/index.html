@@ -10,7 +10,7 @@
 <div class="navbar">
   <div class="Main-Options">
     <div class="Home">
-      <a href="index.html">Home</a>
+      <a href="/">Home</a>
     </div>
     <div class="About-Us">
       <a href="#">About Us</a>
@@ -29,8 +29,8 @@
     <h4>Select Your Sport</h4>
     <div class="sportsOptions">
       <ul class="accordion"> 
-        <li>
-          <input type="radio" name="accordion" id="basketball">
+        <li id="basketball">
+          <input type="radio" name="accordion">
           <label for="basketball"><span>+</span>Basketball</label>
           <div class="content">
             <ul class="nested-dropdown">
@@ -145,43 +145,10 @@
     </div>
 </div>
 
-<script>
-  /*function scrollToDiv(divId) {
-      var element = document.getElementById(divId);
-      element.scrollIntoView({ behavior: 'smooth' });
-  }
-  
-  function selectMovement(movement) {
-    localStorage.setItem('selectedMovement', movement);
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-          const accordions = document.querySelectorAll('.accordion li label');
-          accordions.forEach(label => {
-              label.addEventListener('click', function () {
-                  const content = this.nextElementSibling;
-                  const expanded = this.getAttribute('aria-expanded') === 'true';
-
-                  if (expanded) {
-                      content.style.maxHeight = null;
-                      content.style.padding = '0 10px';
-                      this.setAttribute('aria-expanded', 'false');
-                      this.querySelector('span').textContent = '+';
-                  } else {
-                      content.style.maxHeight = content.scrollHeight + 'px';
-                      content.style.padding = '10px 10px 20px';
-                      this.setAttribute('aria-expanded', 'true');
-                      this.querySelector('span').textContent = '-';
-                  }
-              });
-          });
-});*/
-</script>
-
 <hr>
 <footer><p>Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer 
 
 </p></footer>
-<script src="/templates/movementSelection.js"></script>
+<script src="/static/movementSelection.js"></script>
 </body>
 </html>

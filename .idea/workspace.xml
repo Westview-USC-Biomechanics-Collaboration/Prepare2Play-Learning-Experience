@@ -5,7 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="python backend instead of javascript in html">
-      <change beforePath="$PROJECT_DIR$/syncing/plt_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/syncing/plt_graph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cal_COM.py" beforeDir="false" afterPath="$PROJECT_DIR$/Cal_COM.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/outputs/output_skeleton.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/outputs/output_skeleton.mp4" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,26 +47,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;Python.COM_humanbody.executor&quot;: &quot;Run&quot;,
-    &quot;Python.ForceTimeGraphs.executor&quot;: &quot;Run&quot;,
-    &quot;Python.GraphAnimationChaseVersion (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.animations.executor&quot;: &quot;Run&quot;,
-    &quot;Python.colorMask.executor&quot;: &quot;Run&quot;,
-    &quot;Python.filled-animation-graph.executor&quot;: &quot;Run&quot;,
-    &quot;Python.segdim_deleva.executor&quot;: &quot;Run&quot;,
-    &quot;Python.skeletonChaseVersion (1).executor&quot;: &quot;Run&quot;,
-    &quot;Python.testing.executor&quot;: &quot;Run&quot;,
-    &quot;Python.testinganimation.executor&quot;: &quot;Run&quot;,
-    &quot;Python.testingfile.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;chase-backend&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/16199/Documents/GitHub/Prepare2Play-Learning-Experience-3&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python.COM_humanbody.executor": "Run",
+    "Python.ForceTimeGraphs.executor": "Run",
+    "Python.GraphAnimationChaseVersion (1).executor": "Run",
+    "Python.Skeletonoverlay.executor": "Run",
+    "Python.animations.executor": "Run",
+    "Python.colorMask.executor": "Run",
+    "Python.filled-animation-graph.executor": "Run",
+    "Python.segdim_deleva.executor": "Run",
+    "Python.skeletonChaseVersion (1).executor": "Run",
+    "Python.testing.executor": "Run",
+    "Python.testinganimation.executor": "Run",
+    "Python.testingfile.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "#55 on chase-backend",
+    "last_opened_file_path": "C:/Users/16199/Documents/GitHub/Prepare2Play-Learning-Experience-3",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
@@ -76,7 +79,7 @@
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.skeletonChaseVersion (1)">
+  <component name="RunManager" selected="Python.Skeletonoverlay">
     <configuration name="COM_humanbody" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -100,7 +103,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="GraphAnimationChaseVersion (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="Skeletonoverlay" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -113,8 +116,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/GraphAnimationChaseVersion.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Skeletonoverlay.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -194,11 +196,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.Skeletonoverlay" />
         <item itemvalue="Python.skeletonChaseVersion (1)" />
         <item itemvalue="Python.testing" />
         <item itemvalue="Python.COM_humanbody" />
         <item itemvalue="Python.segdim_deleva" />
-        <item itemvalue="Python.GraphAnimationChaseVersion (1)" />
       </list>
     </recent_temporary>
   </component>
