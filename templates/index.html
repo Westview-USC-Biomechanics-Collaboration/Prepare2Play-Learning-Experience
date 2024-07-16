@@ -12,8 +12,16 @@
     <div class="Home">
       <a href="/">Home</a>
     </div>
-    <div class="About-Us">
-      <a href="#">About Us</a>
+    <div class="Home">
+      <a href="#" id="about-us-link">About Us</a>
+    </div>
+
+    <!-- About Us Popup -->
+    <div id="about-us-popup" class="popup">
+        <div class="popup-content">
+            <span class="close-btn">&times;</span>
+            <iframe src="{{ url_for('about') }}" frameborder="0"></iframe>
+        </div>
     </div>
   </div>
 </div>
@@ -150,5 +158,6 @@
 
 </p></footer>
 <script src="/static/movementSelection.js"></script>
+<!-- <script src="/static/script.js"></script> -->
 </body>
 </html>

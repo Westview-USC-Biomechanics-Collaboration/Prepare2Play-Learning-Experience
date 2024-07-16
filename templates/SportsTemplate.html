@@ -4,22 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/styleindex.css">
+    <link rel="stylesheet" href="/static/styleSportsTemplate.css">
 </head>
 <body>
     <div class="navbar">
         <div class="Main-Options">
           <div class="Home">
-            <a href="/templates/index.html">Home</a>
+            <a href="/">Home</a>
           </div>
-          <div class="About-Us" id="about-us-button">
-            About Us
+          <div class="Home">
+            <a href="#" id="about-us-link">About Us</a>
           </div>
+      
+          <!-- About Us Popup -->
+          <div id="about-us-popup" class="popup">
+              <div class="popup-content">
+                  <span class="close-btn">&times;</span>
+                  <iframe src="{{ url_for('about') }}" frameborder="0"></iframe>
+              </div>
+          </div>
+          <script>
+            document.getElementById('about-us-link').addEventListener('click', function(event) {
+                event.preventDefault();
+                document.getElementById('about-us-popup').style.display = 'block';
+            });
+    
+            document.querySelector('.close-btn').addEventListener('click', function() {
+                document.getElementById('about-us-popup').style.display = 'none';
+            });
+    
+            window.addEventListener('click', function(event) {
+                if (event.target === document.getElementById('about-us-popup')) {
+                    document.getElementById('about-us-popup').style.display = 'none';
+                }
+            });
+        </script>
           <div class="dropdown">
             <button class="dropbtn">Sports 
               <i class="fa fa-caret-down"></i>
             </button>
             <div class="dropdown-content">
-              <a href="/static/SportsTemplate.html">Sports Template</a>
+              <a href="SportsTemplate.html">Sports Template</a>
               <a>Basketball</a>
               <a href="#">Tennis</a>
             </div>
