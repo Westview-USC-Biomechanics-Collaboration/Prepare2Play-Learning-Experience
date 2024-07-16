@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import cv2
 import mediapipe as mp
 import numpy as np
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -18,12 +19,15 @@ def upload_video():
     if file.filename == '':
         return jsonify({'error': 'No selected file'})
 
-    # Save uploaded file temporarily
+    # Saves the file 
     video_path = 'static/uploaded_video.mp4'
     file.save(video_path)
 
     # Process video and extract angle data using MediaPipe
     angle_data, times = calculate_angle(video_path)
+
+    # Saves data to CSV file
+    save_to_csv(angle_data, times)
 
     return jsonify({'angle_data': angle_data, 'times': times, 'video_path': video_path})
 
@@ -51,7 +55,7 @@ def calculate_angle(video_path):
 
         # Calculate angle between shoulder and trunk
         if results.pose_landmarks:
-            # Assuming landmark indices based on Mediapipe Pose
+            # Using Mediapipe
             left_shoulder = results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_SHOULDER]
             right_shoulder = results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_SHOULDER]
             left_hip = results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_HIP]
@@ -60,7 +64,7 @@ def calculate_angle(video_path):
             shoulder_vector = np.array([left_shoulder.x - right_shoulder.x, left_shoulder.y - right_shoulder.y])
             hip_vector = np.array([left_hip.x - right_hip.x, left_hip.y - right_hip.y])
 
-            # Calculate angle using dot product and arccos
+            # Calculate angle in rad then degrees
             angle_rad = np.arccos(np.dot(shoulder_vector, hip_vector) / (np.linalg.norm(shoulder_vector) * np.linalg.norm(hip_vector)))
             angle_deg = np.degrees(angle_rad)
             angles.append(angle_deg)
@@ -71,6 +75,11 @@ def calculate_angle(video_path):
     cap.release()
 
     return angles, times
+
+def save_to_csv(angles, times):
+    data = {'Time': times, 'Angle': angles}
+    df = pd.DataFrame(data)
+    df.to_csv('static/angle_data.csv', index=False)
 
 if __name__ == '__main__':
     app.run(debug=True)
