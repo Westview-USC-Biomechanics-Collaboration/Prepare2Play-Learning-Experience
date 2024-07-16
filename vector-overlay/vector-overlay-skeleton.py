@@ -39,8 +39,8 @@ class VectorOverlay:
 
     def readData(self):
         df = pd.read_excel(self.data_path)
-        self.x_forces = df.iloc[18:10000, 1].astype(float).tolist()
-        self.y_forces = df.iloc[18:10000, 2].astype(float).tolist()
+        self.x_forces = df.iloc[18:18193, 1].astype(float).tolist()
+        self.y_forces = df.iloc[18:18192, 2].astype(float).tolist()
         print(f"Data read successfully from {self.data_path}")
         print(f"Number of frames of force data: {len(self.x_forces)}")
 
