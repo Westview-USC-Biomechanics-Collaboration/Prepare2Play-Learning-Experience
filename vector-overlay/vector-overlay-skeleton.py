@@ -6,7 +6,7 @@ import openpyxl
 # Initialization
 top_view = "data/gis_lr_CC_top_vid03.mp4"
 side_view = "data/bcp_lr_CC_vid02.mp4"
-forcedata_path = "data\gis_lr_CC_for02_Raw_Data.xlsx"
+forcedata_path = "data/gis_lr_CC_for02_Raw_Data.xlsx"
 output_name = top_view[5:-4] + "_vector_overlay.mp4"
 
 
@@ -44,6 +44,16 @@ class VectorOverlay:
         print(f"Data read successfully from {self.data_path}")
         print(f"Number of frames of force data: {len(self.x_forces)}")
 
+    def drawArrow(self, frameNum, frame):
+        x_force = self.x_forces[frameNum]
+        y_force = self.y_forces[frameNum]
+
+        start_point = (self.frame_width // 2, self.frame_height // 2)
+
+        end_point = (start_point[0] + int(x_force), start_point[1] + int(y_force))
+
+        cv.arrowedLine(frame, start_point, end_point, (0, 255, 0), 2)
+
     def createVectorOverlay(self, outputName):
         self.setFrameData()
         self.readData()
@@ -60,29 +70,24 @@ class VectorOverlay:
                              (self.frame_width, self.frame_height))
 
         cap = cv.VideoCapture(self.side_view_path)
-        frame_number = 0
+        frame_number = 1
+        forceDataLength = len(self.x_forces)
+        speedMult = round(forceDataLength/self.frame_count)
+
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
+                # if this calls when the frame_number is equal to the total frame count then the stream has just ended
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            if frame_number < len(self.x_forces):
-                x_force = self.x_forces[frame_number]
-                y_force = self.y_forces[frame_number]
-
-                start_point = (self.frame_width // 2, self.frame_height // 2)
-
-                end_point = (start_point[0] + int(x_force), start_point[1] + int(y_force))
-
-                cv.arrowedLine(frame, start_point, end_point, (0, 255, 0), 2)
-
-            out.write(frame)
+            self.drawArrow(frame_number * speedMult, frame)
             frame_number += 1
+            out.write(frame)
 
         cap.release()
         out.release()
-        print("Finished processing video")
+        print(f"Finished processing video; Total Frames: {frame_number}")
 
     def findCorners(self):
         cap = cv.VideoCapture(self.side_view_path)
