@@ -79,7 +79,7 @@ def calculate_angle(video_path):
 def save_to_csv(angles, times):
     data = {'Time': times, 'Angle': angles}
     df = pd.DataFrame(data)
-    df.to_csv('static/angle_data.csv', index=False)
+    df.to_csv('data/angle_data.csv', index=False)
 
 if __name__ == '__main__':
     app.run(debug=True)
