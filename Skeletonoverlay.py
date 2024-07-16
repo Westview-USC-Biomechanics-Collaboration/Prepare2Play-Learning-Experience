@@ -1,29 +1,11 @@
-#
-# Script: displayskeleton
-#       Add visual representation of joints and center of mass of human body
-# Modules:
-#   find_coordinates(video_path,sex):
-#       input:
-#           video path from content root
-#           sex is a string either be "m" or "f"
-#           displayname is a boolean variable, if True, the name of the joint will be displayed
-#           filename is the output file name
-#           confidencelevel is the accuracy of the model. Higher is better, but also slower, default is 0.85
-#       output:
-#           MP4 file outputs/output_skeleton.mp4
-#
-# Author:
-#   Chase Chen
-#   chase001cz@gmail.com
-#
-
 import cv2
 import mediapipe as mp
 import numpy as np
 import pandas as pd
 from Cal_COM import calculateCOM
-def find_coordinates(video_path,sex, filename, confidencelevel = 0.85, displayname = False):
 
+
+def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displayname=False):
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=confidencelevel, model_complexity=2)
 
@@ -39,8 +21,7 @@ def find_coordinates(video_path,sex, filename, confidencelevel = 0.85, displayna
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     # Define the codec and create VideoWriter object to save the annotated video
-    out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*'mp4v'), fps,
-                          (frame_width, frame_height))
+    out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -49,12 +30,10 @@ def find_coordinates(video_path,sex, filename, confidencelevel = 0.85, displayna
 
         # Process the frame to find pose landmarks
         results = pose.process(frame)
-        pose_landmarks_list = [results.pose_landmarks]
-
-        # print(pose_landmarks_list)
+        pose_landmarks_list = [results.pose_landmarks] if results.pose_landmarks else []
 
         # Draw landmarks on the frame
-        annotated_frame = draw_landmarks_on_image(np.copy(frame), pose_landmarks_list,sex, displayname)
+        annotated_frame = draw_landmarks_on_image(np.copy(frame), pose_landmarks_list, sex, displayname)
 
         # Write the annotated frame to the output video file
         out.write(annotated_frame)
@@ -68,8 +47,9 @@ def find_coordinates(video_path,sex, filename, confidencelevel = 0.85, displayna
     cap.release()
     out.release()
     cv2.destroyAllWindows()
-def draw_landmarks_on_image(annotated_image, pose_landmarks_list,sex,displayname = False):
 
+
+def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayname=False):
     pose_landmark_names = {
         0: "nose",
         1: "left_eye_inner",
@@ -110,8 +90,10 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list,sex,displayname
     pose_connections = mp.solutions.pose.POSE_CONNECTIONS
 
     for idx in range(len(pose_landmarks_list)):
-
         pose_landmarks = pose_landmarks_list[idx]
+        if not pose_landmarks:
+            continue
+
         data = []
         # Draw circles at each landmark position
         for id, landmark in enumerate(pose_landmarks.landmark):
@@ -119,31 +101,30 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list,sex,displayname
 
             # Only draw visible landmarks
             if landmark.visibility > 0:
-                h, w, c = annotated_image.shape
+                h, w, _ = annotated_image.shape
                 cx, cy = int(landmark.x * w), int(landmark.y * h)
                 data.append(cx)
                 data.append(cy)
                 # Draw landmark as a circle
-                cv2.circle(annotated_image, (cx, cy), 5, (0, 255, 0),-1)
+                cv2.circle(annotated_image, (cx, cy), 5, (0, 255, 0), -1)
 
                 # optional: Put text next to the joint
                 if displayname:
                     cv2.putText(annotated_image, landmark_name, (cx + 5, cy + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-                            (255, 255, 255), 1, cv2.LINE_AA)
+                                (255, 255, 255), 1, cv2.LINE_AA)
 
         # Get index label
-        # print(data)
         columns_name = []
-        for i in range (len(pose_landmark_names)):
-            columns_name.append(str(pose_landmark_names[i])+"_x")
+        for i in range(len(pose_landmark_names)):
+            columns_name.append(str(pose_landmark_names[i]) + "_x")
             columns_name.append(str(pose_landmark_names[i]) + "_y")
 
-        datain = pd.Series(data, index = columns_name, name = "Datain Series")
+        datain = pd.Series(data, index=columns_name, name="Datain Series")
 
         # Find COM
         dataout = calculateCOM(datain, sex)
-        # print(dataout)
-        cv2.circle(annotated_image, (int(dataout[0]), int(dataout[1])), 7, (0, 0, 255),-1)
+        cv2.circle(annotated_image, (int(dataout[0]), int(dataout[1])), 7, (0, 0, 255), -1)
+
         # Draw lines connecting landmarks
         for connection in pose_connections:
             start_landmark = pose_landmarks.landmark[connection[0]]
@@ -155,15 +136,12 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list,sex,displayname
                 end_x, end_y = int(end_landmark.x * w), int(end_landmark.y * h)
 
                 # Draw the line between the two landmarks
-                cv2.line(annotated_image, (start_x, start_y), (end_x, end_y), (255, 255, 255),
-                         2)
+                cv2.line(annotated_image, (start_x, start_y), (end_x, end_y), (255, 255, 255), 2)
 
     return annotated_image
+
+
 # Example usage:
-video_path = 'data/derenBasketballTest1.mp4'  # Replace with your input video file path
-filename = "outputs/output_skeleton.mp4"
-find_coordinates(video_path,"m",filename=filename)
-
-
-
-
+video_path = 'data/bcp_lr_CC_vid02.mp4'  # Replace with your input video file path
+filename = "outputs/output_skeleton_Chase.mp4"
+find_coordinates(video_path, "m", filename=filename)
