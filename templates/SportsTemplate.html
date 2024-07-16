@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleSportsTemplate.css') }}">
+    <title>Sports Template</title>
+</head>
+
+<body>
+    <div class="navbar">
+        <div class="Main-Options">
+            <div class="Home">
+                <a href="{{ url_for('index') }}">Home</a>
+            </div>
+            <div class="About-Us">
+                <a href="#">About Us</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropbtn">Sports
+                <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-content">
+                <a href="{{ url_for('sports_template') }}">Sports Template</a>
+                <a href="#">Basketball</a>
+                <a href="#">Tennis</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="MovementPage">
+        <h1 id="sportTitle">Sports Movement Name</h1>
+        <script>
+            const movement = localStorage.getItem('selectedMovement');
+            console.log(movement);
+
+            if (movement) {
+                document.getElementById('sportTitle').textContent = movement;
+            }
+        </script>
+        <div class="FileUpload">
+            <p>Upload your BOM video here!</p>
+            <button id="uploadButton" type="button" onclick="document.getElementById('videoFile').click()">Upload File</button>
+            <input type="file" id="videoFile" accept="video/*" style="display:none;">
+            <div class="videoContaining" id="videoContainer" style="display: none;">
+                <video id="uploadedVideo" controls>
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+        <div class="Results">
+            <div>
+                <p>Force Graph</p>
+            </div>
+            <div>
+                <p>Vector Overlay</p>
+            </div>
+            <div>
+                <p>Stats</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
