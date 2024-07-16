@@ -1,12 +1,12 @@
 # Import libraries
 import cv2 as cv
 import pandas as pd
-import openpyxl
+import math
 
 # Initialization
 top_view = "data/gis_lr_CC_top_vid03.mp4"
-side_view = "data/bcp_lr_CC_vid02.mp4"
-forcedata_path = "data/gis_lr_CC_for02_Raw_Data.xlsx"
+side_view = "data/Trimmed of spu_lr_NS_for01_Raw_Video.mp4"
+forcedata_path = "data/Trimmed of spu_lr_NS_for01_Raw_Data_new - spu_lr_NS_for01_Raw_Data_new.csv"
 output_name = top_view[5:-4] + "_vector_overlay.mp4"
 
 
@@ -18,8 +18,8 @@ class VectorOverlay:
         self.data_path = data_path
 
         self.frame_width, self.frame_height, self.fps, self.frame_count = None, None, None, None
-        self.x_forces = None
-        self.y_forces = None
+        self.plate_1 = ()  # (Y, Z)
+        self.plate_2 = ()
 
     def setFrameData(self):
         print(f"Opening video: {self.side_view_path}")
@@ -38,21 +38,29 @@ class VectorOverlay:
         cap.release()
 
     def readData(self):
-        df = pd.read_excel(self.data_path)
-        self.x_forces = df.iloc[18:18193, 1].astype(float).tolist()
-        self.y_forces = df.iloc[18:18192, 2].astype(float).tolist()
+        df = pd.read_csv(self.data_path)
+        self.plate_1 = (df.iloc[18:, 2].astype(float).tolist(), df.iloc[18:, 3].astype(float).tolist())
+        self.plate_2 = (df.iloc[18:, 11].astype(float).tolist(), df.iloc[18:, 12].astype(float).tolist())
+
         print(f"Data read successfully from {self.data_path}")
-        print(f"Number of frames of force data: {len(self.x_forces)}")
+        print(f"Number of frames of force data: {len(self.plate_1[0])}")
 
-    def drawArrow(self, frameNum, frame):
-        x_force = self.x_forces[frameNum]
-        y_force = self.y_forces[frameNum]
+    def drawArrows(self, frameNum, frame):
+        z_force_1 = self.plate_1[1][frameNum]
+        y_force_1 = self.plate_1[0][frameNum]
 
-        start_point = (self.frame_width // 2, self.frame_height // 2)
+        z_force_2 = self.plate_2[1][frameNum]
+        y_force_2 = self.plate_2[0][frameNum]
 
-        end_point = (start_point[0] + int(x_force), start_point[1] + int(y_force))
+        start_point_1 = (485, 978)
+        end_point_1 = (start_point_1[0] + int(y_force_1), (start_point_1[1] - int(z_force_1)))
 
-        cv.arrowedLine(frame, start_point, end_point, (0, 255, 0), 2)
+        start_point_2 = (965, 978)
+        end_point_2 = (start_point_2[0] + int(y_force_2),(start_point_2[1] - int(z_force_2)))
+
+        cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
+
+        cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
 
     def createVectorOverlay(self, outputName):
         self.setFrameData()
@@ -62,7 +70,7 @@ class VectorOverlay:
             print("Error: Frame data not set.")
             return
 
-        if self.x_forces is None or self.y_forces is None:
+        if self.plate_1 is None or self.plate_2 is None:
             print("Error: Data not set.")
             return
 
@@ -71,8 +79,8 @@ class VectorOverlay:
 
         cap = cv.VideoCapture(self.side_view_path)
         frame_number = 1
-        forceDataLength = len(self.x_forces)
-        speedMult = round(forceDataLength/self.frame_count)
+        forceDataLength = len(self.plate_1[0])
+        speedMult = math.floor(forceDataLength / self.frame_count)
 
         while cap.isOpened():
             ret, frame = cap.read()
@@ -81,7 +89,7 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            self.drawArrow(frame_number * speedMult, frame)
+            self.drawArrows(frame_number * speedMult, frame)
             frame_number += 1
             out.write(frame)
 
@@ -89,11 +97,12 @@ class VectorOverlay:
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
-    def findCorners(self):
+    def getCorners(self):
         cap = cv.VideoCapture(self.side_view_path)
 
-        # tl_1, tr_1, tl_2, tr_2, bl_2, br_1, bl_2, br_2
+        # tl_1, tr_1, tl_2, tr_2, bl_1, br_1, bl_2, br_2
         coords = [(570, 900), (965, 900), (975, 900), (1370, 900), (485, 978), (958, 978), (965, 978), (1445, 978)]
+
         if not cap.isOpened():
             print("Error: Could not open video. ")
             return
@@ -109,12 +118,16 @@ class VectorOverlay:
                 break
 
             cv.imshow("frame", frame)
+
             if cv.waitKey(1) == ord("q"):  # gets the unicode value for q
                 break
         cap.release()
         cv.destroyAllWindows()
+        return coords
 
 
 v = VectorOverlay(top_view, side_view, forcedata_path)
-
 v.createVectorOverlay(output_name)
+
+# fc = FindCorners("data/spu_lr_NS_vid02.mov")
+# fc.find(Views.Side)
