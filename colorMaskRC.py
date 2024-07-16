@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # Open the video file
-cap = cv2.VideoCapture('bjs_lr_DE_vid02.mov')
+cap = cv2.VideoCapture('data/bjs_lr_DE_vid02.mov')
 
 # Check if the video opened successfully
 if not cap.isOpened():
@@ -11,7 +11,7 @@ if not cap.isOpened():
 
 # Define the codec and create a VideoWriter object to save the output video
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output_video.avi', fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
+out = cv2.VideoWriter('data/output_video.avi', fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
 
 # Define the color range for detection
 lower_color = np.array([5, 160, 155])
