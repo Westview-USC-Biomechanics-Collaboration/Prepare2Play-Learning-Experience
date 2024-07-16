@@ -10,7 +10,7 @@ class ForcePlateDetect:
         self.cam = cv.VideoCapture(videoPath)
         self.firstFrame = self.getFirstFrame()
         self.currentFrame: np.ndarray = np.ndarray([])
-        self.br_corner: () = None # offsets are defined in pixel tuples
+        self.br_corner: () = None  # offsets are defined in pixel tuples
         self.tl_offset: () = None
 
     def getFirstFrame(self) -> np.ndarray:
@@ -55,7 +55,7 @@ class ForcePlateDetect:
 
         return pixelmatch(f1, c)
 
-    def detect(self, tl_offset: (), br_corner: (), showView=False) -> int:
+    def detect(self, tl_offset: (), br_corner: (), showView=False) -> tuple[int, float]:
         self.tl_offset = tl_offset
         self.br_corner = br_corner
 
@@ -75,8 +75,7 @@ class ForcePlateDetect:
             if showView:
                 bounding = self.CreateBoundingBox()
                 cv.imshow("Stream", bounding)
-
-            if diff > 1000:  # 100 is shadow, 1000 is foot
+            if diff > 900:  # 100 is shadow, 1000 is foot
                 break
 
             print(f"Checked Frame {frameCount}")
@@ -84,12 +83,11 @@ class ForcePlateDetect:
             if cv.waitKey(1) == ord("q"):  # gets the unicode value for q
                 break
 
+        fps = self.cam.get(cv.CAP_PROP_FPS)
         self.cam.release()
         cv.destroyAllWindows()
-        return frameCount
+        return frameCount, fps
 
 
-fp_detect = ForcePlateDetect("data/5.5min_120Hz_SSRun_Fa19_OL_skele.mp4")
-frameNum = fp_detect.detect((768, 790), (430, 25), False)
-# runs the main detection loop to find the first frame when the force plate is triggered
-print(frameNum)
+# f = ForcePlateDetect("data/vst_lr_NN_vid01.mov")
+# f.detect((950, 950), (437, 70), True)
