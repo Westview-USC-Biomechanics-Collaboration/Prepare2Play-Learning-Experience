@@ -2,6 +2,8 @@
 import cv2 as cv
 import pandas as pd
 import math
+from corner_detect import FindCorners
+from corner_detect import Views
 
 # Initialization
 top_view = "data/gis_lr_CC_top_vid03.mp4"
@@ -18,8 +20,12 @@ class VectorOverlay:
         self.data_path = data_path
 
         self.frame_width, self.frame_height, self.fps, self.frame_count = None, None, None, None
-        self.plate_1 = ()  # (Y, Z)
-        self.plate_2 = ()
+        self.A_1 = ()  # ([Ax], [Ay])
+        self.A_2 = ()  # ([Ax], [Ay])
+
+        self.force_1 = ()  # ([Y], [Z])
+        self.force_2 = ()  # ([Y], [Z])
+        self.corners = FindCorners(self.side_view_path).find(Views.Side)
 
     def setFrameData(self):
         print(f"Opening video: {self.side_view_path}")
@@ -39,24 +45,35 @@ class VectorOverlay:
 
     def readData(self):
         df = pd.read_csv(self.data_path)
-        self.plate_1 = (df.iloc[18:, 2].astype(float).tolist(), df.iloc[18:, 3].astype(float).tolist())
-        self.plate_2 = (df.iloc[18:, 11].astype(float).tolist(), df.iloc[18:, 12].astype(float).tolist())
+        self.force_1 = (df.iloc[18:, 2].astype(float).tolist(), df.iloc[18:, 3].astype(float).tolist())
+        self.force_2 = (df.iloc[18:, 11].astype(float).tolist(), df.iloc[18:, 12].astype(float).tolist())
+
+        self.A_1 = (df.iloc[18:, 5].astype(float).tolist(), df.iloc[18:, 6].astype(float).tolist())
+        self.A_2 = (df.iloc[18:, 14].astype(float).tolist(), df.iloc[18:, 15].astype(float).tolist())
 
         print(f"Data read successfully from {self.data_path}")
-        print(f"Number of frames of force data: {len(self.plate_1[0])}")
+        print(f"Number of frames of force data: {len(self.force_1[0])}")
 
     def drawArrows(self, frameNum, frame):
-        z_force_1 = self.plate_1[1][frameNum]
-        y_force_1 = self.plate_1[0][frameNum]
+        z_force_1 = self.force_1[1][frameNum]
+        y_force_1 = self.force_1[0][frameNum]
 
-        z_force_2 = self.plate_2[1][frameNum]
-        y_force_2 = self.plate_2[0][frameNum]
+        z_force_2 = self.force_2[1][frameNum]
+        y_force_2 = self.force_2[0][frameNum]
 
-        start_point_1 = (485, 978)
+        force_plate_pixels = self.corners[1][0] - self.corners[0][0]
+        # the x difference in the first two corners on the first forceplate
+        force_plate_meters = 1
+
+        pixelOffset_1 = (force_plate_pixels / force_plate_meters) * -self.A_1[1][frameNum]  # Ay_1
+        start_point_1 = (self.corners[0][0] + round(pixelOffset_1), self.corners[0][1]) # a negative Ay val means moving to the right
+
         end_point_1 = (start_point_1[0] + int(y_force_1), (start_point_1[1] - int(z_force_1)))
 
-        start_point_2 = (965, 978)
-        end_point_2 = (start_point_2[0] + int(y_force_2),(start_point_2[1] - int(z_force_2)))
+        pixelOffset_2 = (force_plate_pixels / force_plate_meters) * -self.A_2[1][frameNum]  # Ay_2
+        start_point_2 = (self.corners[2][0] + round(pixelOffset_2), self.corners[2][1])
+
+        end_point_2 = (start_point_2[0] + int(y_force_2), (start_point_2[1] - int(z_force_2)))
 
         cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
 
@@ -70,7 +87,7 @@ class VectorOverlay:
             print("Error: Frame data not set.")
             return
 
-        if self.plate_1 is None or self.plate_2 is None:
+        if self.force_1 is None or self.force_2 is None:
             print("Error: Data not set.")
             return
 
@@ -79,7 +96,7 @@ class VectorOverlay:
 
         cap = cv.VideoCapture(self.side_view_path)
         frame_number = 1
-        forceDataLength = len(self.plate_1[0])
+        forceDataLength = len(self.force_1[0])
         speedMult = math.floor(forceDataLength / self.frame_count)
 
         while cap.isOpened():
@@ -128,6 +145,3 @@ class VectorOverlay:
 
 v = VectorOverlay(top_view, side_view, forcedata_path)
 v.createVectorOverlay(output_name)
-
-# fc = FindCorners("data/spu_lr_NS_vid02.mov")
-# fc.find(Views.Side)
