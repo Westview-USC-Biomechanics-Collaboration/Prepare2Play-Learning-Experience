@@ -114,11 +114,9 @@ while cap.isOpened():
         vy = dy/t
 
         #tune this threshold
-        if vx**2 + vy**2 >= 9:
+        if vx**2 + vy**2 >= 7.98:
             initialv = math.sqrt(vx**2 + vy**2) 
             print("Initial Velocity: ", initialv)
-        else:
-            print("Curr Velocity", math.sqrt(vx**2 + vy**2))
     
     for (x, y) in zip(posX, posY):
         if initialv != 0:
