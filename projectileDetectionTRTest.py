@@ -15,16 +15,16 @@ fourcc = cv2.VideoWriter_fourcc(*'XVID')
 out = cv2.VideoWriter('data/output_video.avi', fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
 
 # Define the color range for detection
-# lower_color = np.array([5, 160, 155])
-# upper_color = np.array([100, 170, 160])
+#lower_color = np.array([5, 160, 155])
+#upper_color = np.array([100, 170, 160])
 lower_color = np.array([0, 150, 155])
 upper_color = np.array([100, 250, 255])
 
 # Contour centroids
-posX = []
-posY = []
+centroidX = []
+centroidY = []
 
-# Get fps
+# Get the FPS of the video
 fps = cap.get(cv2.CAP_PROP_FPS)
 
 # Scale size down
@@ -37,8 +37,17 @@ cv2.namedWindow('Resized Video Window', cv2.WINDOW_NORMAL)
 cv2.resizeWindow('Resized Video Window', 980, 540)
 
 # Define a minimum distance to consider contours close to each other
-max_distance = 50
+min_distance = 50
 
+# Initial velocity threshold in meters/second
+velocity_threshold_m_s = 4.4704
+# Convert to pixels/second (assuming 395 pixels/meter)
+velocity_threshold_px_s = velocity_threshold_m_s * 395
+
+# Store all filtered centroids
+all_filtered_centroids = []
+
+frame_counter = 0
 # Go over the video frame by frame
 while cap.isOpened():
     ret, frame = cap.read()
@@ -49,7 +58,7 @@ while cap.isOpened():
     height, width, _ = frame.shape
 
     # Define the top right quarter of the frame
-    top_right_quarter = frame[0:height//2, :]
+    top_right_quarter = frame[0:height//2, width//2:width]
 
     # Convert the top right quarter to HSV color space
     hsv = cv2.cvtColor(top_right_quarter, cv2.COLOR_BGR2HSV)
@@ -73,50 +82,42 @@ while cap.isOpened():
                         cX2 = int(M2["m10"] / M2["m00"])
                         cY2 = int(M2["m01"] / M2["m00"])
                         distance = np.sqrt((cX2 - cX1) ** 2 + (cY2 - cY1) ** 2)
-                        if distance < max_distance:
+                        if distance < min_distance:
                             filtered_contours.append(contour)
                             break
 
+    sumX = 0
+    sumY = 0
     for contour in filtered_contours:
         M = cv2.moments(contour)
         if M["m00"] != 0:
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
-            posX.append(cX)  # Adjust x-coordinate relative to the original frame
-            posY.append(cY)
+            sumX += cX + width//2  # Adjust x-coordinate relative to the original frame
+            sumY += cY
+            cv2.circle(frame, (cX + width//2, cY), 5, (0, 255, 0), -1)  # Draw on the original frame
 
-            cv2.circle(frame, (cX, cY), 5, (0, 255, 0), -1)  # Draw on the original frame
+    if len(filtered_contours) > 0:
+        avgX = sumX / len(filtered_contours)
+        avgY = sumY / len(filtered_contours)
+        centroidX.append(avgX)
+        centroidY.append(avgY)
 
-    for (x, y) in zip(posX, posY):
-        cv2.circle(frame, (x, y), 3, (0, 255, 0), -1)
+        # Draw the average centroid
+        cv2.circle(frame, (int(avgX), int(avgY)), 5, (255, 0, 0), -1)
+
+    # Store the filtered centroids for this frame
+    all_filtered_centroids.append((centroidX, centroidY))
+
+    # Draw all stored centroids
+    for i in range(len(centroidX)):
+        cv2.circle(frame, (int(centroidX[i]), int(centroidY[i])), 5, (255, 0, 0), -1)
 
     # Apply the mask to the top right quarter of the frame
     result = cv2.bitwise_and(top_right_quarter, top_right_quarter, mask=mask)
 
     # Resize the frame
     small_result = cv2.resize(result, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_AREA)
-    
-    # Draw out path of ball
-    if len(posX) > 2 and len(posY) > 2:
-        posX_np = np.array(posX)
-        posY_np = np.array(posY)
-
-        #find the coefficients for the best fit curve 
-        coefficients = np.polyfit(posX_np, posY_np, 2)
-
-        a, b, c = coefficients
-
-        # creates a range of x-values 
-        x_range = np.linspace(0, 1920,1000)
-        
-        # evaluates all of the y-values from the range of x-values to draw the parabola
-        y_values = np.polyval(coefficients, x_range)
-
-        for (x, y) in zip(x_range, y_values):
-            cv2.circle(frame, (int(x), int(y)), 3, (255, 0, 0), -1)
-            print(posX)
-  
-        
 
     # Write the frame to the output video file
     out.write(frame)
@@ -126,23 +127,21 @@ while cap.isOpened():
     if cv2.waitKey(int(1000 / fps)) & 0xFF == ord('q'):
         break
 
+    # Calculate instantaneous velocity if there are enough points
+    if len(centroidX) > 1 and len(centroidY) > 1:
+        for i in range(len(centroidX) - 1):
+            dx = (centroidX[i + 1] - centroidX[i])
+            dy = (centroidY[i + 1] - centroidY[i])
+            vx = dx / (1 / fps)
+            vy = dy / (1 / fps)
+            instantaneous_velocity = math.sqrt(vx**2 + vy**2)
+            if instantaneous_velocity >= velocity_threshold_px_s:
+                print(f"Instantaneous Velocity: {instantaneous_velocity / 395} meters/second at frame {i}")
+                break
 
 # Release the video capture and writer objects
 cap.release()
 out.release()
-
-# threshold 4.4704 meter/second
-# approximation: 395 pixels -> 1 meter
-for i in range (len(posX) - 1):
-    dx = (posX[i + 1] - posX[i]) * 1/395
-    dy = (posY[i + 1] - posY[i]) * 1/395
-    vx = dx / (1/fps)
-    vy = dy / (1/fps)
-    if(vx * vx + vy * vy >= 4.4704 * 4.4704):
-        print("Initial Velocity: " + math.sqrt(vx * vx + vy * vy))
-        print("At Second " + i / fps)
-        print("Frame: " + i)
-        break
 
 # Close all OpenCV windows
 cv2.destroyAllWindows()

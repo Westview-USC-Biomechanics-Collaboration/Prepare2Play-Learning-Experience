@@ -27,6 +27,7 @@ posY = []
 # Get fps
 fps = cap.get(cv2.CAP_PROP_FPS)
 
+
 # Scale size down
 scale_factor = 0.5
 
