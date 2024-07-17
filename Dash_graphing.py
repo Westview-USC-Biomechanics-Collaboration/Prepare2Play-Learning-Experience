@@ -10,7 +10,7 @@ app = Dash(__name__)
 max_rows_to_read = 18677  # Example: Limit to 100 rows for simplicity   18677
 
 # Load the data from the CSV file, starting from row 20, and assign column names
-df = pd.read_csv('data/data.csv', skiprows=19, usecols=[0, 1, 2, 3], names=["time (s)", "Fx", "Fy", "Fz"], header=0, nrows=max_rows_to_read,
+df = pd.read_excel('data/bcp_lr_CC_for02_Raw_Data.xlsx', skiprows=19, usecols=[0, 10, 11, 12], names=["time (s)", "Fx", "Fy", "Fz"], header=0, nrows=max_rows_to_read,
                  dtype={'time (s)': float, 'Fx': float, 'Fy': float, 'Fz': float})
 
 # Define the app layout
@@ -31,7 +31,7 @@ app.layout = html.Div([
             {'label': 'Fy', 'value': 'Fy'},
             {'label': 'Fz', 'value': 'Fz'}
         ],
-        value='Fx',
+        value='Fz',
     ),
     dcc.Interval(  # <--- Difference 1
         id='interval-component',
