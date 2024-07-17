@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-`    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="I refactored the code in vector-overlay-skeleton.py.Ready for me to add the corner detection. The videos we are testing with aren't working but everything else is though.">
+    `
+    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="I refactored the code in vector-overlay-skeleton.py.Ready for me to add the corner detection. The videos we are testing with aren't working but everything else is though.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/outputs/output_skeleton.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/outputs/output_skeleton.mp4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector-overlay/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector-overlay/vector-overlay-skeleton.py" afterDir="false" />
