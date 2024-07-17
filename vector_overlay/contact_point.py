@@ -18,10 +18,11 @@
 import pandas as pd
 
 # Example input data
-path_to_forcedata = "data/gis_lr_CC_for02_Raw_Data.xlsx"
+path_to_forcedata = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\\bcp_lr_CC_for02_Raw_Data.xlsx"
 data = pd.read_excel(path_to_forcedata)
 example_input = [[457, 643], [978, 648]]
-example_forcedata = [0.000000,	0.566133,	-22.584741,	200.939779,	202.205801,	0.081561,	0.085336,	0.000000,	0.000000,	0.000000,	1.936354,	24.400024,	337.609455,	338.495576,	0.081070,	-0.297077,	0.000000,	0.000000,	0.000000]
+example_forcedata = data.iloc[18]
+print(f"This is row 18: {example_forcedata}")
 index = data.iloc[16]
 final_data = pd.DataFrame(data=example_forcedata, index = index)
 # print(final_data)
@@ -37,78 +38,60 @@ def find_contact_top(locationin, forcedata):
     # Access coordinates and convert to float
     x_diff = float(force_plate["plate2"].iloc[0][0]) - float(force_plate["plate1"].iloc[0][0])
     y_diff = float(force_plate["plate2"].iloc[0][1]) - float(force_plate["plate1"].iloc[0][1])
-
-    meter_pixel_ratio = -1
-
-    # forceplate 1 coords remember to convert meters to pixels
-    a1_coords = float(forcedata.iloc[6]) * meter_pixel_ratio
-    b1_coords = float(forcedata.iloc[5]) * meter_pixel_ratio
-    print(a1_coords)
-    print(b1_coords)
-    # forceplate 2 coords
-    a2_coords = float(forcedata.iloc[15]) * meter_pixel_ratio
-    b2_coords = float(forcedata.iloc[14]) * meter_pixel_ratio
-
-    # Calculate angles
     angle_delta = math.atan(y_diff / x_diff)
-    angle_forceplate1 = float(math.atan(b1_coords/a1_coords))
-    angle_forceplate2 = float(math.atan(b2_coords/a2_coords))
+    print(f"This is x_diff: {x_diff}")
+    print(f"This is y_diff: {y_diff}")
+    ratio = (math.sqrt(x_diff**2 + y_diff**2))/0.9
+    print(f"This is the ratio: {ratio}")
+    meter_pixel_ratio = -ratio
 
     # force pixel ratio
     force_pixel_ratio = 10
 
-    # the X and Y direction need to be double check and fixed
-    Fy1 = float(forcedata.iloc[1]) * force_pixel_ratio *(-1)  + b1_coords
-    Fx1 = float(forcedata.iloc[2]) * force_pixel_ratio *(-1)  + a1_coords
+    Forceplate1_ON = False
+    Forceplate2_ON = False
 
-    Fy2 = float(forcedata.iloc[10]) * force_pixel_ratio *(-1) + b2_coords
-    Fx2 = float(forcedata.iloc[11]) * force_pixel_ratio *(-1) + a2_coords
+    def final(angle_delta, meter_pixel_ratio, force_pixel_ratio, forcedata, a, b, fx, fy):
+        a1_coords = float(forcedata.iloc[a]) * meter_pixel_ratio
+        b1_coords = float(forcedata.iloc[b]) * meter_pixel_ratio
+        print(f"This is a1_coords: {a1_coords}")
+        print(f"This is b1_coords: {b1_coords}")
+        angle_forceplate1 = float(math.atan(b1_coords / a1_coords))
+        Fy1 = float(forcedata.iloc[fy]) * force_pixel_ratio * (1) + b1_coords
+        Fx1 = float(forcedata.iloc[fx]) * force_pixel_ratio * (1) + a1_coords
+        print(f"This is Fy1: {Fy1}")
+        print(f"This is Fx1: {Fx1}")
+        angle_force1 = float(math.atan(Fy1 / Fx1))
 
-    print(Fy1)
-    print(Fx1)
+        def find_hypotenuse(x1, y1):
+            hypotenuse = math.sqrt(float(x1) ** 2 + float(y1) ** 2)
+            return float(hypotenuse)
 
-    angle_force1 = float(math.atan(Fy1/Fx1))
-    angle_force2 = float(math.atan(Fy2/Fx2))
-    # Hypotenuse
-    def find_hypotenuse(x1,y1):
-        hypotenuse = math.sqrt(float(x1)**2 + float(y1)**2)
-        return float(hypotenuse)
+        HYPOTENUSE1 = find_hypotenuse(x1=a1_coords, y1=b1_coords)
+        HYPOTENUSE3 = find_hypotenuse(x1=Fx1, y1=Fy1)
 
-    angle_to_use_1 = angle_forceplate1
-    angle_to_use_2 = angle_forceplate2
-    vector1_angle = angle_force1
-    vector2_angle = angle_force2
-    if angle_delta != None:
-        if angle_delta > 0:
-            angle_to_use_1 = angle_forceplate1 + angle_delta
-            angle_to_use_2 = angle_forceplate2 + angle_delta
-            vector1_angle += angle_delta
-            vector2_angle += angle_delta
+        def find_deltaxy(angle, line):
+            deltax = int(line * (math.cos(angle)))
+            deltay = int(line * (math.sin(angle)))
+            return [deltax, deltay]
 
-        elif angle_delta < 0:
-            angle_to_use_1 = angle_forceplate1 - angle_delta
-            angle_to_use_2 = angle_forceplate2 - angle_delta
-            vector1_angle -= angle_delta
-            vector2_angle -= angle_delta
-        else:
-            print("the force plate is parallel to the view")
-            angle_to_use_1 = angle_forceplate1
-            angle_to_use_2 = angle_forceplate2
+        angle_to_use_1 = angle_forceplate1
+        vector1_angle = angle_force1
+        if angle_delta != None:
+            if angle_delta > 0:
+                angle_to_use_1 = angle_forceplate1 + angle_delta
+                vector1_angle += angle_delta
 
+            elif angle_delta < 0:
+                angle_to_use_1 = angle_forceplate1 - angle_delta
+                vector1_angle -= angle_delta
+            else:
+                print("the force plate is parallel to the view")
+                angle_to_use_1 = angle_forceplate1
 
-    HYPOTENUSE1 = find_hypotenuse(x1=a1_coords, y1=b1_coords)
-    HYPOTENUSE2 = find_hypotenuse(x1=a2_coords, y1=b2_coords)
-    HYPOTENUSE3 = find_hypotenuse(x1=Fx1, y1=Fy1)
-    HYPOTENUSE4 = find_hypotenuse(x1=Fx2, y1=Fy2)
-    def find_deltaxy(angle, line):
-        deltax = line * (math.cos(angle))
-        deltay = line * (math.sin(angle))
-        return [deltax, deltay]
-
-    # it should be origin + delta x/y remember to find the pixel to meter ratio
-    contactpoint1 = find_deltaxy(angle_to_use_1, HYPOTENUSE1)
-    contactpoint2 = find_deltaxy(angle_to_use_2, HYPOTENUSE2)
-
+        endpoint1 = find_deltaxy(vector1_angle, HYPOTENUSE3)
+        contactpoint1 = find_deltaxy(angle_to_use_1, HYPOTENUSE1)
+        return contactpoint1, endpoint1, Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords
     def addlist(list1,list2):
         if len(list1) != 0:
             newlist = []
@@ -119,28 +102,37 @@ def find_contact_top(locationin, forcedata):
             return newlist
         else:
             print("Error: Length mismatch")
+    contactpoint1 =None
+    contactpoint2 = None
+    endpoint1 = None
+    endpoint2 = None
+    # it should be origin + delta x/y remember to find the pixel to meter ratio
+    if forcedata.iloc[6] != float(0):
+        Forceplate1_ON = True
+        contactpoint1, endpoint1, Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords = final(angle_delta,meter_pixel_ratio,force_pixel_ratio,forcedata,6,5,2,1)
+        print(f"This is contactpoint1: {contactpoint1}")
+        contactpoint1 = addlist(contactpoint1, force_plate["plate1"])
+        endpoint1 = addlist(endpoint1, force_plate["plate1"])
+    if float(forcedata.iloc[15]) != float(0.000000):
+        print(f"This is secondforceplate: {forcedata.iloc[15]}")
+        Forceplate2_ON = True
+        contactpoint2, endpoint2, Fx2, Fy2, angle_to_use_1, vector1_angle, a1_coords, b1_coords = final(angle_delta,meter_pixel_ratio,force_pixel_ratio,forcedata,15,14,10,9)
+        print(f"This is contactpoint2")
+        contactpoint2 = addlist(contactpoint2, force_plate["plate2"])
+        endpoint2 = addlist(endpoint1, force_plate["plate2"])
 
-    contactpoint1 = addlist(contactpoint1, force_plate["plate1"])
-    contactpoint2 = addlist(contactpoint2, force_plate["plate2"])
+
+    print("Forceplate")
     print(force_plate["plate1"])
     print(force_plate["plate2"])
-    print(contactpoint1)
-    print(contactpoint2)
-
-
-    # find force end point
-    endpoint1 = find_deltaxy(vector1_angle, HYPOTENUSE3)
-    endpoint2 = find_deltaxy(vector2_angle, HYPOTENUSE4)
-
-    endpoint1 = addlist(endpoint1, force_plate["plate1"])
-    endpoint2 = addlist(endpoint1, force_plate["plate2"])
-
-    print(endpoint1)
-    print(endpoint2)
+    print(f"This is contactpoint1: {contactpoint1}")
+    print(f"This is contactpoint2: {contactpoint2}")
+    print(f"This is endpoint1: {endpoint1}")
+    print(f"This is endpoint2: {endpoint2}")
     # Decide return format
-    return
+    return (contactpoint1), (endpoint1), Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords
 
 
 
 # Call function // Testing code
-find_contact_top(locationin=example_input, forcedata=final_data)
+find_contact_top(locationin=example_input, forcedata=example_forcedata)
