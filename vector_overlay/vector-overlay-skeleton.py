@@ -60,10 +60,11 @@ class VectorOverlay:
 
         z_force_2 = self.force_2[1][frameNum]
         y_force_2 = self.force_2[0][frameNum]
-
+        print(self.corners)
         force_plate_pixels = self.corners[1][0] - self.corners[0][0]
         # the x difference in the first two corners on the first forceplate
         force_plate_meters = 1
+        # cornerList is 4 points [tl_1, tr_1, tl_2, tr_2]
 
         pixelOffset_1 = (force_plate_pixels / force_plate_meters) * -self.A_1[1][frameNum]  # Ay_1
         start_point_1 = (self.corners[0][0] + round(pixelOffset_1), self.corners[0][1]) # a negative Ay val means moving to the right
