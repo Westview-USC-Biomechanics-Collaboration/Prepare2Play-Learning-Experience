@@ -58,7 +58,6 @@ class FindCorners:
                         cx = int(M['m10'] / M['m00']) + leftOffset
                         cy = int(M['m01'] / M['m00']) + topOffset
                         markerList.append((cx, cy))
-                    print(markerList)
                     # once we have the list, we can trim off the bottom points as they aren't needed
                     relevantPoints = sorted(markerList, key = lambda x: x[1])[0:4] # all the top points
                     cornerList = sorted(relevantPoints, key = lambda x: x[0])
