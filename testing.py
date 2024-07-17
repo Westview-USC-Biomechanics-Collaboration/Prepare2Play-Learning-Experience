@@ -4,7 +4,7 @@ from vector_overlay import contact_point
 
 # initialization
 topview = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\gis_lr_CC_top_vid02.mp4"
-forcedata_path = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\\gis_lr_CC_for02_Raw_Data.xlsx"
+forcedata_path = "data/gis_lr_CC_for03_Raw_Data.xlsx"
 output_name = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\\" + topview[-23:-4] + "_vector_overlay.mp4"
 
 
@@ -41,13 +41,14 @@ def VectorOverlay(videopath, forcedata_path, filename):
         force_row = forcedata.iloc[row_to_use]
 
         # Function to draw arrow and annotate contact and endpoint
-        def drawArrow(contact_point, end_point, frame, Fx, Fy):
+        def drawArrow(contact_point, end_point, frame, Fx, Fy, contactpoint2, endpoint2):
             # Draw a circle at the contact point
-            cv2.circle(frame, center=contact_point, radius=7, color=(0, 0, 255), thickness=-1)  # Filled circle
+            cv2.circle(frame, center=contact_point, radius=7, color=(0, 0, 255), thickness=-1)
+            cv2.circle(frame, center=contactpoint2, radius=7, color=(0, 0, 255), thickness=-1)# Filled circle
             cv2.circle(frame, center=[457, 643], radius= 5 , color = (255,0,0))
             # Draw an arrowed line from contact point to end point
             cv2.arrowedLine(frame, contact_point, end_point, (0, 255, 0), thickness=2)
-
+            cv2.arrowedLine(frame, contactpoint2, endpoint2, (0, 255, 0), thickness=2)
             # Annotate contact point and endpoint on top-left corner
             cv2.putText(frame, f"Contact Point: {contact_point}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             cv2.putText(frame, f"Endpoint: {end_point}", (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
@@ -68,10 +69,21 @@ def VectorOverlay(videopath, forcedata_path, filename):
             return frame
 
         # Find contact point and endpoint
-        contactpoint, endpoint, Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords = contact_point.find_contact_top(locationin=[[457, 643], [978, 648]], forcedata=force_row)
+        contactpoint, endpoint, Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords, contactpoint2, endpoint2 = contact_point.find_contact_top(locationin=[[457, 643], [978, 648]], forcedata=force_row)
+        print(f"before flipping{type(contactpoint), endpoint}")
+
+        def flip(lst, frame_height):
+            if len(lst) > 1:
+                temp = lst[1]
+                print(f"temp: {temp}")
+                lst[1] = frame_height - temp
+                print(f"this is lst: {lst}")
+                return lst
+            else:
+                raise ValueError("List does not have enough elements to flip the second one.")
 
         # Draw annotations on the frame
-        annotated_frame = drawArrow(contactpoint, endpoint, frame, Fx1, Fy1)
+        annotated_frame = drawArrow(contactpoint, endpoint, frame, Fx1, Fy1, contactpoint2, endpoint2)
 
         # Display the annotated frame
         cv2.imshow('Annotated Frame', annotated_frame)

@@ -18,13 +18,13 @@
 import pandas as pd
 
 # Example input data
-path_to_forcedata = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\\bcp_lr_CC_for02_Raw_Data.xlsx"
-data = pd.read_excel(path_to_forcedata)
-example_input = [[457, 643], [978, 648]]
-example_forcedata = data.iloc[18]
-print(f"This is row 18: {example_forcedata}")
-index = data.iloc[16]
-final_data = pd.DataFrame(data=example_forcedata, index = index)
+# path_to_forcedata = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\\bcp_lr_CC_for03_Raw_Data.xlsx"
+# data = pd.read_excel(path_to_forcedata)
+# example_input = [[457, 643], [978, 648]]
+# example_forcedata = data.iloc[18]
+# print(f"This is row 18: {example_forcedata}")
+# index = data.iloc[16]
+# final_data = pd.DataFrame(data=example_forcedata, index = index)
 # print(final_data)
 def find_contact_top(locationin, forcedata):
     import math
@@ -52,8 +52,8 @@ def find_contact_top(locationin, forcedata):
     Forceplate2_ON = False
 
     def final(angle_delta, meter_pixel_ratio, force_pixel_ratio, forcedata, a, b, fx, fy):
-        a1_coords = float(forcedata.iloc[a]) * meter_pixel_ratio
-        b1_coords = float(forcedata.iloc[b]) * meter_pixel_ratio
+        a1_coords = float(0.9 - float(forcedata.iloc[a])) * meter_pixel_ratio
+        b1_coords = float(0.3+ float(forcedata.iloc[b])) * meter_pixel_ratio
         print(f"This is a1_coords: {a1_coords}")
         print(f"This is b1_coords: {b1_coords}")
         angle_forceplate1 = float(math.atan(b1_coords / a1_coords))
@@ -72,7 +72,7 @@ def find_contact_top(locationin, forcedata):
 
         def find_deltaxy(angle, line):
             deltax = int(line * (math.cos(angle)))
-            deltay = int(line * (math.sin(angle)))
+            deltay = -1* int(line * (math.sin(angle)))
             return [deltax, deltay]
 
         angle_to_use_1 = angle_forceplate1
@@ -91,6 +91,7 @@ def find_contact_top(locationin, forcedata):
 
         endpoint1 = find_deltaxy(vector1_angle, HYPOTENUSE3)
         contactpoint1 = find_deltaxy(angle_to_use_1, HYPOTENUSE1)
+        print(f"This is contactpoint raw: {contactpoint1}")
         return contactpoint1, endpoint1, Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords
     def addlist(list1,list2):
         if len(list1) != 0:
@@ -110,16 +111,15 @@ def find_contact_top(locationin, forcedata):
     if forcedata.iloc[6] != float(0):
         Forceplate1_ON = True
         contactpoint1, endpoint1, Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords = final(angle_delta,meter_pixel_ratio,force_pixel_ratio,forcedata,6,5,2,1)
-        print(f"This is contactpoint1: {contactpoint1}")
+        print(f"contact before adding: {contactpoint1}")
         contactpoint1 = addlist(contactpoint1, force_plate["plate1"])
         endpoint1 = addlist(endpoint1, force_plate["plate1"])
     if float(forcedata.iloc[15]) != float(0.000000):
         print(f"This is secondforceplate: {forcedata.iloc[15]}")
         Forceplate2_ON = True
         contactpoint2, endpoint2, Fx2, Fy2, angle_to_use_1, vector1_angle, a1_coords, b1_coords = final(angle_delta,meter_pixel_ratio,force_pixel_ratio,forcedata,15,14,10,9)
-        print(f"This is contactpoint2")
-        contactpoint2 = addlist(contactpoint2, force_plate["plate2"])
-        endpoint2 = addlist(endpoint1, force_plate["plate2"])
+        contactpoint2 = addlist(contactpoint2, force_plate["plate1"])
+        endpoint2 = addlist(endpoint1, force_plate["plate1"])
 
 
     print("Forceplate")
@@ -130,9 +130,9 @@ def find_contact_top(locationin, forcedata):
     print(f"This is endpoint1: {endpoint1}")
     print(f"This is endpoint2: {endpoint2}")
     # Decide return format
-    return (contactpoint1), (endpoint1), Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords
+    return (contactpoint1), (endpoint1), Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords, contactpoint2, endpoint2
 
 
 
 # Call function // Testing code
-find_contact_top(locationin=example_input, forcedata=example_forcedata)
+# find_contact_top(locationin=example_input, forcedata=example_forcedata)
