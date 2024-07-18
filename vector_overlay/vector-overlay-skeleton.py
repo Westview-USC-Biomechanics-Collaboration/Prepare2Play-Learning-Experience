@@ -13,7 +13,8 @@ def outputname(path):
         output_name = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\outputs\\" + path[-23:-4] + "_vector_overlay.mp4"
     else:
         output_name = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\outputs\\" + path[-20:-4] + "_vector_overlay.mp4"
-top_view = "data/gis_lr_CC_top_vid03.mp4"
+
+top_view = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\gis_lr_CC_top_vid03.mp4"
 side_view = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\gis_lr_CC_vid03.mp4"
 forcedata_path = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\gis_lr_CC_for03_Raw_Data.xlsx"
 
@@ -35,11 +36,13 @@ class VectorOverlay:
         self.force_2 = ()  # ([Y], [Z])
         self.corners = FindCorners(self.side_view_path).find(Views.Side) # [482,976] [959,977]
         # self.corners = [482,976],[959,977],[966,976]
+        self.manual = False
 
 
     def check_corner(self):
         if self.corners == []:
-            select_points(video_path = self.side_view_path)
+            self.manual = True
+            self.corners = select_points(video_path = self.side_view_path)
     def setFrameData(self):
         print(f"Opening video: {self.side_view_path}")
         cap = cv.VideoCapture(self.side_view_path)
@@ -75,22 +78,37 @@ class VectorOverlay:
         y_force_2 = self.force_2[0][frameNum]
         self.check_corner()
         print(f"corners: {self.corners}")
-        force_plate_pixels = self.corners[1][0] - self.corners[0][0]
+        if self.manual == False:
+            force_plate_pixels = self.corners[1][0] - self.corners[0][0]
 
         # the x difference in the first two corners on the first forceplate
-        force_plate_meters = 0.9
+            force_plate_meters = 0.9
         # cornerList is 4 points [tl_1, tr_1, tl_2, tr_2]
 
-        pixelOffset_1 = (force_plate_pixels / force_plate_meters) * self.A_1[1][frameNum] +0.45*(force_plate_pixels / force_plate_meters) # Ay_1
-        start_point_1 = (self.corners[0][0] + round(pixelOffset_1), self.corners[0][1]) # a negative Ay val means moving to the right
+            pixelOffset_1 = (force_plate_pixels / force_plate_meters) * self.A_1[1][frameNum] +0.45*(force_plate_pixels / force_plate_meters) # Ay_1
+            start_point_1 = (self.corners[0][0] + round(pixelOffset_1), self.corners[0][1]) # a negative Ay val means moving to the right
 
-        end_point_1 = (start_point_1[0] + int(y_force_1), (start_point_1[1] - int(z_force_1)))
+            end_point_1 = (start_point_1[0] - int(y_force_1), (start_point_1[1] - int(z_force_1)))
 
-        pixelOffset_2 = (force_plate_pixels / force_plate_meters) * self.A_2[1][frameNum] +0.45*(force_plate_pixels / force_plate_meters) # Ay_2
-        start_point_2 = (self.corners[2][0] + round(pixelOffset_2), self.corners[2][1])
+            pixelOffset_2 = (force_plate_pixels / force_plate_meters) * self.A_2[1][frameNum] +0.45*(force_plate_pixels / force_plate_meters) # Ay_2
+            start_point_2 = (self.corners[2][0] + round(pixelOffset_2), self.corners[2][1])
 
-        end_point_2 = (start_point_2[0] + int(y_force_2), (start_point_2[1] - int(z_force_2)))
+            end_point_2 = (start_point_2[0] - int(y_force_2), (start_point_2[1] - int(z_force_2)))
+        else:
+            print(f"This is corner list: {self.corners}")
+            force_plate_pixels = self.corners[6][0] - self.corners[7][0]
+            force_plate_meters = 0.9
+            pixelOffset_1 = (force_plate_pixels / force_plate_meters) * self.A_1[1][frameNum] + 0.45 * (force_plate_pixels / force_plate_meters)  # Ay_1
+            start_point_1 = (self.corners[7][0] + round(pixelOffset_1),
+                             self.corners[7][1])  # a negative Ay val means moving to the right
 
+            end_point_1 = (start_point_1[0] - int(y_force_1), (start_point_1[1] - int(z_force_1)))
+
+            pixelOffset_2 = (force_plate_pixels / force_plate_meters) * self.A_2[1][frameNum] + 0.45 * (
+                        force_plate_pixels / force_plate_meters)  # Ay_2
+            start_point_2 = (self.corners[5][0] + round(pixelOffset_2), self.corners[5][1])
+
+            end_point_2 = (start_point_2[0] - int(y_force_2), (start_point_2[1] - int(z_force_2)))
         cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
 
         cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
@@ -166,10 +184,11 @@ v = VectorOverlay(top_view, side_view, forcedata_path)
 
 # side view
 output_name = outputname(side_view)
-print(f"output file name: {output_name}")
-v.createVectorOverlay(output_name)
+# print(f"output file name: {output_name}")
+# v.createVectorOverlay(output_name)
 
 # top view
-output_name = outputname(top_view)
-print(f"output file name: {output_name}")
-Topview(top_view,forcedata_path,output_name)
+outputName = outputname(top_view)
+print(f"output file name: {outputName}")
+points_loc = select_points(v.top_view_path)
+Topview(top_view,forcedata_path,output_name, points_loc)

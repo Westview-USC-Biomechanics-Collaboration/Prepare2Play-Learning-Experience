@@ -5,7 +5,7 @@ topview = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience
 forcedata_path = "../data/gis_lr_CC_for03_Raw_Data.xlsx"
 output_name = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\outputs\\" + topview[-23:-4] + "_vector_overlay.mp4"
 
-def VectorOverlay(videopath, forcedata_path, filename):
+def VectorOverlay(videopath, forcedata_path, filename, location):
     # import
     import cv2
     import pandas as pd
@@ -63,7 +63,7 @@ def VectorOverlay(videopath, forcedata_path, filename):
             return frame
 
         # Find contact point and endpoint
-        contactpoint, endpoint, Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords, contactpoint2, endpoint2 = contact_point.find_contact_top(locationin=[[249, 626], [977, 614]], forcedata=force_row)
+        contactpoint, endpoint, Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords, contactpoint2, endpoint2 = contact_point.find_contact_top(locationin=[location[7], location[5]], forcedata=force_row)
 
         def flip(lst, frame_height):
             if len(lst) > 1:

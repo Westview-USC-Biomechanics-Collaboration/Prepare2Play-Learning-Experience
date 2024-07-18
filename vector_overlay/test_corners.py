@@ -30,7 +30,7 @@ def select_points(video_path, num_points=8):
     # Function to capture click events
     def click_event(event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
-            points.append((x, y + height//2))
+            points.append([x, y + height//2])
             cv2.circle(frame, (x, y), 5, (0, 0, 255), -1)
             cv2.imshow('Frame', frame)
             
@@ -57,6 +57,9 @@ def select_points(video_path, num_points=8):
             f.write(f'{point[0]},{point[1]}\n')
     
     print("Points saved to selected_points.txt")
+
+    return points
+
 
 # Example usage
 # select_points('D:/Users/draar/OneDrive/Documents/GitHub/Prepare2Play-Learning-Experience/data/gis_lr_CC_vid03.mp4')
