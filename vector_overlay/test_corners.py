@@ -1,4 +1,5 @@
 import cv2
+from PIL import Image
 
 # Function to select points
 def select_points(video_path, num_points=8):
@@ -11,7 +12,12 @@ def select_points(video_path, num_points=8):
         return
     
     # Read the first frame
+
+    
     ret, frame = cap.read()
+    height, _, _ = frame.shape
+    frame = frame[height//2:, :, :]
+
     
     # Check if frame is read correctly
     if not ret:
@@ -24,7 +30,7 @@ def select_points(video_path, num_points=8):
     # Function to capture click events
     def click_event(event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
-            points.append((x, y))
+            points.append((x, y + height//2))
             cv2.circle(frame, (x, y), 5, (0, 0, 255), -1)
             cv2.imshow('Frame', frame)
             
