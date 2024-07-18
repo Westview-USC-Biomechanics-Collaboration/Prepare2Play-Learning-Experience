@@ -61,7 +61,7 @@ class FindCorners:
                     # once we have the list, we can trim off the bottom points as they aren't needed
                     relevantPoints = sorted(markerList, key = lambda x: x[1])[0:4] # all the top points
                     cornerList = sorted(relevantPoints, key = lambda x: x[0])
-                    # cornerList is 4 points [tl_1, tr_1, tl_2, tr_2]
+                    # cornerList is 4 points [tl_1, tr_1, tl_2, tr_2]s
                     return cornerList
 
                 # if cv.waitKey(1) == ord("q"):  # gets the unicode value for q

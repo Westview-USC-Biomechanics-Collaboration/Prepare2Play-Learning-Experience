@@ -8,8 +8,8 @@ from corner_detect import Views
 from vector_overlay_top import VectorOverlay as Topview
 # Initialization
 top_view = "data/gis_lr_CC_top_vid03.mp4"
-side_view = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\gis_lr_CC_vid03.mp4"
-forcedata_path = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\gis_lr_CC_for03_Raw_Data.xlsx"
+side_view = "D:/Users/draar/OneDrive/Documents/GitHub/Prepare2Play-Learning-Experience/data/gis_lr_CC_vid03.mp4"
+forcedata_path = "D:/Users/draar/OneDrive/Documents/GitHub/Prepare2Play-Learning-Experience/data/gis_lr_CC_for03_Raw_Data.xlsx"
 output_name = side_view[-23:-4] + "_vector_overlay.mp4"
 
 
@@ -62,12 +62,15 @@ class VectorOverlay:
         z_force_2 = self.force_2[1][frameNum]
         y_force_2 = self.force_2[0][frameNum]
         # print(self.corners)
+        
+        print("alksjfhlakjsdhlfkjadshlfkjashdlfkjahsldskjfhalskdjfhalskdjfhlaskjdfh")
+        print(side_view)
         force_plate_pixels = self.corners[1][0] - self.corners[0][0]
         # the x difference in the first two corners on the first forceplate
         force_plate_meters = 0.9
         # cornerList is 4 points [tl_1, tr_1, tl_2, tr_2]
 
-        pixelOffset_1 = (force_plate_pixels / force_plate_meters) * self.A_1[1][frameNum] +0.45*(force_plate_pixels / force_plate_meters) # Ay_1
+        pixelOffset_1 = (force_plate_pixels / force_plate_meters) * self.A_1[1][frameNum] + 0.45*(force_plate_pixels / force_plate_meters) # Ay_1
         start_point_1 = (self.corners[0][0] + round(pixelOffset_1), self.corners[0][1]) # a negative Ay val means moving to the right
 
         end_point_1 = (start_point_1[0] + int(y_force_1), (start_point_1[1] - int(z_force_1)))
@@ -146,7 +149,5 @@ class VectorOverlay:
         cap.release()
         cv.destroyAllWindows()
         return coords
-
-
 v = VectorOverlay(top_view, side_view, forcedata_path)
 v.createVectorOverlay(output_name)
