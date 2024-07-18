@@ -1,94 +1,152 @@
+# Import libraries
 import cv2
+import cv2 as cv
 import pandas as pd
-from vector_overlay import contact_point
+import math
+from corner_detect import FindCorners
+from corner_detect import Views
+from vector_overlay_top import VectorOverlay as Topview
+# Initialization
+top_view = "data/gis_lr_CC_top_vid03.mp4"
+side_view = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\gis_lr_CC_vid03.mp4"
+forcedata_path = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\gis_lr_CC_for03_Raw_Data.xlsx"
+output_name = side_view[-23:-4] + "_vector_overlay.mp4"
 
-# Paths
-topview = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\data\\gis_lr_CC_top_vid02.mp4"
-forcedata_path = "../data/gis_lr_CC_for03_Raw_Data.xlsx"
-output_name = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\outputs\\" + topview[-23:-4] + "_vector_overlay.mp4"
 
-def VectorOverlay(videopath, forcedata_path, filename):
-    # Load force data
-    forcedata = pd.read_excel(forcedata_path, skiprows=1)
+class VectorOverlay:
 
-    # Open video
-    cap = cv2.VideoCapture(videopath)
-    if not cap.isOpened():
-        print("Error: Could not open video.")
-        return
+    def __init__(self, top_view_path, side_view_path, data_path):
+        self.top_view_path = top_view_path
+        self.side_view_path = side_view_path
+        self.data_path = data_path
 
-    # Get video properties
-    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps = int(cap.get(cv2.CAP_PROP_FPS))
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.frame_width, self.frame_height, self.fps, self.frame_count = None, None, None, None
+        self.A_1 = ()  # ([Ax], [Ay])
+        self.A_2 = ()  # ([Ax], [Ay])
 
-    # Calculate skip rows based on data and frame count
-    skiprows = int(forcedata.shape[0] / frame_count)
+        self.force_1 = ()  # ([Y], [Z])
+        self.force_2 = ()  # ([Y], [Z])
+        self.corners = FindCorners(self.side_view_path).find(Views.Side)
 
-    # Define the codec and create VideoWriter object
-    out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
+    def setFrameData(self):
+        print(f"Opening video: {self.side_view_path}")
+        cap = cv.VideoCapture(self.side_view_path)
 
-    count_frame = 0
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            print("Can't find frame")
-            break
+        if not cap.isOpened():
+            print("Error: Could not open video.")
+            return
 
-        row_to_use = 18 + int(count_frame * skiprows)
-        force_row = forcedata.iloc[row_to_use]
+        self.frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
+        self.frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+        self.fps = int(cap.get(cv.CAP_PROP_FPS))
+        self.frame_count = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
+        print(
+            f"Frame width: {self.frame_width}, Frame height: {self.frame_height}, FPS: {self.fps}, Frame count: {self.frame_count}")
+        cap.release()
 
-        # Function to draw arrow and annotate contact and endpoint
-        def drawArrow(contact_point, end_point, frame, Fx, Fy, contactpoint2, endpoint2):
-            # Draw circles at the contact points
-            cv2.circle(frame, center=contact_point, radius=7, color=(255, 0, 0), thickness=-1)
-            cv2.circle(frame, center=contactpoint2, radius=7, color=(255, 0, 0), thickness=-1)
-            # cv2.circle(frame, center=[457, 643], radius=5, color=(255, 0, 255))
-            # Draw arrowed lines from contact points to end points
-            cv2.arrowedLine(frame, contact_point, end_point, (0, 0, 255), thickness=2)
-            cv2.arrowedLine(frame, contactpoint2, endpoint2, (0, 255, 0), thickness=2)
-            # Annotate contact points and end points on the frame
-            # cv2.putText(frame, f"Contact Point: {contact_point}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"Endpoint: {end_point}", (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"Fx: {Fx}", (10, 110), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"Fy: {Fy}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"angle_to_use: {angle_to_use_1}", (10, 190), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"vector1_angle: {vector1_angle}", (10, 230), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"a1_coords: {a1_coords}", (10, 270), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"b1_coords: {b1_coords}", (10, 310), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"row: {force_row[5], force_row[6]}", (10, 350), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            return frame
+    def readData(self):
+        df = pd.read_excel(self.data_path)
+        self.force_1 = (df.iloc[18:, 2].astype(float).tolist(), df.iloc[18:, 3].astype(float).tolist())
+        self.force_2 = (df.iloc[18:, 11].astype(float).tolist(), df.iloc[18:, 12].astype(float).tolist())
 
-        # Find contact point and endpoint
-        contactpoint, endpoint, Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords, contactpoint2, endpoint2 = contact_point.find_contact_top(locationin=[[457, 643], [978, 648]], forcedata=force_row)
+        self.A_1 = (df.iloc[18:, 5].astype(float).tolist(), df.iloc[18:, 6].astype(float).tolist())
+        self.A_2 = (df.iloc[18:, 14].astype(float).tolist(), df.iloc[18:, 15].astype(float).tolist())
 
-        def flip(lst, frame_height):
-            if len(lst) > 1:
-                lst[1] = frame_height - lst[1]
-                return lst
-            else:
-                raise ValueError("List does not have enough elements to flip the second one.")
+        print(f"Data read successfully from {self.data_path}")
+        print(f"Number of frames of force data: {len(self.force_1[0])}")
 
-        # Draw annotations on the frame
-        annotated_frame = drawArrow(contactpoint, endpoint, frame, Fx1, Fy1, contactpoint2, endpoint2)
+    def drawArrows(self, frameNum, frame):
+        z_force_1 = self.force_1[1][frameNum]
+        y_force_1 = self.force_1[0][frameNum]
 
-        # Display the annotated frame
-        cv2.imshow('Annotated Frame', annotated_frame)
+        z_force_2 = self.force_2[1][frameNum]
+        y_force_2 = self.force_2[0][frameNum]
+        # print(self.corners)
+        force_plate_pixels = self.corners[1][0] - self.corners[0][0]
+        # the x difference in the first two corners on the first forceplate
+        force_plate_meters = 0.9
+        # cornerList is 4 points [tl_1, tr_1, tl_2, tr_2]
 
-        # Write to output video
-        out.write(annotated_frame)
+        pixelOffset_1 = (force_plate_pixels / force_plate_meters) * self.A_1[1][frameNum] +0.45*(force_plate_pixels / force_plate_meters) # Ay_1
+        start_point_1 = (self.corners[0][0] + round(pixelOffset_1), self.corners[0][1]) # a negative Ay val means moving to the right
 
-        # Check for user input to quit
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
+        end_point_1 = (start_point_1[0] + int(y_force_1), (start_point_1[1] - int(z_force_1)))
 
-        count_frame += 1
+        pixelOffset_2 = (force_plate_pixels / force_plate_meters) * self.A_2[1][frameNum] +0.45*(force_plate_pixels / force_plate_meters) # Ay_2
+        start_point_2 = (self.corners[2][0] + round(pixelOffset_2), self.corners[2][1])
 
-    # Release video capture and writer objects
-    cap.release()
-    out.release()
-    cv2.destroyAllWindows()
+        end_point_2 = (start_point_2[0] + int(y_force_2), (start_point_2[1] - int(z_force_2)))
 
-# Call the function
-VectorOverlay(topview, forcedata_path, output_name)
+        cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
+
+        cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
+
+    def createVectorOverlay(self, outputName):
+        self.setFrameData()
+        self.readData()
+
+        if self.frame_width is None or self.frame_height is None:
+            print("Error: Frame data not set.")
+            return
+
+        if self.force_1 is None or self.force_2 is None:
+            print("Error: Data not set.")
+            return
+
+        out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
+                             (self.frame_width, self.frame_height))
+
+        cap = cv.VideoCapture(self.side_view_path)
+        frame_number = 1
+        forceDataLength = len(self.force_1[0])
+        speedMult = math.floor(forceDataLength / self.frame_count)
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                # if this calls when the frame_number is equal to the total frame count then the stream has just ended
+                print(f"Can't read frame at position {frame_number}")
+                break
+
+            self.drawArrows(frame_number * speedMult, frame)
+            cv2.imshow("window", frame)
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+            frame_number += 1
+            out.write(frame)
+
+        cap.release()
+        out.release()
+        print(f"Finished processing video; Total Frames: {frame_number}")
+
+    def getCorners(self):
+        cap = cv.VideoCapture(self.side_view_path)
+
+        # tl_1, tr_1, tl_2, tr_2, bl_1, br_1, bl_2, br_2
+        coords = [(570, 900), (965, 900), (975, 900), (1370, 900), (485, 978), (958, 978), (965, 978), (1445, 978)]
+
+        if not cap.isOpened():
+            print("Error: Could not open video. ")
+            return
+
+        while True:
+            ret, frame = cap.read()
+            # forceplate1 = left, forceplate2 = left
+            for coord in coords:
+                cv.circle(frame, coord, 3, (0, 255, 0), 3)
+
+            if not ret:
+                print("Can't find frame")
+                break
+
+            cv.imshow("frame", frame)
+
+            if cv.waitKey(1) == ord("q"):  # gets the unicode value for q
+                break
+        cap.release()
+        cv.destroyAllWindows()
+        return coords
+
+
+v = VectorOverlay(top_view, side_view, forcedata_path)
+v.createVectorOverlay(output_name)
