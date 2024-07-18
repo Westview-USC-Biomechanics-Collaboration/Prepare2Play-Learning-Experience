@@ -40,7 +40,7 @@ def find_contact_top(locationin, forcedata):
     # Calculate the angle delta and meter to pixel ratio
     x_diff = float(force_plate["plate2"].iloc[0][0]) - float(force_plate["plate1"].iloc[0][0])
     y_diff = float(force_plate["plate2"].iloc[0][1]) - float(force_plate["plate1"].iloc[0][1])
-    angle_delta = math.atan(y_diff / x_diff)
+    angle_delta = -1*math.atan(y_diff / x_diff)
     ratio = math.sqrt(x_diff ** 2 + y_diff ** 2) / 0.9
     meter_pixel_ratio = -ratio
 
@@ -59,7 +59,7 @@ def find_contact_top(locationin, forcedata):
 
         angle_to_use_1 = angle_forceplate1 + (angle_delta if angle_delta else 0)
         vector1_angle = angle_force1 + (angle_delta if angle_delta else 0)
-
+        # print(f"angle to use: {angle_to_use_1}")
         endpoint1 = find_deltaxy(vector1_angle, HYPOTENUSE3)
         contactpoint1 = find_deltaxy(angle_to_use_1, HYPOTENUSE1)
         return contactpoint1, endpoint1, Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords
