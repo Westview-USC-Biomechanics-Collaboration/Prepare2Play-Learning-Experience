@@ -21,18 +21,19 @@ upper_color = np.array([100, 250, 255])
 # Contour centroids
 posX = []
 posY = []
+
+# Contour centroids - average
 centroidX = []
 centroidY = []
-
-# Frame counter (for Time)
 framenumber = []
-frame_counter = 0
-
-# Initial Velocity
 initialv = 0
 
 # Get fps
 fps = cap.get(cv2.CAP_PROP_FPS)
+frame_counter = 0
+
+# Scale size down
+scale_factor = 0.5
 
 # Create a named window with the ability to resize
 cv2.namedWindow('Resized Video Window', cv2.WINDOW_NORMAL)
@@ -40,8 +41,10 @@ cv2.namedWindow('Resized Video Window', cv2.WINDOW_NORMAL)
 # Resize the window
 cv2.resizeWindow('Resized Video Window', 980, 540)
 
-# Define a max distance to consider contours close to each other
+# Define a minimum distance to consider contours close to each other
 max_distance = 50
+
+input = input("Enter the part of the screen you want to detect: ")
 
 # Go over the video frame by frame
 while cap.isOpened():
@@ -50,13 +53,35 @@ while cap.isOpened():
         break
     frame_counter += 1
 
-    # Convert the frame to HSV color space
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    height, width, _ = frame.shape
 
-    # Create a mask for the defined color range
-    mask = cv2.inRange(hsv, lower_color, upper_color)
+    def screenDetect(screen_var):
+        hsv = cv2.cvtColor(screen_var, cv2.COLOR_BGR2HSV)
 
-    # Grab Contours
+        # Create a mask for the defined color range
+        mask = cv2.inRange(hsv, lower_color, upper_color)
+
+        # Apply the mask to the entire frame
+        result = cv2.bitwise_and(screen_var, screen_var, mask=mask)
+
+        return mask
+
+    if input ==  'top half':
+        screen_var = frame[0:height//2, :]
+        mask = screenDetect(screen_var)
+
+    elif input == 'top right':
+        screen_var = frame[0:height//2, width//2:width]
+        mask = screenDetect(screen_var)
+
+    elif input == 'full':
+        screen_var = frame[0:height, :]
+        mask = screenDetect(screen_var)
+    
+    else:
+        print("Error: unexpected input")
+        break
+
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # Filter contours based on proximity to other contours
@@ -86,25 +111,22 @@ while cap.isOpened():
         if M["m00"] != 0:
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
-            
-            sumx += cX
-            sumy += cY
-            legal += 1
-            
             if initialv != 0:
                 posX.append(cX)
                 posY.append(cY)
+            sumx += cX
+            sumy += cY
+            legal += 1
 
-                # Draw on the original frame
-                cv2.circle(frame, (cX, cY), 5, (0, 255, 0), -1) 
+            if initialv != 0:
+                cv2.circle(frame, (cX, cY), 5, (0, 255, 0), -1)  # Draw on the original frame
 
-    # Confirm that average centroid exists
+    # Begin initial velocity detection
     if legal != 0:
         centroidX.append(sumx / legal)
         centroidY.append(sumy / legal)
         framenumber.append(frame_counter)
 
-    # Begin initial velocity detection
     if initialv == 0 and len(centroidX) > 1:
         dx = (centroidX[-1] - centroidX[-2])/395
         dy = (centroidY[-1] - centroidY[-2]) /395
@@ -114,16 +136,17 @@ while cap.isOpened():
         vy = dy/t
 
         #tune this threshold
-        if vx**2 + vy**2 >= 7.98:
-            initialv = math.sqrt(vx**2 + vy**2) 
+        if vx**2 + vy**2 >= 10:
+            initialv = vx**2 + vy**2 
             print("Initial Velocity: ", initialv)
-    
+        else:
+            print("Curr Velocity", vx**2 + vy**2)
     for (x, y) in zip(posX, posY):
         if initialv != 0:
             cv2.circle(frame, (x, y), 3, (0, 255, 0), -1)
 
-    # Apply the mask to the entire frame
-    result = cv2.bitwise_and(frame, frame, mask=mask)
+    # # Apply the mask to the entire frame
+    # result = cv2.bitwise_and(frame, frame, mask=mask)
     
     # Draw out path of ball
     if initialv != 0 and len(posX) > 2 and len(posY) > 2:
@@ -151,6 +174,9 @@ while cap.isOpened():
 # Release the video capture and writer objects
 cap.release()
 out.release()
+
+# threshold 4.4704 qmeter/second
+# approximation: 395 pixels -> 1 meter
 
 # Close all OpenCV windows
 cv2.destroyAllWindows()
