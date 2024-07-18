@@ -53,4 +53,4 @@ def select_points(video_path, num_points=8):
     print("Points saved to selected_points.txt")
 
 # Example usage
-select_points('D:/Users/draar/OneDrive/Documents/GitHub/Prepare2Play-Learning-Experience/data/gis_lr_CC_vid03.mp4')
+# select_points('D:/Users/draar/OneDrive/Documents/GitHub/Prepare2Play-Learning-Experience/data/gis_lr_CC_vid03.mp4')

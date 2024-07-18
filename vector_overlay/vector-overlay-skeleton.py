@@ -6,6 +6,7 @@ import math
 from corner_detect import FindCorners
 from corner_detect import Views
 from vector_overlay_top import VectorOverlay as Topview
+from test_corners import select_points
 # Initialization
 def outputname(path):
     if "top" in path:
@@ -33,8 +34,12 @@ class VectorOverlay:
         self.force_1 = ()  # ([Y], [Z])
         self.force_2 = ()  # ([Y], [Z])
         self.corners = FindCorners(self.side_view_path).find(Views.Side) # [482,976] [959,977]
-        self.corners = [482,976],[959,977],[966,976]
+        # self.corners = [482,976],[959,977],[966,976]
 
+
+    def check_corner(self):
+        if self.corners == []:
+            select_points(video_path = self.side_view_path)
     def setFrameData(self):
         print(f"Opening video: {self.side_view_path}")
         cap = cv.VideoCapture(self.side_view_path)
@@ -68,6 +73,7 @@ class VectorOverlay:
 
         z_force_2 = self.force_2[1][frameNum]
         y_force_2 = self.force_2[0][frameNum]
+        self.check_corner()
         print(f"corners: {self.corners}")
         force_plate_pixels = self.corners[1][0] - self.corners[0][0]
 
