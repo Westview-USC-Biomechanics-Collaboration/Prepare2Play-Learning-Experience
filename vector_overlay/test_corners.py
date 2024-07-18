@@ -2,7 +2,7 @@ import cv2
 from PIL import Image
 
 # Function to select points
-def select_points(video_path, num_points=8):
+def select_points(video_path, top=False, num_points=8):
     # Open the video file
     cap = cv2.VideoCapture(video_path)
     
@@ -16,7 +16,10 @@ def select_points(video_path, num_points=8):
     
     ret, frame = cap.read()
     height, _, _ = frame.shape
-    frame = frame[height//2:, :, :]
+    if top:
+        frame = frame[height//4: height - height//4, :, :]
+    else:
+        frame = frame[height//2:, :, :]
 
     
     # Check if frame is read correctly
@@ -30,7 +33,10 @@ def select_points(video_path, num_points=8):
     # Function to capture click events
     def click_event(event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
-            points.append([x, y + height//2])
+            if top:
+                points.append((x, y + height//4))
+            else:
+                points.append((x, y + height//2))
             cv2.circle(frame, (x, y), 5, (0, 0, 255), -1)
             cv2.imshow('Frame', frame)
             
@@ -58,8 +64,5 @@ def select_points(video_path, num_points=8):
     
     print("Points saved to selected_points.txt")
 
-    return points
-
-
 # Example usage
-# select_points('D:/Users/draar/OneDrive/Documents/GitHub/Prepare2Play-Learning-Experience/data/gis_lr_CC_vid03.mp4')
+select_points('D:/Users/draar/OneDrive/Documents/GitHub/Prepare2Play-Learning-Experience/data/gis_lr_CC_vid03.mp4', True)
