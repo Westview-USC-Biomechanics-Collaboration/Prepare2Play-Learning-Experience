@@ -14,9 +14,12 @@ def outputname(path):
     else:
         output_name = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\outputs\\" + path[-20:-4] + "_vector_overlay.mp4"
 
+    return output_name
+
+# Change the paths to file and runs the program
 top_view = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\gis_lr_CC_top_vid03.mp4"
 side_view = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\gis_lr_CC_vid03.mp4"
-forcedata_path = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\gis_lr_CC_for03_Raw_Data.xlsx"
+forcedata_path = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\Trimmed of gis_lr_CC_for03_Raw_Data.xlsx"
 
 
 
@@ -40,7 +43,9 @@ class VectorOverlay:
 
 
     def check_corner(self):
+        print("Checking the corners")
         if self.corners == []:
+            print("Need human force")
             self.manual = True
             self.corners = select_points(video_path = self.side_view_path)
     def setFrameData(self):
@@ -184,11 +189,11 @@ v = VectorOverlay(top_view, side_view, forcedata_path)
 
 # side view
 output_name = outputname(side_view)
-# print(f"output file name: {output_name}")
-# v.createVectorOverlay(output_name)
+print(f"output file name: {output_name}")
+v.createVectorOverlay(output_name)
 
 # top view
 outputName = outputname(top_view)
 print(f"output file name: {outputName}")
 points_loc = select_points(v.top_view_path)
-Topview(top_view,forcedata_path,output_name, points_loc)
+Topview(top_view,forcedata_path,outputName, points_loc)

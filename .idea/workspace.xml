@@ -6,6 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Skeletonoverlay.py" beforeDir="false" afterPath="$PROJECT_DIR$/Skeletonoverlay.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/outputs/gis_lr_CC_side_vid03_vector_overlay.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/outputs/gis_lr_CC_side_vid03_vector_overlay_COM.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/outputs/gis_lr_CC_top_vid03_vector_overlay.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/outputs/gis_lr_CC_top_vid03_vector_overlay.mp4" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/contact_point.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/contact_point.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/selected_points.txt" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/selected_points.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/test_corners.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/test_corners.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/vector_overlay_top.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/vector_overlay_top.py" afterDir="false" />
@@ -66,6 +72,7 @@
     "Python.contact-point.executor": "Run",
     "Python.contact_point (1).executor": "Run",
     "Python.contact_point (2).executor": "Run",
+    "Python.contact_point.executor": "Run",
     "Python.filled-animation-graph.executor": "Run",
     "Python.segdim_deleva.executor": "Run",
     "Python.skeletonChaseVersion (1).executor": "Run",
@@ -93,7 +100,7 @@
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.vector-overlay-skeleton">
+  <component name="RunManager" selected="Python.Skeletonoverlay">
     <configuration name="Skeletonoverlay" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -116,6 +123,28 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="contact_point" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Prepare2Play-Learning-Experience-3" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/vector_overlay" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/vector_overlay/contact_point.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="test_corners" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -130,28 +159,6 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/vector_overlay/test_corners.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="testing02" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Prepare2Play-Learning-Experience-3" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/testing02.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -206,11 +213,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.vector-overlay-skeleton" />
-        <item itemvalue="Python.test_corners" />
         <item itemvalue="Python.Skeletonoverlay" />
+        <item itemvalue="Python.vector-overlay-skeleton" />
+        <item itemvalue="Python.contact_point" />
         <item itemvalue="Python.vector_overlay_top" />
-        <item itemvalue="Python.testing02" />
+        <item itemvalue="Python.test_corners" />
       </list>
     </recent_temporary>
   </component>

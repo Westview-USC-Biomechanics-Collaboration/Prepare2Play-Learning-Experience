@@ -42,28 +42,22 @@ def VectorOverlay(videopath, forcedata_path, filename, location):
         force_row = forcedata.iloc[row_to_use]
 
         # Function to draw arrow and annotate contact and endpoint
-        def drawArrow(contact_point, end_point, frame, Fx, Fy, contactpoint2, endpoint2):
+        def drawArrow(frame):
             # Draw circles at the contact points
-            cv2.circle(frame, center=contact_point, radius=7, color=(255, 0, 0), thickness=-1)
+            print(f"Contactpoints: {contactpoint1, contactpoint2}")
+            print(f"Centers: {center1,center2}")
+            cv2.circle(frame, center=center1, radius=7, color=(255, 0, 0), thickness=-1)
+            cv2.circle(frame, center=center2, radius=7, color=(255, 0, 0), thickness=-1)
+            cv2.circle(frame, center=contactpoint1, radius=7, color=(255, 0, 0), thickness=-1)
             cv2.circle(frame, center=contactpoint2, radius=7, color=(255, 0, 0), thickness=-1)
-            # cv2.circle(frame, center=[457, 643], radius=5, color=(255, 0, 255))
             # Draw arrowed lines from contact points to end points
-            cv2.arrowedLine(frame, contact_point, end_point, (0, 0, 255), thickness=2)
+            cv2.arrowedLine(frame, contactpoint1, endpoint1, (0, 0, 255), thickness=2)
             cv2.arrowedLine(frame, contactpoint2, endpoint2, (0, 255, 0), thickness=2)
-            # Annotate contact points and end points on the frame
-            # cv2.putText(frame, f"Contact Point: {contact_point}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"Endpoint: {end_point}", (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"Fx: {Fx}", (10, 110), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"Fy: {Fy}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"angle_to_use: {angle_to_use_1}", (10, 190), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"vector1_angle: {vector1_angle}", (10, 230), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"a1_coords: {a1_coords}", (10, 270), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"b1_coords: {b1_coords}", (10, 310), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            # cv2.putText(frame, f"row: {force_row[5], force_row[6]}", (10, 350), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            # cv2.putText(frame, f"force one plate 2: {force_row[10], force_row[11]}", (10, 350), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
             return frame
 
         # Find contact point and endpoint
-        contactpoint, endpoint, Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords, contactpoint2, endpoint2 = contact_point.find_contact_top(locationin=[location[7], location[5]], forcedata=force_row)
+        contactpoint1,endpoint1,center1, contactpoint2,endpoint2, center2 = contact_point.find_contact_top(locationin=[location[7], location[5]], forcedata=force_row)
 
         def flip(lst, frame_height):
             if len(lst) > 1:
@@ -73,7 +67,7 @@ def VectorOverlay(videopath, forcedata_path, filename, location):
                 raise ValueError("List does not have enough elements to flip the second one.")
 
         # Draw annotations on the frame
-        annotated_frame = drawArrow(contactpoint, endpoint, frame, Fx1, Fy1, contactpoint2, endpoint2)
+        annotated_frame = drawArrow(frame)
 
         # Display the annotated frame
         cv2.imshow('Annotated Frame', annotated_frame)
