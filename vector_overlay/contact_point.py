@@ -1,18 +1,6 @@
-import math
-import pandas as pd
-
-
 def find_contact_top(locationin, forcedata):
-    """
-    Find the contact point and force vector endpoint based on input location and force data.
-
-    Parameters:
-        locationin (list): A list containing two lists of force plate locations.
-        forcedata (pd.Series): The force data as a pandas Series.
-
-    Returns:
-        tuple: Contains contact points and endpoints for force vectors.
-    """
+    import math
+    import pandas as pd
 
     def round_list(lst):
         return [int(item) for item in lst]
@@ -24,11 +12,20 @@ def find_contact_top(locationin, forcedata):
     meter_pixel_ratio = x_diff/ 0.9
     # print(f"This is meter_pixel_ratio: {meter_pixel_ratio}")
     force_pixel_ratio = 10
-
+# Explainations
+# The direction of force and location is different on the forceplate:
+#  (0.0)                Ax
+#                       |
+#                       |
+#               Fy---------------Ay
+#                       |
+#                       |
+#                       Fx
     def find_contact_end(cornerlocation, Ax, Ay, fx, fy):
         # find center location in pixel
         center_location = [cornerlocation[0] + 0.5 * x_diff, cornerlocation[1] - x_diff / 3]
-        print(f"Center location: {center_location}")
+        # print(f"Center location: {center_location}")
+        # print(f"forcedata: {forcedata}")
         contactpoint = [center_location[0] + float(forcedata.iloc[Ay]) * meter_pixel_ratio,
                         center_location[1] - float(forcedata.iloc[Ax]) * meter_pixel_ratio]
         # The direction of Ax and Ay need to be fixed
