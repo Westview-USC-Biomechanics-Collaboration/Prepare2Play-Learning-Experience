@@ -5,7 +5,9 @@ from vector_overlay import contact_point
 # Paths
 topview = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\data\\gis_lr_CC_top_vid02.mp4"
 forcedata_path = "../data/gis_lr_CC_for03_Raw_Data.xlsx"
-output_name = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\outputs\\" + topview[-23:-4] + "_vector_overlay.mp4"
+output_name = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\outputs\\" + topview[
+                                                                                                     -23:-4] + "_vector_overlay.mp4"
+
 
 def VectorOverlay(videopath, forcedata_path, filename):
     # Load force data
@@ -61,7 +63,8 @@ def VectorOverlay(videopath, forcedata_path, filename):
             return frame
 
         # Find contact point and endpoint
-        contactpoint, endpoint, Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords, contactpoint2, endpoint2 = contact_point.find_contact_top(locationin=[[457, 643], [978, 648]], forcedata=force_row)
+        contactpoint, endpoint, Fx1, Fy1, angle_to_use_1, vector1_angle, a1_coords, b1_coords, contactpoint2, endpoint2 = contact_point.find_contact_top(
+            locationin=[[457, 643], [978, 648]], forcedata=force_row)
 
         def flip(lst, frame_height):
             if len(lst) > 1:
@@ -89,6 +92,7 @@ def VectorOverlay(videopath, forcedata_path, filename):
     cap.release()
     out.release()
     cv2.destroyAllWindows()
+
 
 # Call the function
 VectorOverlay(topview, forcedata_path, output_name)
