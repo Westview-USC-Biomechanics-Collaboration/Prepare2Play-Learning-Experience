@@ -142,6 +142,6 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
 
 
 # Example usage:
-video_path = 'data/bcp_lr_CC_vid02.mp4'  # Replace with your input video file path
-filename = "outputs/output_skeleton_Chase.mp4"
+video_path = 'outputs/gis_lr_CC_vid03_vector_overlay.mp4'  # Replace with your input video file path
+filename = "outputs/gis_lr_CC_vid03_vector_overlay_COM.mp4"
 find_coordinates(video_path, "m", filename=filename)
