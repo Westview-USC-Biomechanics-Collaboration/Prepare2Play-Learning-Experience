@@ -22,15 +22,15 @@ def outputname(path):
 top_view = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\data\\gis_lr_CC_top_vid03.mp4"
 side_view = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\data\\gis_lr_CC_vid03.mp4"
 forcedata_path = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\data\\Trimmed of gis_lr_CC_for03_Raw_Data.xlsx"
-
+smoothed_data = True
 
 class VectorOverlay:
 
-    def __init__(self, top_view_path, side_view_path, data_path):
+    def __init__(self, top_view_path, side_view_path, data_path,smooth = False):
         self.top_view_path = top_view_path
         self.side_view_path = side_view_path
         self.data_path = data_path
-
+        self.data = None
         self.frame_width, self.frame_height, self.fps, self.frame_count = None, None, None, None
         self.A_1 = ()  # ([Ax], [Ay])
         self.A_2 = ()  # ([Ax], [Ay])
@@ -40,9 +40,10 @@ class VectorOverlay:
         self.corners = FindCorners(self.side_view_path).find(Views.Side)  # [482,976] [959,977]
         # self.corners = [482,976],[959,977],[966,976]
         self.manual = False
+        self.smooth = smooth
 
     def check_corner(self):
-        print("Checking the corners")
+        # print("Checking the corners")
         if self.corners == []:
             print("Need human force")
             self.manual = True
@@ -66,36 +67,30 @@ class VectorOverlay:
 
     def readData(self):
         df = pd.read_excel(self.data_path, skiprows= 18)
-
-        # Print the shape of the DataFrame for debugging
-        # print(f"Original DataFrame shape: {df.shape}")
-
-        # Select only numeric columns
+        self.data = df
         numeric_df = df.select_dtypes(include=[np.number])
 
-        # Print the columns to ensure they match expected indices
-        # print(f"Columns in numeric_df: {numeric_df.columns}")
-
+        if self.smooth:
         # Apply rolling average to smooth data
-        window_size = 5  # You can adjust this value for smoother results
-        df_smoothed = numeric_df.rolling(window=window_size, min_periods=1).mean()
-
-        # Print the shape of the smoothed DataFrame for debugging
-        # print(f"Smoothed DataFrame shape: {df_smoothed.shape}")
-
-        # Check the number of columns available for indexing
-        if df_smoothed.shape[1] > 15 and len(df_smoothed) > 18:
-            self.force_1 = (
-            df_smoothed.iloc[18:, 2].astype(float).tolist(), df_smoothed.iloc[18:, 3].astype(float).tolist())
-            self.force_2 = (
-            df_smoothed.iloc[18:, 11].astype(float).tolist(), df_smoothed.iloc[18:, 12].astype(float).tolist())
-            self.A_1 = (
-            df_smoothed.iloc[18:, 5].astype(float).tolist(), df_smoothed.iloc[18:, 6].astype(float).tolist())
-            self.A_2 = (
-            df_smoothed.iloc[18:, 14].astype(float).tolist(), df_smoothed.iloc[18:, 15].astype(float).tolist())
+            window_size = 5  # You can adjust this value for smoother results
+            df_smoothed = numeric_df.rolling(window=window_size, min_periods=1).mean()
+            if df_smoothed.shape[1] > 15 and len(df_smoothed) > 18:
+                self.force_1 = (
+                df_smoothed.iloc[18:, 2].astype(float).tolist(), df_smoothed.iloc[18:, 3].astype(float).tolist())
+                self.force_2 = (
+                df_smoothed.iloc[18:, 11].astype(float).tolist(), df_smoothed.iloc[18:, 12].astype(float).tolist())
+                self.A_1 = (
+                df_smoothed.iloc[18:, 5].astype(float).tolist(), df_smoothed.iloc[18:, 6].astype(float).tolist())
+                self.A_2 = (
+                df_smoothed.iloc[18:, 14].astype(float).tolist(), df_smoothed.iloc[18:, 15].astype(float).tolist())
+            else:
+                print("Error: DataFrame does not have the required number of rows or columns.")
         else:
-            print("Error: DataFrame does not have the required number of rows or columns.")
+            self.force_1 = (df.iloc[18:, 2].astype(float).tolist(), df.iloc[18:, 3].astype(float).tolist())
+            self.force_2 = (df.iloc[18:, 11].astype(float).tolist(), df.iloc[18:, 12].astype(float).tolist())
 
+            self.A_1 = (df.iloc[18:, 5].astype(float).tolist(), df.iloc[18:, 6].astype(float).tolist())
+            self.A_2 = (df.iloc[18:, 14].astype(float).tolist(), df.iloc[18:, 15].astype(float).tolist())
         print(f"Data read successfully from {self.data_path}")
         print(f"Number of frames of force data: {len(self.force_1[0])}")
 
@@ -109,22 +104,15 @@ class VectorOverlay:
         # print(f"corners: {self.corners}")
         if self.manual == False:
             force_plate_pixels = self.corners[1][0] - self.corners[0][0]
-
-            # the x difference in the first two corners on the first forceplate
             force_plate_meters = 0.9
-            # cornerList is 4 points [tl_1, tr_1, tl_2, tr_2]
-
             pixelOffset_1 = (force_plate_pixels / force_plate_meters) * self.A_1[1][frameNum] + 0.45 * (
                     force_plate_pixels / force_plate_meters)  # Ay_1
             start_point_1 = (self.corners[0][0] + round(pixelOffset_1),
                              self.corners[0][1])  # a negative Ay val means moving to the right
-
             end_point_1 = (start_point_1[0] - int(y_force_1), (start_point_1[1] - int(z_force_1)))
-
             pixelOffset_2 = (force_plate_pixels / force_plate_meters) * self.A_2[1][frameNum] + 0.45 * (
                     force_plate_pixels / force_plate_meters)  # Ay_2
             start_point_2 = (self.corners[2][0] + round(pixelOffset_2), self.corners[2][1])
-
             end_point_2 = (start_point_2[0] - int(y_force_2), (start_point_2[1] - int(z_force_2)))
         else:
             # print(f"This is corner list: {self.corners}")
@@ -213,7 +201,7 @@ class VectorOverlay:
         return coords
 
 
-v = VectorOverlay(top_view, side_view, forcedata_path)
+v = VectorOverlay(top_view, side_view, forcedata_path,smoothed_data)
 
 # side view
 output_name = outputname(side_view)
@@ -224,4 +212,4 @@ v.createVectorOverlay(output_name)
 outputName = outputname(top_view)
 print(f"output file name: {outputName}")
 points_loc = select_points(v.top_view_path)
-Topview(top_view, forcedata_path, outputName, points_loc)
+Topview(top_view, v.data, outputName, points_loc, smoothed_data)

@@ -2,15 +2,17 @@
 # topview = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\data\\gis_lr_CC_top_vid03.mp4"
 # forcedata_path = "../data/gis_lr_CC_for03_Raw_Data.xlsx"
 # output_name = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\outputs\\" + topview[-23:-4] + "_vector_overlay.mp4"
-def VectorOverlay(videopath, forcedata_path, filename, location):
+def VectorOverlay(videopath, forcedata, filename, location, smooth = False):
     # import
     import cv2
     import pandas as pd
     from vector_overlay import contact_point
     # Load force data
-    forcedata = pd.read_excel(forcedata_path, skiprows=18)
-    window_size = 15  # Adjust this size according to your smoothing needs
-    forcedata_smoothed = forcedata.rolling(window=window_size, min_periods=1).mean()
+    forcedata = forcedata
+    if smooth:
+        window_size = 15  # Adjust this size according to your smoothing needs
+        forcedata= forcedata.rolling(window=window_size, min_periods=1).mean()
+
     # Open video
     cap = cv2.VideoCapture(videopath)
     if not cap.isOpened():
@@ -36,13 +38,8 @@ def VectorOverlay(videopath, forcedata_path, filename, location):
             print("Can't find frame")
             break
 
-        def calculate_average_value(data, start_row, window_size):
-            df_subset = data.iloc[start_row:(start_row + window_size)]
-            average_value = df_subset.mean(numeric_only=True)
-            return average_value
-
         current_row = int(count_frame * skiprows)
-        force_row = forcedata_smoothed.iloc[current_row]
+        force_row = forcedata.iloc[current_row]
 
         # Function to draw arrow and annotate contact and endpoint
         def drawArrow(frame):
