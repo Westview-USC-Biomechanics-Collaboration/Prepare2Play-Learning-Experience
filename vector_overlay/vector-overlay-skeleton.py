@@ -20,9 +20,9 @@ def outputname(path):
 
 # Change the paths to file and runs the program
 top_view = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\data\\gis_lr_CC_top_vid03.mp4"
-side_view = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\data\\gis_lr_CC_vid03.mp4"
-forcedata_path = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\data\\Trimmed of gis_lr_CC_for03_Raw_Data.xlsx"
-smoothed_data = True
+side_view = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\Trimmed of spu_lr_NS_for01_Raw_Video.mp4"
+forcedata_path = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\Trimmed of spu_lr_NS_for01_Raw_Data_new.xlsx"
+smoothed_data = False
 
 class VectorOverlay:
 
@@ -209,7 +209,7 @@ print(f"output file name: {output_name}")
 v.createVectorOverlay(output_name)
 
 # top view
-outputName = outputname(top_view)
-print(f"output file name: {outputName}")
-points_loc = select_points(v.top_view_path)
-Topview(top_view, v.data, outputName, points_loc, smoothed_data)
+# outputName = outputname(top_view)
+# print(f"output file name: {outputName}")
+# points_loc = select_points(v.top_view_path)
+# Topview(top_view, v.data, outputName, points_loc, smoothed_data)
