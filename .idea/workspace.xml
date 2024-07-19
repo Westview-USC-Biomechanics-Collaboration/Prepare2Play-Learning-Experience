@@ -4,14 +4,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="Adjusted some comments. The code should work">
-      <change afterPath="$PROJECT_DIR$/data/sbs_lr_SM_for02_Raw_Data_ - SM_SoftballSwing_Trial2_Raw_Data.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gis_lr_CC_top_vid03_vector_overlay.mp4" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vector_overlay/corner_detect.py" afterDir="false" />
+    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="Merged in some changes from vector-overlay-testing, going to now update the vector-overlay-testing branch so they both have working vector overlay code">
+      <change afterPath="$PROJECT_DIR$/data/Trimmed of gis_lr_CC_for03_Raw_Data.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/gis_lr_CC_top_vid03.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/gis_lr_CC_vid03.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/outputs/gis_lr_CC_top_vid03_vector_overlay_COM.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/outputs/gis_lr_CC_vid03_vector_overlay_COM.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/selected_points.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vector_overlay/selected_points.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vector_overlay/test_corners.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vector_overlay/vector_overlay_top.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ForceTimeGraphs.py" beforeDir="false" afterPath="$PROJECT_DIR$/ForceTimeGraphs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Skeletonoverlay.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates~Stashed changes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/gis_lr_CC_for02_Raw_Data.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/gis_lr_CC_for02_Raw_Data.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/gis_lr_CC_top_vid02.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/outputs/gis_lr_CC_vid03_vector_overlay.mp4" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/outputs/gis_lr_CC_top_vid02_vector_overlay.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/outputs/gis_lr_CC_top_vid03_vector_overlay.mp4" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/contact_point.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/contact_point.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/corner_detect.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/corner_detect.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -27,6 +37,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="deren-shoulder-trunk-angle" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -56,27 +71,30 @@
   &quot;keyToString&quot;: {
     &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
     &quot;Python.COM_humanbody.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Dash_graphing.executor&quot;: &quot;Run&quot;,
     &quot;Python.ForceTimeGraphs.executor&quot;: &quot;Run&quot;,
     &quot;Python.GraphAnimationChaseVersion (1).executor&quot;: &quot;Run&quot;,
     &quot;Python.Skeletonoverlay.executor&quot;: &quot;Run&quot;,
     &quot;Python.animations.executor&quot;: &quot;Run&quot;,
     &quot;Python.colorMask.executor&quot;: &quot;Run&quot;,
+    &quot;Python.contact-point.executor&quot;: &quot;Run&quot;,
+    &quot;Python.contact_point (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.contact_point (2).executor&quot;: &quot;Run&quot;,
+    &quot;Python.contact_point.executor&quot;: &quot;Run&quot;,
     &quot;Python.filled-animation-graph.executor&quot;: &quot;Run&quot;,
     &quot;Python.segdim_deleva.executor&quot;: &quot;Run&quot;,
     &quot;Python.skeletonChaseVersion (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_corners.executor&quot;: &quot;Run&quot;,
     &quot;Python.testing.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testing02.executor&quot;: &quot;Run&quot;,
     &quot;Python.testinganimation.executor&quot;: &quot;Run&quot;,
     &quot;Python.testingfile.executor&quot;: &quot;Run&quot;,
     &quot;Python.vector-overlay-skeleton.executor&quot;: &quot;Run&quot;,
+    &quot;Python.vector_overlay_top.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;vector-overlay&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/16199/Documents/GitHub/Prepare2Play-Learning-Experience-3&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/16199/Desktop/Prepare2Play-Learning-Experience-deren-shoulder-trunk-angle&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -84,37 +102,13 @@
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/vector-overlay" />
+      <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data" />
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs" />
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\Mediapipe-pose_landmarker" />
-      <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data" />
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
   <component name="RunManager" selected="Python.vector-overlay-skeleton">
-    <configuration name="COM_humanbody" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Prepare2Play-Learning-Experience-3" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/COM_humanbody.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="Skeletonoverlay" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -138,7 +132,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="skeletonChaseVersion (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="contact_point" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -147,12 +141,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/vector_overlay" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/skeletonChaseVersion.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/vector_overlay/contact_point.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -170,12 +164,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/vector_overlay" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/testing.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/vector_overlay/testing.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -193,12 +187,35 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/vector_overlay" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/vector-overlay/vector-overlay-skeleton.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="vector_overlay_top" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Prepare2Play-Learning-Experience-3" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/vector_overlay" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/vector_overlay/vector_overlay_top.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -210,18 +227,17 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.vector-overlay-skeleton" />
-        <item itemvalue="Python.Skeletonoverlay" />
-        <item itemvalue="Python.skeletonChaseVersion (1)" />
         <item itemvalue="Python.testing" />
-        <item itemvalue="Python.COM_humanbody" />
+        <item itemvalue="Python.vector_overlay_top" />
+        <item itemvalue="Python.Skeletonoverlay" />
+        <item itemvalue="Python.contact_point" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.17890.14" />
-        <option value="bundled-python-sdk-5b207ade9991-7e9c3bbb6e34-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.17890.14" />
+        <option value="bundled-python-sdk-5b207ade9991-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.17890.14" />
       </set>
     </attachedChunks>
   </component>
@@ -233,8 +249,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1719349570219</updated>
-      <workItem from="1721001202031" duration="1388000" />
-      <workItem from="1721059990104" duration="969000" />
     </task>
     <task id="LOCAL-00001" summary="python backend instead of javascript in html">
       <option name="closed" value="true" />
@@ -252,19 +266,16 @@
       <option name="project" value="LOCAL" />
       <updated>1719440650505</updated>
     </task>
-    <task id="LOCAL-00003" summary="I refactored the code in vector-overlay-skeleton.py.Ready for me to add the corner detection. The videos we are testing with aren't working but everything else is though.">
+    <task id="LOCAL-00003" summary="python backend instead of javascript in html">
       <option name="closed" value="true" />
-      <created>1721001568782</created>
+      <created>1721324574033</created>
       <option name="number" value="00003" />
       <option name="presentableId" value="LOCAL-00003" />
       <option name="project" value="LOCAL" />
-      <updated>1721001568782</updated>
+      <updated>1721324574033</updated>
     </task>
     <option name="localTasksCounter" value="4" />
     <servers />
-  </component>
-  <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
@@ -272,8 +283,7 @@
       <path value="$PROJECT_DIR$/USClabcodes" />
     </ignored-roots>
     <MESSAGE value="python backend instead of javascript in html" />
-    <MESSAGE value="I refactored the code in vector-overlay-skeleton.py.Ready for me to add the corner detection. The videos we are testing with aren't working but everything else is though." />
-    <MESSAGE value="Adjusted some comments. The code should work" />
-    <option name="LAST_COMMIT_MESSAGE" value="Adjusted some comments. The code should work" />
+    <MESSAGE value="Merged in some changes from vector-overlay-testing, going to now update the vector-overlay-testing branch so they both have working vector overlay code" />
+    <option name="LAST_COMMIT_MESSAGE" value="Merged in some changes from vector-overlay-testing, going to now update the vector-overlay-testing branch so they both have working vector overlay code" />
   </component>
 </project>
