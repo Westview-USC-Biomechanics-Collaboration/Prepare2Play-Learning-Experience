@@ -12,16 +12,16 @@ import numpy as np
 # Initialization
 def outputname(path):
     if "top" in path:
-        output_name = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\outputs\\" + path[-23:-4] + "_vector_overlay.mp4"
+        output_name = "outputs\\" + path[-23:-4] + "_vector_overlay.mp4"
     else:
-        output_name = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\outputs\\" + path[-20:-4] + "_vector_overlay.mp4"
+        output_name = "outputs\\" + path[-20:-4] + "_vector_overlay.mp4"
 
     return output_name
 
 # Change the paths to file and runs the program
-top_view = "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\data\\gis_lr_CC_top_vid03.mp4"
-side_view = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\Trimmed of spu_lr_NS_for01_Raw_Video.mp4"
-forcedata_path = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\Trimmed of spu_lr_NS_for01_Raw_Data_new.xlsx"
+top_view = "data\\gis_lr_CC_top_vid03.mp4"
+side_view = "data\\Trimmed of spu_lr_NS_for01_Raw_Video.mp4"
+forcedata_path = "data\\Trimmed of spu_lr_NS_for01_Raw_Data_new.xlsx"
 smoothed_data = False
 
 class VectorOverlay:
