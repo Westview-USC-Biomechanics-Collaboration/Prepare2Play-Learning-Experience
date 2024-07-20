@@ -96,20 +96,20 @@ class VectorOverlay:
         df = pd.read_excel(self.data_path, skiprows= 18)
         self.data = df
 
-        rows = self.data.shape[0]
-        step_size = rows/frame_count
-        current_row = 0
-        next_row = step_size
-        first_values = []
-        second_values = []
-        for i in range(frame_count):
-            f_val = xycoords[current_row: round(next_row), 0]
-            s_val = xycoords[current_row: round(next_row), 1]
-            first_values.append(f_val.mean())
-            second_values.append(s_val.mean())
-            current_row = next_row
-            next_row+=step_size
-        print(first_values, second_values)
+        # rows = self.data.shape[0]
+        # step_size = rows/frame_count
+        # current_row = 0
+        # next_row = step_size
+        # first_values = []
+        # second_values = []
+        # for i in range(frame_count):
+        #     f_val = xycoords[current_row: round(next_row), 0]
+        #     s_val = xycoords[current_row: round(next_row), 1]
+        #     first_values.append(f_val.mean())
+        #     second_values.append(s_val.mean())
+        #     current_row = next_row
+        #     next_row+=step_size
+        # print(first_values, second_values)
 
 
 
