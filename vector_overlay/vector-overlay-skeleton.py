@@ -54,12 +54,19 @@ class VectorOverlay:
         self.data_path = data_path
         df = pd.read_excel(self.data_path, skiprows= 18)
         self.data = df
+
         self.frame_width, self.frame_height, self.fps, self.frame_count = None, None, None, None
+        
+        self.fx = ()
+        self.fy = ()
+        self.fz = ()
+        
         self.A_1 = ()  # ([Ax], [Ay])
         self.A_2 = ()  # ([Ax], [Ay])
 
         self.force_1 = ()  # ([Y], [Z])
         self.force_2 = ()  # ([Y], [Z])
+        
         self.corners = FindCorners(self.side_view_path).find(Views.Side)  # [482,976] [959,977]
         # self.corners = [482,976],[959,977],[966,976]
         self.manual = False
