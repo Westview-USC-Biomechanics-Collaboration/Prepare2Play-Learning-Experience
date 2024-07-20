@@ -66,7 +66,7 @@ class VectorOverlay:
 
         self.force_1 = ()  # ([Y], [Z])
         self.force_2 = ()  # ([Y], [Z])
-        
+
         self.corners = FindCorners(self.side_view_path).find(Views.Side)  # [482,976] [959,977]
         # self.corners = [482,976],[959,977],[966,976]
         self.manual = False
@@ -100,23 +100,30 @@ class VectorOverlay:
         frame_height = self.frame_width
         fps = self.fps
         frame_count = self.frame_count
+
         df = pd.read_excel(self.data_path, skiprows= 18)
         self.data = df
 
-        # rows = self.data.shape[0]
-        # step_size = rows/frame_count
-        # current_row = 0
-        # next_row = step_size
-        # first_values = []
-        # second_values = []
-        # for i in range(frame_count):
-        #     f_val = xycoords[current_row: round(next_row), 0]
-        #     s_val = xycoords[current_row: round(next_row), 1]
-        #     first_values.append(f_val.mean())
-        #     second_values.append(s_val.mean())
-        #     current_row = next_row
-        #     next_row+=step_size
-        # print(first_values, second_values)
+        rows = self.data.shape[0]
+        step_size = rows/frame_count
+
+        current_row = 0
+        fx = []
+        fy = []
+        fz = []
+        for i in range(frame_count):
+            start_row = int(round(current_row))
+            end_row = int(round(current_row + step_size))
+
+            data_x = self.data.iloc[start_row:end_row, 1].astype('float64')
+            data_y = self.data.iloc[start_row:end_row, 2].astype('float64')
+            data_z = self.data.iloc[start_row:end_row, 3].astype('float64')
+
+            fx.append(data_x.mean())
+            fy.append(data_y.mean())
+            fz.append(data_z.mean())
+            current_row+=step_size
+        print(fx, fy, fz)
 
 
 
