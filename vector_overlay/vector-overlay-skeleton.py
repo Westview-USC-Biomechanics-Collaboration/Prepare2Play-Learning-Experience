@@ -46,6 +46,45 @@ def get_files_from_folder(folder):
     # top, side, data
     return mp4_files[1], mp4_files[0], xlsx_file
 
+def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
+    """
+    Maps points from a rectangle to a trapezoid, simulating parallax distortion.
+    
+    Parameters:
+    x, y: Coordinates of the point in the original rectangle (0 <= x <= rect_width, 0 <= y <= rect_height)
+    rect_width, rect_height: Dimensions of the original rectangle
+    trapezoid_coords: List of four (x, y) tuples representing the trapezoid corners in order:
+                      [(top_left), (top_right), (bottom_right), (bottom_left)]
+    
+    Returns:
+    new_x, new_y: Pixel coordinates of the mapped point in the trapezoid
+    """
+    # Ensure input coordinates are within the rectangle
+    x = np.clip(x, 0, rect_width)
+    y = np.clip(y, 0, rect_height)
+    
+    # Extract trapezoid coordinates
+    (tl_x, tl_y), (tr_x, tr_y), (br_x, br_y), (bl_x, bl_y) = trapezoid_coords
+    
+    # Calculate the left and right edge positions for the current y
+    left_x = tl_x + (bl_x - tl_x) * (y / rect_height)
+    right_x = tr_x + (br_x - tr_x) * (y / rect_height)
+    
+    # Calculate the width of the trapezoid at the current y
+    trapezoid_width = right_x - left_x
+    
+    # Map x-coordinate
+    new_x = left_x + (x / rect_width) * trapezoid_width
+    
+    # Calculate the top and bottom y positions of the trapezoid
+    top_y = (tl_y + tr_y) / 2
+    bottom_y = (bl_y + br_y) / 2
+    
+    # Map y-coordinate
+    new_y = top_y + (y / rect_height) * (bottom_y - top_y)
+    
+    return new_x, new_y
+
 class VectorOverlay:
 
     def __init__(self, top_view_path, side_view_path, data_path,smooth = False):
@@ -57,11 +96,17 @@ class VectorOverlay:
 
         self.frame_width, self.frame_height, self.fps, self.frame_count = None, None, None, None
         
-        self.fx = ()
-        self.fy = ()
-        self.fz = ()
-        self.px = ()
-        self.py = ()
+        self.fx1 = ()
+        self.fy1 = ()
+        self.fz1 = ()
+        self.px1 = ()
+        self.py1 = ()
+
+        self.fx2 = ()
+        self.fy2 = ()
+        self.fz2 = ()
+        self.px2 = ()
+        self.py2 = ()
 
         self.A_1 = ()  # ([Ax], [Ay])
         self.A_2 = ()  # ([Ax], [Ay])
@@ -111,34 +156,57 @@ class VectorOverlay:
         step_size = rows/frame_count
 
         current_row = 0
-        fx = []
-        fy = []
-        fz = []
-        px = []
-        py = []
+        fx1 = []
+        fy1 = []
+        fz1 = []
+        px1 = []
+        py1 = []
+
+        fx2 = []
+        fy2 = []
+        fz2 = []
+        px2 = []
+        py2 = []
         for i in range(frame_count):
             start_row = int(round(current_row))
             end_row = int(round(current_row + step_size))
 
-            data_x = self.data.iloc[start_row:end_row, 1].astype('float64')
-            data_y = self.data.iloc[start_row:end_row, 2].astype('float64')
-            data_z = self.data.iloc[start_row:end_row, 3].astype('float64')
-            pressure_x = self.data.iloc[start_row:end_row, 5].astype('float64')
-            pressure_y = self.data.iloc[start_row:end_row, 6].astype('float64')
+            data_x1 = self.data.iloc[start_row:end_row, 1].astype('float64')
+            data_y1 = self.data.iloc[start_row:end_row, 2].astype('float64')
+            data_z1 = self.data.iloc[start_row:end_row, 3].astype('float64')
+            pressure_x1 = self.data.iloc[start_row:end_row, 5].astype('float64')
+            pressure_y1 = self.data.iloc[start_row:end_row, 6].astype('float64')
 
-            fx.append(data_x.mean())
-            fy.append(data_y.mean())
-            fz.append(data_z.mean())
-            px.append(pressure_x.mean())
-            py.append(pressure_y.mean())
+            data_x2 = self.data.iloc[start_row:end_row, 10].astype('float64')
+            data_y2 = self.data.iloc[start_row:end_row, 11].astype('float64')
+            data_z2 = self.data.iloc[start_row:end_row, 12].astype('float64')
+            pressure_x2 = self.data.iloc[start_row:end_row, 14].astype('float64')
+            pressure_y2 = self.data.iloc[start_row:end_row, 15].astype('float64')
+
+            fx1.append(data_x1.mean())
+            fy1.append(data_y1.mean())
+            fz1.append(data_z1.mean())
+            px1.append(pressure_x1.mean())
+            py1.append(pressure_y1.mean())
+
+            fx2.append(data_x2.mean())
+            fy2.append(data_y2.mean())
+            fz2.append(data_z2.mean())
+            px2.append(pressure_x2.mean())
+            py2.append(pressure_y2.mean())
             current_row+=step_size
         
-        self.fx = tuple(fx)
-        self.fy = tuple(fy)
-        self.fz = tuple(fz)
-        self.px = tuple(px)
-        self.py = tuple(py)
+        self.fx1 = tuple(fx1)
+        self.fy1 = tuple(fy1)
+        self.fz1 = tuple(fz1)
+        self.px1 = tuple(px1)
+        self.py1 = tuple(py1)
 
+        self.fx2 = tuple(fx2)
+        self.fy2 = tuple(fy2)
+        self.fz2 = tuple(fz2)
+        self.px2 = tuple(px2)
+        self.py2 = tuple(py2)
 
 
         
