@@ -60,7 +60,9 @@ class VectorOverlay:
         self.fx = ()
         self.fy = ()
         self.fz = ()
-        
+        self.px = ()
+        self.py = ()
+
         self.A_1 = ()  # ([Ax], [Ay])
         self.A_2 = ()  # ([Ax], [Ay])
 
@@ -130,7 +132,12 @@ class VectorOverlay:
             px.append(pressure_x.mean())
             py.append(pressure_y.mean())
             current_row+=step_size
-        # print(fx, fy, fz, px, py)
+        
+        self.fx = tuple(fx)
+        self.fy = tuple(fy)
+        self.fz = tuple(fz)
+        self.px = tuple(px)
+        self.py = tuple(py)
 
 
 
