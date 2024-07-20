@@ -8,7 +8,7 @@ from corner_detect import Views
 from vector_overlay_top import VectorOverlay as Topview
 from test_corners import select_points
 import numpy as np
-
+import os
 # Initialization
 def outputname(path):
     if "top" in path:
@@ -18,11 +18,33 @@ def outputname(path):
 
     return output_name
 
-# Change the paths to file and runs the program
-top_view = "data\\gis_lr_CC_top_vid03.mp4"
-side_view = "data\\Trimmed of spu_lr_NS_for01_Raw_Video.mp4"
-forcedata_path = "data\\Trimmed of spu_lr_NS_for01_Raw_Data_new.xlsx"
-smoothed_data = False
+def get_files_from_folder(folder):
+    xlsx_file = None
+    mp4_files = []
+
+    # Check if the folder exists
+    if not os.path.isdir(folder):
+        return None, None, None
+
+    # Iterate through files in the folder
+    for file in os.listdir(folder):
+        if file.endswith('.xlsx'):
+            xlsx_file = os.path.join(folder, file)
+        elif file.endswith('.mp4'):
+            mp4_files.append(os.path.join(folder, file))
+        
+        # Break the loop if we have found all required files
+        if xlsx_file and len(mp4_files) == 2:
+            break
+            
+    # If we didn't find exactly two .mp4 files and one .xlsx file, return None
+    if len(mp4_files) != 2 or xlsx_file is None:
+        return None, None, None
+
+    mp4_files.sort(key=lambda x: len(os.path.basename(x)))
+
+    # top, side, data
+    return mp4_files[1], mp4_files[0], xlsx_file
 
 class VectorOverlay:
 
@@ -30,7 +52,8 @@ class VectorOverlay:
         self.top_view_path = top_view_path
         self.side_view_path = side_view_path
         self.data_path = data_path
-        self.data = None
+        df = pd.read_excel(self.data_path, skiprows= 18)
+        self.data = df
         self.frame_width, self.frame_height, self.fps, self.frame_count = None, None, None, None
         self.A_1 = ()  # ([Ax], [Ay])
         self.A_2 = ()  # ([Ax], [Ay])
@@ -66,8 +89,31 @@ class VectorOverlay:
         cap.release()
 
     def readData(self):
+        frame_width = self.frame_height
+        frame_height = self.frame_width
+        fps = self.fps
+        frame_count = self.frame_count
         df = pd.read_excel(self.data_path, skiprows= 18)
         self.data = df
+
+        rows = self.data.shape[0]
+        step_size = rows/frame_count
+        current_row = 0
+        next_row = step_size
+        first_values = []
+        second_values = []
+        for i in range(frame_count):
+            f_val = xycoords[current_row: round(next_row), 0]
+            s_val = xycoords[current_row: round(next_row), 1]
+            first_values.append(f_val.mean())
+            second_values.append(s_val.mean())
+            current_row = next_row
+            next_row+=step_size
+        print(first_values, second_values)
+
+
+
+        
         numeric_df = df.select_dtypes(include=[np.number])
 
         if self.smooth:
@@ -200,8 +246,16 @@ class VectorOverlay:
         cv.destroyAllWindows()
         return coords
 
+folder = "data\\Formated_files"
 
-v = VectorOverlay(top_view, side_view, forcedata_path,smoothed_data)
+#these are the file paths
+top_view, side_view, forcedata = get_files_from_folder(folder)
+
+smoothed_data = False
+
+
+
+v = VectorOverlay(top_view, side_view, forcedata,smoothed_data)
 
 # side view
 output_name = outputname(side_view)
