@@ -41,7 +41,10 @@ def dropdown():
         # Handle GET request (initial page load)
         return render_template('MovementDropDown.html', sports=sport, movements=movements,
                                selected_sport=selected_sport)
-
+    
+@app.route('/SportsTemplate')
+def sports_template():
+    return render_template('SportsTemplate.html')
 
 @app.route('/graph')
 def graph():
