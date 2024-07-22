@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # Open the video file
-cap = cv2.VideoCapture('data\derenBasketballTest1.mp4')
+cap = cv2.VideoCapture("Prepare2Play-Learning-Experience/data/derenBasketballTest1.mp4")
 
 # Check if the video opened successfully
 if not cap.isOpened():
@@ -11,22 +11,22 @@ if not cap.isOpened():
 
 # Define the codec and create a VideoWriter object to save the output video
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output_video.avi', fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
+out = cv2.VideoWriter('outputs/output_video.avi', fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
 
-#orange: 87, 138, 252
-lower_color = np.array([0, 100, 155])
-upper_color = np.array([100, 250, 255])
+# orange: 87, 138, 252
+lower_color = np.array([0, 110, 155])
+upper_color = np.array([10, 250, 255])
 
-#slow the video down
+# slow the video down
 fps = cap.get(cv2.CAP_PROP_FPS)
 slow_factor = 2
 
-delay = int((1000/fps)*slow_factor)
+delay = int((1000 / fps) * slow_factor)
 
-#scale size down
+# scale size down
 scale_factor = 0.5
 
-#go over the video frame by frame
+# go over the video frame by frame
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
@@ -46,6 +46,10 @@ while cap.isOpened():
 
     # Write the frame to the output video file
     out.write(small_result)
+
+    bw = cv2.cvtColor(small_result, cv2.COLOR_BGR2GRAY)
+    contours, hierarchy = cv2.findContours(bw, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.drawContours(small_result, contours, -1, (0, 255, 0), 3)
 
     # Display the resulting frame (optional)
     cv2.imshow('Frame', small_result)
