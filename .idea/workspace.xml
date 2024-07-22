@@ -6,11 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="Merged in some changes from vector-overlay-testing, going to now update the vector-overlay-testing branch so they both have working vector overlay code">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cal_COM.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/Cal_COM.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/bcp_lr_CC_for02_Raw_Data.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/bcp_lr_CC_vid02.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/segdim_deleva.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/segdim_deleva.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/segments.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/segments.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
