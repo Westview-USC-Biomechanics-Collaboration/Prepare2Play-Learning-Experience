@@ -1,5 +1,4 @@
 # Import libraries
-import cv2
 import cv2 as cv
 import pandas as pd
 import math
@@ -9,24 +8,26 @@ from vector_overlay_top import VectorOverlay as Topview
 from test_corners import select_points
 import numpy as np
 
+
 # Initialization
 def outputname(path):
     if "top" in path:
-        output_name = "outputs\\" + path[-23:-4] + "_vector_overlay.mp4"
+        output_name = "outputs/" + path[-23:-4] + "_vector_overlay.mp4"
     else:
-        output_name = "outputs\\" + path[-20:-4] + "_vector_overlay.mp4"
+        output_name = "outputs/" + path[-20:-4] + "_vector_overlay.mp4"
 
     return output_name
 
+
 # Change the paths to file and runs the program
-top_view = "data\\gis_lr_CC_top_vid03.mp4"
-side_view = "data\\Trimmed of spu_lr_NS_for01_Raw_Video.mp4"
-forcedata_path = "data\\Trimmed of spu_lr_NS_for01_Raw_Data_new.xlsx"
-smoothed_data = False
+top_view = "data/gis_lr_CC_top_vid03.mp4"
+side_view = "data/Trimmed of spu_lr_NS_for01_Raw_Video.mp4"
+forcedata_path = "data/Trimmed of spu_lr_NS_for01_Raw_Data_new.xlsx"
+
 
 class VectorOverlay:
 
-    def __init__(self, top_view_path, side_view_path, data_path,smooth = False):
+    def __init__(self, top_view_path, side_view_path, data_path, smooth=False):
         self.top_view_path = top_view_path
         self.side_view_path = side_view_path
         self.data_path = data_path
@@ -44,7 +45,7 @@ class VectorOverlay:
 
     def check_corner(self):
         # print("Checking the corners")
-        if self.corners == []:
+        if not self.corners:
             print("Need human force")
             self.manual = True
             self.corners = select_points(video_path=self.side_view_path)
@@ -66,31 +67,25 @@ class VectorOverlay:
         cap.release()
 
     def readData(self):
-        df = pd.read_excel(self.data_path, skiprows= 18)
+        df = pd.read_excel(self.data_path, skiprows=18)
         self.data = df
         numeric_df = df.select_dtypes(include=[np.number])
 
         if self.smooth:
-        # Apply rolling average to smooth data
+            # Apply rolling average to smooth data
             window_size = 5  # You can adjust this value for smoother results
             df_smoothed = numeric_df.rolling(window=window_size, min_periods=1).mean()
-            if df_smoothed.shape[1] > 15 and len(df_smoothed) > 18:
-                self.force_1 = (
-                df_smoothed.iloc[18:, 2].astype(float).tolist(), df_smoothed.iloc[18:, 3].astype(float).tolist())
-                self.force_2 = (
-                df_smoothed.iloc[18:, 11].astype(float).tolist(), df_smoothed.iloc[18:, 12].astype(float).tolist())
-                self.A_1 = (
-                df_smoothed.iloc[18:, 5].astype(float).tolist(), df_smoothed.iloc[18:, 6].astype(float).tolist())
-                self.A_2 = (
-                df_smoothed.iloc[18:, 14].astype(float).tolist(), df_smoothed.iloc[18:, 15].astype(float).tolist())
-            else:
-                print("Error: DataFrame does not have the required number of rows or columns.")
-        else:
-            self.force_1 = (df.iloc[18:, 2].astype(float).tolist(), df.iloc[18:, 3].astype(float).tolist())
-            self.force_2 = (df.iloc[18:, 11].astype(float).tolist(), df.iloc[18:, 12].astype(float).tolist())
+            df = df_smoothed
 
-            self.A_1 = (df.iloc[18:, 5].astype(float).tolist(), df.iloc[18:, 6].astype(float).tolist())
-            self.A_2 = (df.iloc[18:, 14].astype(float).tolist(), df.iloc[18:, 15].astype(float).tolist())
+            if df_smoothed.shape[1] <= 15 and len(df_smoothed) <= 18:
+                raise Exception("Error: DataFrame does not have the required number of rows or columns.")
+
+        self.force_1 = (df.iloc[18:, 2].astype(float).tolist(), df.iloc[18:, 3].astype(float).tolist())
+        self.force_2 = (df.iloc[18:, 11].astype(float).tolist(), df.iloc[18:, 12].astype(float).tolist())
+
+        self.A_1 = (df.iloc[18:, 5].astype(float).tolist(), df.iloc[18:, 6].astype(float).tolist())
+        self.A_2 = (df.iloc[18:, 14].astype(float).tolist(), df.iloc[18:, 15].astype(float).tolist())
+
         print(f"Data read successfully from {self.data_path}")
         print(f"Number of frames of force data: {len(self.force_1[0])}")
 
@@ -102,16 +97,20 @@ class VectorOverlay:
         y_force_2 = self.force_2[0][frameNum]
         self.check_corner()
         # print(f"corners: {self.corners}")
-        if self.manual == False:
+        if not self.manual:
             force_plate_pixels = self.corners[1][0] - self.corners[0][0]
             force_plate_meters = 0.9
+
             pixelOffset_1 = (force_plate_pixels / force_plate_meters) * self.A_1[1][frameNum] + 0.45 * (
                     force_plate_pixels / force_plate_meters)  # Ay_1
+
             start_point_1 = (self.corners[0][0] + round(pixelOffset_1),
                              self.corners[0][1])  # a negative Ay val means moving to the right
             end_point_1 = (start_point_1[0] - int(y_force_1), (start_point_1[1] - int(z_force_1)))
+
             pixelOffset_2 = (force_plate_pixels / force_plate_meters) * self.A_2[1][frameNum] + 0.45 * (
                     force_plate_pixels / force_plate_meters)  # Ay_2
+
             start_point_2 = (self.corners[2][0] + round(pixelOffset_2), self.corners[2][1])
             end_point_2 = (start_point_2[0] - int(y_force_2), (start_point_2[1] - int(z_force_2)))
         else:
@@ -162,8 +161,8 @@ class VectorOverlay:
                 break
 
             self.drawArrows(frame_number * speedMult, frame)
-            cv2.imshow("window", frame)
-            if cv2.waitKey(1) & 0xFF == ord("q"):
+            cv.imshow("window", frame)
+            if cv.waitKey(1) & 0xFF == ord("q"):
                 break
             frame_number += 1
             out.write(frame)
@@ -172,36 +171,8 @@ class VectorOverlay:
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
-    def getCorners(self):
-        cap = cv.VideoCapture(self.side_view_path)
 
-        # tl_1, tr_1, tl_2, tr_2, bl_1, br_1, bl_2, br_2
-        coords = [(570, 900), (965, 900), (975, 900), (1370, 900), (485, 978), (958, 978), (965, 978), (1445, 978)]
-
-        if not cap.isOpened():
-            print("Error: Could not open video. ")
-            return
-
-        while True:
-            ret, frame = cap.read()
-            # forceplate1 = left, forceplate2 = left
-            for coord in coords:
-                cv.circle(frame, coord, 3, (0, 255, 0), 3)
-
-            if not ret:
-                print("Can't find frame")
-                break
-
-            cv.imshow("frame", frame)
-
-            if cv.waitKey(1) == ord("q"):  # gets the unicode value for q
-                break
-        cap.release()
-        cv.destroyAllWindows()
-        return coords
-
-
-v = VectorOverlay(top_view, side_view, forcedata_path,smoothed_data)
+v = VectorOverlay(top_view, side_view, forcedata_path, False)
 
 # side view
 output_name = outputname(side_view)
