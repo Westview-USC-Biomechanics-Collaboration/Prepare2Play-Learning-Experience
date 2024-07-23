@@ -110,7 +110,6 @@ class VectorOverlay:
 
         self.corners = []
         self.manual = False
-        self.smooth = smooth
 
     def check_corner(self):
         # print("Checking the corners")
