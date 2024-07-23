@@ -259,7 +259,7 @@ class VectorOverlay:
             print("Error: Frame data not set.")
             return
 
-        if self.fz1 is None or self.fz2 is None: 
+        if self.fz1 is None or self.fz2 is None:
             print("Error: Data not set.")
             return
 
