@@ -2,10 +2,10 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import pandas as pd
-from Cal_COM import calculateCOM
+from vector_overlay.Cal_COM import calculateCOM
 
 
-def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displayname=False):
+def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displayname=False, displaystickfigure=False, displayCOM=False):
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=confidencelevel, model_complexity=2)
 
@@ -33,7 +33,7 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
         pose_landmarks_list = [results.pose_landmarks] if results.pose_landmarks else []
 
         # Draw landmarks on the frame
-        annotated_frame = draw_landmarks_on_image(np.copy(frame), pose_landmarks_list, sex, displayname)
+        annotated_frame = draw_landmarks_on_image(np.copy(frame), pose_landmarks_list, sex, displayname,displaystickfigure,displayCOM)
 
         # Write the annotated frame to the output video file
         out.write(annotated_frame)
@@ -49,7 +49,7 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
     cv2.destroyAllWindows()
 
 
-def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayname=False):
+def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayname=False,displaystickfigure=False,displayCOM=False):
     pose_landmark_names = {
         0: "nose",
         1: "left_eye_inner",
@@ -105,13 +105,28 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
                 cx, cy = int(landmark.x * w), int(landmark.y * h)
                 data.append(cx)
                 data.append(cy)
-                # Draw landmark as a circle
-                cv2.circle(annotated_image, (cx, cy), 5, (0, 255, 0), -1)
+                if displaystickfigure == True:
+                    # Draw landmark as a circle
+                    cv2.circle(annotated_image, (cx, cy), 5, (0, 255, 0), -1)
+                    # Draw lines connecting landmarks
+                    for connection in pose_connections:
+                        start_landmark = pose_landmarks.landmark[connection[0]]
+                        end_landmark = pose_landmarks.landmark[connection[1]]
 
-                # optional: Put text next to the joint
-                if displayname:
-                    cv2.putText(annotated_image, landmark_name, (cx + 5, cy + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+                        # Only draw the line if both landmarks are visible
+                        if start_landmark.visibility > 0 and end_landmark.visibility > 0:
+                            start_x, start_y = int(start_landmark.x * w), int(start_landmark.y * h)
+                            end_x, end_y = int(end_landmark.x * w), int(end_landmark.y * h)
+
+                            # Draw the line between the two landmarks
+                            cv2.line(annotated_image, (start_x, start_y), (end_x, end_y), (255, 255, 255), 2)
+
+                    # optional: Put text next to the joint
+                    if displayname:
+                        cv2.putText(annotated_image, landmark_name, (cx + 5, cy + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
                                 (255, 255, 255), 1, cv2.LINE_AA)
+
+
 
         # Get index label
         columns_name = []
@@ -119,29 +134,18 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
             columns_name.append(str(pose_landmark_names[i]) + "_x")
             columns_name.append(str(pose_landmark_names[i]) + "_y")
 
-        datain = pd.Series(data, index=columns_name, name="Datain Series")
-
         # Find COM
-        dataout = calculateCOM(datain, sex)
-        cv2.circle(annotated_image, (int(dataout[0]), int(dataout[1])), 7, (0, 0, 255), -1)
+        if displayCOM == True:
+            datain = pd.Series(data, index=columns_name, name="Datain Series")
+            dataout = calculateCOM(datain, sex)
+            cv2.circle(annotated_image, (int(dataout[0]), int(dataout[1])), 7, (0, 0, 255), -1)
 
-        # Draw lines connecting landmarks
-        for connection in pose_connections:
-            start_landmark = pose_landmarks.landmark[connection[0]]
-            end_landmark = pose_landmarks.landmark[connection[1]]
 
-            # Only draw the line if both landmarks are visible
-            if start_landmark.visibility > 0 and end_landmark.visibility > 0:
-                start_x, start_y = int(start_landmark.x * w), int(start_landmark.y * h)
-                end_x, end_y = int(end_landmark.x * w), int(end_landmark.y * h)
-
-                # Draw the line between the two landmarks
-                cv2.line(annotated_image, (start_x, start_y), (end_x, end_y), (255, 255, 255), 2)
 
     return annotated_image
 
 
 # Example usage:
-video_path = 'outputs/gis_lr_CC_vid03_vector_overlay.mp4'  # Replace with your input video file path
+video_path = 'C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\gis_lr_CC_vid03_vector_overlay.mp4'  # Replace with your input video file path
 filename = "outputs/gis_lr_CC_vid03_vector_overlay_COM.mp4"
-find_coordinates(video_path, "m", filename=filename)
+find_coordinates(video_path, "m", filename=filename,displayname=False,displaystickfigure=False,displayCOM=True)
