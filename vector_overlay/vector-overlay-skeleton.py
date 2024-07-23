@@ -83,7 +83,7 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     # Map y-coordinate
     new_y = top_y + (y / rect_height) * (bottom_y - top_y)
     
-    return new_x, new_y
+    return (int(new_x), int(new_y))
 
 class VectorOverlay:
 
@@ -108,13 +108,12 @@ class VectorOverlay:
         self.px2 = ()
         self.py2 = ()
 
-        self.A_1 = ()  # ([Ax], [Ay])
-        self.A_2 = ()  # ([Ax], [Ay])
-
-        self.force_1 = ()  # ([Y], [Z])
-        self.force_2 = ()  # ([Y], [Z])
-
-        self.corners = FindCorners(self.side_view_path).find(Views.Side)  # [482,976] [959,977]
+        self.Ax = ()
+        self.Ay = ()
+        self.Ax2 = ()
+        self.Ay2 = ()
+        self.corners = []
+        # self.corners = FindCorners(self.side_view_path).find(Views.Side)  # [482,976] [959,977]
         # self.corners = [482,976],[959,977],[966,976]
         self.manual = False
         self.smooth = smooth
@@ -124,7 +123,7 @@ class VectorOverlay:
         if self.corners == []:
             print("Need human force")
             self.manual = True
-            self.corners = select_points(video_path=self.side_view_path)
+            self.corners = [[500, 910], [904, 906], [909, 908], [1309, 903], [1383, 981], [903, 984], [898, 985], [414, 985]] #select_points(video_path=self.side_view_path)
 
     def setFrameData(self):
         print(f"Opening video: {self.side_view_path}")
@@ -183,6 +182,7 @@ class VectorOverlay:
             pressure_x2 = self.data.iloc[start_row:end_row, 14].astype('float64')
             pressure_y2 = self.data.iloc[start_row:end_row, 15].astype('float64')
 
+
             fx1.append(data_x1.mean())
             fy1.append(data_y1.mean())
             fz1.append(data_z1.mean())
@@ -208,73 +208,48 @@ class VectorOverlay:
         self.px2 = tuple(px2)
         self.py2 = tuple(py2)
 
-
-        
-        numeric_df = df.select_dtypes(include=[np.number])
-
-        if self.smooth:
-        # Apply rolling average to smooth data
-            window_size = 5  # You can adjust this value for smoother results
-            df_smoothed = numeric_df.rolling(window=window_size, min_periods=1).mean()
-            if df_smoothed.shape[1] > 15 and len(df_smoothed) > 18:
-                self.force_1 = (
-                df_smoothed.iloc[18:, 2].astype(float).tolist(), df_smoothed.iloc[18:, 3].astype(float).tolist())
-                self.force_2 = (
-                df_smoothed.iloc[18:, 11].astype(float).tolist(), df_smoothed.iloc[18:, 12].astype(float).tolist())
-                self.A_1 = (
-                df_smoothed.iloc[18:, 5].astype(float).tolist(), df_smoothed.iloc[18:, 6].astype(float).tolist())
-                self.A_2 = (
-                df_smoothed.iloc[18:, 14].astype(float).tolist(), df_smoothed.iloc[18:, 15].astype(float).tolist())
-            else:
-                print("Error: DataFrame does not have the required number of rows or columns.")
-        else:
-            self.force_1 = (df.iloc[18:, 2].astype(float).tolist(), df.iloc[18:, 3].astype(float).tolist())
-            self.force_2 = (df.iloc[18:, 11].astype(float).tolist(), df.iloc[18:, 12].astype(float).tolist())
-
-            self.A_1 = (df.iloc[18:, 5].astype(float).tolist(), df.iloc[18:, 6].astype(float).tolist())
-            self.A_2 = (df.iloc[18:, 14].astype(float).tolist(), df.iloc[18:, 15].astype(float).tolist())
-        print(f"Data read successfully from {self.data_path}")
-        print(f"Number of frames of force data: {len(self.force_1[0])}")
-
     def drawArrows(self, frameNum, frame):
-        z_force_1 = self.force_1[1][frameNum]
-        y_force_1 = self.force_1[0][frameNum]
+        z_force_1 = self.fz1[frameNum]
+        y_force_1 = self.fy1[frameNum]
 
-        z_force_2 = self.force_2[1][frameNum]
-        y_force_2 = self.force_2[0][frameNum]
+        z_force_2 = self.fz2[frameNum]
+        y_force_2 = self.fy2[frameNum]
         self.check_corner()
-        # print(f"corners: {self.corners}")
+        print(f"corners: {self.corners}")
+
+
+        #def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
         if self.manual == False:
-            force_plate_pixels = self.corners[1][0] - self.corners[0][0]
-            force_plate_meters = 0.9
-            pixelOffset_1 = (force_plate_pixels / force_plate_meters) * self.A_1[1][frameNum] + 0.45 * (
-                    force_plate_pixels / force_plate_meters)  # Ay_1
-            start_point_1 = (self.corners[0][0] + round(pixelOffset_1),
-                             self.corners[0][1])  # a negative Ay val means moving to the right
-            end_point_1 = (start_point_1[0] - int(y_force_1), (start_point_1[1] - int(z_force_1)))
-            pixelOffset_2 = (force_plate_pixels / force_plate_meters) * self.A_2[1][frameNum] + 0.45 * (
-                    force_plate_pixels / force_plate_meters)  # Ay_2
-            start_point_2 = (self.corners[2][0] + round(pixelOffset_2), self.corners[2][1])
-            end_point_2 = (start_point_2[0] - int(y_force_2), (start_point_2[1] - int(z_force_2)))
+            start_point_1 = rect_to_trapezoid(self.px1[frameNum] + 0.3, self.px1[frameNum] + 0.45, 0.9, 0.6, [self.corners[0], self.corners[1], self.corners[6], self.corners[7]])
+            start_point_2 = rect_to_trapezoid(self.py2[frameNum] + 0.3, self.py1[frameNum] + 0.45, 0.9, 0.6, [self.corners[2], self.corners[3], self.corners[4], self.corners[5]])
+
+            end_point_1 = (int(start_point_1[0] - y_force_1), int(start_point_1[1] - z_force_1))
+            end_point_2 = (int(start_point_2[0] - y_force_2), int(start_point_2[1] - z_force_2))
         else:
             # print(f"This is corner list: {self.corners}")
-            force_plate_pixels = self.corners[6][0] - self.corners[7][0]
-            force_plate_meters = 0.9
-            pixelOffset_1 = (force_plate_pixels / force_plate_meters) * self.A_1[1][frameNum] + 0.45 * (
-                    force_plate_pixels / force_plate_meters)  # Ay_1
-            start_point_1 = (self.corners[7][0] + round(pixelOffset_1),
-                             self.corners[7][1])  # a negative Ay val means moving to the right
+            start_point_1 = rect_to_trapezoid(self.px1[frameNum] + 0.3, self.px1[frameNum] + 0.45, 0.9, 0.6, [self.corners[0], self.corners[1], self.corners[6], self.corners[7]])
+            start_point_2 = rect_to_trapezoid(self.py2[frameNum] + 0.3, self.py1[frameNum] + 0.45, 0.9, 0.6, [self.corners[2], self.corners[3], self.corners[4], self.corners[5]])
 
-            end_point_1 = (start_point_1[0] - int(y_force_1), (start_point_1[1] - int(z_force_1)))
+            end_point_1 = (int(start_point_1[0] - y_force_1), int(start_point_1[1] - z_force_1))
+            end_point_2 = (int(start_point_2[0] - y_force_2), int(start_point_2[1] - z_force_2))
+        print(start_point_1)
+        print(end_point_1)
 
-            pixelOffset_2 = (force_plate_pixels / force_plate_meters) * self.A_2[1][frameNum] + 0.45 * (
-                    force_plate_pixels / force_plate_meters)  # Ay_2
-            start_point_2 = (self.corners[5][0] + round(pixelOffset_2), self.corners[5][1])
-
-            end_point_2 = (start_point_2[0] - int(y_force_2), (start_point_2[1] - int(z_force_2)))
+        print(start_point_2)
+        print(end_point_2)
         cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
 
         cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
+
+        # Draw red dots for centers
+        cv.circle(frame, self.corners[0], 5, (0, 0, 255), -1)  # Red dot at start_point_1
+        cv.circle(frame, self.corners[1], 5, (0, 0, 255), -1)    # Red dot at end_point_1
+        cv.circle(frame, self.corners[2], 5, (0, 0, 255), -1)  # Red dot at start_point_2
+        cv.circle(frame, self.corners[3], 5, (0, 0, 255), -1)    # Red dot at end_point_2
+        cv.circle(frame, self.corners[4], 5, (0, 0, 255), -1)  # Red dot at start_point_1
+        cv.circle(frame, self.corners[5], 5, (0, 0, 255), -1)    # Red dot at end_point_1
+        cv.circle(frame, self.corners[6], 5, (0, 0, 255), -1)  # Red dot at start_point_2
+        cv.circle(frame, self.corners[7], 5, (0, 0, 255), -1)    # Red dot at end_point_2
 
     def createVectorOverlay(self, outputName):
         self.setFrameData()
@@ -284,7 +259,7 @@ class VectorOverlay:
             print("Error: Frame data not set.")
             return
 
-        if self.force_1 is None or self.force_2 is None:
+        if self.fz1 is None or self.fz2 is None:
             print("Error: Data not set.")
             return
 
@@ -293,8 +268,8 @@ class VectorOverlay:
 
         cap = cv.VideoCapture(self.side_view_path)
         frame_number = 1
-        forceDataLength = len(self.force_1[0])
-        speedMult = math.floor(forceDataLength / self.frame_count)
+        forceDataLength = len(self.fz1)
+        speedMult = math.floor(forceDataLength)
 
         while cap.isOpened():
             ret, frame = cap.read()
@@ -303,7 +278,7 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            self.drawArrows(frame_number * speedMult, frame)
+            self.drawArrows(frame_number, frame)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
