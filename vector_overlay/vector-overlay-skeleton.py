@@ -135,15 +135,7 @@ class VectorOverlay:
         cap.release()
 
     def readData(self):
-        frame_width = self.frame_height
-        frame_height = self.frame_width
-        fps = self.fps
         frame_count = self.frame_count
-
-        df = pd.read_excel(self.data_path, skiprows= 18)
-        self.data = df
-        print(self.data.iloc[:4,:])
-
         rows = self.data.shape[0]
         step_size = rows/frame_count
 
@@ -213,15 +205,15 @@ class VectorOverlay:
 
         #def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
         if self.manual == False:
-            start_point_1 = rect_to_trapezoid(self.px1[frameNum] + 0.3, self.px1[frameNum] + 0.45, 0.9, 0.6, [self.corners[0], self.corners[1], self.corners[6], self.corners[7]])
-            start_point_2 = rect_to_trapezoid(self.py2[frameNum] + 0.3, self.py1[frameNum] + 0.45, 0.9, 0.6, [self.corners[2], self.corners[3], self.corners[4], self.corners[5]])
+            start_point_1 = rect_to_trapezoid(self.py1[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6, [self.corners[0], self.corners[1], self.corners[6], self.corners[7]])
+            start_point_2 = rect_to_trapezoid(self.py2[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6, [self.corners[2], self.corners[3], self.corners[4], self.corners[5]])
 
             end_point_1 = (int(start_point_1[0] - y_force_1), int(start_point_1[1] - z_force_1))
             end_point_2 = (int(start_point_2[0] - y_force_2), int(start_point_2[1] - z_force_2))
         else:
             # print(f"This is corner list: {self.corners}")
-            start_point_1 = rect_to_trapezoid(self.px1[frameNum] + 0.3, self.px1[frameNum] + 0.45, 0.9, 0.6, [self.corners[0], self.corners[1], self.corners[6], self.corners[7]])
-            start_point_2 = rect_to_trapezoid(self.py2[frameNum] + 0.3, self.py1[frameNum] + 0.45, 0.9, 0.6, [self.corners[2], self.corners[3], self.corners[4], self.corners[5]])
+            start_point_1 = rect_to_trapezoid(self.py1[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6, [self.corners[0], self.corners[1], self.corners[6], self.corners[7]])
+            start_point_2 = rect_to_trapezoid(self.py2[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6, [self.corners[2], self.corners[3], self.corners[4], self.corners[5]])
 
             end_point_1 = (int(start_point_1[0] - y_force_1), int(start_point_1[1] - z_force_1))
             end_point_2 = (int(start_point_2[0] - y_force_2), int(start_point_2[1] - z_force_2))
@@ -319,7 +311,7 @@ smoothed_data = False
 
 
 
-v = VectorOverlay(top_view, side_view, forcedata,smoothed_data)
+v = VectorOverlay(top_view, side_view, forcedata)
 
 # side view
 output_name = outputname(side_view)
