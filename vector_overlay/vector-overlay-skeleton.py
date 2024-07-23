@@ -109,8 +109,6 @@ class VectorOverlay:
         self.py2 = ()
 
         self.corners = []
-        # self.corners = FindCorners(self.side_view_path).find(Views.Side)  # [482,976] [959,977]
-        # self.corners = [482,976],[959,977],[966,976]
         self.manual = False
         self.smooth = smooth
 
