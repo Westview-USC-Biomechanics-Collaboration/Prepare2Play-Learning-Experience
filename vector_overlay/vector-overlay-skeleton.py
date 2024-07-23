@@ -107,11 +107,7 @@ class VectorOverlay:
         self.fz2 = ()
         self.px2 = ()
         self.py2 = ()
-
-        self.Ax = ()
-        self.Ay = ()
-        self.Ax2 = ()
-        self.Ay2 = ()
+        
         self.corners = []
         # self.corners = FindCorners(self.side_view_path).find(Views.Side)  # [482,976] [959,977]
         # self.corners = [482,976],[959,977],[966,976]
