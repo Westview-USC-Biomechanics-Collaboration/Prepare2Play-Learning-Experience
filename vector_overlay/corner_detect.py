@@ -34,7 +34,7 @@ class FindCorners:
                     break
 
                 topOffset = 900
-                leftOffset = 400
+                leftOffset = 415
                 frame = frame[topOffset:, leftOffset:]
                 frame = frame[:, :1000]
 
@@ -59,9 +59,10 @@ class FindCorners:
                         cy = int(M['m01'] / M['m00']) + topOffset
                         markerList.append((cx, cy))
                     # once we have the list, we can trim off the bottom points as they aren't needed
-                    relevantPoints = sorted(markerList, key = lambda x: x[1])[0:4] # all the top points
-                    cornerList = sorted(relevantPoints, key = lambda x: x[0])
-                    # cornerList is 4 points [tl_1, tr_1, tl_2, tr_2]s
+                    relevantPoints = sorted(markerList, key=lambda x: x[1])[0:4]  # all the top points
+                    cornerList = sorted(relevantPoints, key=lambda x: x[0])
+                    # cornerList is 4 points [tl_1, tr_1, tl_2, tr_2]
+                    print(cornerList)
                     return cornerList
 
                 # if cv.waitKey(1) == ord("q"):  # gets the unicode value for q
