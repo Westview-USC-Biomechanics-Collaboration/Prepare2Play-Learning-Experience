@@ -87,7 +87,7 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
 
 class VectorOverlay:
 
-    def __init__(self, top_view_path, side_view_path, data_path,smooth = False):
+    def __init__(self, top_view_path, side_view_path, data_path):
         self.top_view_path = top_view_path
         self.side_view_path = side_view_path
         self.data_path = data_path
