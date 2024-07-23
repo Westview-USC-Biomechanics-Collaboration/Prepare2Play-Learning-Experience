@@ -194,24 +194,14 @@ class VectorOverlay:
 
         z_force_2 = self.fz2[frameNum]
         y_force_2 = self.fy2[frameNum]
-        self.check_corner()
+        
         print(f"corners: {self.corners}")
 
+        start_point_1 = rect_to_trapezoid(self.py1[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6, [self.corners[0], self.corners[1], self.corners[6], self.corners[7]])
+        start_point_2 = rect_to_trapezoid(self.py2[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6, [self.corners[2], self.corners[3], self.corners[4], self.corners[5]])
 
-        #def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
-        if self.manual == False:
-            start_point_1 = rect_to_trapezoid(self.py1[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6, [self.corners[0], self.corners[1], self.corners[6], self.corners[7]])
-            start_point_2 = rect_to_trapezoid(self.py2[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6, [self.corners[2], self.corners[3], self.corners[4], self.corners[5]])
-
-            end_point_1 = (int(start_point_1[0] - y_force_1), int(start_point_1[1] - z_force_1))
-            end_point_2 = (int(start_point_2[0] - y_force_2), int(start_point_2[1] - z_force_2))
-        else:
-            # print(f"This is corner list: {self.corners}")
-            start_point_1 = rect_to_trapezoid(self.py1[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6, [self.corners[0], self.corners[1], self.corners[6], self.corners[7]])
-            start_point_2 = rect_to_trapezoid(self.py2[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6, [self.corners[2], self.corners[3], self.corners[4], self.corners[5]])
-
-            end_point_1 = (int(start_point_1[0] - y_force_1), int(start_point_1[1] - z_force_1))
-            end_point_2 = (int(start_point_2[0] - y_force_2), int(start_point_2[1] - z_force_2))
+        end_point_1 = (int(start_point_1[0] - y_force_1), int(start_point_1[1] - z_force_1))
+        end_point_2 = (int(start_point_2[0] - y_force_2), int(start_point_2[1] - z_force_2))
         print(start_point_1)
         print(end_point_1)
 
@@ -250,7 +240,7 @@ class VectorOverlay:
         frame_number = 1
         forceDataLength = len(self.fz1)
         speedMult = math.floor(forceDataLength)
-
+        self.check_corner()
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
