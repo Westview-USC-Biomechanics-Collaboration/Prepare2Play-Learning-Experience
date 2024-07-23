@@ -109,14 +109,9 @@ class VectorOverlay:
         self.py2 = ()
 
         self.corners = []
-        self.manual = False
 
     def check_corner(self):
-        # print("Checking the corners")
-        if self.corners == []:
-            print("Need human force")
-            self.manual = True
-            self.corners = select_points(video_path=self.side_view_path)
+        self.corners = select_points(video_path=self.side_view_path)
 
     def setFrameData(self):
         print(f"Opening video: {self.side_view_path}")
