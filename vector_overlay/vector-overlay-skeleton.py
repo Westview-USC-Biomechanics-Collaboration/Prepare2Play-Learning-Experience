@@ -95,6 +95,8 @@ class VectorOverlay:
 
         z_force_2 = self.force_2[1][frameNum]
         y_force_2 = self.force_2[0][frameNum]
+
+
         self.check_corner()
         # print(f"corners: {self.corners}")
         if not self.manual:

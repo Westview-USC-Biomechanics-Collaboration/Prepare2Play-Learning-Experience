@@ -4,14 +4,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="Merged in some changes from vector-overlay-testing, going to now update the vector-overlay-testing branch so they both have working vector overlay code">
+    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="updated my code with Chase's">
+      <change afterPath="$PROJECT_DIR$/data/Trimmed of bjs_lr_DE_for01_Raw_Data.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/Trimmed of bjs_lr_DE_vid01.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/Trimmed of dlt_lr_ET_for04_Raw_Data.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/Trimmed of dlt_lr_ET_vid04.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/outputs/ bjs_lr_DE_vid01_vector_overlay.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/outputs/ dlt_lr_ET_vid04_vector_overlay.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/outputs/spu_lr_NS_for01_Raw_Video_vector_overlay.mp4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cal_COM.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/Cal_COM.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/bcp_lr_CC_for02_Raw_Data.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/bcp_lr_CC_vid02.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/segdim_deleva.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/segdim_deleva.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/segments.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/segments.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/NS_SPU_01.mov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/NS_SPU_01_Raw_Data - NS_SurfPopUp_Trial1_Raw_Data.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/gis_lr_CC_for02_Raw_Data.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/gis_lr_CC_for03_Raw_Data.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/gis_lr_CC_top_vid03.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/gis_lr_CC_vid03.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/outputs/_for01_Raw_Video_vector_overlay.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/corner_detect.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/corner_detect.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -84,7 +94,13 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "vector-overlay",
     "last_opened_file_path": "C:/Users/16199/Desktop/Prepare2Play-Learning-Experience-deren-shoulder-trunk-angle",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -113,6 +129,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -227,7 +244,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-5b207ade9991-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.17890.14" />
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.17890.14" />
+        <option value="bundled-python-sdk-5b207ade9991-7e9c3bbb6e34-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.17890.14" />
       </set>
     </attachedChunks>
   </component>
@@ -239,6 +257,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1719349570219</updated>
+      <workItem from="1721685669748" duration="983000" />
     </task>
     <task id="LOCAL-00001" summary="python backend instead of javascript in html">
       <option name="closed" value="true" />
@@ -264,8 +283,19 @@
       <option name="project" value="LOCAL" />
       <updated>1721324574033</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="updated my code with Chase's">
+      <option name="closed" value="true" />
+      <created>1721684986015</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1721684986015</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
@@ -274,6 +304,8 @@
     </ignored-roots>
     <MESSAGE value="python backend instead of javascript in html" />
     <MESSAGE value="Merged in some changes from vector-overlay-testing, going to now update the vector-overlay-testing branch so they both have working vector overlay code" />
-    <option name="LAST_COMMIT_MESSAGE" value="Merged in some changes from vector-overlay-testing, going to now update the vector-overlay-testing branch so they both have working vector overlay code" />
+    <MESSAGE value="Refactored some code" />
+    <MESSAGE value="updated my code with Chase's" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated my code with Chase's" />
   </component>
 </project>
