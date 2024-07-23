@@ -107,7 +107,7 @@ class VectorOverlay:
         self.fz2 = ()
         self.px2 = ()
         self.py2 = ()
-        
+
         self.corners = []
         # self.corners = FindCorners(self.side_view_path).find(Views.Side)  # [482,976] [959,977]
         # self.corners = [482,976],[959,977],[966,976]
@@ -119,7 +119,7 @@ class VectorOverlay:
         if self.corners == []:
             print("Need human force")
             self.manual = True
-            self.corners = [[500, 910], [904, 906], [909, 908], [1309, 903], [1383, 981], [903, 984], [898, 985], [414, 985]] #select_points(video_path=self.side_view_path)
+            self.corners = select_points(video_path=self.side_view_path)
 
     def setFrameData(self):
         print(f"Opening video: {self.side_view_path}")
