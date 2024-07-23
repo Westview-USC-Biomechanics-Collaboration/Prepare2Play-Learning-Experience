@@ -269,34 +269,6 @@ class VectorOverlay:
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
-    def getCorners(self):
-        cap = cv.VideoCapture(self.side_view_path)
-
-        # tl_1, tr_1, tl_2, tr_2, bl_1, br_1, bl_2, br_2
-        coords = [(570, 900), (965, 900), (975, 900), (1370, 900), (485, 978), (958, 978), (965, 978), (1445, 978)]
-
-        if not cap.isOpened():
-            print("Error: Could not open video. ")
-            return
-
-        while True:
-            ret, frame = cap.read()
-            # forceplate1 = left, forceplate2 = left
-            for coord in coords:
-                cv.circle(frame, coord, 3, (0, 255, 0), 3)
-
-            if not ret:
-                print("Can't find frame")
-                break
-
-            cv.imshow("frame", frame)
-
-            if cv.waitKey(1) == ord("q"):  # gets the unicode value for q
-                break
-        cap.release()
-        cv.destroyAllWindows()
-        return coords
-
 folder = "data\\Formated_files"
 
 #these are the file paths
