@@ -2,10 +2,12 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styleSportsTemplate.css') }}">
-  <title>Sports Template</title>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleindex.css') }}">
+    <title>Sports Template</title>
+
 </head>
 
 <body>
@@ -36,32 +38,35 @@
           const movement = localStorage.getItem('selectedMovement');
           console.log(movement);
 
-          if (movement) {
-              document.getElementById('sportTitle').textContent = movement;
-          }
-      </script>
-      <div class="FileUpload">
-          <p>Upload your BOM video here!</p>
-          <button id="uploadButton" type="button" onclick="document.getElementById('videoFile').click()">Upload File</button>
-          <input type="file" id="videoFile" accept="video/*" style="display:none;">
-          <div class="videoContaining" id="videoContainer" style="display: none;">
-              <video id="uploadedVideo" controls>
-                  Your browser does not support the video tag.
-              </video>
-          </div>
-      </div>
-      <div class="Results">
-          <div>
-              <p>Force Graph</p>
-          </div>
-          <div>
-              <p>Vector Overlay</p>
-          </div>
-          <div>
-              <p>Stats</p>
-          </div>
-      </div>
-  </div>
+            if (movement) {
+                document.getElementById('sportTitle').textContent = movement;
+            }
+        </script>
+        <div class="FileUpload">
+            <p>Upload your BOM video here!</p>
+            <button id="uploadButton" type="button" onclick="document.getElementById('videoFile').click()">Upload File</button>
+            <input type="file" id="videoFile" accept="video/*" style="display:none;">
+            <div class="videoContaining" id="videoContainer" style="display: none;">
+                <video id="uploadedVideo" controls>
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+        <div class="Results">
+            <div>
+                <p>Force Graph</p>
+            </div>
+            <div>
+                <p>Vector Overlay</p>
+            </div>
+            <div>
+                <h2>Stats</h2>
+                <p>Impulse: <span id="impulse-val">0.0</span></p>
+                <p>Launch Velocity: <span id="launchVel-val">0.0</span></p>
+                <p>Max Height: <span id="maxHeight-val">0.0</span></p>
+            </div>
+        </div>
+    </div>
 
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
