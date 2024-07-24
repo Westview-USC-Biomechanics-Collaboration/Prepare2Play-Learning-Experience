@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, escape
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import pandas as pd
 import numpy as np
 
@@ -6,11 +6,13 @@ import numpy as np
 
 app = Flask(__name__)
 
+
 # Options for dropdown menu
 data = {
     'Basketball': ['Jumpshot', 'Free Throw'],
     'Soccer': ['Corner Kick', 'Goal Kick']
 }
+
 
 
 @app.route('/')
@@ -39,17 +41,29 @@ def dropdown():
         # Handle GET request (initial page load)
         return render_template('MovementDropDown.html', sports=sport, movements=movements,
                                selected_sport=selected_sport)
-
+    
+@app.route('/SportsTemplate')
+def sports_template():
+    return render_template('SportsTemplate.html')
 
 @app.route('/graph')
 def graph():
     # Load your CSV file
-    df = pd.read_csv('data/SM_SbS_02_Raw_Data - SM_SoftballSwing_Trial2_Raw_Data.csv')
+    df = pd.read_csv('data/bjs_lr_DE_for01_Raw_Data - bjs_lr_DE_for01_Raw_Data.csv')
 
     # Select subset of data for plotting
-    timex_subset = df.iloc[18:10000, 0].astype(float).tolist()
-    forcex_subset = df.iloc[18:10000, 1].astype(float).tolist()
-    forcey_subset = df.iloc[18:10000, 2].astype(float).tolist()
+    timex = df.iloc[18:12000, 0].astype(float).tolist()
+    forcex = df.iloc[18:12000, 1].astype(float).tolist()
+    forcey = df.iloc[18:12000, 2].astype(float).tolist()
+
+    # Find the start of the force increase
+    start_index = find_force_increase_start(forcex)
+
+    # Subset the data starting from the force increase
+    timex_subset = timex[start_index:]
+    forcex_subset = forcex[start_index:]
+    forcey_subset = forcey[start_index:]
+
     integral_forcex = np.trapz(forcex_subset, timex_subset)
     integral_forcey = np.trapz(forcey_subset, timex_subset)
     formatted_integral_forcex = f"{integral_forcex:.2f}"
@@ -62,21 +76,6 @@ def graph():
                            forcey=forcey_subset,
                            integral_forcex=formatted_integral_forcex,
                            integral_forcey=formatted_integral_forcey)
-
-
-@app.route("/sync", methods=["GET", "POST"])
-def syncVideo():
-    videoPath = ""
-    if request.method == "POST":
-        # videoPath = "data/NS_SPU_01.mov"
-        # csvPath = "data/NS_SPU_01_Raw_Data - NS_SurfPopUp_Trial1_Raw_Data.csv"
-        #
-        # sync = VideoSync(videoPath, csvPath)
-        # videoPath = sync.syncSave()
-        # print("Video Generated!")
-        # videoPath = videoPath.lstrip("../static/")
-        videoPath = "syncedVideo/sycnedVideo.mp4"
-    return videoPath
 
 
 if __name__ == '__main__':
