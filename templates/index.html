@@ -27,7 +27,6 @@
       </div>
     </div>
   </div>
-<<<<<<< Updated upstream
 
   <div class="content">
     <h1 style="color: white;">Prepare To Play</h1>
@@ -150,131 +149,6 @@
           </div>
         </li>
       </ul>
-=======
-    <div class="content">
-      <h1 style="color: white;">Prepare To Play</h1>
-      <p style="color: white;">Improve your own movement!</p>
-      <button class="scroll-down-btn" onclick="scrollToDiv('scrollToHere')">Discover</button>
-    </div>
-
-    <div id="scrollToHere" class="sports-organization">
-      <h4>Select Your Sport</h4>
-      <div class="sportsOptions">
-        <ul class="accordion">
-          <li id="basketball">
-            <input type="radio" name="accordion" id="basketball-radio">
-            <label for="basketball-radio"><span>+</span>Basketball</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Chest Pass')">Chest Pass</a></li>
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Free Throw')">Free Throw</a></li>
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Jump Shot')">Jump Shot</a></li>
-              </ul>
-            </div>
-          </li>
-          <li id="football">
-            <input type="radio" name="accordion" id="football-radio">
-            <label for="football-radio"><span>+</span>Football</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Football Pass')">Football Pass</a></li>
-              </ul>
-            </div>
-          </li>
-          <li id="iceSkating">
-            <input type="radio" name="accordion" id="iceSkating-radio">
-            <label for="iceSkating-radio"><span>+</span>Ice Skating</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Axel Jump')">Axel Jump</a></li>
-              </ul>
-            </div>
-          </li>
-          <li id="martialArts">
-            <input type="radio" name="accordion" id="martialArts-radio">
-            <label for="martialArts-radio"><span>+</span>Martial Arts</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Side Kick')">Side Kick</a></li>
-              </ul>
-            </div>
-          </li>
-          <li id="soccer">
-            <input type="radio" name="accordion" id="soccer-radio">
-            <label for="soccer-radio"><span>+</span>Soccer</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Corner Kick')">Corner Kick</a></li>
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Offensive Header')">Offensive Header</a></li>
-              </ul>
-            </div>
-          </li>
-          <li id="softball">
-            <input type="radio" name="accordion" id="softball-radio">
-            <label for="softball-radio"><span>+</span>Softball</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Softball Swing')">Softball Swing</a></li>
-              </ul>
-            </div>
-          </li>
-          <li id="surfing">
-            <input type="radio" name="accordion" id="surfing-radio">
-            <label for="surfing-radio"><span>+</span>Surfing</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <p>Testing Testing Testing</p>
-              </ul>
-            </div>
-          </li>
-          <li id="tennis">
-            <input type="radio" name="accordion" id="tennis-radio">
-            <label for="tennis-radio"><span>+</span>Tennis</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Backhand Slice')">Backhand Slice</a></li>
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Forehand')">Forehand</a></li>
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Volley')">Volley</a></li>
-              </ul>
-            </div>
-          </li>
-          <li id="track">
-            <input type="radio" name="accordion" id="track-radio">
-            <label for="track-radio"><span>+</span>Track & Field</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Sprint Start')">Sprint Start</a></li>
-              </ul>
-            </div>
-          </li>
-          <li id="volleyball">
-            <input type="radio" name="accordion" id="volleyball-radio">
-            <label for="volleyball-radio"><span>+</span>Volleyball</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Volleyball Block')">Volleyball Block</a></li>
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Volleyball Serve')">Volleyball Serve</a></li>
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Volleyball Set')">Volleyball Set</a></li>
-              </ul>
-            </div>
-          </li>
-          <li id="other">
-            <input type="radio" name="accordion" id="other-radio">
-            <label for="other-radio"><span>+</span>Other Fun Movements</label>
-            <div class="content">
-              <ul class="nested-dropdown">
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Change in Direction in Tag')">Change in Direction in Tag</a></li>
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Frisbee Pull')">Frisbee Pull</a></li>
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Frisbee Throw')">Frisbee Throw</a></li>
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Hopscotch')">Hopscotch</a></li>
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Jump Rope')">Jump Rope</a></li>
-                <li><a href="{{ url_for('sports_template') }}" onclick="selectMovement('Yoga Chair Pose')">Yoga Chair Pose</a></li>
-              </ul>
-            </div>
-          </li>
-        </ul>
-      </div>
->>>>>>> Stashed changes
     </div>
   </div>
 </div>
