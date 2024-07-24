@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # Open the video file
-cap = cv2.VideoCapture("data/derenBasketballTest1.mp4")
+cap = cv2.VideoCapture("Prepare2Play-Learning-Experience/data/derenBasketballTest1.mp4")
 
 # Check if the video opened successfully
 if not cap.isOpened():
