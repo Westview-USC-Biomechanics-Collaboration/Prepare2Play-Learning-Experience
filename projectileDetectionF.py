@@ -3,7 +3,7 @@ import numpy as np
 import math
 
 # Open the video file
-cap = cv2.VideoCapture('data/derenBasketballTest1.mp4')
+cap = cv2.VideoCapture('data/wheelChairTest.MOV')
 
 # Check if the video opened successfully
 if not cap.isOpened():
@@ -14,9 +14,23 @@ if not cap.isOpened():
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 out = cv2.VideoWriter('data/output_video.avi', fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
 
+colorInput = input("Enter the color you want to detect: ")
+
+if colorInput == 'orange':
+    lower_color = np.array([0, 150, 155])
+    upper_color = np.array([100, 250, 255])
+
+elif colorInput == 'white':
+    lower_color = np.array([230, 230, 230])
+    upper_color = np.array([255, 255, 255])
+
+elif colorInput == 'brown':
+    lower_color = np.array([4, 210, 47])
+    upper_color = np.array([7, 230, 55])
+
+
 # Define the color range for detection
-lower_color = np.array([0, 150, 155])
-upper_color = np.array([100, 250, 255])
+
 
 # Contour centroids
 posX = []
@@ -149,6 +163,7 @@ while cap.isOpened():
     # result = cv2.bitwise_and(frame, frame, mask=mask)
     
     # Draw out path of ball
+
     if initialv != 0 and len(posX) > 2 and len(posY) > 2:
         posX_np = np.array(posX)
         posY_np = np.array(posY)
@@ -162,6 +177,10 @@ while cap.isOpened():
         for (x, y) in zip(x_range, y_values):
             if initialv != 0:
                 cv2.circle(frame, (int(x), int(y)), 3, (255, 0, 0), -1)
+        
+    cv2.circle(frame, (500, 50), 10, (0, 75, 150), -1)
+
+    cv2.circle(frame, (700, 50), 10, (0, 33, 53), -1)
 
     # Write the frame to the output video file
     out.write(frame)
@@ -180,3 +199,5 @@ out.release()
 
 # Close all OpenCV windows
 cv2.destroyAllWindows()
+
+    
