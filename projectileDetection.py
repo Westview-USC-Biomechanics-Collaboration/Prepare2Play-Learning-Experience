@@ -52,7 +52,7 @@ cv2.namedWindow('Resized Video Window', cv2.WINDOW_NORMAL)
 # Resize the window
 cv2.resizeWindow('Resized Video Window', 980, 540)
 
-# Define a minimum distance to consider contours close to each other
+# Define a maximum distance to consider contours close to each other
 max_distance = 50
 
 input = input("Enter the part of the screen you want to detect: ")
@@ -156,8 +156,6 @@ while cap.isOpened():
         if initialv != 0:
             cv2.circle(frame, (x, y), 3, (0, 255, 0), -1)
 
-    # # Apply the mask to the entire frame
-    # result = cv2.bitwise_and(frame, frame, mask=mask)
     
     # Draw out path of ball
 
