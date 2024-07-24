@@ -1,9 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
+  font-family: 'Poppins', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
   margin: 0;
   padding: 0;
-  background: linear-gradient(rgba(5, 11, 197, 0.5), rgba(3, 35, 129, 0.5));
-  height: 100vh;
+  background: #006D77;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image: url('/static/assets/usc_bg2.png');
 }
 
 .sport-title {
@@ -11,19 +15,24 @@ body {
   text-align: center;
   position: relative;
 }
+
 .content {
   text-align: center;
   padding: 20px;
   margin-top: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 h1 {
   font-size: 50px;
-  
 }
 
 p {
-  font-size: 20px;
+  font-size: 1em;
+  line-height: 1.5;
+  margin: 10px 0;
 }
 
 .navbar {
@@ -31,9 +40,10 @@ p {
   overflow: hidden;
   position: sticky;
   top: 0;
-  border-radius: 10px;
+  border-radius: 0px 0px 10px 10px;
   z-index: 3;
 }
+
 .navbar a {
   float: left;
   display: block;
@@ -45,12 +55,14 @@ p {
   font-weight: bold;
   transition: background-color 0.3s, color 0.3s;
 }
+
 .dropdown {
   float: left;
   overflow: hidden;
   margin-left: 0px;
   transition: background-color 0.3s, color 0.3s;
 }
+
 .dropdown .dropbtn {
   font-size: 17px;
   border: none;
@@ -71,24 +83,25 @@ p {
 .navbar a:hover, .dropdown:hover .dropbtn {
   background-color: #ddd;
   color: rgb(51, 50, 50);
-
 }
+
 .Main-Options a:hover {
   border-radius: 10px;
 }
+
 .dropdown-content {
   display: none;
-  position: fixed;
+  position: absolute;
   background-color: #f9f9f9;
   min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 3;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1;
   padding: 10px;
   border-radius: 10px;
   transition: background-color 0.3s, color 0.3s;
 }
+
 .dropdown-content a {
-  float: none;
   color: black;
   padding: 12px 16px;
   text-decoration: none;
@@ -98,173 +111,292 @@ p {
   font-weight: 300;
   transition: background-color 0.3s, color 0.3s;
 }
+
 .dropdown-content a:hover {
   background-color: #ddd;
 }
+
 .dropdown:hover .dropdown-content {
   display: block;
 }
 
-.the-flip-cards {
-height: 400px;
-margin-top: 220px;
-background-color: #f9f9f9;
-display: flex;
-column-gap: 100px;
-justify-content: center;
-align-items: center;
+.sports-organization {
+  margin-top: 220px;
+  background-color: #D8F5E1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
-
-
-.flip-card {
-background-color: transparent;
-width: 230px;
-height: 300px;
-perspective: 1000px;
-}
-
-.flip-card-inner {
-position: relative;
-width: 100%;
-height: 100%;
-text-align: center;
-transition: transform 0.6s;
-transform-style: preserve-3d;
-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-backface-visibility: hidden;
--moz-backface-visibility: hidden;
-}
-
-.flip-card:focus {
-  outline: 0;
-}
-
-.flip-card:hover .flip-card-inner,
-.flip-card:focus .flip-card-inner{
-transform: rotateY(180deg);
-}
-
-.flip-card-front,
-.flip-card-back {
-position: absolute;
-width: 100%;
-height: 100%;
-border-radius: 10px;
-}
-
-
-
-.flip-card-front {
-background: linear-gradient(rgba(5, 11, 197, 0.5), rgba(3, 35, 129, 0.5));
-z-index: 2;
-display: flex;
-justify-content: center;
-align-items: center;
-}
-
-.flip-card-back {
-background: linear-gradient(rgba(5, 11, 197, 0.5), rgba(3, 35, 129, 0.5));
-color: white;
-transform: rotateY(180deg);
-z-index: 1;
-display: flex;
-justify-content: center;
-align-items: center;
-}
-
-
-.flip-card2 {
-background-color: transparent;
-width: 275px;
-height: 300px;
-perspective: 1000px;
-}
-
-.flip-card-inner2 {
-position: relative;
-width: 100%;
-height: 100%;
-text-align: center;
-transition: transform 0.6s;
-transform-style: preserve-3d;
-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-backface-visibility: hidden;
--moz-backface-visibility: hidden;
-}
-
-.flip-card2:focus {
-  outline: 0;
-}
-
-.flip-card2:hover .flip-card-inner2,
-.flip-card2:focus .flip-card-inner2{
-transform: rotateY(180deg);
-}
-
-.flip-card-front2,
-.flip-card-back2 {
-position: absolute;
-width: 100%;
-height: 100%;
-border-radius: 10px;
-}
-
-.flip-card-front2 {
-background: linear-gradient(rgba(5, 11, 197, 0.5), rgba(3, 35, 129, 0.5));
-color: black;
-z-index: 2;
-display: flex;
-justify-content: center;
-align-items: center;
-}
-
-.flip-card-back2 {
-background: linear-gradient(rgba(5, 11, 197, 0.5), rgba(3, 35, 129, 0.5));
-color: white;
-transform: rotateY(180deg);
-z-index: 1;
-display: flex;
-justify-content: center;
-align-items: center;
-}
-
 
 img {
-border-radius: 10px;
+  border-radius: 10px;
 }
 
-
 h3 {
-font-size: 40px;
-font-weight: bold;
-color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  color: #fff;
 }
 
 footer {
-text-align: center;
-color: #fff;
+  text-align: center;
+  color: #fff;
 }
 
 h4 {
-font-size: 40px;
-color: black;
+  font-size: 48px;
+  color: #0B552F;
 }
 
 .scroll-down-btn {
-
-background-color: rgba(25, 30, 180, 0.5);
-color: white;
-border: none;
-padding: 15px 30px;
-cursor: pointer;
-font-size: 25px;
-border-radius: 5px;
-font-weight: bold;
-margin-top: 17px;
-transition: background-color 0.3s, color 0.3s;
+  background-color: rgba(126, 214, 154, 1);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  cursor: pointer;
+  font-size: 25px;
+  border-radius: 5px;
+  font-weight: bold;
+  margin-top: 17px;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .scroll-down-btn:hover {
+  background-color: rgba(126, 214, 154, 0.85);
+}
 
-  background-color: rgba(16, 20, 121, 0.5);
+.sportsOptions {
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.sport-section {
+  background-color: rgba(126, 214, 154, 1);
+  font-size: 21px;
+  margin: 15px 0;
+  padding: 25px;
+  border-radius: 40px;
+  color: white;
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.accordion {
+  margin: 20px auto;
+  width: 60%;
+  max-width: none;
+}
+
+.accordion > li {
+  background-color: rgba(126, 214, 154, 0.8);
+  color: white;
+  list-style: none;
+  width: 100%;
+  margin: 15px 0;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 6px 6px 10px -1px rgba(0,0,0,0.15), -6px -6px 10px -1px rgba(255,255,255,0.15);
+}
+.accordion-content > li {
+  background-color: rgba(25, 30, 180, 0.5);
+  color: white;
+  list-style: none;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 6px 6px 10px -1px rgba(0,0,0,0.15), -6px -6px 10px -1px rgba(255,255,255,0.7);
+}
+
+.accordion li label {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  font-size: 24px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.accordion .content {
+  color: #efefef;
+  padding: 0 10px; 
+  line-height: 26px;
+  margin: 0; 
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s, padding 0.5s;
+  align-items: center;
+  box-shadow: none;
+}
+
+.accordion>li:hover {
+  background-color: rgba(126, 214, 154, 1);
+}
+
+.accordion>li.active {
+  background-color: rgba(126, 214, 154, 1);
+}
+
+.sportsOptions span {
+  content: "+";
+  margin-right: 10px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+input[type="radio"] {
+  display: none;
+}
+
+.nested-dropdown {
+  padding: 0;
+  margin: 10px 0 0 0; 
+  width: 100%; 
+  box-sizing: border-box; 
+  box-shadow: none;
+}
+
+.nested-dropdown a {
+  display: block; 
+  background-color: rgba(255, 255, 255, 0.1); 
+  border-radius: 5px;
+  margin: 10px 0px 0px 0px;
+  padding: 15px; 
+  color: white;
+  text-decoration: none;
+  font-size: 18px;
+  text-align: center;
+  transition: background-color 0.3s; 
+}
+
+.nested-dropdown a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+}
+
+.nested-dropdown li {
+  list-style: none; 
+  margin: 0; 
+  padding: 0; 
+}
+.popup {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding-top: 60px;
+}
+
+.popup-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 60%;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.3s;
+    border-radius: 10px;
+    height: 80vh;
+    overflow: auto;
+}
+
+.popup-content iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.about-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 20px;
+}
+
+.about-content {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+.about-content h2{
+  color: #333;
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+
+.about-content h3{
+  color: #555;
+  font-size: 1.5em;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.about-content ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.about-content ul li {
+    margin: 5px 0;
+}
+
+.team-list {
+  list-style: none;
+  padding: 0;
+}
+
+.team-list li {
+  font-size: 1em;
+  margin: 5px 0;
+}
+
+a {
+  color: #007BFF;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
