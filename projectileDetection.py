@@ -209,4 +209,32 @@ out.release()
 # Close all OpenCV windows
 cv2.destroyAllWindows()
 
+def projectile_motion(initialv, launch_angle, initial_height):
+    g = 9.81  # acceleration due to gravity in m/s^2
     
+    # Convert launch angle to radians
+    launch_angle_rad = math.radians(launch_angle)
+    
+    # Initial velocity components
+    v_x0 = initialv * math.cos(launch_angle_rad)
+    v_y0 = initialv * math.sin(launch_angle_rad)
+    
+    # Max height
+    max_height = initial_height + (v_y0**2) / (2 * g)
+    
+    # Time of flight
+    t_f = (v_y0 + math.sqrt(v_y0**2 + 2 * g * initial_height)) / g
+    
+    # Horizontal distance
+    range_distance = v_x0 * t_f
+    
+    # Speed when it hits the ground
+    v_y_final = math.sqrt(v_y0**2 + 2 * g * max_height)
+    max_v = math.sqrt(v_x0**2 + v_y_final**2)
+    
+    return max_v, max_height, range_distance
+max_v, max_height, range_distance = projectile_motion(initialv, launch_angle, initial_height)
+
+print("Max Velocity: ", max_v, " meters per second")
+print("Max Height: ", max_height, " meters")
+print("Dist Travelled: ", range_distance, " meters")
