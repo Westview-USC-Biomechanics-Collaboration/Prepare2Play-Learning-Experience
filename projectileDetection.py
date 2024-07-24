@@ -16,6 +16,14 @@ out = cv2.VideoWriter('data/output_video.avi', fourcc, 20.0, (int(cap.get(3)), i
 
 colorInput = input("Enter the color you want to detect: ")
 
+# USER_NOTE: If you require a different color that is not used below, please add in another line in this format:
+# elif colorInput == 'color_here':
+# lower_color = np.array([b, g, r])
+# upper_color = np.array([b, g, r])
+
+# the color of a projectile can be defined in BGR(Blue Green Red) components. This can be found by taking a screenshot and then using MSPaint to grab the values. Pleae be aware that 
+# MS Paint returns RBG not BGR. Then, set the lower_color to 10 below the values (100, 100, 100) -> (90, 90, 90) and 10 above for upper color. If the projectile is still not caught
+# Feel free to play around with the ranges
 if colorInput == 'orange':
     lower_color = np.array([0, 150, 155])
     upper_color = np.array([100, 250, 255])
@@ -41,6 +49,8 @@ centroidX = []
 centroidY = []
 framenumber = []
 initialv = 0
+launch_angle = 0
+initial_height = 0
 
 # Get fps
 fps = cap.get(cv2.CAP_PROP_FPS)
@@ -139,8 +149,8 @@ while cap.isOpened():
         framenumber.append(frame_counter)
 
     if initialv == 0 and len(centroidX) > 1:
-        dx = (centroidX[-1] - centroidX[-2])/395
-        dy = (centroidY[-1] - centroidY[-2]) /395
+        dx = (centroidX[-1] - centroidX[-2]) / 395
+        dy = (centroidY[-1] - centroidY[-2]) / 395
         t = (framenumber[-1] - framenumber[-2])/fps
 
         vx = dx/t
@@ -149,9 +159,16 @@ while cap.isOpened():
         #tune this threshold
         if vx**2 + vy**2 >= 10:
             initialv = vx**2 + vy**2 
-            print("Initial Velocity: ", initialv)
-        else:
-            print("Curr Velocity", vx**2 + vy**2)
+            launch_angle = -np.degrees(np.arctan(dy/dx))
+            initial_height = centroidY[-2]/395
+            
+            print("Initial Velocity: ", initialv, " meters per second")
+            print("Launch Angle: ", launch_angle, " degrees")
+            # USER_NOTE: Pleaes note that intial height will be slightly off based on the instance when the ball is finally detected
+            # This will be fixed in v2 when more User Input will be accepted
+            print("Initial Height: ", initial_height, " meters")
+
+        
     for (x, y) in zip(posX, posY):
         if initialv != 0:
             cv2.circle(frame, (x, y), 3, (0, 255, 0), -1)
