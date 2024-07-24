@@ -4,7 +4,10 @@ import numpy as np
 import pandas as pd
 from vector_overlay.Cal_COM import calculateCOM
 
-
+"""""
+This is the skeleton overlay/stick figure
+You need to scroll down to the last line an change the value of video_path in order to process the stick figure
+"""""
 def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displayname=False, displaystickfigure=False, displayCOM=False):
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=confidencelevel, model_complexity=2)
@@ -146,6 +149,13 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
 
 
 # Example usage:
-video_path = 'C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\gis_lr_CC_vid03_vector_overlay.mp4'  # Replace with your input video file path
-filename = "outputs/gis_lr_CC_vid03_vector_overlay_COM.mp4"
+video_path = 'outputs\\bcp_lr_CC_vid02_vector_overlay.mp4'  # Replace with your input video file path
+filename = "outputs\\"+video_path.split("\\")[-1][:-4]+ "_COM.mp4"
+# varify the output file name/path
+print(filename)
+"""
+The function takes in video path, output file name, sex. 
+for "sex" parameter, it has to be either "m" or "f"
+You can decide to display name of joints, stick figure, or center of mass
+"""
 find_coordinates(video_path, "m", filename=filename,displayname=False,displaystickfigure=False,displayCOM=True)

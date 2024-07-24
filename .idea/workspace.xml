@@ -5,10 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="updated my code with Chase's">
+      <change afterPath="$PROJECT_DIR$/outputs/bcp_lr_CC_vid02_vector_overlay_COM.mp4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/Chase/bcp_lr_CC_top_vid02.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/data/Chase/bcp_lr_CC_top_vid02.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_overlay/selected_points.txt" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/selected_points.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,7 +101,7 @@
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.vector-overlay-skeleton">
+  <component name="RunManager" selected="Python.Skeletonoverlay (1)">
     <configuration name="Skeletonoverlay (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -220,8 +219,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.vector-overlay-skeleton" />
         <item itemvalue="Python.Skeletonoverlay (1)" />
+        <item itemvalue="Python.vector-overlay-skeleton" />
         <item itemvalue="Python.testing" />
         <item itemvalue="Python.vector_overlay_top" />
         <item itemvalue="Python.Skeletonoverlay" />
