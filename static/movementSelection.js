@@ -82,3 +82,29 @@ function uploadAndProcessVideo(videoFile) {
         console.error('Error uploading video:', error);
     });
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const aboutUsLink = document.getElementById('about-us-link');
+    const popup = document.getElementById('about-us-popup');
+    const closeBtn = popup.querySelector('.close-btn');
+    const iframe = document.getElementById('popup-iframe');
+
+    aboutUsLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        const url = aboutUsLink.getAttribute('href');
+        iframe.src = url;
+        popup.style.display = 'flex';
+    });
+
+    closeBtn.addEventListener('click', () => {
+        popup.style.display = 'none';
+        iframe.src = '';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === popup) {
+            popup.style.display = 'none';
+            iframe.src = '';
+        }
+    });
+});
