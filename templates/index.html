@@ -9,14 +9,21 @@
 </head>
 
 <body>
-
   <div class="navbar">
     <div class="Main-Options">
       <div class="Home">
-        <a href="{{ url_for('index') }}">Home</a>
+        <a href="/">Home</a>
       </div>
-      <div class="About-Us">
-        <a href="#">About Us</a>
+      <div class="Home">
+        <a href="about" id="about-us-link">About Us</a>
+      </div>
+
+      <!-- About Us Popup -->
+      <div id="about-us-popup" class="popup">
+          <div class="popup-content">
+              <span class="close-btn">&times;</span>
+              <iframe id="popup-iframe" frameborder="0"></iframe>
+          </div>
       </div>
     </div>
   </div>
@@ -26,7 +33,6 @@
     <p style="color: white;">Improve your own movement!</p>
     <button class="scroll-down-btn" onclick="scrollToDiv('scrollToHere')">Discover</button>
   </div>
-
   <div id="scrollToHere" class="sports-organization">
     <h4>Select Your Sport</h4>
     <div class="sportsOptions">
@@ -145,11 +151,12 @@
       </ul>
     </div>
   </div>
+</div>
 
-  <hr>
-  <footer>
-    <p>Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer</p>
-  </footer>
-  <script src="{{ url_for('static', filename='movementSelection.js') }}"></script>
+<footer><p>Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer Footer 
+
+</p></footer>
+<script src="/static/movementSelection.js"></script>
+<!-- <script src="/static/script.js"></script> -->
 </body>
 </html>

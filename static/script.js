@@ -125,3 +125,4 @@ function uploadAndProcessVideo(videoFile) {
 }
 
 window.onload = debugging;
+
