@@ -46,9 +46,6 @@ initialv = 0
 fps = cap.get(cv2.CAP_PROP_FPS)
 frame_counter = 0
 
-# Scale size down
-scale_factor = 0.5
-
 # Create a named window with the ability to resize
 cv2.namedWindow('Resized Video Window', cv2.WINDOW_NORMAL)
 
@@ -178,9 +175,6 @@ while cap.isOpened():
             if initialv != 0:
                 cv2.circle(frame, (int(x), int(y)), 3, (255, 0, 0), -1)
         
-    cv2.circle(frame, (500, 50), 10, (0, 75, 150), -1)
-
-    cv2.circle(frame, (700, 50), 10, (0, 33, 53), -1)
 
     # Write the frame to the output video file
     out.write(frame)
