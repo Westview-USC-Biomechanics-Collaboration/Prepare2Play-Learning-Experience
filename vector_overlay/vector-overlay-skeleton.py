@@ -41,7 +41,7 @@ def get_files_from_folder(folder):
     if len(mp4_files) != 2 or xlsx_file is None:
         return None, None, None
 
-    mp4_files.sort(key=lambda x: len(os.path.basename(x)), reverse=True)
+    mp4_files.sort(key=lambda x: len(os.path.basename(x)), reverse=False)
 
     # top, side, data
     return mp4_files[1], mp4_files[0], xlsx_file
@@ -95,10 +95,10 @@ def find_point(startpoint,angle,x_in, y_in):
     angle2 = math.atan(y_in / x_in)
 
     hypotenuse = math.sqrt(x_in**2+y_in**2)
-    if (x_in>0 and y_in>0) or (x_in<0 and y_in<0):   # first and third quadrant
+    if (x_in>0 and y_in>0)or (x_in>0 and y_in<0):  # first and fourth quadrant
         angle3 = angle + angle2
-    elif(x_in>0 and y_in<0) or (y_in>0 and x_in<0):      # second and fourth quadrant
-        angle3 = angle + angle2 + math.pi
+    elif (x_in<0 and y_in<0)or (y_in>0 and x_in<0): # second and third quadrant
+        angle3 = angle+angle2+math.pi
     else:
         # print(f"\nThis is startpoint: {startpoint}")
         endpoint = [0] * len(startpoint)
@@ -159,8 +159,8 @@ class VectorOverlay:
 
         self.corners = []
 
-    def check_corner(self):
-        self.corners = select_points(video_path=self.side_view_path)
+    def check_corner(self,path):
+        self.corners = select_points(video_path=path)
 
     def setFrameData(self, path):
         print(f"Opening video: {path}")
@@ -178,11 +178,16 @@ class VectorOverlay:
             f"Frame width: {self.frame_width}, Frame height: {self.frame_height}, FPS: {self.fps}, Frame count: {self.frame_count}")
         cap.release()
 
+# You can adjust speed Mult in the readData function!!!
     def readData(self):
         print("reading data")
         frame_count = self.frame_count
         rows = self.data.shape[0]
         step_size = rows/frame_count
+        # Adjust speed mult here:
+        # step_size = 9.5
+        print(f"This is step_size: {step_size}")
+
 
         current_row = 0
         fx1 = []
@@ -290,7 +295,7 @@ class VectorOverlay:
         frame_number = 1
         forceDataLength = len(self.fz1)
         speedMult = math.floor(forceDataLength/self.frame_count)
-        self.check_corner()
+        self.check_corner(self.side_view_path)
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -311,8 +316,7 @@ class VectorOverlay:
 
     def TopVectorOverlay(self, outputName):
         self.setFrameData(path=self.top_view_path)
-        if self.fx1 == ():
-            self.readData()
+        self.readData()
 
         if self.frame_width is None or self.frame_height is None:
             print("Error: Frame data not set.")
@@ -325,11 +329,11 @@ class VectorOverlay:
         out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
                              (self.frame_width, self.frame_height))
 
-        cap = cv.VideoCapture(self.side_view_path)
+        cap = cv.VideoCapture(self.top_view_path)
         frame_number = 1
         forceDataLength = len(self.fz1)
-        speedMult = math.floor(forceDataLength/self.frame_count)
-        self.check_corner()
+
+        self.check_corner(self.top_view_path)
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -337,7 +341,7 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            self.drawTopArrows(frame_number*speedMult, frame)
+            self.drawTopArrows(frame_number, frame)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
@@ -386,6 +390,8 @@ class VectorOverlay:
         end_point_2 = find_point(start_point_2,angle_of_forceplate,y_force_2*-10,x_force_2*-10)
 
         # convert list float element to integer
+        center1 = convert_floats_to_integers(center1)
+        center2 = convert_floats_to_integers(center2)
         start_point_1 = convert_floats_to_integers(start_point_1)
         start_point_2 = convert_floats_to_integers(start_point_2)
 
@@ -400,8 +406,16 @@ class VectorOverlay:
         # print(start_point_2)
         # print(end_point_2)
 
-        cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
+        #draw plate center
+        cv.circle(frame,center1 , 5, (255, 0, 0), -1) #draw dot at center 1
+        cv.circle(frame,center2, 5, (255, 0, 0), -1)  # draw dot at center 2
 
+        # drwa green dot at start points
+        cv.circle(frame, start_point_1, 5, (0, 255, 0), -1)  # draw dot at startpoint 1
+        cv.circle(frame, start_point_2, 5, (0, 255, 0), -1)  # draw dot at startpoint 2
+
+        # draw arrowline
+        cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
         cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
 
         # Draw red dots for centers
@@ -417,18 +431,17 @@ folder = "data\\Chase"
 
 #these are the file paths
 top_view, side_view, forcedata = get_files_from_folder(folder)
-smoothed_data = False
-
-
-
+#verify file path
+print(f"This is top view path: {top_view}\n"
+      f"This is side view path: {side_view}")
 v = VectorOverlay(top_view, side_view, forcedata)
 
 # side view
-# output_name = outputname(side_view)
-# print(f"output file name: {output_name}")
-# v.createVectorOverlay(output_name)
+output_name = outputname(side_view)
+print(f"output file name: {output_name}")
+v.createVectorOverlay(output_name)
 
 # top view
-outputName = outputname(top_view)
-print(f"output file name: {outputName}")
-v.TopVectorOverlay(outputName)
+# outputName = outputname(top_view)
+# print(f"output file name: {outputName}")
+# v.TopVectorOverlay(outputName)

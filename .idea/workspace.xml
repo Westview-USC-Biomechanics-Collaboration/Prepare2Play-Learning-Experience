@@ -5,18 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="updated my code with Chase's">
-      <change afterPath="$PROJECT_DIR$/data/Chase/bcp_lr_CC_for02_Raw_Data.xlsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/Chase/bcp_lr_CC_top_vid02.mp4" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/Chase/bcp_lr_CC_vid02.mp4" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/Deren/bcp_lr_CC_top_vid01.mp4" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/Deren/bjs_lr_DE_for01_Raw_Data.xlsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/data/Deren/bjs_lr_DE_vid01.mp4" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/outputs/bcp_lr_CC_vid02_vector_overlay.mp4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Prepare2Play-Learning-Experience-3.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Prepare2Play-Learning-Experience-3.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/Formated_files/bcp_lr_CC_top_vid01.mp4" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/Formated_files/bjs_lr_DE_for01_Raw_Data.xlsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/Formated_files/bjs_lr_DE_vid01.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/Chase/bcp_lr_CC_top_vid02.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/data/Chase/bcp_lr_CC_top_vid02.mp4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/selected_points.txt" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/selected_points.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" afterDir="false" />
     </list>
