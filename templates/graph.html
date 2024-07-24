@@ -60,9 +60,22 @@
         var timex = JSON.parse('{{ timex | tojson | safe }}');
         var forcey = JSON.parse('{{ forcey | tojson | safe }}');
 
+        var playbackSpeed = 1.2; // Slow down by 20%
+        var initialFrameRendered = false;
+        var threshold = 4; // Force threshold to start plotting
+        var startIndex = threshold; // Index to start plotting
+
+        // Find the index where forcex exceeds the threshold
+        for (var i = 0; i < forcex.length; i++) {
+            if (forcex[i] >= threshold) {
+                startIndex = i;
+                break;
+            }
+        }
+
         var trace1 = {
-            x: timex,
-            y: forcex,
+            x: timex.slice(startIndex),
+            y: forcex.slice(startIndex),
             mode: 'lines+markers',
             type: 'scatter',
             fill: 'tozeroy',
@@ -70,8 +83,8 @@
         };
 
         var trace2 = {
-            x: timex,
-            y: forcey,
+            x: timex.slice(startIndex),
+            y: forcey.slice(startIndex),
             mode: 'lines+markers',
             type: 'scatter',
             fill: 'tozeroy',
@@ -80,11 +93,10 @@
 
         var layout = {
             xaxis: {
-                range: [0, 3],
                 title: 'Time (s.)'
             },
             yaxis: {
-                range: [-35, 35],  // Adjust y-axis range as needed
+                range: [-50, 50],  // Adjust y-axis range as needed
                 title: 'Force (N)'
             },
             title: 'Force vs. Time Graph'
@@ -92,37 +104,45 @@
 
         Plotly.newPlot('plot', [trace1, trace2], layout);
 
-        // function updateValue(value) {
-        //     document.getElementById('value-container').innerHTML = '<b>Impulse:</b> ' + value + ' J';
-        // }
-
-        // document.getElementById('plot').on('plotly_click', function(data){
-        //     //var pointIndex = data.points[0].pointIndex;
-        //     //var value = timex[pointIndex];
-        //     var value = np.trapz(forcex, timex)
-        //     updateValue(value);
-        // });
-
         function goBack() {
             window.location.href = '/';
         }
 
         function animatePlot(videoTime) {
-            var frameIndex = findNearestFrameIndex(timex, videoTime);
+            var adjustedTime = videoTime / playbackSpeed;
+            var frameIndex = findNearestFrameIndex(timex.slice(startIndex), adjustedTime) + startIndex;
+
             var frames = [{
-                data: [{x: timex.slice(0, frameIndex+1), y: forcex.slice(0, frameIndex+1)},
-                       {x: timex.slice(0, frameIndex+1), y: forcey.slice(0, frameIndex+1)}]
+                data: [
+                    { x: timex.slice(startIndex, frameIndex + 1), y: forcex.slice(startIndex, frameIndex + 1) },
+                    { x: timex.slice(startIndex, frameIndex + 1), y: forcey.slice(startIndex, frameIndex + 1) }
+                ]
             }];
 
-            Plotly.animate('plot', frames, {
-                transition: {
-                    duration: 0
-                },
-                frame: {
-                    duration: 0,
-                    redraw: false
-                }
-            });
+            if (!initialFrameRendered) {
+                Plotly.animate('plot', frames, {
+                    transition: {
+                        duration: 0
+                    },
+                    frame: {
+                        duration: 0,
+                        redraw: false
+                    }
+                });
+                initialFrameRendered = true;
+            } else {
+                setTimeout(function () {
+                    Plotly.animate('plot', frames, {
+                        transition: {
+                            duration: 0, // No transition duration
+                        },
+                        frame: {
+                            duration: 1000 / playbackSpeed, // Slow down the animation by 20%
+                            redraw: false
+                        }
+                    });
+                }); // Delay for initial frame
+            }
         }
 
         function findNearestFrameIndex(timeArray, videoTime) {
