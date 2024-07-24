@@ -48,6 +48,7 @@
             <div id="plot"></div>
             <p>Integral of Force (X-Direction): {{ integral_forcex }} J</p>
             <p>Integral of Force (Y-Direction): {{ integral_forcey }} J</p>
+            <p>Integral of Force (Z-Direction): {{ integral_forcez }} J</p>
         </div>
     </div>
 
@@ -55,6 +56,14 @@
         var forcex = JSON.parse('{{ forcex | tojson | safe }}');
         var timex = JSON.parse('{{ timex | tojson | safe }}');
         var forcey = JSON.parse('{{ forcey | tojson | safe }}');
+        var forcez = JSON.parse('{{ forcez | tojson | safe }}');
+
+        
+        var videoDuration = 18.33; // seconds
+
+        
+        var originalDuration = timex[timex.length - 1];
+        timex = timex.map(function(time) { return (time / originalDuration) * videoDuration; });
 
         var trace1 = {
             x: timex,
@@ -74,30 +83,28 @@
             name: 'Force (Y-Direction)'
         };
 
+        var trace3 = {
+            x: timex,
+            y: forcez,
+            mode: 'lines+markers',
+            type: 'scatter',
+            fill: 'tozeroy',
+            name: 'Force (Z-Direction)'
+        };
+
         var layout = {
             xaxis: {
-                range: [0, 3],
+                range: [0, videoDuration+3],
                 title: 'Time (s.)'
             },
             yaxis: {
-                range: [-35, 35],  // Adjust y-axis range as needed
+                range: [-550, 550],  
                 title: 'Force (N)'
             },
             title: 'Force vs. Time Graph'
         };
 
-        Plotly.newPlot('plot', [trace1, trace2], layout);
-
-        // function updateValue(value) {
-        //     document.getElementById('value-container').innerHTML = '<b>Impulse:</b> ' + value + ' J';
-        // }
-
-        // document.getElementById('plot').on('plotly_click', function(data){
-        //     //var pointIndex = data.points[0].pointIndex;
-        //     //var value = timex[pointIndex];
-        //     var value = np.trapz(forcex, timex)
-        //     updateValue(value);
-        // });
+        Plotly.newPlot('plot', [trace1, trace2, trace3], layout);
 
         function goBack() {
             window.location.href = '/';
@@ -106,8 +113,11 @@
         function animatePlot(videoTime) {
             var frameIndex = findNearestFrameIndex(timex, videoTime);
             var frames = [{
-                data: [{x: timex.slice(0, frameIndex+1), y: forcex.slice(0, frameIndex+1)},
-                       {x: timex.slice(0, frameIndex+1), y: forcey.slice(0, frameIndex+1)}]
+                data: [
+                    {x: timex.slice(0, frameIndex+1), y: forcex.slice(0, frameIndex+1)},
+                    {x: timex.slice(0, frameIndex+1), y: forcey.slice(0, frameIndex+1)},
+                    {x: timex.slice(0, frameIndex+1), y: forcez.slice(0, frameIndex+1)}
+                ]
             }];
 
             Plotly.animate('plot', frames, {
