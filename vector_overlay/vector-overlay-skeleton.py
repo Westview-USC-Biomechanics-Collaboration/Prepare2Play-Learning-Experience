@@ -3,11 +3,14 @@ import cv2
 import cv2 as cv
 import pandas as pd
 import math
+from corner_detect import FindCorners
+from corner_detect import Views
 from vector_overlay_top import VectorOverlay as Topview
 from test_corners import select_points
 import numpy as np
 import os
-"""force plate directions(at top view)
+"""
+force plate directions(at top view)
 (0.0)_______________________________________
     |                                      |
     |                 Ax                   |
@@ -185,7 +188,6 @@ class VectorOverlay:
         self.top_view_path = top_view_path
         self.long_view_path = long_view_path
         self.short_view_path = short_view_path
-
         self.data_path = data_path
         df = pd.read_excel(self.data_path, skiprows=18)
         self.data = df
@@ -209,6 +211,12 @@ class VectorOverlay:
     def check_corner(self, path):
         self.corners = select_points(video_path=path)
 
+    def check_direction(self, points):
+        # Assuming points is a list of tuples [(x1, y1), (x2, y2)]
+        if points[0][0] > points[1][0]:  # Compare the x-coordinates
+            return True
+        return False
+
     def setFrameData(self, path):
         print(f"Opening video: {path}")
         cap = cv.VideoCapture(path)
@@ -225,14 +233,21 @@ class VectorOverlay:
             f"Frame width: {self.frame_width}, Frame height: {self.frame_height}, FPS: {self.fps}, Frame count: {self.frame_count}")
         cap.release()
 
-    # You can adjust speed Mult in the readData function!!!
+    """
+    You can adjust speed Mult in the readData function!!!
+    """
     def readData(self):
         print("reading data")
         frame_count = self.frame_count
+        trim_percentage = 0.1
+        num_rows_to_remove = int(len(self.data) * trim_percentage)
+        if num_rows_to_remove > 0:
+            self.data = self.data[:-num_rows_to_remove]
+
         rows = self.data.shape[0]
-        step_size = rows / frame_count
         # Adjust speed mult here:
         step_size = 10
+        step_size = rows/frame_count
         print(f"This is step_size: {step_size}")
 
 
@@ -264,6 +279,7 @@ class VectorOverlay:
             data_z2 = self.data.iloc[start_row:end_row, 12].astype('float64')
             pressure_x2 = self.data.iloc[start_row:end_row, 14].astype('float64')
             pressure_y2 = self.data.iloc[start_row:end_row, 15].astype('float64')
+
 
             fx1.append(data_x1.mean())
             fy1.append(data_y1.mean())
@@ -464,7 +480,74 @@ class VectorOverlay:
         cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
         cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
 
-        # Draw red dots for centers
+        # Draw red dots for corners
+        cv.circle(frame, self.corners[0], 5, (0, 0, 255), -1)  # Red dot at start_point_1
+        cv.circle(frame, self.corners[1], 5, (0, 0, 255), -1)  # Red dot at end_point_1
+        cv.circle(frame, self.corners[2], 5, (0, 0, 255), -1)  # Red dot at start_point_2
+        cv.circle(frame, self.corners[3], 5, (0, 0, 255), -1)  # Red dot at end_point_2
+        cv.circle(frame, self.corners[4], 5, (0, 0, 255), -1)  # Red dot at start_point_1
+        cv.circle(frame, self.corners[5], 5, (0, 0, 255), -1)  # Red dot at end_point_1
+        cv.circle(frame, self.corners[6], 5, (0, 0, 255), -1)  # Red dot at start_point_2
+        cv.circle(frame, self.corners[7], 5, (0, 0, 255), -1)  # Red dot at end_point_2
+
+    def ShortVectorOverlay(self,outputName):
+        self.setFrameData(path=self.front_view_path)
+        self.readData()
+
+        if self.frame_width is None or self.frame_height is None:
+            print("Error: Frame data not set.")
+            return
+
+        if self.fz1 is None or self.fz2 is None:
+            print("Error: Data not set.")
+            return
+
+        out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
+                             (self.frame_width, self.frame_height))
+
+        cap = cv.VideoCapture(self.front_view_path)
+        frame_number = 1
+        forceDataLength = len(self.fz1)
+        self.check_corner(self.front_view_path)
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                # if this calls when the frame_number is equal to the total frame count then the stream has just ended
+                print(f"Can't read frame at position {frame_number}")
+                break
+
+            self.drawFrontArrows(frame_number, frame)
+            cv2.imshow("window", frame)
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+            frame_number += 1
+            out.write(frame)
+
+        cap.release()
+        out.release()
+        print(f"Finished processing video; Total Frames: {frame_number}")
+
+    def drawFrontArrows(self,frameNum, frame):
+        x_force_1 = self.fx1[frameNum]
+        z_force_1 = self.fz1[frameNum]
+        ax1 = self.px1[frameNum]
+
+        x_force_2 = self.fx2[frameNum]
+        z_force_2 = self.fz2[frameNum]
+        ax2 = self.px2[frameNum]
+
+        start_point_1 = rect_to_trapezoid(ax1 + 0.3, self.py1[frameNum] + 0.45, 0.6, 0.9,
+                                          [self.corners[0], self.corners[1], self.corners[2], self.corners[7]])
+        start_point_2 = rect_to_trapezoid(ax2 + 0.3, self.py1[frameNum] -0.45, 0.6, 0.9,
+                                          [self.corners[6], self.corners[3], self.corners[4], self.corners[5]])
+
+
+        end_point_1 = (int(start_point_1[0] - x_force_1), int(start_point_1[1] - z_force_1))
+        end_point_2 = (int(start_point_2[0] - x_force_2), int(start_point_2[1] - z_force_2))
+
+        # cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
+        cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
+
         cv.circle(frame, self.corners[0], 5, (0, 0, 255), -1)  # Red dot at start_point_1
         cv.circle(frame, self.corners[1], 5, (0, 0, 255), -1)  # Red dot at end_point_1
         cv.circle(frame, self.corners[2], 5, (0, 0, 255), -1)  # Red dot at start_point_2
@@ -486,16 +569,21 @@ print(f"This is top view path: {top_view}\n"
       f"This is long view path: {long_view}")
 v = VectorOverlay(top_view, long_view, sideViewPath, forcedata)
 
-# long view
-# output_name = outputname(long_view)
-# print(f"output file name: {output_name}")
-# v.LongVectorOverlay(output_name)
+"""
+side view / long view
+"""
+output_name = outputname(side_view)
+print(f"output file name: {output_name}")
+v.createVectorOverlay(output_name)
 
 # top view
 outputName = outputname(top_view)
 print(f"output file name: {outputName}")
 v.TopVectorOverlay(outputName)
 
-# short view
-# outputName = outputName(sideViewPath)
+"""
+front view / short view
+"""
+# outputName = outputname("C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\dlt\\dlt_lr_ET_short_vid04.mp4")
 # print(f"output file name: {outputName}")
+# v.ShortVectorOverlay(outputName)
