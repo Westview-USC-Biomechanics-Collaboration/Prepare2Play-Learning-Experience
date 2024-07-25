@@ -5,8 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="updated my code with Chase's">
-      <change afterPath="$PROJECT_DIR$/testing.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/dlt/Trimmed of dlt_lr_ET_for04_Raw_Data.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/dlt/dlt_lr_ET_short_vid04.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/svj/Trimmed of svj_lr_AN_for01_Raw_Data.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/svj/Trimmed of svj_lr_AN_long_vid01.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/svj/Trimmed of svj_lr_AN_vid01.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/outputs/r_ET_short_vid04_vector_overlay.mp4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/selected_points.txt" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/selected_points.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -102,7 +108,7 @@
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.Dash_graphing">
+  <component name="RunManager" selected="Python.vector-overlay-skeleton">
     <configuration name="Dash_graphing" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -218,10 +224,10 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.vector-overlay-skeleton" />
         <item itemvalue="Python.Dash_graphing" />
         <item itemvalue="Python.testing (1)" />
         <item itemvalue="Python.Skeletonoverlay (1)" />
-        <item itemvalue="Python.vector-overlay-skeleton" />
         <item itemvalue="Python.testing" />
       </list>
     </recent_temporary>
@@ -291,5 +297,16 @@
     <MESSAGE value="Refactored some code" />
     <MESSAGE value="updated my code with Chase's" />
     <option name="LAST_COMMIT_MESSAGE" value="updated my code with Chase's" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py</url>
+          <line>208</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
