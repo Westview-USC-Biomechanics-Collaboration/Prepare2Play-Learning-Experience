@@ -9,14 +9,48 @@ from vector_overlay_top import VectorOverlay as Topview
 from test_corners import select_points
 import numpy as np
 import os
-# force plate directions
-#  (0.0)                Ax
-#                       |
-#                       |
-#               Fy---------------Ay
-#                       |
-#                       |
-#                       Fx
+"""force plate directions(at top view)
+(0.0)_______________________________________
+    |                                      |
+    |                 Ax                   |
+    |                  |                   |
+    |                  |                   |
+    |          Fy---------------Ay         |
+    |                  |                   |
+    |                  |                   |
+    |                  Fx                  |
+    |______________________________________|
+                        
+Select corner sequence:
+    long view/ side view:
+       1              2 3          4
+      /---------------||----------\\
+     /               | |            \\
+   8/---------------|7 6|-------------\\5
+    |---------------|   |--------------|
+    
+    top view:
+    1               2  3                4
+     _______________    ________________
+    |               |  |                |
+    |               |  |                |
+    |               |  |                |
+    ----------------   ----------------- 
+    8               7  6                5
+    
+    shortview/ front view:
+                1        2
+                __________
+               /          \\
+              /            \\
+          8  |--------------| 3
+           7__________________   4
+           /                  \\
+          /                    \\
+       6 /______________________\\ 5     
+         |_______________________|
+    
+"""
 # Initialization
 def outputname(path):
     if "top" in path:
@@ -361,7 +395,6 @@ class VectorOverlay:
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
-    # need more work for top view
     def drawTopArrows(self,frameNum,frame):
         # convert ax, ay to pixel on plate system
         y_diff = (self.corners[5][1] - self.corners[7][1])
