@@ -206,6 +206,12 @@ class VectorOverlay:
     def check_corner(self,path):
         self.corners = select_points(video_path=path)
 
+    def check_direction(self, points):
+        # Assuming points is a list of tuples [(x1, y1), (x2, y2)]
+        if points[0][0] > points[1][0]:  # Compare the x-coordinates
+            return True
+        return False
+
     def setFrameData(self, path):
         print(f"Opening video: {path}")
         cap = cv.VideoCapture(path)
@@ -228,11 +234,13 @@ class VectorOverlay:
     def readData(self):
         print("reading data")
         frame_count = self.frame_count
+        trim_percentage = 0.1
+        num_rows_to_remove = int(len(self.data) * trim_percentage)
+        if num_rows_to_remove > 0:
+            self.data = self.data[:-num_rows_to_remove]
+            
         rows = self.data.shape[0]
         step_size = rows/frame_count
-        print(step_size)
-        # Adjust speed mult here:
-        step_size = 10
         print(f"This is step_size: {step_size}")
 
 
@@ -343,6 +351,7 @@ class VectorOverlay:
         forceDataLength = len(self.fz1)
         speedMult = math.floor(forceDataLength/self.frame_count)
         self.check_corner(self.side_view_path)
+        
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
