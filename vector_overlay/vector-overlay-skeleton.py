@@ -3,9 +3,6 @@ import cv2
 import cv2 as cv
 import pandas as pd
 import math
-from corner_detect import FindCorners
-from corner_detect import Views
-from vector_overlay_top import VectorOverlay as Topview
 from test_corners import select_points
 import numpy as np
 import os
@@ -208,8 +205,8 @@ class VectorOverlay:
 
         self.corners = []
 
-    def check_corner(self, path):
-        self.corners = select_points(video_path=path)
+    def check_corner(self, path, top=False):
+        self.corners = select_points(video_path=path, top=top)
 
     def check_direction(self, points):
         # Assuming points is a list of tuples [(x1, y1), (x2, y2)]
@@ -360,7 +357,7 @@ class VectorOverlay:
         frame_number = 1
         forceDataLength = len(self.fz1)
         speedMult = math.floor(forceDataLength / self.frame_count)
-        self.check_corner(self.long_view_path)
+        self.check_corner(self.long_view_path, top=False)
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -398,7 +395,7 @@ class VectorOverlay:
         frame_number = 1
         forceDataLength = len(self.fz1)
 
-        self.check_corner(self.top_view_path)
+        self.check_corner(self.top_view_path, top=True)
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -491,7 +488,7 @@ class VectorOverlay:
         cv.circle(frame, self.corners[7], 5, (0, 0, 255), -1)  # Red dot at end_point_2
 
     def ShortVectorOverlay(self,outputName):
-        self.setFrameData(path=self.front_view_path)
+        self.setFrameData(path=self.short_view_path)
         self.readData()
 
         if self.frame_width is None or self.frame_height is None:
@@ -505,10 +502,10 @@ class VectorOverlay:
         out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
                              (self.frame_width, self.frame_height))
 
-        cap = cv.VideoCapture(self.front_view_path)
+        cap = cv.VideoCapture(self.short_view_path)
         frame_number = 1
         forceDataLength = len(self.fz1)
-        self.check_corner(self.front_view_path)
+        self.check_corner(self.short_view_path, top=False)
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -562,19 +559,19 @@ folder = "data/Jiya"
 
 # these are the file paths
 top_view, long_view, forcedata = get_files_from_folder(folder)
-sideViewPath = None
+short_view = None
 
 # verify file path
 print(f"This is top view path: {top_view}\n"
       f"This is long view path: {long_view}")
-v = VectorOverlay(top_view, long_view, sideViewPath, forcedata)
+v = VectorOverlay(top_view, long_view, short_view, forcedata)
 
 """
 side view / long view
 """
-output_name = outputname(side_view)
-print(f"output file name: {output_name}")
-v.createVectorOverlay(output_name)
+# output_name = outputname(long_view)
+# print(f"output file name: {output_name}")
+# v.createVectorOverlay(output_name)
 
 # top view
 outputName = outputname(top_view)

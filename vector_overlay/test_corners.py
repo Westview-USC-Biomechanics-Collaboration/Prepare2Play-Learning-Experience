@@ -17,7 +17,8 @@ def select_points(video_path, top=False, num_points=8):
     ret, frame = cap.read()
     height, _, _ = frame.shape
     if top:
-        frame = frame[height // 4: height - height // 4, :, :]
+        pass
+        # frame = frame[height // 4: height - height // 4, :, :]
     else:
         frame = frame[height // 2:, :, :]
 
@@ -33,7 +34,9 @@ def select_points(video_path, top=False, num_points=8):
     def click_event(event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
             if top:
-                points.append([x, y + height // 4])
+                pass
+                points.append([x,y])
+                # points.append([x, y + height // 4])
             else:
                 points.append([x, y + height // 2])
             cv2.circle(frame, (x, y), 5, (0, 0, 255), -1)
