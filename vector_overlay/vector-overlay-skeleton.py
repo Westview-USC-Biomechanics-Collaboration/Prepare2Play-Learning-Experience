@@ -227,6 +227,7 @@ class VectorOverlay:
         frame_count = self.frame_count
         rows = self.data.shape[0]
         step_size = rows/frame_count
+        print(step_size)
         # Adjust speed mult here:
         # step_size = 9.5
         print(f"This is step_size: {step_size}")
@@ -537,7 +538,7 @@ class VectorOverlay:
         cv.circle(frame, self.corners[6], 5, (0, 0, 255), -1)  # Red dot at start_point_2
         cv.circle(frame, self.corners[7], 5, (0, 0, 255), -1)  # Red dot at end_point_2
 
-folder = "data\\Chase"
+folder = "data\\Anish"
 
 #these are the file paths
 top_view, side_view, forcedata = get_files_from_folder(folder)
@@ -550,9 +551,9 @@ v = VectorOverlay(top_view, side_view, forcedata)
 """
 side view / long view
 """
-# output_name = outputname(side_view)
-# print(f"output file name: {output_name}")
-# v.createVectorOverlay(output_name)
+output_name = outputname(side_view)
+print(f"output file name: {output_name}")
+v.createVectorOverlay(output_name)
 
 """
 top view
