@@ -2,13 +2,16 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import pandas as pd
-from vector_overlay.Cal_COM import calculateCOM
+from Cal_COM import calculateCOM
 
 """""
 This is the skeleton overlay/stick figure
 You need to scroll down to the last line an change the value of video_path in order to process the stick figure
 """""
-def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displayname=False, displaystickfigure=False, displayCOM=False):
+
+
+def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displayname=False, displaystickfigure=False,
+                     displayCOM=False):
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=confidencelevel, model_complexity=2)
 
@@ -36,7 +39,8 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
         pose_landmarks_list = [results.pose_landmarks] if results.pose_landmarks else []
 
         # Draw landmarks on the frame
-        annotated_frame = draw_landmarks_on_image(np.copy(frame), pose_landmarks_list, sex, displayname,displaystickfigure,displayCOM)
+        annotated_frame = draw_landmarks_on_image(np.copy(frame), pose_landmarks_list, sex, displayname,
+                                                  displaystickfigure, displayCOM)
 
         # Write the annotated frame to the output video file
         out.write(annotated_frame)
@@ -52,7 +56,8 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
     cv2.destroyAllWindows()
 
 
-def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayname=False,displaystickfigure=False,displayCOM=False):
+def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayname=False, displaystickfigure=False,
+                            displayCOM=False):
     pose_landmark_names = {
         0: "nose",
         1: "left_eye_inner",
@@ -127,9 +132,7 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
                     # optional: Put text next to the joint
                     if displayname:
                         cv2.putText(annotated_image, landmark_name, (cx + 5, cy + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-                                (255, 255, 255), 1, cv2.LINE_AA)
-
-
+                                    (255, 255, 255), 1, cv2.LINE_AA)
 
         # Get index label
         columns_name = []
@@ -143,14 +146,12 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
             dataout = calculateCOM(datain, sex)
             cv2.circle(annotated_image, (int(dataout[0]), int(dataout[1])), 7, (0, 0, 255), -1)
 
-
-
     return annotated_image
 
 
 # Example usage:
-video_path = 'outputs\\bcp_lr_CC_vid02_vector_overlay.mp4'  # Replace with your input video file path
-filename = "outputs\\"+video_path.split("\\")[-1][:-4]+ "_COM.mp4"
+video_path = 'outputs/ajp_lr_JN_vid05_vector_overlay.mp4'  # Replace with your input video file path
+filename = "outputs/" + video_path.split("/")[-1][:-4] + "_COM.mp4"
 # varify the output file name/path
 print(filename)
 """
@@ -158,4 +159,4 @@ The function takes in video path, output file name, sex.
 for "sex" parameter, it has to be either "m" or "f"
 You can decide to display name of joints, stick figure, or center of mass
 """
-find_coordinates(video_path, "m", filename=filename,displayname=False,displaystickfigure=False,displayCOM=True)
+find_coordinates(video_path, "f", filename=filename, displayname=False, displaystickfigure=False, displayCOM=True)

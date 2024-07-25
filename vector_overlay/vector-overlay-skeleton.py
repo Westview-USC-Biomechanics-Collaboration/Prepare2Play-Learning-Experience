@@ -3,8 +3,6 @@ import cv2
 import cv2 as cv
 import pandas as pd
 import math
-from corner_detect import FindCorners
-from corner_detect import Views
 from vector_overlay_top import VectorOverlay as Topview
 from test_corners import select_points
 import numpy as np
@@ -51,14 +49,17 @@ Select corner sequence:
          |_______________________|
     
 """
+
+
 # Initialization
 def outputname(path):
     if "top" in path:
-        output_name = "outputs\\" + path[-23:-4] + "_vector_overlay.mp4"
+        output_name = "outputs/" + path[-23:-4] + "_vector_overlay.mp4"
     else:
-        output_name = "outputs\\" + path[-20:-4] + "_vector_overlay.mp4"
+        output_name = "outputs/" + path[-20:-4] + "_vector_overlay.mp4"
 
     return output_name
+
 
 def get_files_from_folder(folder):
     xlsx_file = None
@@ -74,19 +75,20 @@ def get_files_from_folder(folder):
             xlsx_file = os.path.join(folder, file)
         elif file.endswith('.mp4'):
             mp4_files.append(os.path.join(folder, file))
-        
+
         # Break the loop if we have found all required files
         if xlsx_file and len(mp4_files) == 2:
             break
-            
+
     # If we didn't find exactly two .mp4 files and one .xlsx file, return None
     if len(mp4_files) != 2 or xlsx_file is None:
         return None, None, None
 
     mp4_files.sort(key=lambda x: len(os.path.basename(x)), reverse=False)
 
-    # top, side, data
+    # top, long, data
     return mp4_files[1], mp4_files[0], xlsx_file
+
 
 def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     """
@@ -104,30 +106,31 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     # Ensure input coordinates are within the rectangle
     x = np.clip(x, 0, rect_width)
     y = np.clip(y, 0, rect_height)
-    
+
     # Extract trapezoid coordinates
     (tl_x, tl_y), (tr_x, tr_y), (br_x, br_y), (bl_x, bl_y) = trapezoid_coords
-    
+
     # Calculate the left and right edge positions for the current y
     left_x = tl_x + (bl_x - tl_x) * (y / rect_height)
     right_x = tr_x + (br_x - tr_x) * (y / rect_height)
-    
+
     # Calculate the width of the trapezoid at the current y
     trapezoid_width = right_x - left_x
-    
+
     # Map x-coordinate
     new_x = left_x + (x / rect_width) * trapezoid_width
-    
+
     # Calculate the top and bottom y positions of the trapezoid
     top_y = (tl_y + tr_y) / 2
     bottom_y = (bl_y + br_y) / 2
-    
+
     # Map y-coordinate
     new_y = top_y + (y / rect_height) * (bottom_y - top_y)
-    
+
     return (int(new_x), int(new_y))
 
-def find_point(startpoint,angle,x_in, y_in):
+
+def find_point(startpoint, angle, x_in, y_in):
     """
     start point is the (0,0) of the system
     angle is the angle between the force plate and the horizontal view.
@@ -136,11 +139,11 @@ def find_point(startpoint,angle,x_in, y_in):
     """
     angle2 = math.atan(y_in / x_in)
 
-    hypotenuse = math.sqrt(x_in**2+y_in**2)
-    if (x_in>0 and y_in>0)or (x_in>0 and y_in<0):  # first and fourth quadrant
+    hypotenuse = math.sqrt(x_in ** 2 + y_in ** 2)
+    if (x_in > 0 and y_in > 0) or (x_in > 0 and y_in < 0):  # first and fourth quadrant
         angle3 = angle + angle2
-    elif (x_in<0 and y_in<0)or (y_in>0 and x_in<0): # second and third quadrant
-        angle3 = angle+angle2+math.pi
+    elif (x_in < 0 and y_in < 0) or (y_in > 0 and x_in < 0):  # second and third quadrant
+        angle3 = angle + angle2 + math.pi
     else:
         # print(f"\nThis is startpoint: {startpoint}")
         endpoint = [0] * len(startpoint)
@@ -159,7 +162,7 @@ def find_point(startpoint,angle,x_in, y_in):
 
     deltax = hypotenuse * math.cos(angle3)
     deltay = hypotenuse * math.sin(angle3)
-    endpoint = [startpoint[0]+deltax,startpoint[1]-deltay]
+    endpoint = [startpoint[0] + deltax, startpoint[1] - deltay]
     return endpoint
 
 
@@ -178,16 +181,17 @@ def convert_floats_to_integers(lst):
 
 class VectorOverlay:
 
-    def __init__(self, top_view_path, side_view_path, data_path):
+    def __init__(self, top_view_path, long_view_path, short_view_path, data_path):
         self.top_view_path = top_view_path
-        self.side_view_path = side_view_path
-        self.front_view_path = None
+        self.long_view_path = long_view_path
+        self.short_view_path = short_view_path
+
         self.data_path = data_path
-        df = pd.read_excel(self.data_path, skiprows= 18)
+        df = pd.read_excel(self.data_path, skiprows=18)
         self.data = df
 
         self.frame_width, self.frame_height, self.fps, self.frame_count = None, None, None, None
-        
+
         self.fx1 = ()
         self.fy1 = ()
         self.fz1 = ()
@@ -202,7 +206,7 @@ class VectorOverlay:
 
         self.corners = []
 
-    def check_corner(self,path):
+    def check_corner(self, path):
         self.corners = select_points(video_path=path)
 
     def setFrameData(self, path):
@@ -221,14 +225,14 @@ class VectorOverlay:
             f"Frame width: {self.frame_width}, Frame height: {self.frame_height}, FPS: {self.fps}, Frame count: {self.frame_count}")
         cap.release()
 
-# You can adjust speed Mult in the readData function!!!
+    # You can adjust speed Mult in the readData function!!!
     def readData(self):
         print("reading data")
         frame_count = self.frame_count
         rows = self.data.shape[0]
-        step_size = rows/frame_count
+        step_size = rows / frame_count
         # Adjust speed mult here:
-        # step_size = 9.5
+        step_size = 10
         print(f"This is step_size: {step_size}")
 
 
@@ -261,7 +265,6 @@ class VectorOverlay:
             pressure_x2 = self.data.iloc[start_row:end_row, 14].astype('float64')
             pressure_y2 = self.data.iloc[start_row:end_row, 15].astype('float64')
 
-
             fx1.append(data_x1.mean())
             fy1.append(data_y1.mean())
             fz1.append(data_z1.mean())
@@ -273,7 +276,8 @@ class VectorOverlay:
             fz2.append(data_z2.mean())
             px2.append(pressure_x2.mean())
             py2.append(pressure_y2.mean())
-        
+
+
         self.fx1 = tuple(fx1)
         self.fy1 = tuple(fy1)
         self.fz1 = tuple(fz1)
@@ -295,8 +299,10 @@ class VectorOverlay:
         
         # print(f"corners: {self.corners}")
 
-        start_point_1 = rect_to_trapezoid(self.py1[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6, [self.corners[0], self.corners[1], self.corners[6], self.corners[7]])
-        start_point_2 = rect_to_trapezoid(self.py2[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6, [self.corners[2], self.corners[3], self.corners[4], self.corners[5]])
+        start_point_1 = rect_to_trapezoid(self.py1[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6,
+                                          [self.corners[0], self.corners[1], self.corners[6], self.corners[7]])
+        start_point_2 = rect_to_trapezoid(self.py2[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6,
+                                          [self.corners[2], self.corners[3], self.corners[4], self.corners[5]])
 
         end_point_1 = (int(start_point_1[0] - y_force_1), int(start_point_1[1] - z_force_1))
         end_point_2 = (int(start_point_2[0] - y_force_2), int(start_point_2[1] - z_force_2))
@@ -311,16 +317,16 @@ class VectorOverlay:
 
         # Draw red dots for centers
         cv.circle(frame, self.corners[0], 5, (0, 0, 255), -1)  # Red dot at start_point_1
-        cv.circle(frame, self.corners[1], 5, (0, 0, 255), -1)    # Red dot at end_point_1
+        cv.circle(frame, self.corners[1], 5, (0, 0, 255), -1)  # Red dot at end_point_1
         cv.circle(frame, self.corners[2], 5, (0, 0, 255), -1)  # Red dot at start_point_2
-        cv.circle(frame, self.corners[3], 5, (0, 0, 255), -1)    # Red dot at end_point_2
+        cv.circle(frame, self.corners[3], 5, (0, 0, 255), -1)  # Red dot at end_point_2
         cv.circle(frame, self.corners[4], 5, (0, 0, 255), -1)  # Red dot at start_point_1
-        cv.circle(frame, self.corners[5], 5, (0, 0, 255), -1)    # Red dot at end_point_1
+        cv.circle(frame, self.corners[5], 5, (0, 0, 255), -1)  # Red dot at end_point_1
         cv.circle(frame, self.corners[6], 5, (0, 0, 255), -1)  # Red dot at start_point_2
-        cv.circle(frame, self.corners[7], 5, (0, 0, 255), -1)    # Red dot at end_point_2
+        cv.circle(frame, self.corners[7], 5, (0, 0, 255), -1)  # Red dot at end_point_2
 
-    def createVectorOverlay(self, outputName):
-        self.setFrameData(path=self.side_view_path)
+    def LongVectorOverlay(self, outputName):
+        self.setFrameData(path=self.long_view_path)
         self.readData()
 
         if self.frame_width is None or self.frame_height is None:
@@ -334,11 +340,11 @@ class VectorOverlay:
         out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
                              (self.frame_width, self.frame_height))
 
-        cap = cv.VideoCapture(self.side_view_path)
+        cap = cv.VideoCapture(self.long_view_path)
         frame_number = 1
         forceDataLength = len(self.fz1)
-        speedMult = math.floor(forceDataLength/self.frame_count)
-        self.check_corner(self.side_view_path)
+        speedMult = math.floor(forceDataLength / self.frame_count)
+        self.check_corner(self.long_view_path)
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -346,7 +352,7 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            self.drawArrows(frame_number*speedMult, frame)
+            self.drawArrows(frame_number * speedMult, frame)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
@@ -395,7 +401,7 @@ class VectorOverlay:
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
-    def drawTopArrows(self,frameNum,frame):
+    def drawTopArrows(self, frameNum, frame):
         # convert ax, ay to pixel on plate system
         y_diff = (self.corners[5][1] - self.corners[7][1])
         x_diff = (self.corners[5][0] - self.corners[7][0])
@@ -416,20 +422,18 @@ class VectorOverlay:
         # print(f"This is px2: {self.px2}")
         # print(f"corners: {self.corners}")
 
-
-
         # find the center of the forceplate
-        center1 = find_point(self.corners[7],angle_of_forceplate,0.45*meter_pixel_ratio,0.3*meter_pixel_ratio)
-        center2 = find_point(self.corners[5],angle_of_forceplate,0.45*meter_pixel_ratio,0.3*meter_pixel_ratio)
+        center1 = find_point(self.corners[7], angle_of_forceplate, 0.45 * meter_pixel_ratio, 0.3 * meter_pixel_ratio)
+        center2 = find_point(self.corners[5], angle_of_forceplate, 0.45 * meter_pixel_ratio, 0.3 * meter_pixel_ratio)
         # print("\n"+ "centers:")
         # print(center1)
         # print(center2)
 
-        start_point_1 = find_point(center1,angle_of_forceplate,ay_1,ax_1)
-        start_point_2 = find_point(center2,angle_of_forceplate,ay_2,ax_2)
+        start_point_1 = find_point(center1, angle_of_forceplate, ay_1, ax_1)
+        start_point_2 = find_point(center2, angle_of_forceplate, ay_2, ax_2)
 
-        end_point_1 = find_point(start_point_1,angle_of_forceplate,y_force_1*-10,x_force_1*-10)
-        end_point_2 = find_point(start_point_2,angle_of_forceplate,y_force_2*-10,x_force_2*-10)
+        end_point_1 = find_point(start_point_1, angle_of_forceplate, y_force_1 * -10, x_force_1 * -10)
+        end_point_2 = find_point(start_point_2, angle_of_forceplate, y_force_2 * -10, x_force_2 * -10)
 
         # convert list float element to integer
         center1 = convert_floats_to_integers(center1)
@@ -449,8 +453,8 @@ class VectorOverlay:
         # print(end_point_2)
 
         #draw plate center
-        cv.circle(frame,center1 , 5, (255, 0, 0), -1) #draw dot at center 1
-        cv.circle(frame,center2, 5, (255, 0, 0), -1)  # draw dot at center 2
+        cv.circle(frame, center1, 5, (255, 0, 0), -1)  #draw dot at center 1
+        cv.circle(frame, center2, 5, (255, 0, 0), -1)  # draw dot at center 2
 
         # drwa green dot at start points
         cv.circle(frame, start_point_1, 5, (0, 255, 0), -1)  # draw dot at startpoint 1
@@ -460,7 +464,7 @@ class VectorOverlay:
         cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
         cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
 
-        # Draw red dots for corners
+        # Draw red dots for centers
         cv.circle(frame, self.corners[0], 5, (0, 0, 255), -1)  # Red dot at start_point_1
         cv.circle(frame, self.corners[1], 5, (0, 0, 255), -1)  # Red dot at end_point_1
         cv.circle(frame, self.corners[2], 5, (0, 0, 255), -1)  # Red dot at start_point_2
@@ -470,99 +474,28 @@ class VectorOverlay:
         cv.circle(frame, self.corners[6], 5, (0, 0, 255), -1)  # Red dot at start_point_2
         cv.circle(frame, self.corners[7], 5, (0, 0, 255), -1)  # Red dot at end_point_2
 
-    def ShortVectorOverlay(self,outputName):
-        self.setFrameData(path=self.side_view_path)
-        self.readData()
 
-        if self.frame_width is None or self.frame_height is None:
-            print("Error: Frame data not set.")
-            return
+folder = "data/Jiya"
 
-        if self.fz1 is None or self.fz2 is None:
-            print("Error: Data not set.")
-            return
+# these are the file paths
+top_view, long_view, forcedata = get_files_from_folder(folder)
+sideViewPath = None
 
-        out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
-                             (self.frame_width, self.frame_height))
-
-        cap = cv.VideoCapture(self.front_view_path)
-        frame_number = 1
-        forceDataLength = len(self.fz1)
-        self.check_corner(self.side_view_path)
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                # if this calls when the frame_number is equal to the total frame count then the stream has just ended
-                print(f"Can't read frame at position {frame_number}")
-                break
-
-            self.drawArrows(frame_number, frame)
-            cv2.imshow("window", frame)
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
-            frame_number += 1
-            out.write(frame)
-
-        cap.release()
-        out.release()
-        print(f"Finished processing video; Total Frames: {frame_number}")
-
-    def drwFrontArrows(self,frameNum, frame):
-        x_force_1 = self.fx1[frameNum]
-        z_force_1 = self.fz1[frameNum]
-        ax1 = self.px1[frameNum]
-
-        x_force_2 = self.fx2[frameNum]
-        z_force_2 = self.fz2[frameNum]
-        ax2 = self.px2[frameNum]
-
-        start_point_1 = rect_to_trapezoid(ax1 + 0.3, self.py1[frameNum] + 0.45, 0.6, 0.9,
-                                          [self.corners[0], self.corners[1], self.corners[2], self.corners[7]])
-        start_point_2 = rect_to_trapezoid(ax2 + 0.3, self.py1[frameNum] + 0.45, 0.6, 0.9,
-                                          [self.corners[6], self.corners[3], self.corners[4], self.corners[5]])
-
-
-        end_point_1 = (int(start_point_1[0] - x_force_1), int(start_point_1[1] - z_force_1))
-        end_point_2 = (int(start_point_2[0] - x_force_2), int(start_point_2[1] - z_force_2))
-
-        cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
-        cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
-
-        cv.circle(frame, self.corners[0], 5, (0, 0, 255), -1)  # Red dot at start_point_1
-        cv.circle(frame, self.corners[1], 5, (0, 0, 255), -1)  # Red dot at end_point_1
-        cv.circle(frame, self.corners[2], 5, (0, 0, 255), -1)  # Red dot at start_point_2
-        cv.circle(frame, self.corners[3], 5, (0, 0, 255), -1)  # Red dot at end_point_2
-        cv.circle(frame, self.corners[4], 5, (0, 0, 255), -1)  # Red dot at start_point_1
-        cv.circle(frame, self.corners[5], 5, (0, 0, 255), -1)  # Red dot at end_point_1
-        cv.circle(frame, self.corners[6], 5, (0, 0, 255), -1)  # Red dot at start_point_2
-        cv.circle(frame, self.corners[7], 5, (0, 0, 255), -1)  # Red dot at end_point_2
-
-folder = "data\\Chase"
-
-#these are the file paths
-top_view, side_view, forcedata = get_files_from_folder(folder)
-#verify file path
+# verify file path
 print(f"This is top view path: {top_view}\n"
-      f"This is side view path: {side_view}")
-#create 'view' object
-v = VectorOverlay(top_view, side_view, forcedata)
+      f"This is long view path: {long_view}")
+v = VectorOverlay(top_view, long_view, sideViewPath, forcedata)
 
-"""
-side view / long view
-"""
-# output_name = outputname(side_view)
+# long view
+# output_name = outputname(long_view)
 # print(f"output file name: {output_name}")
-# v.createVectorOverlay(output_name)
+# v.LongVectorOverlay(output_name)
 
-"""
-top view
-"""
-# outputName = outputname(top_view)
+# top view
+outputName = outputname(top_view)
+print(f"output file name: {outputName}")
+v.TopVectorOverlay(outputName)
+
+# short view
+# outputName = outputName(sideViewPath)
 # print(f"output file name: {outputName}")
-# v.TopVectorOverlay(outputName)
-
-"""
-front view / short view
-"""
-
-

@@ -4,9 +4,24 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="updated my code with Chase's">
-      <change afterPath="$PROJECT_DIR$/testing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="Updated readme.md and requirement.txt">
+      <change afterPath="$PROJECT_DIR$/data/Deren/Trimmed of bjs_lr_DE_for01_Raw_Data.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/Deren/Trimmed of bjs_lr_DE_for01_Raw_Video.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/Jiya/Trimmed of ajp_lr_JN_vid05.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/Jiya/ajp_lr_JN_for05_Raw_Data.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/Jiya/bcp_lr_CC_top_vid01.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/Shayna/Trimmed of sbs_lr_SM_for01_Raw_Data.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/Shayna/Trimmed of sbs_lr_SM_vid01_Raw_Video.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/outputs/ ajp_lr_JN_vid05_vector_overlay.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/outputs/bcp_lr_CC_top_vid01_vector_overlay.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/outputs/bjs_lr_DE_for01_Raw_Video_vector_overlay.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/outputs/sbs_lr_SM_vid01_Raw_Video.mp4" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/Deren/bcp_lr_CC_top_vid01.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/Deren/bjs_lr_DE_for01_Raw_Data.xlsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/Deren/bjs_lr_DE_vid01.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/outputs/bjs_lr_DE_vid01_vector_overlay.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/selected_points.txt" beforeDir="false" afterPath="$PROJECT_DIR$/selected_points.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/syncing/plt_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/syncing/plt_graph.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -35,12 +50,12 @@
     &quot;assignee&quot;: &quot;Chase-520&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience.git&quot;,
-    &quot;accountId&quot;: &quot;c33a8185-5ee1-4add-9b04-12b130191bb1&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience.git",
+    "accountId": "c0b43391-0ce2-4915-9da6-e5944a7109ee"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
@@ -52,44 +67,43 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Python.COM_humanbody.executor": "Run",
-    "Python.Dash_graphing.executor": "Run",
-    "Python.ForceTimeGraphs.executor": "Run",
-    "Python.GraphAnimationChaseVersion (1).executor": "Run",
-    "Python.Skeletonoverlay (1).executor": "Run",
-    "Python.Skeletonoverlay.executor": "Run",
-    "Python.animations.executor": "Run",
-    "Python.colorMask.executor": "Run",
-    "Python.contact-point.executor": "Run",
-    "Python.contact_point (1).executor": "Run",
-    "Python.contact_point (2).executor": "Run",
-    "Python.contact_point.executor": "Run",
-    "Python.filled-animation-graph.executor": "Run",
-    "Python.segdim_deleva.executor": "Run",
-    "Python.skeletonChaseVersion (1).executor": "Run",
-    "Python.test_corners.executor": "Run",
-    "Python.testing (1).executor": "Run",
-    "Python.testing.executor": "Run",
-    "Python.testing02.executor": "Run",
-    "Python.testinganimation.executor": "Run",
-    "Python.testingfile.executor": "Run",
-    "Python.vector-overlay-skeleton.executor": "Run",
-    "Python.vector_overlay_top.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "vector-overlay",
-    "last_opened_file_path": "C:/Users/16199/Desktop/Prepare2Play-Learning-Experience-deren-shoulder-trunk-angle",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python.COM_humanbody.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Dash_graphing.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ForceTimeGraphs.executor&quot;: &quot;Run&quot;,
+    &quot;Python.GraphAnimationChaseVersion (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.Skeletonoverlay (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.Skeletonoverlay.executor&quot;: &quot;Run&quot;,
+    &quot;Python.animations.executor&quot;: &quot;Run&quot;,
+    &quot;Python.colorMask.executor&quot;: &quot;Run&quot;,
+    &quot;Python.contact-point.executor&quot;: &quot;Run&quot;,
+    &quot;Python.contact_point (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.contact_point (2).executor&quot;: &quot;Run&quot;,
+    &quot;Python.contact_point.executor&quot;: &quot;Run&quot;,
+    &quot;Python.filled-animation-graph.executor&quot;: &quot;Run&quot;,
+    &quot;Python.segdim_deleva.executor&quot;: &quot;Run&quot;,
+    &quot;Python.skeletonChaseVersion (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_corners.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testing.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testing02.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testinganimation.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testingfile.executor&quot;: &quot;Run&quot;,
+    &quot;Python.vector-overlay-skeleton.executor&quot;: &quot;Run&quot;,
+    &quot;Python.vector_overlay_top.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;vector-overlay&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/16199/Desktop/Prepare2Play-Learning-Experience-deren-shoulder-trunk-angle&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
@@ -102,29 +116,7 @@
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.Dash_graphing">
-    <configuration name="Dash_graphing" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Prepare2Play-Learning-Experience-3" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Dash_graphing.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.Skeletonoverlay (1)">
     <configuration name="Skeletonoverlay (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -148,7 +140,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="testing (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="Skeletonoverlay" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -161,7 +153,8 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/testing.py" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Skeletonoverlay.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -216,13 +209,36 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="vector_overlay_top" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Prepare2Play-Learning-Experience-3" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/vector_overlay" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/vector_overlay/vector_overlay_top.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.Dash_graphing" />
-        <item itemvalue="Python.testing (1)" />
         <item itemvalue="Python.Skeletonoverlay (1)" />
         <item itemvalue="Python.vector-overlay-skeleton" />
         <item itemvalue="Python.testing" />
+        <item itemvalue="Python.vector_overlay_top" />
+        <item itemvalue="Python.Skeletonoverlay" />
       </list>
     </recent_temporary>
   </component>

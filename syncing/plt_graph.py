@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import pandas as pd
 
 
 class Graph:
@@ -71,3 +72,9 @@ class Graph:
                 return seconds * self.targetFPS
 
 
+df = pd.read_excel("data/Ayaan/spk_lr_AI_for02_Raw_Data.xlsx")
+
+forcey_subset = {"data": df.iloc[18:10000, 2].astype(float).tolist(), "name": "ForceY", "min": -15, "max": 15}
+timex_subset = {"data": df.iloc[18:10000, 0].astype(float).tolist(), "name": "Time", "min": 0, "max": 3}
+g = Graph(timex_subset, forcey_subset)
+g.graph()
