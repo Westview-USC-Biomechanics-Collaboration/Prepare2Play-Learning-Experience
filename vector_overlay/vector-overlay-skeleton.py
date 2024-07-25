@@ -213,6 +213,7 @@ class VectorOverlay:
         for i in range(frame_count):
             start_row = int(round(current_row))
             end_row = int(round(current_row + step_size))
+            current_row+=step_size
 
             data_x1 = self.data.iloc[start_row:end_row, 1].astype('float64')
             data_y1 = self.data.iloc[start_row:end_row, 2].astype('float64')
@@ -238,7 +239,6 @@ class VectorOverlay:
             fz2.append(data_z2.mean())
             px2.append(pressure_x2.mean())
             py2.append(pressure_y2.mean())
-            current_row+=step_size
         
         self.fx1 = tuple(fx1)
         self.fy1 = tuple(fy1)
