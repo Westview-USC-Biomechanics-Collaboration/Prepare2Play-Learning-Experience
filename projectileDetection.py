@@ -3,7 +3,7 @@ import numpy as np
 import math
 
 # Open the video file
-cap = cv2.VideoCapture('data/derenBasketballTest1.mp4')
+cap = cv2.VideoCapture('data/test2.mp4')
 
 # Check if the video opened successfully
 if not cap.isOpened():
@@ -18,11 +18,12 @@ colorInput = input("Enter the color you want to detect: ")
 
 # USER_NOTE: If you require a different color that is not used below, please add in another line in this format:
 # elif colorInput == 'color_here':
-# lower_color = np.array([b, g, r])
-# upper_color = np.array([b, g, r])
+# lower_color = np.array([h, s, v])
+# upper_color = np.array([h, s, v])
 
-# the color of a projectile can be defined in BGR(Blue Green Red) components. This can be found by taking a screenshot and then using MSPaint to grab the values. Pleae be aware that 
-# MS Paint returns RBG not BGR. Then, set the lower_color to 10 below the values (100, 100, 100) -> (90, 90, 90) and 10 above for upper color. If the projectile is still not caught
+# the color of a projectile can be defined in HSV(Hue Saturation Value) components. This can be found by taking a screenshot and then using MSPaint to find the RGB value
+# Then, convert the RGB value to an HSV value using an online converter (rapidtables.com/convert/color/rgb-to-hsv.html) 
+# set the lower_color to 10 below the values (100, 100, 100) -> (90, 90, 90) and 10 above for upper color. If the projectile is still not caught
 # Feel free to play around with the ranges
 if colorInput == 'orange':
     lower_color = np.array([0, 150, 155])
@@ -162,11 +163,11 @@ while cap.isOpened():
             launch_angle = -np.degrees(np.arctan(dy/dx))
             initial_height = centroidY[-2]/395
             
-            print("Initial Velocity: ", initialv, " meters per second")
-            print("Launch Angle: ", launch_angle, " degrees")
-            # USER_NOTE: Pleaes note that intial height will be slightly off based on the instance when the ball is finally detected
+            # print("Initial Velocity: ", initialv, " meters per second")
+            # print("Launch Angle: ", launch_angle, " degrees")
+            # USER_NOTE: Please note that intial height will be slightly off based on the instance when the ball is finally detected
             # This will be fixed in v2 when more User Input will be accepted
-            print("Initial Height: ", initial_height, " meters")
+            # print("Initial Height: ", initial_height, " meters")
 
         
     for (x, y) in zip(posX, posY):
@@ -174,13 +175,15 @@ while cap.isOpened():
             cv2.circle(frame, (x, y), 3, (0, 255, 0), -1)
 
     
-    # Draw out path of ball
+    # Draw out predicted path of ball
 
     if initialv != 0 and len(posX) > 2 and len(posY) > 2:
         posX_np = np.array(posX)
         posY_np = np.array(posY)
 
         coefficients = np.polyfit(posX_np, posY_np, 2)
+
+        a, b, c = coefficients
 
         x_range = np.linspace(0, 1920, 1000)
 
@@ -189,11 +192,40 @@ while cap.isOpened():
         for (x, y) in zip(x_range, y_values):
             if initialv != 0:
                 cv2.circle(frame, (int(x), int(y)), 3, (255, 0, 0), -1)
+    
+
+    # Draw optimal trajectory
+    if initialv != 0 and len(posX) > 350 and len(posY) > 350:
+
+        optimalx = [1140]
+        optimaly = [150]
+
+        for count, val in enumerate(posX):
+            if count < (len(posX) / 4):
+                optimalx.append(val)
         
+        for count, val in enumerate(posY):
+            if count < (len(posX) / 4):
+                optimaly.append(val)
+        
+        optimal_x = np.array(optimalx)
+        optimal_y = np.array(optimaly)
+        
+        optimal_coefficients = np.polyfit(optimal_x, optimal_y, 2)
+
+        optimal_range = np.linspace(0, 1920, 500)
+
+        optimal_values = np.polyval(optimal_coefficients, optimal_range)
+
+        for (x, y) in zip(optimal_range, optimal_values):
+            cv2.circle(frame, (int(x), int(y)), 3, (0, 0, 255), -1)
+
 
     # Write the frame to the output video file
     out.write(frame)
-
+    # cv2.circle(frame, (1140, 150), 3, (0, 255, 0), -1)
+    # cv2.circle(frame, (1670, 320), 3, (0, 255, 0), -1)
+    # cv2.circle(frame, (1730, 330), 3, (0, 255, 0), -1)
     # Display the resulting frame (optional)
     cv2.imshow('Resized Video Window', frame)
     if cv2.waitKey(int(1000 / fps)) & 0xFF == ord('q'):
@@ -235,6 +267,7 @@ def projectile_motion(initialv, launch_angle, initial_height):
     return max_v, max_height, range_distance
 max_v, max_height, range_distance = projectile_motion(initialv, launch_angle, initial_height)
 
-print("Max Velocity: ", max_v, " meters per second")
-print("Max Height: ", max_height, " meters")
-print("Dist Travelled: ", range_distance, " meters")
+
+# print("Max Velocity: ", max_v, " meters per second")
+# # print("Max Height: ", max_height, " meters")
+# print("Dist Travelled: ", range_distance, " meters")
