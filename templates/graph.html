@@ -22,7 +22,7 @@
         #plot-container {
             margin-top: 20px;
         }
-        #plot {
+        #plot, #additional-plot {
             width: 100%;
             height: 300px;
         }
@@ -50,6 +50,14 @@
             <p>Integral of Force (Y-Direction): {{ integral_forcey }} J</p>
             <p>Integral of Force (Z-Direction): {{ integral_forcez }} J</p>
         </div>
+        
+        <div id="additional-plot-container">
+            <h2>Additional Force vs. Time Graph</h2>
+            <div id="additional-plot"></div>
+            <p>Integral of Additional Force (X-Direction): {{ integral_forcex2 }} J</p>
+            <p>Integral of Additional Force (Y-Direction): {{ integral_forcey2 }} J</p>
+            <p>Integral of Additional Force (Z-Direction): {{ integral_forcez2 }} J</p>
+        </div>
     </div>
 
     <script>
@@ -58,13 +66,17 @@
         var forcey = JSON.parse('{{ forcey | tojson | safe }}');
         var forcez = JSON.parse('{{ forcez | tojson | safe }}');
 
-        
+        var additionalForcex = JSON.parse('{{ additional_forcex | tojson | safe }}');
+        var additionalForcey = JSON.parse('{{ additional_forcey | tojson | safe }}');
+        var additionalForcez = JSON.parse('{{ additional_forcez | tojson | safe }}');
+
         var videoDuration = 18.33; // seconds
-
+        var offset = 0.5; // Adjust this value as needed
         
-        var originalDuration = timex[timex.length - 1];
-        timex = timex.map(function(time) { return (time / originalDuration) * videoDuration; });
+        var dataDuration = 4.91 // seconds
+        timex = timex.map(function(time) { return (time / dataDuration) * videoDuration - offset; });
 
+        // Original graph
         var trace1 = {
             x: timex,
             y: forcex,
@@ -101,10 +113,52 @@
                 range: [-550, 550],  
                 title: 'Force (N)'
             },
-            title: 'Force vs. Time Graph'
+            title: 'Force vs. Time Graph (Left Plate)'
         };
 
         Plotly.newPlot('plot', [trace1, trace2, trace3], layout);
+
+        // Additional graph
+        var additionalTrace1 = {
+            x: timex,
+            y: additionalForcex,
+            mode: 'lines+markers',
+            type: 'scatter',
+            fill: 'tozeroy',
+            name: '(X-Direction)'
+        };
+
+        var additionalTrace2 = {
+            x: timex,
+            y: additionalForcey,
+            mode: 'lines+markers',
+            type: 'scatter',
+            fill: 'tozeroy',
+            name: '(Y-Direction)'
+        };
+
+        var additionalTrace3 = {
+            x: timex,
+            y: additionalForcez,
+            mode: 'lines+markers',
+            type: 'scatter',
+            fill: 'tozeroy',
+            name: '(Z-Direction)'
+        };
+
+        var additionalLayout = {
+            xaxis: {
+                range: [0, videoDuration+3],
+                title: 'Time (s.)'
+            },
+            yaxis: {
+                range: [-550, 550],  
+                title: 'Force (N)'
+            },
+            title: 'Force vs. Time Graph (Right Plate)'
+        };
+
+        Plotly.newPlot('additional-plot', [additionalTrace1, additionalTrace2, additionalTrace3], additionalLayout);
 
         function goBack() {
             window.location.href = '/';
@@ -116,11 +170,24 @@
                 data: [
                     {x: timex.slice(0, frameIndex+1), y: forcex.slice(0, frameIndex+1)},
                     {x: timex.slice(0, frameIndex+1), y: forcey.slice(0, frameIndex+1)},
-                    {x: timex.slice(0, frameIndex+1), y: forcez.slice(0, frameIndex+1)}
+                    {x: timex.slice(0, frameIndex+1), y: forcez.slice(0, frameIndex+1)},
+                    {x: timex.slice(0, frameIndex+1), y: additionalForcex.slice(0, frameIndex+1)},
+                    {x: timex.slice(0, frameIndex+1), y: additionalForcey.slice(0, frameIndex+1)},
+                    {x: timex.slice(0, frameIndex+1), y: additionalForcez.slice(0, frameIndex+1)}
                 ]
             }];
 
             Plotly.animate('plot', frames, {
+                transition: {
+                    duration: 0
+                },
+                frame: {
+                    duration: 0,
+                    redraw: false
+                }
+            });
+
+            Plotly.animate('additional-plot', frames, {
                 transition: {
                     duration: 0
                 },
