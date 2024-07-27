@@ -357,8 +357,6 @@ class VectorOverlay:
         Fx	Fy	Fz	|Ft|	Ax	Ay				Fx	Fy	Fz	|Ft|	Ax	Ay
         N	N	N	N	    m	m				N	N	N	 N	    m	m
         """
-        forceDataLength = len(self.fz1)
-        speedMult = forceDataLength / self.frame_count
         self.check_corner(self.long_view_path, top=False)
         while cap.isOpened():
             ret, frame = cap.read()
@@ -471,7 +469,7 @@ class VectorOverlay:
         print(f"Finished processing video; Total Frames: {frame_number}")
 
 
-folder = "data/Jiya"
+folder = "data/Anish"
 
 # these are the file paths
 top_view, long_view, forcedata = get_files_from_folder(folder)
@@ -490,13 +488,13 @@ side view / long view
 # v.LongVectorOverlay(output_name)
 
 # top view
-outputName = outputname(top_view)
-print(f"output file name: {outputName}")
-v.TopVectorOverlay(outputName)
+# outputName = outputname(top_view)
+# print(f"output file name: {outputName}")
+# v.TopVectorOverlay(outputName)
 
 """
 front view / short view
 """
-# outputName = outputname("C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\dlt\\dlt_lr_ET_short_vid04.mp4")
-# print(f"output file name: {outputName}")
-# v.ShortVectorOverlay(outputName)
+outputName = outputname(long_view)
+print(f"output file name: {outputName}")
+v.ShortVectorOverlay(outputName)
