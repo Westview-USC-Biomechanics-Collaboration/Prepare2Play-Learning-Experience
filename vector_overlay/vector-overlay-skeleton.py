@@ -7,6 +7,11 @@ from test_corners import select_points
 import numpy as np
 import os
 """
+plate 1                                 plate 2
+1   2   3   4       5   6   7   8   9   10  11  12  13      14  15
+Fx	Fy	Fz	|Ft|	Ax	Ay				Fx	Fy	Fz	|Ft|	Ax	Ay
+N	N	N	N	    m	m				N	N	N	 N	    m	m
+
 force plate directions(at top view)
 (0.0)_______________________________________
     |                                      |
@@ -206,7 +211,7 @@ class VectorOverlay:
         self.corners = []
 
     def check_corner(self, path, top=False):
-        self.corners = select_points(video_path=path, top=top)
+        self.corners = [[503, 907], [904, 909], [898, 990], [418, 986], [910, 908], [1309, 906], [1387, 980], [909, 986]] #select_points(video_path=path, top=top)
 
     def check_direction(self, points):
         # Assuming points is a list of tuples [(x1, y1), (x2, y2)]
@@ -236,14 +241,12 @@ class VectorOverlay:
     def readData(self):
         print("reading data")
         frame_count = self.frame_count
-        trim_percentage = 0.1
+        trim_percentage = 0.3
         num_rows_to_remove = int(len(self.data) * trim_percentage)
         if num_rows_to_remove > 0:
             self.data = self.data[:-num_rows_to_remove]
 
         rows = self.data.shape[0]
-        # Adjust speed mult here:
-        step_size = 10
         step_size = rows/frame_count
         print(f"This is step_size: {step_size}")
 
@@ -268,14 +271,14 @@ class VectorOverlay:
             data_x1 = self.data.iloc[start_row:end_row, 1].astype('float64')
             data_y1 = self.data.iloc[start_row:end_row, 2].astype('float64')
             data_z1 = self.data.iloc[start_row:end_row, 3].astype('float64')
-            pressure_x1 = self.data.iloc[start_row:end_row, 5].astype('float64')
-            pressure_y1 = self.data.iloc[start_row:end_row, 6].astype('float64')
+            pressure_x1 = (-self.data.iloc[start_row:end_row, 5].astype('float64')+0.3)/0.6
+            pressure_y1 = (self.data.iloc[start_row:end_row, 6].astype('float64')+0.45)/0.9
 
             data_x2 = self.data.iloc[start_row:end_row, 10].astype('float64')
             data_y2 = self.data.iloc[start_row:end_row, 11].astype('float64')
             data_z2 = self.data.iloc[start_row:end_row, 12].astype('float64')
-            pressure_x2 = self.data.iloc[start_row:end_row, 14].astype('float64')
-            pressure_y2 = self.data.iloc[start_row:end_row, 15].astype('float64')
+            pressure_x2 = (-self.data.iloc[start_row:end_row, 14].astype('float64')+0.3)/0.6
+            pressure_y2 = (self.data.iloc[start_row:end_row, 15].astype('float64')+0.45)/0.9
 
 
             fx1.append(data_x1.mean())
@@ -303,22 +306,15 @@ class VectorOverlay:
         self.px2 = tuple(px2)
         self.py2 = tuple(py2)
 
-    def drawArrows(self, frameNum, frame):
-        z_force_1 = self.fz1[frameNum]
-        y_force_1 = self.fy1[frameNum]
+    def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2):
 
-        z_force_2 = self.fz2[frameNum]
-        y_force_2 = self.fy2[frameNum]
-        
-        # print(f"corners: {self.corners}")
+        start_point_1 = rect_to_trapezoid(px1, py1, 1, 1,
+                                          [self.corners[0], self.corners[1], self.corners[2], self.corners[3]])
+        start_point_2 = rect_to_trapezoid(px2, py2, 1, 1,
+                                          [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
 
-        start_point_1 = rect_to_trapezoid(self.py1[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6,
-                                          [self.corners[0], self.corners[1], self.corners[6], self.corners[7]])
-        start_point_2 = rect_to_trapezoid(self.py2[frameNum] + 0.45, self.px1[frameNum] + 0.3, 0.9, 0.6,
-                                          [self.corners[2], self.corners[3], self.corners[4], self.corners[5]])
-
-        end_point_1 = (int(start_point_1[0] - y_force_1), int(start_point_1[1] - z_force_1))
-        end_point_2 = (int(start_point_2[0] - y_force_2), int(start_point_2[1] - z_force_2))
+        end_point_1 = (int(start_point_1[0] + xf2), int(start_point_1[1] - yf1))
+        end_point_2 = (int(start_point_2[0] + xf1), int(start_point_2[1] - yf2))
         # print(start_point_1)
         # print(end_point_1)
         #
@@ -333,10 +329,10 @@ class VectorOverlay:
         cv.circle(frame, self.corners[1], 5, (0, 0, 255), -1)  # Red dot at end_point_1
         cv.circle(frame, self.corners[2], 5, (0, 0, 255), -1)  # Red dot at start_point_2
         cv.circle(frame, self.corners[3], 5, (0, 0, 255), -1)  # Red dot at end_point_2
-        cv.circle(frame, self.corners[4], 5, (0, 0, 255), -1)  # Red dot at start_point_1
-        cv.circle(frame, self.corners[5], 5, (0, 0, 255), -1)  # Red dot at end_point_1
-        cv.circle(frame, self.corners[6], 5, (0, 0, 255), -1)  # Red dot at start_point_2
-        cv.circle(frame, self.corners[7], 5, (0, 0, 255), -1)  # Red dot at end_point_2
+        # cv.circle(frame, self.corners[4], 5, (0, 0, 255), -1)  # Red dot at start_point_1
+        # cv.circle(frame, self.corners[5], 5, (0, 0, 255), -1)  # Red dot at end_point_1
+        # cv.circle(frame, self.corners[6], 5, (0, 0, 255), -1)  # Red dot at start_point_2
+        # cv.circle(frame, self.corners[7], 5, (0, 0, 255), -1)  # Red dot at end_point_2
 
     def LongVectorOverlay(self, outputName):
         self.setFrameData(path=self.long_view_path)
@@ -355,8 +351,14 @@ class VectorOverlay:
 
         cap = cv.VideoCapture(self.long_view_path)
         frame_number = 1
+        """
+        plate 1                                 plate 2
+        1   2   3   4       5   6   7   8   9   10  11  12  13      14  15
+        Fx	Fy	Fz	|Ft|	Ax	Ay				Fx	Fy	Fz	|Ft|	Ax	Ay
+        N	N	N	N	    m	m				N	N	N	 N	    m	m
+        """
         forceDataLength = len(self.fz1)
-        speedMult = math.floor(forceDataLength / self.frame_count)
+        speedMult = forceDataLength / self.frame_count
         self.check_corner(self.long_view_path, top=False)
         while cap.isOpened():
             ret, frame = cap.read()
@@ -365,11 +367,21 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            self.drawArrows(frame_number * speedMult, frame)
+            fx1 = self.fy1[int(frame_number)]
+            fx2 = self.fy2[int(frame_number)]
+            fy1 = self.fz1[int(frame_number)]
+            fy2 = self.fz2[int(frame_number)]
+            px1 = self.px1[int(frame_number)]
+            py1 = self.py1[int(frame_number)]
+            px2 = self.px2[int(frame_number)]
+            py2 = self.py2[int(frame_number)]
+            print(px1, px2)
+            # def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2):
+            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
-            frame_number += 1
+            frame_number += speedMult
             out.write(frame)
 
         cap.release()
@@ -414,79 +426,6 @@ class VectorOverlay:
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
-    def drawTopArrows(self, frameNum, frame):
-        # convert ax, ay to pixel on plate system
-        y_diff = (self.corners[5][1] - self.corners[7][1])
-        x_diff = (self.corners[5][0] - self.corners[7][0])
-        meter_pixel_ratio = math.sqrt(y_diff ** 2 + x_diff ** 2) / 0.9  # This tell us how many pixel represent 1 meter
-        angle_of_forceplate = math.atan(
-            y_diff / x_diff)  # This is the angle between the force plate and the horizontal view
-        # print(f"frameNum = {frameNum}")
-        x_force_1 = self.fx1[frameNum]
-        y_force_1 = self.fy1[frameNum]
-        ax_1 = self.px1[frameNum] * meter_pixel_ratio
-        ay_1 = self.py1[frameNum] * meter_pixel_ratio
-
-        x_force_2 = self.fx2[frameNum]
-        y_force_2 = self.fy2[frameNum]
-        ax_2 = self.px2[frameNum] * meter_pixel_ratio
-        ay_2 = self.py2[frameNum] * meter_pixel_ratio
-        #
-        # print(f"This is px2: {self.px2}")
-        # print(f"corners: {self.corners}")
-
-        # find the center of the forceplate
-        center1 = find_point(self.corners[7], angle_of_forceplate, 0.45 * meter_pixel_ratio, 0.3 * meter_pixel_ratio)
-        center2 = find_point(self.corners[5], angle_of_forceplate, 0.45 * meter_pixel_ratio, 0.3 * meter_pixel_ratio)
-        # print("\n"+ "centers:")
-        # print(center1)
-        # print(center2)
-
-        start_point_1 = find_point(center1, angle_of_forceplate, ay_1, ax_1)
-        start_point_2 = find_point(center2, angle_of_forceplate, ay_2, ax_2)
-
-        end_point_1 = find_point(start_point_1, angle_of_forceplate, y_force_1 * -10, x_force_1 * -10)
-        end_point_2 = find_point(start_point_2, angle_of_forceplate, y_force_2 * -10, x_force_2 * -10)
-
-        # convert list float element to integer
-        center1 = convert_floats_to_integers(center1)
-        center2 = convert_floats_to_integers(center2)
-        start_point_1 = convert_floats_to_integers(start_point_1)
-        start_point_2 = convert_floats_to_integers(start_point_2)
-
-        end_point_1 = convert_floats_to_integers(end_point_1)
-        end_point_2 = convert_floats_to_integers(end_point_2)
-
-        # print("\n"+"force plate 1:")
-        # print(start_point_1)
-        # print(end_point_1)
-        #
-        # print("\n"+"force plate 2:")
-        # print(start_point_2)
-        # print(end_point_2)
-
-        #draw plate center
-        cv.circle(frame, center1, 5, (255, 0, 0), -1)  #draw dot at center 1
-        cv.circle(frame, center2, 5, (255, 0, 0), -1)  # draw dot at center 2
-
-        # drwa green dot at start points
-        cv.circle(frame, start_point_1, 5, (0, 255, 0), -1)  # draw dot at startpoint 1
-        cv.circle(frame, start_point_2, 5, (0, 255, 0), -1)  # draw dot at startpoint 2
-
-        # draw arrowline
-        cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
-        cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
-
-        # Draw red dots for corners
-        cv.circle(frame, self.corners[0], 5, (0, 0, 255), -1)  # Red dot at start_point_1
-        cv.circle(frame, self.corners[1], 5, (0, 0, 255), -1)  # Red dot at end_point_1
-        cv.circle(frame, self.corners[2], 5, (0, 0, 255), -1)  # Red dot at start_point_2
-        cv.circle(frame, self.corners[3], 5, (0, 0, 255), -1)  # Red dot at end_point_2
-        cv.circle(frame, self.corners[4], 5, (0, 0, 255), -1)  # Red dot at start_point_1
-        cv.circle(frame, self.corners[5], 5, (0, 0, 255), -1)  # Red dot at end_point_1
-        cv.circle(frame, self.corners[6], 5, (0, 0, 255), -1)  # Red dot at start_point_2
-        cv.circle(frame, self.corners[7], 5, (0, 0, 255), -1)  # Red dot at end_point_2
-
     def ShortVectorOverlay(self,outputName):
         self.setFrameData(path=self.short_view_path)
         self.readData()
@@ -524,38 +463,8 @@ class VectorOverlay:
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
-    def drawFrontArrows(self,frameNum, frame):
-        x_force_1 = self.fx1[frameNum]
-        z_force_1 = self.fz1[frameNum]
-        ax1 = self.px1[frameNum]
 
-        x_force_2 = self.fx2[frameNum]
-        z_force_2 = self.fz2[frameNum]
-        ax2 = self.px2[frameNum]
-
-        start_point_1 = rect_to_trapezoid(ax1 + 0.3, self.py1[frameNum] + 0.45, 0.6, 0.9,
-                                          [self.corners[0], self.corners[1], self.corners[2], self.corners[7]])
-        start_point_2 = rect_to_trapezoid(ax2 + 0.3, self.py1[frameNum] -0.45, 0.6, 0.9,
-                                          [self.corners[6], self.corners[3], self.corners[4], self.corners[5]])
-
-
-        end_point_1 = (int(start_point_1[0] - x_force_1), int(start_point_1[1] - z_force_1))
-        end_point_2 = (int(start_point_2[0] - x_force_2), int(start_point_2[1] - z_force_2))
-
-        # cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
-        cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
-
-        cv.circle(frame, self.corners[0], 5, (0, 0, 255), -1)  # Red dot at start_point_1
-        cv.circle(frame, self.corners[1], 5, (0, 0, 255), -1)  # Red dot at end_point_1
-        cv.circle(frame, self.corners[2], 5, (0, 0, 255), -1)  # Red dot at start_point_2
-        cv.circle(frame, self.corners[3], 5, (0, 0, 255), -1)  # Red dot at end_point_2
-        cv.circle(frame, self.corners[4], 5, (0, 0, 255), -1)  # Red dot at start_point_1
-        cv.circle(frame, self.corners[5], 5, (0, 0, 255), -1)  # Red dot at end_point_1
-        cv.circle(frame, self.corners[6], 5, (0, 0, 255), -1)  # Red dot at start_point_2
-        cv.circle(frame, self.corners[7], 5, (0, 0, 255), -1)  # Red dot at end_point_2
-
-
-folder = "data/Jiya"
+folder = "data/Deren"
 
 # these are the file paths
 top_view, long_view, forcedata = get_files_from_folder(folder)
@@ -569,14 +478,14 @@ v = VectorOverlay(top_view, long_view, short_view, forcedata)
 """
 side view / long view
 """
-# output_name = outputname(long_view)
-# print(f"output file name: {output_name}")
-# v.createVectorOverlay(output_name)
+output_name = outputname(long_view)
+print(f"output file name: {output_name}")
+v.LongVectorOverlay(output_name)
 
 # top view
-outputName = outputname(top_view)
-print(f"output file name: {outputName}")
-v.TopVectorOverlay(outputName)
+# outputName = outputname(top_view)
+# print(f"output file name: {outputName}")
+# v.TopVectorOverlay(outputName)
 
 """
 front view / short view
