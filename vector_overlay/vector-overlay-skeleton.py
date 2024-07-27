@@ -231,6 +231,7 @@ class VectorOverlay:
         self.frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
         self.fps = int(cap.get(cv.CAP_PROP_FPS))
         self.frame_count = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
+        print("####################################################")
         print(
             f"Frame width: {self.frame_width}, Frame height: {self.frame_height}, FPS: {self.fps}, Frame count: {self.frame_count}")
         cap.release()
@@ -350,7 +351,7 @@ class VectorOverlay:
                              (self.frame_width, self.frame_height))
 
         cap = cv.VideoCapture(self.long_view_path)
-        frame_number = 1
+        frame_number = 0
         """
         plate 1                                 plate 2
         1   2   3   4       5   6   7   8   9   10  11  12  13      14  15
@@ -447,8 +448,7 @@ class VectorOverlay:
                              (self.frame_width, self.frame_height))
 
         cap = cv.VideoCapture(self.short_view_path)
-        frame_number = 1
-        forceDataLength = len(self.fz1)
+        frame_number = 0
         self.check_corner(self.short_view_path, top=False)
         while cap.isOpened():
             ret, frame = cap.read()
@@ -473,7 +473,7 @@ folder = "data/Anish"
 
 # these are the file paths
 top_view, long_view, forcedata = get_files_from_folder(folder)
-short_view = None
+short_view = long_view
 
 # verify file path
 print(f"This is top view path: {top_view}\n"
