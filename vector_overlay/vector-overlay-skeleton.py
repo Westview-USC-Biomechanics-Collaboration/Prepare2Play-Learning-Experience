@@ -376,7 +376,7 @@ class VectorOverlay:
             py2 = self.px2[int(frame_number)]
             px2 = self.py2[int(frame_number)]
             # def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2):
-            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py1)
+            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
