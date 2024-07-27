@@ -211,7 +211,7 @@ class VectorOverlay:
         self.corners = []
 
     def check_corner(self, path, top=False):
-        self.corners = [[899, 253], [1102, 248], [1105, 554], [906, 556], [905, 565], [1106, 564], [1109, 861], [915, 864]] #select_points(video_path=path, top=top)
+        self.corners = select_points(video_path=path, top=top)
 
     def check_direction(self, points):
         # Assuming points is a list of tuples [(x1, y1), (x2, y2)]
@@ -242,7 +242,7 @@ class VectorOverlay:
     def readData(self):
         print("reading data")
         frame_count = self.frame_count
-        trim_percentage = 0.05
+        trim_percentage = 0.17
         num_rows_to_remove = int(len(self.data) * trim_percentage)
         if num_rows_to_remove > 0:
             self.data = self.data[:-num_rows_to_remove]
@@ -457,7 +457,15 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            self.drawFrontArrows(frame_number, frame)
+            fx1 = self.fx1[int(frame_number)]
+            fx2 = self.fx2[int(frame_number)]
+            fy1 = self.fz1[int(frame_number)]
+            fy2 = self.fz2[int(frame_number)]
+            py1 = self.px1[int(frame_number)]
+            px1 = 1-self.py1[int(frame_number)]
+            py2 = self.px2[int(frame_number)]
+            px2 = self.py2[int(frame_number)]
+            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
