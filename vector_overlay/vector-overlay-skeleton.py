@@ -211,7 +211,7 @@ class VectorOverlay:
         self.corners = []
 
     def check_corner(self, path, top=False):
-        self.corners = [[503, 907], [904, 909], [898, 990], [418, 986], [910, 908], [1309, 906], [1387, 980], [909, 986]] #select_points(video_path=path, top=top)
+        self.corners = [[899, 253], [1102, 248], [1105, 554], [906, 556], [905, 565], [1106, 564], [1109, 861], [915, 864]] #select_points(video_path=path, top=top)
 
     def check_direction(self, points):
         # Assuming points is a list of tuples [(x1, y1), (x2, y2)]
@@ -241,7 +241,7 @@ class VectorOverlay:
     def readData(self):
         print("reading data")
         frame_count = self.frame_count
-        trim_percentage = 0.3
+        trim_percentage = 0.05
         num_rows_to_remove = int(len(self.data) * trim_percentage)
         if num_rows_to_remove > 0:
             self.data = self.data[:-num_rows_to_remove]
@@ -325,10 +325,10 @@ class VectorOverlay:
         cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
 
         # Draw red dots for centers
-        cv.circle(frame, self.corners[0], 5, (0, 0, 255), -1)  # Red dot at start_point_1
-        cv.circle(frame, self.corners[1], 5, (0, 0, 255), -1)  # Red dot at end_point_1
-        cv.circle(frame, self.corners[2], 5, (0, 0, 255), -1)  # Red dot at start_point_2
-        cv.circle(frame, self.corners[3], 5, (0, 0, 255), -1)  # Red dot at end_point_2
+        # cv.circle(frame, self.corners[0], 5, (0, 0, 255), -1)  # Red dot at start_point_1
+        # cv.circle(frame, self.corners[1], 5, (0, 0, 255), -1)  # Red dot at end_point_1
+        # cv.circle(frame, self.corners[2], 5, (0, 0, 255), -1)  # Red dot at start_point_2
+        # cv.circle(frame, self.corners[3], 5, (0, 0, 255), -1)  # Red dot at end_point_2
         # cv.circle(frame, self.corners[4], 5, (0, 0, 255), -1)  # Red dot at start_point_1
         # cv.circle(frame, self.corners[5], 5, (0, 0, 255), -1)  # Red dot at end_point_1
         # cv.circle(frame, self.corners[6], 5, (0, 0, 255), -1)  # Red dot at start_point_2
@@ -371,17 +371,16 @@ class VectorOverlay:
             fx2 = self.fy2[int(frame_number)]
             fy1 = self.fz1[int(frame_number)]
             fy2 = self.fz2[int(frame_number)]
-            px1 = self.px1[int(frame_number)]
-            py1 = self.py1[int(frame_number)]
-            px2 = self.px2[int(frame_number)]
-            py2 = self.py2[int(frame_number)]
-            print(px1, px2)
+            py1 = self.px1[int(frame_number)]
+            px1 = self.py1[int(frame_number)]
+            py2 = self.px2[int(frame_number)]
+            px2 = self.py2[int(frame_number)]
             # def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2):
-            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
+            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py1)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
-            frame_number += speedMult
+            frame_number += 1
             out.write(frame)
 
         cap.release()
@@ -404,9 +403,7 @@ class VectorOverlay:
                              (self.frame_width, self.frame_height))
 
         cap = cv.VideoCapture(self.top_view_path)
-        frame_number = 1
-        forceDataLength = len(self.fz1)
-
+        frame_number = 0
         self.check_corner(self.top_view_path, top=True)
         while cap.isOpened():
             ret, frame = cap.read()
@@ -415,7 +412,17 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            self.drawTopArrows(frame_number, frame)
+            fx1 = self.fx1[frame_number]
+            fx2 = self.fx2[frame_number]
+            fy1 = self.fy1[frame_number]
+            fy2 = self.fy2[frame_number]
+            py1 = self.py1[frame_number]
+            py2 = self.py2[frame_number]
+            px1 = 1-self.px1[frame_number]
+            px2 = 1-self.px2[frame_number]
+            print(py1, py2)
+
+            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py1)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
@@ -464,7 +471,7 @@ class VectorOverlay:
         print(f"Finished processing video; Total Frames: {frame_number}")
 
 
-folder = "data/Deren"
+folder = "data/Jiya"
 
 # these are the file paths
 top_view, long_view, forcedata = get_files_from_folder(folder)
@@ -478,14 +485,14 @@ v = VectorOverlay(top_view, long_view, short_view, forcedata)
 """
 side view / long view
 """
-output_name = outputname(long_view)
-print(f"output file name: {output_name}")
-v.LongVectorOverlay(output_name)
+# output_name = outputname(long_view)
+# print(f"output file name: {output_name}")
+# v.LongVectorOverlay(output_name)
 
 # top view
-# outputName = outputname(top_view)
-# print(f"output file name: {outputName}")
-# v.TopVectorOverlay(outputName)
+outputName = outputname(top_view)
+print(f"output file name: {outputName}")
+v.TopVectorOverlay(outputName)
 
 """
 front view / short view
