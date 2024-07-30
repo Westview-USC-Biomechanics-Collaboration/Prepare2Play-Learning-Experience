@@ -503,6 +503,6 @@ side view / long view
 """
 front view / short view
 """
-outputName = outputname(long_view)
-print(f"output file name: {outputName}")
-v.ShortVectorOverlay(outputName)
+# outputName = outputname(long_view)
+# print(f"output file name: {outputName}")
+# v.ShortVectorOverlay(outputName)
