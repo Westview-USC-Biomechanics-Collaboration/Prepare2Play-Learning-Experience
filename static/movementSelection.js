@@ -27,13 +27,11 @@ function updateStatsVisibility(movement) {
 
     console.log('updateStatsVisibility called with movement:', movement);
 
-    // Hide all stats initially
     document.querySelectorAll('.Results p').forEach(stat => {
         console.log('Hiding:', stat.id);
         stat.style.display = 'none';
     });
 
-    // Show stats relevant to the selected movement
     const relevantStats = statsMapping[movement];
     console.log('Relevant stats:', relevantStats);
     if (relevantStats) {
@@ -60,7 +58,7 @@ function selectMovement(movement) {
 }
 
 function updateContent() {
-    console.log('updateContent() called'); // CHANGED
+    console.log('updateContent() called');
 
     const movementTitle = localStorage.getItem('selectedMovement') || 'Unknown Movement';
     console.log(`Selected movement: ${movementTitle}`);
@@ -69,7 +67,7 @@ function updateContent() {
     updateStatsVisibility(movementTitle);
 }
 
-console.log('CURRENT pathname in updateContent check:', window.location.pathname); // CHANGED
+console.log('CURRENT pathname in updateContent check:', window.location.pathname);
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -105,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     if (window.location.pathname === '/SportsTemplate.html') {
-        console.log('Calling updateContent()'); // CHANGED
+        console.log('Calling updateContent()');
 
         updateContent();
 
@@ -132,7 +130,6 @@ function uploadAndProcessVideo(videoFile) {
         method: 'POST',
         body: videoFile
     }).then(response => {
-        // No action on success
     }).catch(error => {
         console.error('Error uploading video:', error);
     });
@@ -172,7 +169,7 @@ function debugging() {
 const videoFileInput = document.getElementById('videoFile');
 const uploadedVideo = document.getElementById('uploadedVideo');
 
-document.getElementById('videoContainer').style.display = 'block';
+//document.getElementById('videoContainer').style.display = 'block';
 
 videoFileInput.addEventListener('change', function() {
     const file = this.files[0];
