@@ -296,7 +296,7 @@ class VectorOverlay:
                                           [self.corners[0], self.corners[1], self.corners[2], self.corners[3]])
         start_point_2 = rect_to_trapezoid(px2, py2, 1, 1,
                                           [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
-
+        print(f"Startpoint1: {start_point_1}, Startpoint2:{start_point_2}")
         end_point_1 = (int(start_point_1[0] + xf1), int(start_point_1[1] - yf1))
         end_point_2 = (int(start_point_2[0] + xf2), int(start_point_2[1] - yf2))
         # print(start_point_1)
@@ -402,9 +402,9 @@ class VectorOverlay:
             py2 = self.px2[frame_number]
             px1 = self.py1[frame_number]
             px2 = self.py2[frame_number]
-            print(py1, py2)
+            # print(f"x:{py1}, y:{py2}\n")
 
-            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py1)
+            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break

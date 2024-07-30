@@ -144,13 +144,13 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
         if displayCOM == True:
             datain = pd.Series(data, index=columns_name, name="Datain Series")
             dataout = calculateCOM(datain, sex)
-            cv2.circle(annotated_image, (int(dataout[0]), int(dataout[1])), 7, (0, 0, 255), -1)
+            cv2.circle(annotated_image, (int(dataout[0]), int(dataout[1])), 12, (0, 0, 255), -1)
 
     return annotated_image
 
 
 # Example usage:
-video_path = 'outputs/ajp_lr_JN_vid05_vector_overlay.mp4'  # Replace with your input video file path
+video_path = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\sbs_lr_SM_top_vid01_vector_overlay.mp4"  # Replace with your input video file path
 filename = "outputs/" + video_path.split("/")[-1][:-4] + "_COM.mp4"
 # varify the output file name/path
 print(filename)
