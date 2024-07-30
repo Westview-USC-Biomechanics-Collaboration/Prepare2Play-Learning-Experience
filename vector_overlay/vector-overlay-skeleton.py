@@ -394,10 +394,10 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            fx1 = self.fy1[frame_number]
-            fx2 = self.fy2[frame_number]
-            fy1 = self.fx1[frame_number]
-            fy2 = self.fx2[frame_number]
+            fx1 = self.fy1[frame_number] *10
+            fx2 = self.fy2[frame_number] *10
+            fy1 = self.fx1[frame_number] *10
+            fy2 = self.fx2[frame_number] *10
             py1 = self.px1[frame_number]
             py2 = self.px2[frame_number]
             px1 = self.py1[frame_number]
@@ -464,7 +464,7 @@ folder = "data/Chase"
 
 # these are the file paths
 long_view, short_view, top_view, forcedata = find_files(folder)
-short_view = long_view
+
 
 # verify file path
 print(f"This is top view path: {top_view}\n"
