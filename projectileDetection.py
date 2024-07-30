@@ -254,10 +254,11 @@ while cap.isOpened():
     # cv2.setMouseCallback('Resized Video Window', click_event)
     if cv2.waitKey(int(1000 / fps)) & 0xFF == ord('q'):
         break
-
+cv2.waitKey()
 # Release the video capture and writer objects
 cap.release()
 out.release()
+
 
 # threshold 4.4704 qmeter/second
 # approximation: 395 pixels -> 1 meter
