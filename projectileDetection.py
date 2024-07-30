@@ -25,6 +25,8 @@ colorInput = input("Enter the color you want to detect: ")
 # Then, convert the RGB value to an HSV value using an online converter (rapidtables.com/convert/color/rgb-to-hsv.html) 
 # set the lower_color to 10 below the values (100, 100, 100) -> (90, 90, 90) and 10 above for upper color. If the projectile is still not caught
 # Feel free to play around with the ranges
+
+# Define the color range for detection
 if colorInput == 'orange':
     lower_color = np.array([0, 150, 155])
     upper_color = np.array([100, 250, 255])
@@ -37,10 +39,6 @@ elif colorInput == 'brown':
     lower_color = np.array([4, 210, 47])
     upper_color = np.array([7, 230, 55])
 
-
-# Define the color range for detection
-
-
 # Contour centroids
 posX = []
 posY = []
@@ -52,6 +50,33 @@ framenumber = []
 initialv = 0
 launch_angle = 0
 initial_height = 0
+
+clicked_points_x = []
+clicked_points_y = []
+
+clicks = 0
+
+ret, frame = cap.read()
+
+cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
+
+cv2.resizeWindow('frame', 980, 540)
+
+def click_event(event, x, y, flags, param):
+    global optimalx, optimaly, clicks
+    if event == cv2.EVENT_LBUTTONDOWN:
+        print(x, ' ', y)
+        clicks += 1
+        if clicks < 2:
+            clicked_points_x.append(x)
+            clicked_points_y.append(y)  
+
+cv2.imshow('frame', frame)
+cv2.setMouseCallback('frame', click_event)
+
+if cv2.waitKey(0) & 0xFF == ord('q'):
+    cv2.destroyWindow('frame')
+    
 
 # Get fps
 fps = cap.get(cv2.CAP_PROP_FPS)
@@ -87,7 +112,7 @@ while cap.isOpened():
         result = cv2.bitwise_and(screen_var, screen_var, mask=mask)
 
         return mask
-
+    
     if input ==  'top half':
         screen_var = frame[0:height//2, :]
         mask = screenDetect(screen_var)
@@ -105,6 +130,8 @@ while cap.isOpened():
         break
 
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+  
 
     # Filter contours based on proximity to other contours
     filtered_contours = []
@@ -174,7 +201,6 @@ while cap.isOpened():
         if initialv != 0:
             cv2.circle(frame, (x, y), 3, (0, 255, 0), -1)
 
-    
     # Draw out predicted path of ball
 
     if initialv != 0 and len(posX) > 2 and len(posY) > 2:
@@ -192,22 +218,21 @@ while cap.isOpened():
         for (x, y) in zip(x_range, y_values):
             if initialv != 0:
                 cv2.circle(frame, (int(x), int(y)), 3, (255, 0, 0), -1)
-    
 
     # Draw optimal trajectory
-    if initialv != 0 and len(posX) > 350 and len(posY) > 350:
+    if initialv != 0 and len(posX) > 10 and len(posY) > 10 and max(posX) > 960:
+        lengthx = len(posX)/4
+        lengthy = len(posY)/4
 
-        optimalx = [1140]
-        optimaly = [150]
+        optimalx = posX[0:round(lengthx-1)]
+        optimaly = posY[0:round(lengthy-1)]
 
-        for count, val in enumerate(posX):
-            if count < (len(posX) / 4):
-                optimalx.append(val)
+        for i in clicked_points_x:
+            optimalx.append(i)
         
-        for count, val in enumerate(posY):
-            if count < (len(posX) / 4):
-                optimaly.append(val)
-        
+        for i in clicked_points_y:
+            optimaly.append(i)
+
         optimal_x = np.array(optimalx)
         optimal_y = np.array(optimaly)
         
@@ -223,11 +248,10 @@ while cap.isOpened():
 
     # Write the frame to the output video file
     out.write(frame)
-    # cv2.circle(frame, (1140, 150), 3, (0, 255, 0), -1)
-    # cv2.circle(frame, (1670, 320), 3, (0, 255, 0), -1)
-    # cv2.circle(frame, (1730, 330), 3, (0, 255, 0), -1)
+
     # Display the resulting frame (optional)
     cv2.imshow('Resized Video Window', frame)
+    # cv2.setMouseCallback('Resized Video Window', click_event)
     if cv2.waitKey(int(1000 / fps)) & 0xFF == ord('q'):
         break
 
