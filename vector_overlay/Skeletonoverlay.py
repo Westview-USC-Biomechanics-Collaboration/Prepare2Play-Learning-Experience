@@ -150,14 +150,23 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
 
 
 # Example usage:
-video_path = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\sbs_lr_SM_top_vid01_vector_overlay.mp4"  # Replace with your input video file path
-filename = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\\" + video_path.split("\\")[-1][:-4] + "_COM.mp4"
-# varify the output file name/path
-print(filename)
+video_path = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\\dlt_lr_ET_long_vid03_vector_overlay.mp4"  # Replace with your input video file path
+
 """
 The function takes in video path, output file name, sex. 
 for "sex" parameter, it has to be either "m" or "f"
 You can decide to display name of joints, stick figure, or center of mass
 """
-find_coordinates(video_path, "f", filename=filename, displayname=False, displaystickfigure=False, displayCOM=True)
+displayname = False
+displaystickfigure = False
+displayCOM = True
+filename = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\\" + video_path.split("\\")[-1][:-4]
+# adjust file name
+if displaystickfigure == True and displayCOM == True:
+    filename += "_COM+Stickfigure.mp4"
+elif displayCOM == True and displaystickfigure == False:
+    filename += "_COM_only.mp4"
+else:
+    filename += "_COM.mp4"
+find_coordinates(video_path, "m", filename=filename, displayname=displayname, displaystickfigure=displaystickfigure, displayCOM=displayCOM)
 print(f"This is output path: {filename}")

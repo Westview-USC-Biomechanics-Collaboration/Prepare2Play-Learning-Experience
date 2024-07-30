@@ -58,11 +58,8 @@ Select corner sequence:
 
 # Initialization
 def outputname(path):
-    if "top" in path:
-        output_name = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\\" + path[-23:-4] + "_vector_overlay.mp4"
-    else:
-        output_name = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\\" + path[-20:-4] + "_vector_overlay.mp4"
-
+    filename = path.split("\\")[-1][:-4]
+    output_name = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\\" + filename + "_vector_overlay.mp4"
     return output_name
 
 def find_files(directory):
@@ -353,8 +350,8 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            fx1 = self.fy1[int(frame_number)]
-            fx2 = self.fy2[int(frame_number)]
+            fx1 = 1-self.fy1[int(frame_number)]
+            fx2 = 1-self.fy2[int(frame_number)]
             fy1 = self.fz1[int(frame_number)]
             fy2 = self.fz2[int(frame_number)]
             py1 = self.px1[int(frame_number)]
@@ -464,7 +461,7 @@ class VectorOverlay:
         print(f"Finished processing video; Total Frames: {frame_number}")
 
 
-folder = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\\ajp"
+folder = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\\dlt"
 
 # these are the file paths
 long_view, short_view, top_view, forcedata = find_files(folder)
