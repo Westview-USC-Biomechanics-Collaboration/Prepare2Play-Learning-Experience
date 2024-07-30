@@ -65,35 +65,24 @@ def outputname(path):
 
     return output_name
 
+def find_files(directory):
+    long_file = None
+    short_file = None
+    top_file = None
+    data = None
 
-def get_files_from_folder(folder):
-    xlsx_file = None
-    mp4_files = []
+    for filename in os.listdir(directory):
+        if filename.endswith(".mp4"):
+            if "long" in filename:
+                long_file = os.path.join(directory, filename)
+            elif "short" in filename:
+                short_file = os.path.join(directory, filename)
+            elif "top" in filename:
+                top_file = os.path.join(directory, filename)
+        elif filename.endswith(".xlsx"):
+            data = os.path.join(directory, filename)
 
-    # Check if the folder exists
-    if not os.path.isdir(folder):
-        return None, None, None
-
-    # Iterate through files in the folder
-    for file in os.listdir(folder):
-        if file.endswith('.xlsx'):
-            xlsx_file = os.path.join(folder, file)
-        elif file.endswith('.mp4'):
-            mp4_files.append(os.path.join(folder, file))
-
-        # Break the loop if we have found all required files
-        if xlsx_file and len(mp4_files) == 2:
-            break
-
-    # If we didn't find exactly two .mp4 files and one .xlsx file, return None
-    if len(mp4_files) != 2 or xlsx_file is None:
-        return None, None, None
-
-    mp4_files.sort(key=lambda x: len(os.path.basename(x)), reverse=False)
-
-    # top, long, data
-    return mp4_files[1], mp4_files[0], xlsx_file
-
+    return long_file, short_file, top_file, data
 
 def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     """
@@ -474,29 +463,35 @@ class VectorOverlay:
 folder = "data/Chase"
 
 # these are the file paths
-top_view, long_view, forcedata = get_files_from_folder(folder)
+long_view, short_view, top_view, forcedata = find_files(folder)
 short_view = long_view
 
 # verify file path
 print(f"This is top view path: {top_view}\n"
-      f"This is long view path: {long_view}")
+      f"This is long view path: {long_view}\n"
+      f"This is short view path: {short_view}\n")
 v = VectorOverlay(top_view, long_view, short_view, forcedata)
 
 """
 side view / long view
 """
-# output_name = outputname(long_view)
-# print(f"output file name: {output_name}")
-# v.LongVectorOverlay(output_name)
+if long_view != None:
+    output_name = outputname(long_view)
+    print(f"output file name: {output_name}")
+    v.LongVectorOverlay(output_name)
 
-# top view
-outputName = outputname(top_view)
-print(f"output file name: {outputName}")
-v.TopVectorOverlay(outputName)
+"""
+top view
+"""
+if top_view != None:
+    outputName = outputname(top_view)
+    print(f"output file name: {outputName}")
+    v.TopVectorOverlay(outputName)
 
 """
 front view / short view
 """
-# outputName = outputname(long_view)
-# print(f"output file name: {outputName}")
-# v.ShortVectorOverlay(outputName)
+if short_view != None:
+    outputName = outputname(short_view)
+    print(f"output file name: {outputName}")
+    v.ShortVectorOverlay(outputName)
