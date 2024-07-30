@@ -59,9 +59,9 @@ Select corner sequence:
 # Initialization
 def outputname(path):
     if "top" in path:
-        output_name = "outputs/" + path[-23:-4] + "_vector_overlay.mp4"
+        output_name = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\\" + path[-23:-4] + "_vector_overlay.mp4"
     else:
-        output_name = "outputs/" + path[-20:-4] + "_vector_overlay.mp4"
+        output_name = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\\" + path[-20:-4] + "_vector_overlay.mp4"
 
     return output_name
 
@@ -180,7 +180,7 @@ class VectorOverlay:
         self.long_view_path = long_view_path
         self.short_view_path = short_view_path
         self.data_path = data_path
-        df = pd.read_excel(self.data_path, skiprows=18)
+        df = pd.read_excel(self.data_path, skiprows=19)
         self.data = df
 
         self.frame_width, self.frame_height, self.fps, self.frame_count = None, None, None, None
@@ -231,7 +231,7 @@ class VectorOverlay:
     def readData(self):
         print("reading data")
         frame_count = self.frame_count
-        step_size = 9.5
+        step_size = 10
         print(f"This is step_size: {step_size}")
 
 
@@ -297,8 +297,8 @@ class VectorOverlay:
         start_point_2 = rect_to_trapezoid(px2, py2, 1, 1,
                                           [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
 
-        end_point_1 = (int(start_point_1[0] + xf2), int(start_point_1[1] - yf1))
-        end_point_2 = (int(start_point_2[0] + xf1), int(start_point_2[1] - yf2))
+        end_point_1 = (int(start_point_1[0] + xf1), int(start_point_1[1] - yf1))
+        end_point_2 = (int(start_point_2[0] + xf2), int(start_point_2[1] - yf2))
         # print(start_point_1)
         # print(end_point_1)
         #
@@ -394,8 +394,8 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            fx1 = self.fy1[frame_number] *10
-            fx2 = self.fy2[frame_number] *10
+            fx1 = (1-self.fy1[frame_number]) *10
+            fx2 = (1-self.fy2[frame_number]) *10
             fy1 = self.fx1[frame_number] *10
             fy2 = self.fx2[frame_number] *10
             py1 = self.px1[frame_number]
@@ -460,7 +460,7 @@ class VectorOverlay:
         print(f"Finished processing video; Total Frames: {frame_number}")
 
 
-folder = "data/Chase"
+folder = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\sbs"
 
 # these are the file paths
 long_view, short_view, top_view, forcedata = find_files(folder)
