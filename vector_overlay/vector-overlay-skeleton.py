@@ -242,13 +242,7 @@ class VectorOverlay:
     def readData(self):
         print("reading data")
         frame_count = self.frame_count
-        trim_percentage = 0.17
-        num_rows_to_remove = int(len(self.data) * trim_percentage)
-        if num_rows_to_remove > 0:
-            self.data = self.data[:-num_rows_to_remove]
-
-        rows = self.data.shape[0]
-        step_size = rows/frame_count
+        step_size = 9.5
         print(f"This is step_size: {step_size}")
 
 
