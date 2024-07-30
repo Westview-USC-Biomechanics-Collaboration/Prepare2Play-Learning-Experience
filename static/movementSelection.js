@@ -1,3 +1,52 @@
+function updateStatsVisibility(movement) {
+    const statsMapping = {
+    'Chest Pass': ['vertImpulse-Stat', 'horizImpulse-Stat', 'launchVel-Stat', 'launchAngle-Stat'],
+    'Free Throw': ['vertImpulse-Stat', 'horizImpulse-Stat', 'launchVel-Stat', 'launchAngle-Stat', 'makesBasket-Stat'],
+    'Jump Shot': ['vertImpulse-Stat', 'horizImpulse-Stat', 'launchVel-Stat', 'launchAngle-Stat', 'makesBasket-Stat'],
+    'Football Pass': ['vertImpulse-Stat', 'horizImpulse-Stat', 'launchVel-Stat', 'launchAngle-Stat'],
+    'Corner Kick': ['vertImpulse-Stat', 'horizImpulse-Stat'],
+    'Offensive Header': ['vertImpulse-Stat', 'horizImpulse-Stat', 'launchVel-Stat', 'launchAngle-Stat'],
+    'Softball Swing': ['vertImpulse-Stat', 'horizImpulse-Stat', 'launchVel-Stat', 'launchAngle-Stat'],
+    'Backhand Slice': ['vertImpulse-Stat', 'horizImpulse-Stat', 'launchVel-Stat', 'launchAngle-Stat'],
+    'Forehand': ['vertImpulse-Stat', 'horizImpulse-Stat', 'launchVel-Stat', 'launchAngle-Stat'],
+    'Volley': ['vertImpulse-Stat', 'horizImpulse-Stat', 'launchVel-Stat', 'launchAngle-Stat'],
+    'Axel Jump': ['vertImpulse-Stat', 'horizImpulse-Stat'],
+    'Side Kick': ['vertImpulse-Stat', 'horizImpulse-Stat'],
+    'Sprint Start': ['vertImpulse-Stat', 'horizImpulse-Stat'],
+    'Volleyball Block': ['vertImpulse-Stat', 'horizImpulse-Stat'],
+    'Volleyball Serve': ['vertImpulse-Stat', 'horizImpulse-Stat', 'launchVel-Stat', 'launchAngle-Stat'],
+    'Volleyball Set': ['vertImpulse-Stat', 'horizImpulse-Stat'],
+    'Change in Direction in Tag': ['vertImpulse-Stat', 'horizImpulse-Stat'],
+    'Frisbee Pull': ['vertImpulse-Stat', 'horizImpulse-Stat'],
+    'Frisbee Throw': ['vertImpulse-Stat', 'horizImpulse-Stat', 'launchVel-Stat', 'launchAngle-Stat'],
+    'Hopscotch': ['vertImpulse-Stat', 'horizImpulse-Stat'],
+    'Jump Rope': ['vertImpulse-Stat', 'horizImpulse-Stat'],
+    'Yoga Chair Pose': ['vertImpulse-Stat', 'horizImpulse-Stat'],
+    'Surfing': ['vertImpulse-Stat', 'horizImpulse-Stat']
+    };
+
+    console.log('updateStatsVisibility called with movement:', movement);
+
+    // Hide all stats initially
+    document.querySelectorAll('.Results p').forEach(stat => {
+        console.log('Hiding:', stat.id);
+        stat.style.display = 'none';
+    });
+
+    // Show stats relevant to the selected movement
+    const relevantStats = statsMapping[movement];
+    console.log('Relevant stats:', relevantStats);
+    if (relevantStats) {
+        relevantStats.forEach(statId => {
+            const element = document.getElementById(statId);
+            if (element) {
+                console.log('Showing:', statId);
+                element.style.display = 'block';
+            }
+        });
+    }
+}
+
 function scrollToDiv(divId) {
     const element = document.getElementById(divId);
     if (element) {
@@ -11,17 +60,25 @@ function selectMovement(movement) {
 }
 
 function updateContent() {
+    console.log('updateContent() called'); // CHANGED
+
     const movementTitle = localStorage.getItem('selectedMovement') || 'Unknown Movement';
+    console.log(`Selected movement: ${movementTitle}`);
     document.getElementById('sportTitle').textContent = movementTitle;
+
+    updateStatsVisibility(movementTitle);
 }
 
+console.log('CURRENT pathname in updateContent check:', window.location.pathname); // CHANGED
+
+
 document.addEventListener('DOMContentLoaded', function () {
-    if (window.location.pathname === '/index') {
-        const movementLinks = document.querySelectorAll('.nested-dropdown a');
+    if (window.location.pathname === '/index.html') {
+        const movementLinks = document.querySelectorAll('.dropdown-content a');
         movementLinks.forEach(link => {
             link.addEventListener('click', function (event) {
                 event.preventDefault();
-                const movement = this.textContent;
+                const movement = this.textContent.trim();
                 selectMovement(movement);
             });
         });
@@ -47,7 +104,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    if (window.location.pathname === '/SportsTemplate') {
+    if (window.location.pathname === '/SportsTemplate.html') {
+        console.log('Calling updateContent()'); // CHANGED
+
         updateContent();
 
         const videoFileInput = document.getElementById('videoFile');
@@ -69,15 +128,11 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function uploadAndProcessVideo(videoFile) {
-    const formData = new FormData();
-    formData.append('video', videoFile);
-
     fetch('/process_video', {
         method: 'POST',
-        body: formData
-    }).then(response => response.json())
-    .then(data => {
-        console.log('Video uploaded successfully:', data);
+        body: videoFile
+    }).then(response => {
+        // No action on success
     }).catch(error => {
         console.error('Error uploading video:', error);
     });
@@ -108,3 +163,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+function debugging() {
+    movement = localStorage.getItem('selectedMovement');
+    console.log(movement);
+}
+
+const videoFileInput = document.getElementById('videoFile');
+const uploadedVideo = document.getElementById('uploadedVideo');
+
+document.getElementById('videoContainer').style.display = 'block';
+
+videoFileInput.addEventListener('change', function() {
+    const file = this.files[0];
+    
+
+    const fileURL = URL.createObjectURL(file);
+    uploadedVideo.src = fileURL;
+    
+
+    uploadAndProcessVideo(file);
+});
+
+function uploadAndProcessVideo(videoFile) {
+
+    fetch('/process_video', {
+        method: 'POST',
+        body: videoFile
+    }).then(response => {
+
+    }).catch(error => {
+        console.error('Error uploading video:', error);
+    });
+}
+
+window.onload = debugging;
