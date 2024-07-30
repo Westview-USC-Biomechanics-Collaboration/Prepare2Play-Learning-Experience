@@ -151,7 +151,7 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
 
 # Example usage:
 video_path = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\sbs_lr_SM_top_vid01_vector_overlay.mp4"  # Replace with your input video file path
-filename = "outputs/" + video_path.split("/")[-1][:-4] + "_COM.mp4"
+filename = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\\" + video_path.split("\\")[-1][:-4] + "_COM.mp4"
 # varify the output file name/path
 print(filename)
 """
@@ -160,3 +160,4 @@ for "sex" parameter, it has to be either "m" or "f"
 You can decide to display name of joints, stick figure, or center of mass
 """
 find_coordinates(video_path, "f", filename=filename, displayname=False, displaystickfigure=False, displayCOM=True)
+print(f"This is output path: {filename}")

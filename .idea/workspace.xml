@@ -5,9 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="updated my code with Chase's">
+      <change afterPath="$PROJECT_DIR$/data/ajp/Trimmed of ajp_lr_JN_for06_Raw_Data.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data/ajp/ajp_lr_JN_top_vid06.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/outputs/sbs_lr_SM_top_vid01_vector_overlay_COM.mp4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sbs/sbs_lr_SM_for01_Raw_Data.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/data/sbs/sbs_lr_SM_for01_Raw_Data.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/outputs/sbs_lr_SM_top_vid01_vector_overlay.mp4" beforeDir="false" afterPath="$PROJECT_DIR$/outputs/sbs_lr_SM_top_vid01_vector_overlay.mp4" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/selected_points.txt" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/selected_points.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" afterDir="false" />
@@ -105,7 +106,7 @@
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.Skeletonoverlay (1)">
+  <component name="RunManager" selected="Python.vector-overlay-skeleton">
     <configuration name="Dash_graphing" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -221,9 +222,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.Skeletonoverlay (1)" />
         <item itemvalue="Python.vector-overlay-skeleton" />
         <item itemvalue="Python.Dash_graphing" />
+        <item itemvalue="Python.Skeletonoverlay (1)" />
         <item itemvalue="Python.testing (1)" />
         <item itemvalue="Python.testing" />
       </list>

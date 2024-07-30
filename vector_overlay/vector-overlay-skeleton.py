@@ -227,11 +227,14 @@ class VectorOverlay:
 
     """
     You can adjust speed Mult in the readData function!!!
+    You may need to adjust this base on the fps of the video. 
+    Step size is not always 10!!
     """
     def readData(self):
         print("reading data")
         frame_count = self.frame_count
         step_size = 10
+        print(f"original step_size: {self.data.shape[0]/self.frame_count}")
         print(f"This is step_size: {step_size}")
 
 
@@ -296,7 +299,8 @@ class VectorOverlay:
                                           [self.corners[0], self.corners[1], self.corners[2], self.corners[3]])
         start_point_2 = rect_to_trapezoid(px2, py2, 1, 1,
                                           [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
-        print(f"Startpoint1: {start_point_1}, Startpoint2:{start_point_2}")
+        # print(f"Startpoint1: {start_point_1}, Startpoint2:{start_point_2}")
+
         end_point_1 = (int(start_point_1[0] + xf1), int(start_point_1[1] - yf1))
         end_point_2 = (int(start_point_2[0] + xf2), int(start_point_2[1] - yf2))
         # print(start_point_1)
@@ -460,7 +464,7 @@ class VectorOverlay:
         print(f"Finished processing video; Total Frames: {frame_number}")
 
 
-folder = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\sbs"
+folder = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\\ajp"
 
 # these are the file paths
 long_view, short_view, top_view, forcedata = find_files(folder)
