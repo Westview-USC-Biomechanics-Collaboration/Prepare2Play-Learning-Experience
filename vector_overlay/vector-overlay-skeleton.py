@@ -411,14 +411,14 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            fx1 = self.fx1[frame_number]
-            fx2 = self.fx2[frame_number]
-            fy1 = self.fy1[frame_number]
-            fy2 = self.fy2[frame_number]
-            py1 = self.py1[frame_number]
-            py2 = self.py2[frame_number]
-            px1 = 1-self.px1[frame_number]
-            px2 = 1-self.px2[frame_number]
+            fx1 = self.fy1[frame_number]
+            fx2 = self.fy2[frame_number]
+            fy1 = self.fx1[frame_number]
+            fy2 = self.fx2[frame_number]
+            py1 = self.px1[frame_number]
+            py2 = self.px2[frame_number]
+            px1 = self.py1[frame_number]
+            px2 = self.py2[frame_number]
             print(py1, py2)
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py1)
@@ -477,7 +477,7 @@ class VectorOverlay:
         print(f"Finished processing video; Total Frames: {frame_number}")
 
 
-folder = "data/Anish"
+folder = "data/Chase"
 
 # these are the file paths
 top_view, long_view, forcedata = get_files_from_folder(folder)
@@ -496,9 +496,9 @@ side view / long view
 # v.LongVectorOverlay(output_name)
 
 # top view
-# outputName = outputname(top_view)
-# print(f"output file name: {outputName}")
-# v.TopVectorOverlay(outputName)
+outputName = outputname(top_view)
+print(f"output file name: {outputName}")
+v.TopVectorOverlay(outputName)
 
 """
 front view / short view
