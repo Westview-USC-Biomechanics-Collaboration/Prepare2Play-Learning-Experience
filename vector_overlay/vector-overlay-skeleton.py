@@ -461,7 +461,7 @@ class VectorOverlay:
         print(f"Finished processing video; Total Frames: {frame_number}")
 
 
-folder = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\\dlt"
+folder = "data/Anish"
 
 # these are the file paths
 long_view, short_view, top_view, forcedata = find_files(folder)
