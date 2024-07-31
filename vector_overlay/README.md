@@ -35,3 +35,11 @@ Please use `vector-overlay-skeleton.py` for vector overlay(This is the program t
 2. Chase Chen
 3. Aarav Yadav
 4. Deren Erdem
+5. Jessie Bao
+6. Ross Brown
+7. Imri Fernandes
+8. 8. James Guo
+9. Rayyan Hussain
+10. Nishk Shah
+11. Breanna Thayillam
+12. Christopher Yuan
