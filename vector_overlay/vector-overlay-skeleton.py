@@ -26,31 +26,31 @@ force plate directions(at top view)
                         
 Select corner sequence:
     long view/ side view:
-       1              2 3          4
+       1              2 5          6
       /---------------||----------\\
      /               | |            \\
-   8/---------------|7 6|-------------\\5
+   4/---------------|3 8|-------------\\7
     |---------------|   |--------------|
     
     top view:
-    1               2  3                4
+    1               2  5                6
      _______________    ________________
     |               |  |                |
     |               |  |                |
     |               |  |                |
     ----------------   ----------------- 
-    8               7  6                5
+    4               3  8                7
     
     shortview/ front view:
                 1        2
                 __________
                /          \\
               /            \\
-          8  |--------------| 3
-           7__________________   4
+          4  |--------------| 3
+           5__________________   6
            /                  \\
           /                    \\
-       6 /______________________\\ 5     
+       8 /______________________\\ 7     
          |_______________________|
     
 """
@@ -58,8 +58,12 @@ Select corner sequence:
 
 # Initialization
 def outputname(path):
+    """
+    use "\\" if you are in windows
+    use "/" if you are in ios
+    """
     filename = path.split("\\")[-1][:-4]
-    output_name = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\\" + filename + "_vector_overlay.mp4"
+    output_name = "outputs\\" + filename + "_vector_overlay.mp4"
     return output_name
 
 def find_files(directory):
@@ -460,16 +464,16 @@ class VectorOverlay:
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
-<<<<<<< Updated upstream
 
-folder = "data/Anish"
-=======
+
+
+
 """
 use "\\" if you are in windows
 use "/" if you are in ios
 """
 folder = "data\\Anish"
->>>>>>> Stashed changes
+
 
 # these are the file paths
 long_view, short_view, top_view, forcedata = find_files(folder)
