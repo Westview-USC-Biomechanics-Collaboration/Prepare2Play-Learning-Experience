@@ -65,6 +65,7 @@
         var threshold = 4; // Force threshold to start plotting
         var startIndex = threshold; // Index to start plotting
 
+<<<<<<< Updated upstream
         // Find the index where forcex exceeds the threshold
         for (var i = 0; i < forcex.length; i++) {
             if (forcex[i] >= threshold) {
@@ -72,6 +73,13 @@
                 break;
             }
         }
+=======
+        var videoDuration = 18.33; // seconds
+        var offset = 0; // Adjust this value as needed
+        
+        var dataDuration = 4.91; // seconds
+        timex = timex.map(function(time) { return (time / dataDuration) * videoDuration - offset; });
+>>>>>>> Stashed changes
 
         var trace1 = {
             x: timex.slice(startIndex),
@@ -93,6 +101,10 @@
 
         var layout = {
             xaxis: {
+<<<<<<< Updated upstream
+=======
+                range: [0, videoDuration + 3],
+>>>>>>> Stashed changes
                 title: 'Time (s.)'
             },
             yaxis: {
@@ -102,7 +114,53 @@
             title: 'Force vs. Time Graph'
         };
 
+<<<<<<< Updated upstream
         Plotly.newPlot('plot', [trace1, trace2], layout);
+=======
+        Plotly.newPlot('plot', [trace1, trace2, trace3], layout);
+
+        // Additional graph
+        var additionalTrace1 = {
+            x: timex,
+            y: additionalForcex,
+            mode: 'lines+markers',
+            type: 'scatter',
+            fill: 'tozeroy',
+            name: 'Force (X-Direction)'
+        };
+
+        var additionalTrace2 = {
+            x: timex,
+            y: additionalForcey,
+            mode: 'lines+markers',
+            type: 'scatter',
+            fill: 'tozeroy',
+            name: 'Force (Y-Direction)'
+        };
+
+        var additionalTrace3 = {
+            x: timex,
+            y: additionalForcez,
+            mode: 'lines+markers',
+            type: 'scatter',
+            fill: 'tozeroy',
+            name: 'Force (Z-Direction)'
+        };
+
+        var additionalLayout = {
+            xaxis: {
+                range: [0, videoDuration + 3],
+                title: 'Time (s.)'
+            },
+            yaxis: {
+                range: [-550, 550],  
+                title: 'Force (N)'
+            },
+            title: 'Force vs. Time Graph (Right Plate)'
+        };
+
+        Plotly.newPlot('additional-plot', [additionalTrace1, additionalTrace2, additionalTrace3], additionalLayout);
+>>>>>>> Stashed changes
 
         function goBack() {
             window.location.href = '/';
@@ -114,6 +172,7 @@
 
             var frames = [{
                 data: [
+<<<<<<< Updated upstream
                     { x: timex.slice(startIndex, frameIndex + 1), y: forcex.slice(startIndex, frameIndex + 1) },
                     { x: timex.slice(startIndex, frameIndex + 1), y: forcey.slice(startIndex, frameIndex + 1) }
                 ]
@@ -143,6 +202,41 @@
                     });
                 }); // Delay for initial frame
             }
+=======
+                    {x: timex.slice(0, frameIndex + 1), y: forcex.slice(0, frameIndex + 1)},
+                    {x: timex.slice(0, frameIndex + 1), y: forcey.slice(0, frameIndex + 1)},
+                    {x: timex.slice(0, frameIndex + 1), y: forcez.slice(0, frameIndex + 1)}
+                ]
+            }];
+
+            Plotly.animate('plot', frames, {
+                transition: {
+                    duration: 0
+                },
+                frame: {
+                    duration: 0,
+                    redraw: false
+                }
+            });
+
+            var additionalFrames = [{
+                data: [
+                    {x: timex.slice(0, frameIndex + 1), y: additionalForcex.slice(0, frameIndex + 1)},
+                    {x: timex.slice(0, frameIndex + 1), y: additionalForcey.slice(0, frameIndex + 1)},
+                    {x: timex.slice(0, frameIndex + 1), y: additionalForcez.slice(0, frameIndex + 1)}
+                ]
+            }];
+
+            Plotly.animate('additional-plot', additionalFrames, {
+                transition: {
+                    duration: 0
+                },
+                frame: {
+                    duration: 0,
+                    redraw: false
+                }
+            });
+>>>>>>> Stashed changes
         }
 
         function findNearestFrameIndex(timeArray, videoTime) {
