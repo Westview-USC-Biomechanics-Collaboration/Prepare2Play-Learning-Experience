@@ -2,7 +2,6 @@
 import cv2
 import cv2 as cv
 import pandas as pd
-import math
 from test_corners import select_points
 import numpy as np
 import os
@@ -123,56 +122,6 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     new_y = top_y + (y / rect_height) * (bottom_y - top_y)
 
     return (int(new_x), int(new_y))
-
-
-def find_point(startpoint, angle, x_in, y_in):
-    """
-    start point is the (0,0) of the system
-    angle is the angle between the force plate and the horizontal view.
-    x_in is the location of the point in pixels
-    y_in is the location of the point in pixels
-    """
-    angle2 = math.atan(y_in / x_in)
-
-    hypotenuse = math.sqrt(x_in ** 2 + y_in ** 2)
-    if (x_in > 0 and y_in > 0) or (x_in > 0 and y_in < 0):  # first and fourth quadrant
-        angle3 = angle + angle2
-    elif (x_in < 0 and y_in < 0) or (y_in > 0 and x_in < 0):  # second and third quadrant
-        angle3 = angle + angle2 + math.pi
-    else:
-        # print(f"\nThis is startpoint: {startpoint}")
-        endpoint = [0] * len(startpoint)
-        # print(f"\nThis is x in , y in: {x_in,y_in}")
-        for i in range(len(startpoint)):
-            if x_in != 0:
-                endpoint.append(startpoint[i] + x_in)
-            elif y_in != 0:
-                endpoint.append(startpoint[i] + y_in)
-            else:
-                endpoint[i] = startpoint[i]
-
-        # print(f"\nThe function find_point is going to return: {endpoint}")
-        return endpoint
-
-
-    deltax = hypotenuse * math.cos(angle3)
-    deltay = hypotenuse * math.sin(angle3)
-    endpoint = [startpoint[0] + deltax, startpoint[1] - deltay]
-    return endpoint
-
-
-def convert_floats_to_integers(lst):
-    """
-    This function takes a list and converts all float elements to integers.
-
-    Parameters:
-    lst (list): The input list containing elements of various types.
-
-    Returns:
-    list: The modified list with all float elements converted to integers.
-    """
-    return [int(x) if isinstance(x, float) else x for x in lst]
-
 
 class VectorOverlay:
 
