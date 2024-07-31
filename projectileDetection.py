@@ -3,7 +3,7 @@ import numpy as np
 import math
 
 # Open the video file
-cap = cv2.VideoCapture('data/derenBasketballTest1.mp4')
+cap = cv2.VideoCapture('data/kyleTest.mov')
 
 # Check if the video opened successfully
 if not cap.isOpened():
@@ -15,6 +15,8 @@ fourcc = cv2.VideoWriter_fourcc(*'XVID')
 out = cv2.VideoWriter('data/output_video.avi', fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
 
 colorInput = input("Enter the color you want to detect: ")
+
+input = input("Enter the part of the screen you want to detect: ")
 
 # USER_NOTE: If you require a different color that is not used below, please add in another line in this format:
 # elif colorInput == 'color_here':
@@ -28,7 +30,7 @@ colorInput = input("Enter the color you want to detect: ")
 
 # Define the color range for detection
 if colorInput == 'orange':
-    lower_color = np.array([0, 150, 155])
+    lower_color = np.array([0, 185, 155])
     upper_color = np.array([100, 250, 255])
 
 elif colorInput == 'white':
@@ -38,6 +40,7 @@ elif colorInput == 'white':
 elif colorInput == 'brown':
     lower_color = np.array([4, 210, 47])
     upper_color = np.array([7, 230, 55])
+
 
 # Contour centroids
 posX = []
@@ -90,8 +93,6 @@ cv2.resizeWindow('Resized Video Window', 980, 540)
 
 # Define a maximum distance to consider contours close to each other
 max_distance = 50
-
-input = input("Enter the part of the screen you want to detect: ")
 
 # Go over the video frame by frame
 while cap.isOpened():
