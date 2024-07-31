@@ -419,7 +419,7 @@ class VectorOverlay:
 
 """
 use "\\" if you are in windows
-use "/" if you are in ios
+use "/" if you are in ios or windows
 """
 folder = "data\\Anish"
 
