@@ -1,8 +1,8 @@
 # Vector overlay & stick figure
 
-This is the vector overlay folder, you can use scripts inside for visual post-processing
-Please use `Skeletonoverlay.py` for stick figure (This program doesn't work well in top view)
-Please use `vector-overlay-skeleton.py` for vector overlay(This is the program that gets the force on force plate and visualize it)
+- This is the vector overlay folder, you can use scripts inside for visual post-processing
+- Please use `Skeletonoverlay.py` for stick figure (This program doesn't work well in top view)
+- Please use `vector-overlay-skeleton.py` for vector overlay(This is the program that gets the force on force plate and visualize it)
 
 # Seting paths
 - if your os is Windows, use "\\"
