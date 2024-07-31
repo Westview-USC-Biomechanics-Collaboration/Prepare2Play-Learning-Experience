@@ -3,7 +3,7 @@ import numpy as np
 import math
 
 # Open the video file
-cap = cv2.VideoCapture('data/test2.mp4')
+cap = cv2.VideoCapture('data/derenBasketballTest1.mp4')
 
 # Check if the video opened successfully
 if not cap.isOpened():
@@ -63,7 +63,7 @@ cv2.namedWindow('frame', cv2.WINDOW_NORMAL)
 cv2.resizeWindow('frame', 980, 540)
 
 def click_event(event, x, y, flags, param):
-    global optimalx, optimaly, clicks
+    global clicks
     if event == cv2.EVENT_LBUTTONDOWN:
         print(x, ' ', y)
         clicks += 1
@@ -208,9 +208,7 @@ while cap.isOpened():
         posY_np = np.array(posY)
 
         coefficients = np.polyfit(posX_np, posY_np, 2)
-
-        a, b, c = coefficients
-
+        
         x_range = np.linspace(0, 1920, 1000)
 
         y_values = np.polyval(coefficients, x_range)
@@ -296,3 +294,4 @@ max_v, max_height, range_distance = projectile_motion(initialv, launch_angle, in
 # print("Max Velocity: ", max_v, " meters per second")
 # # print("Max Height: ", max_height, " meters")
 # print("Dist Travelled: ", range_distance, " meters")
+
