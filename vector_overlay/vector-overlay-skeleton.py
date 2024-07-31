@@ -348,10 +348,10 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            fx1 = (1-self.fy1[frame_number]) *10
-            fx2 = (1-self.fy2[frame_number]) *10
-            fy1 = self.fx1[frame_number] *10
-            fy2 = self.fx2[frame_number] *10
+            fx1 = (1-self.fy1[frame_number]) #*10
+            fx2 = (1-self.fy2[frame_number]) #*10
+            fy1 = self.fx1[frame_number] #*10
+            fy2 = self.fx2[frame_number] #*10
             py1 = self.px1[frame_number]
             py2 = self.px2[frame_number]
             px1 = self.py1[frame_number]
@@ -421,7 +421,7 @@ class VectorOverlay:
 use "\\" if you are in windows
 use "/" if you are in ios or windows
 """
-folder = "data\\Anish"
+folder = "data\\Chase"
 
 
 # these are the file paths
