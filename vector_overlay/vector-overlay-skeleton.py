@@ -2,7 +2,6 @@
 import cv2
 import cv2 as cv
 import pandas as pd
-import math
 from test_corners import select_points
 import numpy as np
 import os
@@ -26,31 +25,31 @@ force plate directions(at top view)
                         
 Select corner sequence:
     long view/ side view:
-       1              2 3          4
+       1              2 5          6
       /---------------||----------\\
      /               | |            \\
-   8/---------------|7 6|-------------\\5
+   4/---------------|3 8|-------------\\7
     |---------------|   |--------------|
     
     top view:
-    1               2  3                4
+    1               2  5                6
      _______________    ________________
     |               |  |                |
     |               |  |                |
     |               |  |                |
     ----------------   ----------------- 
-    8               7  6                5
+    4               3  8                7
     
     shortview/ front view:
                 1        2
                 __________
                /          \\
               /            \\
-          8  |--------------| 3
-           7__________________   4
+          4  |--------------| 3
+           5__________________   6
            /                  \\
           /                    \\
-       6 /______________________\\ 5     
+       8 /______________________\\ 7     
          |_______________________|
     
 """
@@ -58,8 +57,12 @@ Select corner sequence:
 
 # Initialization
 def outputname(path):
+    """
+    use "\\" if you are in windows
+    use "/" if you are in ios
+    """
     filename = path.split("\\")[-1][:-4]
-    output_name = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs\\" + filename + "_vector_overlay.mp4"
+    output_name = "outputs\\" + filename + "_vector_overlay.mp4"
     return output_name
 
 def find_files(directory):
@@ -119,56 +122,6 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     new_y = top_y + (y / rect_height) * (bottom_y - top_y)
 
     return (int(new_x), int(new_y))
-
-
-def find_point(startpoint, angle, x_in, y_in):
-    """
-    start point is the (0,0) of the system
-    angle is the angle between the force plate and the horizontal view.
-    x_in is the location of the point in pixels
-    y_in is the location of the point in pixels
-    """
-    angle2 = math.atan(y_in / x_in)
-
-    hypotenuse = math.sqrt(x_in ** 2 + y_in ** 2)
-    if (x_in > 0 and y_in > 0) or (x_in > 0 and y_in < 0):  # first and fourth quadrant
-        angle3 = angle + angle2
-    elif (x_in < 0 and y_in < 0) or (y_in > 0 and x_in < 0):  # second and third quadrant
-        angle3 = angle + angle2 + math.pi
-    else:
-        # print(f"\nThis is startpoint: {startpoint}")
-        endpoint = [0] * len(startpoint)
-        # print(f"\nThis is x in , y in: {x_in,y_in}")
-        for i in range(len(startpoint)):
-            if x_in != 0:
-                endpoint.append(startpoint[i] + x_in)
-            elif y_in != 0:
-                endpoint.append(startpoint[i] + y_in)
-            else:
-                endpoint[i] = startpoint[i]
-
-        # print(f"\nThe function find_point is going to return: {endpoint}")
-        return endpoint
-
-
-    deltax = hypotenuse * math.cos(angle3)
-    deltay = hypotenuse * math.sin(angle3)
-    endpoint = [startpoint[0] + deltax, startpoint[1] - deltay]
-    return endpoint
-
-
-def convert_floats_to_integers(lst):
-    """
-    This function takes a list and converts all float elements to integers.
-
-    Parameters:
-    lst (list): The input list containing elements of various types.
-
-    Returns:
-    list: The modified list with all float elements converted to integers.
-    """
-    return [int(x) if isinstance(x, float) else x for x in lst]
-
 
 class VectorOverlay:
 
@@ -395,10 +348,10 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            fx1 = (1-self.fy1[frame_number]) *10
-            fx2 = (1-self.fy2[frame_number]) *10
-            fy1 = self.fx1[frame_number] *10
-            fy2 = self.fx2[frame_number] *10
+            fx1 = (1-self.fy1[frame_number]) #*10
+            fx2 = (1-self.fy2[frame_number]) #*10
+            fy1 = self.fx1[frame_number] #*10
+            fy2 = self.fx2[frame_number] #*10
             py1 = self.px1[frame_number]
             py2 = self.px2[frame_number]
             px1 = self.py1[frame_number]
@@ -415,7 +368,7 @@ class VectorOverlay:
         cap.release()
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
-
+# short view need more test
     def ShortVectorOverlay(self,outputName):
         self.setFrameData(path=self.short_view_path)
         self.readData()
@@ -440,15 +393,15 @@ class VectorOverlay:
                 # if this calls when the frame_number is equal to the total frame count then the stream has just ended
                 print(f"Can't read frame at position {frame_number}")
                 break
-
-            fx1 = self.fx1[int(frame_number)]
+        # This only shows the force on force plate 2, you can adjust this part so that it shows the force on force plate 1
+            fx1 = 0
             fx2 = self.fx2[int(frame_number)]
-            fy1 = self.fz1[int(frame_number)]
+            fy1 = 0
             fy2 = self.fz2[int(frame_number)]
             py1 = self.px1[int(frame_number)]
             px1 = 1-self.py1[int(frame_number)]
-            py2 = self.px2[int(frame_number)]
-            px2 = self.py2[int(frame_number)]
+            py2 = self.py2[int(frame_number)]
+            px2 = 1-self.px2[int(frame_number)]
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -461,7 +414,15 @@ class VectorOverlay:
         print(f"Finished processing video; Total Frames: {frame_number}")
 
 
-folder = "C:\\Users\\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data\\dlt"
+
+
+
+"""
+use "\\" if you are in windows
+use "/" if you are in ios or windows
+"""
+folder = "data\\Chase"
+
 
 # these are the file paths
 long_view, short_view, top_view, forcedata = find_files(folder)

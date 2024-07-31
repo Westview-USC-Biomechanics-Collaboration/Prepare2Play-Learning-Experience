@@ -1,15 +1,22 @@
 # Vector overlay & stick figure
 
-This is the vector overlay folder, you can use scripts inside for visual post-processing
+- This is the vector overlay folder, you can use scripts inside for visual post-processing
+- Please use `Skeletonoverlay.py` for stick figure (This program doesn't work well in top view)
+- Please use `vector-overlay-skeleton.py` for vector overlay(This is the program that gets the force on force plate and visualize it)
 
-## Skeleton overlay/stick figure
-- run `Skeletonoverlay.py`
+# Seting paths
+- if your os is Windows, use "\\"
+- if your os is ios, use "/"
+- if the relative path doesn't work, try the absolute path(e.x. "C:\\Users\\16199\\Documents\\GitHub\\Prepare2Play-Learning-Experience-3\\data\\ajp")
+
+## Skeleton overlay/stick figure (quick start)
 - change the path to your video in the `video_path` variable
+- run `Skeletonoverlay.py`
 
 ## Vector Overlay (quick start)
 - run `vector-overlay-skeleton.py`
 - scroll down to the last few lines
-- uncomment the code for the top view or side view
+- change the path to the file
 - run the program
 
 ##  Process your video with a vector overlay (detailed)
@@ -28,3 +35,11 @@ This is the vector overlay folder, you can use scripts inside for visual post-pr
 2. Chase Chen
 3. Aarav Yadav
 4. Deren Erdem
+5. Jessie Bao
+6. Ross Brown
+7. Imri Fernandes
+8. 8. James Guo
+9. Rayyan Hussain
+10. Nishk Shah
+11. Breanna Thayillam
+12. Christopher Yuan

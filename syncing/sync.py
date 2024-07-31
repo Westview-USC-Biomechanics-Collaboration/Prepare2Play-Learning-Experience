@@ -1,44 +1,90 @@
-from forceplate_detect import ForcePlateDetect
-from plt_graph import Graph
-from moviepy.editor import *
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 import pandas as pd
 
 
-class VideoSync():
-    def __init__(self, videoPath, graphPath):
-        self.videoPath = videoPath
-        self.graphPath = graphPath
 
-    def syncSave(self):
-        fp_detect = ForcePlateDetect(self.videoPath)  # 60.0 fps, frame 240
-        movementFrameNum, fps = fp_detect.detect((550, 750), (247, 97), False)
-        # runs the main detection loop to find the first frame when the force plate is triggered
+class Graph:
+    def __init__(self, x_axis_subset, y_axis_subset):
+        self.x_subset = x_axis_subset
+        self.y_subset = y_axis_subset
+        self.fixTimeConstraints()
+        self.fixHeightConstraints()
+        self.slowFactor = 2.5  # 1 is no slow
 
-        movementClip = VideoFileClip(self.videoPath)
-
-        df = pd.read_csv(self.graphPath)
-
-        forcey_subset = {"data": df.iloc[18:10000, 2].astype(float).tolist(), "name": "ForceY", "min": -15, "max": 15}
-        timex_subset = {"data": df.iloc[18:10000, 0].astype(float).tolist(), "name": "Time", "min": 0, "max": 3}
-
-        saveAs = "syncing/results/graph.mp4"
-        g = Graph(timex_subset, forcey_subset)
-        g.animate_graph(True, saveAs)
-        graphFrameNum = g.getForcePlateTime()
-
-        graphClip = VideoFileClip(saveAs)
-
-        frameHoldLength = movementFrameNum - graphFrameNum  # frames of filler before the graph starts
-
-        blankFrame = ColorClip(graphClip.size, (0, 0, 0), duration=(1 / fps) * frameHoldLength)
-
-        finalizedGraphClip = concatenate_videoclips([blankFrame, graphClip])
-        clips = [movementClip], [finalizedGraphClip]
-
-        final = clips_array(clips)
-        final.write_videofile("syncing/results/syncedVideo.mp4", fps=fps)
+        self.targetFPS = 60 / self.slowFactor
+        self.originalFPS = 2400
 
 
-sync = VideoSync("data/5.5min_120Hz_SSRun_Fa19_OL_skele.mp4", "data/SM_SbS_02_Raw_Data - SM_SoftballSwing_Trial2_Raw_Data.csv")
-sync.syncSave()
-print("Video Generated!")
+        # print(self.x_subset['max'] - self.x_subset['min'])
+
+
+        self.totalFrames = self.targetFPS * (self.x_subset['max'] - self.x_subset['min']) * self.slowFactor  # seconds * fps * slow factor
+        # TARGET
+        # The final video will be at 60fps, and will last for the duration of self.totalFrames
+        self.speedMult = round(
+            len(self.x_subset['data']) / self.totalFrames
+        )  # frames in original data collection / frames in target video
+
+    def fixTimeConstraints(self):
+        self.x_subset['min'] = self.x_subset['data'][0]
+        self.x_subset['max'] = self.x_subset['data'][-1]
+
+
+    def fixHeightConstraints(self):
+        heightData = self.y_subset['data']
+
+        self.y_subset['max'] = max(heightData) + 10
+        self.y_subset['min'] = min(heightData) - 10
+
+    def animation(self, frame_num):
+        print(frame_num)
+
+        frame_num *= self.speedMult
+
+        x_data = self.x_subset["data"][: frame_num]
+        y_data = self.y_subset["data"][: frame_num]
+
+
+        plt.plot(x_data, y_data)
+
+    def config_graph(self):
+        plt.xlim([self.x_subset["min"], self.x_subset["max"]])
+        plt.ylim([self.y_subset["min"], self.y_subset["max"]])
+
+        plt.ylabel(self.y_subset["name"])
+        plt.xlabel(self.x_subset["name"])
+
+    def graph(self):
+        self.config_graph()
+        length = len(self.x_subset["data"])
+        self.animation(length)
+        plt.show()
+
+    def animate_graph(self, save=False, saveAs=""):
+        fig, ax = plt.subplots()
+        self.config_graph()
+        print(f"Calculating for {round(self.totalFrames)} frames")
+        animation = FuncAnimation(fig, func=self.animation, frames=round(self.totalFrames), interval=1)
+
+        if save:
+            animation.save(saveAs, fps=self.targetFPS)
+
+        else:
+            plt.show()
+
+    def getForcePlateTime(self) -> int:  # returns frame that the user steps on the forceplate
+        firstYval = self.y_subset['data'][0]
+        for c, yVal in enumerate(self.y_subset['data']):
+            if yVal >= firstYval+15:
+                seconds = self.x_subset['data'][c] * self.targetFPS
+                return seconds*self.slowFactor
+
+
+df = pd.read_excel("data/James/tss_lr_JG_for02_Raw_Data.xlsx")
+
+forcey_subset = {"data": df.iloc[18:10000, 2].astype(float).tolist(), "name": "ForceY", "min": -15, "max": 15}
+timex_subset = {"data": df.iloc[18:10000, 0].astype(float).tolist(), "name": "Time", "min": 0, "max": 3}
+g = Graph(timex_subset, forcey_subset)
+g.graph()
+

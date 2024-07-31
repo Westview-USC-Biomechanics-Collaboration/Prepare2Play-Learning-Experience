@@ -1,8 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import pandas as pd
 import numpy as np
 
+# from syncing.sync import VideoSync
+
 app = Flask(__name__)
+
 
 # Options for dropdown menu
 data = {
@@ -10,9 +13,15 @@ data = {
     'Soccer': ['Corner Kick', 'Goal Kick']
 }
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 @app.route('/dropdown', methods=['POST', 'GET'])
 def dropdown():
@@ -28,33 +37,49 @@ def dropdown():
         # Use lines below once we know where to take the user after they select a movement
         # if 'movements' in request.form:
         #     selected_movement = request.form.get('movements')
-            # return redirect(url_for('another_route', sport=selected_sport, movement=selected_ movement))
-        return render_template('MovementDropDown.html', sports=sport, movements=movements, selected_sport=selected_sport)
+        # return redirect(url_for('another_route', sport=selected_sport, movement=selected_ movement))
+        return render_template('MovementDropDown.html', sports=sport, movements=movements,
+                               selected_sport=selected_sport)
     else:
         # Handle GET request (initial page load)
-        return render_template('MovementDropDown.html',  sports=sport, movements=movements, selected_sport=selected_sport)
+        return render_template('MovementDropDown.html', sports=sport, movements=movements,
+                               selected_sport=selected_sport)
+    
+@app.route('/SportsTemplate.html', methods=['POST', 'GET'])
+def sports_template():
+    return render_template('SportsTemplate.html')
 
 @app.route('/graph')
 def graph():
     # Load your CSV file
-    df = pd.read_csv('data/SM_SbS_02_Raw_Data - SM_SoftballSwing_Trial2_Raw_Data.csv')
+    df = pd.read_csv('data/bjs_lr_DE_for01_Raw_Data - bjs_lr_DE_for01_Raw_Data.csv')
 
     # Select subset of data for plotting
-    timex_subset = df.iloc[18:10000, 0].astype(float).tolist()
-    forcex_subset = df.iloc[18:10000, 1].astype(float).tolist()
-    forcey_subset = df.iloc[18:10000, 2].astype(float).tolist()
+    timex = df.iloc[18:12000, 0].astype(float).tolist()
+    forcex = df.iloc[18:12000, 1].astype(float).tolist()
+    forcey = df.iloc[18:12000, 2].astype(float).tolist()
+
+    # Find the start of the force increase
+    start_index = find_force_increase_start(forcex)
+
+    # Subset the data starting from the force increase
+    timex_subset = timex[start_index:]
+    forcex_subset = forcex[start_index:]
+    forcey_subset = forcey[start_index:]
+
     integral_forcex = np.trapz(forcex_subset, timex_subset)
     integral_forcey = np.trapz(forcey_subset, timex_subset)
     formatted_integral_forcex = f"{integral_forcex:.2f}"
     formatted_integral_forcey = f"{integral_forcey:.2f}"
 
     # Render graph.html template and pass data to frontend
-    return render_template('graph.html', 
-                           forcex=forcex_subset, 
+    return render_template('graph.html',
+                           forcex=forcex_subset,
                            timex=timex_subset,
                            forcey=forcey_subset,
                            integral_forcex=formatted_integral_forcex,
                            integral_forcey=formatted_integral_forcey)
-                           
+
+
 if __name__ == '__main__':
     app.run(debug=True)
