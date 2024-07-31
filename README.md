@@ -15,10 +15,29 @@
 - Access the program at **https://localhost:5000** or **http://127.0.0.1:5000** (Depending on your machine) to test local changes
 
 
+
 ## Topics:
 | Description | Folder Link |
 | ------------- | ------------- | 
 | data files | ⚫ [Our data](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/tree/vector-overlay/data)| 
 | Vector Overlay | ![#add8e6](https://via.placeholder.com/15/add8e6/000000?text=+) [Vector Overlay](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/tree/vector-overlay/vector_overlay)|
 | output video | 🟢 [outputs](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/tree/vector-overlay/outputs) |
+
+## Contributors:
+- Jessie Bao
+- Ross Brown
+- Chase Chen
+- Deren Erdem
+- Imri Fernandes
+- James Guo
+- Rayyan Hussain
+- Ayaan Irshad
+- Nishk Shah
+- Breanna Thayillam
+- Aarav Yadav
+- Christopher Yuan
+
+##
+Link to .csv file: https://docs.google.com/spreadsheets/d/1qBQn315Ii5pMCvPHkIBUR8svjCHVcP9pMjqS9ZCz4Bk/edit?gid=2138994499#gid=2138994499
+
 

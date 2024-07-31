@@ -1,91 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/styleSportsTemplate.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleindex.css') }}">
+    <title>Sports Template</title>
+
 </head>
+
 <body>
-
-
-    <div class="navbar">
-        <div class="Main-Options">
+  <div class="navbar">
+      <div class="Main-Options">
           <div class="Home">
-            <a href="index.html">Home</a>
+              <a href="{{ url_for('index') }}">Home</a>
           </div>
           <div class="About-Us">
-            <a href="#">About Us</a>
+              <a href="#">About Us</a>
           </div>
+      </div>
+  </div>
+
+  <div class="MovementPage">
+      <h1 id="sportTitle">Sports Movement Name</h1>
+      <script>
+          const movement = localStorage.getItem('selectedMovement');
+          console.log(movement);
+
+            if (movement) {
+                document.getElementById('sportTitle').textContent = movement;
+            }
+        </script>
+        <div class="FileUpload">
+            <p>Upload your BOM video here!</p>
+            <button id="uploadButton" type="button" onclick="document.getElementById('videoFile').click()">Upload File</button>
+            <input type="file" id="videoFile" accept="video/*" style="display:none;">
+            <div class="videoContaining" id="videoContainer" style="display: none;">
+                <video id="uploadedVideo" controls>
+                    Your browser does not support the video tag.
+                </video>
+            </div>
         </div>
-        <div class="dropdown">
-          <button class="dropbtn">Sports 
-            <i class="fa fa-caret-down"></i>
-          </button>
-          <div class="dropdown-content">
-            <a href="SportsTemplate.html">Sports Template</a>
-            <a>Basketball</a>
-            <a href="#">Tennis</a>
-          </div>
+        <div class="Results">
+            <div>
+                <p>Force Graph</p>
+            </div>
+            <div>
+                <p>Vector Overlay</p>
+            </div>
+            <div>
+                <h2>Stats</h2>
+                <p id="launchVel-Stat">Launch Velocity: <span id="launchVel-val">0.0</span></p>
+                <p id="launchAngle-Stat">Launch Angle: <span id="launchAngle-val">0.0</span></p>
+                <p id="vertImpulse-Stat">Vertical Impulse: <span id="vertImpulse-val">0.0</span></p>
+                <p id="horizImpulse-Stat">Horizontal Impulse: <span id="horizImpulse-val">0.0</span></p>
+                <p id="makesBasket-Stat">Probability of Making Basket: <span id="makesBasket-val">0.0</span></p>
+            </div>
         </div>
-      </div>
-
-<div class="MovementPage">
-    <h1 id="sportTitle">Sports Movement Name</h1>
-    <div class = "FileUpload">
-      <p> Upload your BOM video here!</p>
-      <button id="uploadButton" type="button" onclick="document.getElementById('videoFile').click()">Upload File</button>
-      <div hidden>
-        <input type="file" id="videoFile" accept="video/*">
-      </div>
-      <div class="videoContaining" id="videoContainer" style="display: none;">
-        <video id="uploadedVideo" controls>
-            Your browser does not support the video tag.
-        </video>
-      </div>
     </div>
-    <div class="Results">
-      <div>
-        <p>Force Graph</p>
-      </div>
-      <div>
-        <p>Vector Overlay</p>
-      </div>
-      <div>
-        <p>Stats</p>
-      </div>
-    </div>
-</div>
 
-<script>
-  const videoFileInput = document.getElementById('videoFile');
-  const uploadedVideo = document.getElementById('uploadedVideo');
-  
-  document.getElementById('videoContainer').style.display = 'block';
 
-  videoFileInput.addEventListener('change', function() {
-      const file = this.files[0];
-      
+    <footer><p> Copyright © 2024 Westview Prepare to Play </p></footer>
 
-      const fileURL = URL.createObjectURL(file);
-      uploadedVideo.src = fileURL;
-      
-
-      uploadAndProcessVideo(file);
-  });
-  
-  function uploadAndProcessVideo(videoFile) {
-
-      fetch('/process_video', {
-          method: 'POST',
-          body: videoFile
-      }).then(response => {
-
-      }).catch(error => {
-          console.error('Error uploading video:', error);
-      });
-  }
-
-</script>
-<script src="/templates/movementSelection.js"></script>
+  <script src="{{ url_for('static', filename='movementSelection.js') }}"></script>
 </body>
+
 </html>

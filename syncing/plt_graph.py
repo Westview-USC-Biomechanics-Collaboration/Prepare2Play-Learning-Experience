@@ -9,11 +9,14 @@ class Graph:
         self.y_subset = y_axis_subset
         self.fixTimeConstraints()
         self.fixHeightConstraints()
-        self.targetFPS = 60
-        self.originalFPS = 2400
-        print(self.x_subset['max'] - self.x_subset['min'])
+        self.slowFactor = 2.5  # 1 is no slow
 
-        self.totalFrames = self.targetFPS * (self.x_subset['max'] - self.x_subset['min'])  # seconds * fps
+        self.targetFPS = 60 / self.slowFactor
+        self.originalFPS = 2400
+
+        # print(self.x_subset['max'] - self.x_subset['min'])
+
+        self.totalFrames = self.targetFPS * (self.x_subset['max'] - self.x_subset['min']) * self.slowFactor  # seconds * fps * slow factor
         # TARGET
         # The final video will be at 60fps, and will last for the duration of self.totalFrames
         self.speedMult = round(
@@ -66,13 +69,15 @@ class Graph:
             plt.show()
 
     def getForcePlateTime(self) -> int:  # returns frame that the user steps on the forceplate
+        firstYval = self.y_subset['data'][0]
         for c, yVal in enumerate(self.y_subset['data']):
-            if yVal >= 1:
-                seconds = self.x_subset['data'][c]
-                return seconds * self.targetFPS
+            if yVal >= firstYval+15:
+                seconds = self.x_subset['data'][c] * self.targetFPS
+                return seconds*self.slowFactor
 
 
 df = pd.read_excel("data/Ayaan/spk_lr_AI_for02_Raw_Data.xlsx")
+
 
 forcey_subset = {"data": df.iloc[18:10000, 2].astype(float).tolist(), "name": "ForceY", "min": -15, "max": 15}
 timex_subset = {"data": df.iloc[18:10000, 0].astype(float).tolist(), "name": "Time", "min": 0, "max": 3}

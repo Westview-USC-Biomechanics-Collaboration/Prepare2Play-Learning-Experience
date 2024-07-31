@@ -3,6 +3,7 @@ from matplotlib.animation import FuncAnimation
 import pandas as pd
 
 
+
 class Graph:
     def __init__(self, x_axis_subset, y_axis_subset):
         self.x_subset = x_axis_subset
@@ -14,7 +15,9 @@ class Graph:
         self.targetFPS = 60 / self.slowFactor
         self.originalFPS = 2400
 
+
         # print(self.x_subset['max'] - self.x_subset['min'])
+
 
         self.totalFrames = self.targetFPS * (self.x_subset['max'] - self.x_subset['min']) * self.slowFactor  # seconds * fps * slow factor
         # TARGET
@@ -26,6 +29,7 @@ class Graph:
     def fixTimeConstraints(self):
         self.x_subset['min'] = self.x_subset['data'][0]
         self.x_subset['max'] = self.x_subset['data'][-1]
+
 
     def fixHeightConstraints(self):
         heightData = self.y_subset['data']
@@ -40,6 +44,7 @@ class Graph:
 
         x_data = self.x_subset["data"][: frame_num]
         y_data = self.y_subset["data"][: frame_num]
+
 
         plt.plot(x_data, y_data)
 
@@ -82,3 +87,4 @@ forcey_subset = {"data": df.iloc[18:10000, 2].astype(float).tolist(), "name": "F
 timex_subset = {"data": df.iloc[18:10000, 0].astype(float).tolist(), "name": "Time", "min": 0, "max": 3}
 g = Graph(timex_subset, forcey_subset)
 g.graph()
+
