@@ -415,7 +415,7 @@ class VectorOverlay:
         cap.release()
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
-
+# short view need more test
     def ShortVectorOverlay(self,outputName):
         self.setFrameData(path=self.short_view_path)
         self.readData()
@@ -440,15 +440,15 @@ class VectorOverlay:
                 # if this calls when the frame_number is equal to the total frame count then the stream has just ended
                 print(f"Can't read frame at position {frame_number}")
                 break
-
-            fx1 = self.fx1[int(frame_number)]
+        # This only shows the force on force plate 2, you can adjust this part so that it shows the force on force plate 1
+            fx1 = 0
             fx2 = self.fx2[int(frame_number)]
-            fy1 = self.fz1[int(frame_number)]
+            fy1 = 0
             fy2 = self.fz2[int(frame_number)]
             py1 = self.px1[int(frame_number)]
             px1 = 1-self.py1[int(frame_number)]
-            py2 = self.px2[int(frame_number)]
-            px2 = self.py2[int(frame_number)]
+            py2 = self.py2[int(frame_number)]
+            px2 = 1-self.px2[int(frame_number)]
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -460,8 +460,16 @@ class VectorOverlay:
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
+<<<<<<< Updated upstream
 
 folder = "data/Anish"
+=======
+"""
+use "\\" if you are in windows
+use "/" if you are in ios
+"""
+folder = "data\\Anish"
+>>>>>>> Stashed changes
 
 # these are the file paths
 long_view, short_view, top_view, forcedata = find_files(folder)
