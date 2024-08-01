@@ -52,7 +52,7 @@ def sports_template():
 
 @app.route('/graph')
 def graph():
-<<<<<<< Updated upstream
+
     # Load your CSV file
     df = pd.read_csv('data/bjs_lr_DE_for01_Raw_Data - bjs_lr_DE_for01_Raw_Data.csv')
 
@@ -68,7 +68,7 @@ def graph():
     timex_subset = timex[start_index:]
     forcex_subset = forcex[start_index:]
     forcey_subset = forcey[start_index:]
-=======
+
     # Load Excel file
     df = pd.read_excel('data\Trimmed of bjs_lr_DE_for01_Raw_Data.xlsx', skiprows=19, usecols=[0, 1, 2, 3, 10, 11, 12],
                        names=["time (s)", "Fx1", "Fy1", "Fz1", "Fx2", "Fy2", "Fz2"], header=0,
@@ -82,14 +82,14 @@ def graph():
     forcex2_subset = savgol_filter(df.iloc[:, 4].astype(float).tolist(), 51, 3)
     forcey2_subset = savgol_filter(df.iloc[:, 5].astype(float).tolist(), 51, 3)
     forcez2_subset = savgol_filter(df.iloc[:, 6].astype(float).tolist(), 51, 3)
->>>>>>> Stashed changes
+
 
     integral_forcex = np.trapz(forcex_subset, timex_subset)
     integral_forcey = np.trapz(forcey_subset, timex_subset)
     formatted_integral_forcex = f"{integral_forcex:.2f}"
     formatted_integral_forcey = f"{integral_forcey:.2f}"
 
-<<<<<<< Updated upstream
+
     # Render graph.html template and pass data to frontend
     return render_template('graph.html',
                            forcex=forcex_subset,
@@ -98,7 +98,7 @@ def graph():
                            integral_forcex=formatted_integral_forcex,
                            integral_forcey=formatted_integral_forcey)
 
-=======
+
     return render_template('graph.html', 
                            forcex=forcex_subset.tolist(), 
                            timex=timex_subset,
@@ -113,7 +113,7 @@ def graph():
                            integral_forcex2=formatted_integral_forcex2,
                            integral_forcey2=formatted_integral_forcey2,
                            integral_forcez2=formatted_integral_forcez2)
->>>>>>> Stashed changes
+
 
 if __name__ == '__main__':
     app.run(debug=True)
