@@ -9,37 +9,43 @@
 </head>
 
 <body>
-  <div class="navbar">
-      <div class="Main-Options">
-          <div class="Home">
-              <a href="{{ url_for('index') }}">Home</a>
-          </div>
-          <div class="About-Us">
-              <a href="#">About Us</a>
-          </div>
-      </div>
-  </div>
+    <div class="navbar">
+        <div class="Main-Options">
+            <div class="Home">
+                <a href="{{ url_for('index') }}">Home</a>
+            </div>
+            <div class="About-Us">
+                <a href="#">About Us</a>
+            </div>
+        </div>
+    </div>
 
-  <div class="MovementPage">
-      <h1 id="sportTitle">Sports Movement Name</h1>
-      <script>
-          const movement = localStorage.getItem('selectedMovement');
-          console.log(movement);
+    <div class="MovementPage">
+        <h1 id="sportTitle">Sports Movement Name</h1>
+        <script>
+            const movement = localStorage.getItem('selectedMovement');
+            console.log(movement);
 
             if (movement) {
                 document.getElementById('sportTitle').textContent = movement;
             }
         </script>
-        <div class="FileUpload">
-            <p>Upload your BOM video here!</p>
-            <button id="uploadButton" type="button" onclick="document.getElementById('videoFile').click()">Upload File</button>
-            <input type="file" id="videoFile" accept="video/*" style="display:none;">
-            <div class="videoContaining" id="videoContainer" style="display: none;">
-                <video id="uploadedVideo" controls>
-                    Your browser does not support the video tag.
-                </video>
+        <form id="video-form" method="post" enctype="multipart/form-data">
+            <div class="FileUpload">
+                <p>Upload your BOM video here!</p>
+                {% if not uploaded %}
+                <button id="uploadButton" type="button" onclick="document.getElementById('videoFile').click()">Upload File</button>
+                {% endif %}
+                <input type="file" id="videoFile" name="video_file" accept="video/*" style="display:none;">
+                <div id="videoContainer" class="videoContaining {% if uploaded %}show{% endif %}">
+                    {% if uploaded %}
+                    <video id="uploadedVideo" controls>
+                    <source src="{{ video_url }}" type="video/mp4">                        Your browser does not support the video tag.
+                    </video>
+                    {% endif %}
+                </div>
             </div>
-        </div>
+        </form>
         <div class="Results">
             <div>
                 <p>Force Graph</p>
@@ -59,9 +65,20 @@
     </div>
 
 
-    <footer><p> Copyright © 2024 Westview Prepare to Play </p></footer>
+    <footer>
+        <p> Copyright © 2024 Westview Prepare to Play </p>
+    </footer>
+    <script>
+        const videoFileInput = document.getElementById('videoFile');
+        const videoForm = document.getElementById('video-form');
 
-  <script src="{{ url_for('static', filename='movementSelection.js') }}"></script>
+        videoFileInput.addEventListener('change', () => {
+            if (videoFileInput.files.length > 0) {
+                videoForm.submit();
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='movementSelection.js') }}"></script>
 </body>
 
 </html>
