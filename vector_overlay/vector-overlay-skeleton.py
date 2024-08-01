@@ -79,6 +79,8 @@ def find_files(directory):
                 short_file = os.path.join(directory, filename)
             elif "top" in filename:
                 top_file = os.path.join(directory, filename)
+            else:
+                long_file = os.path.join(directory, filename)
         elif filename.endswith(".xlsx"):
             data = os.path.join(directory, filename)
 
