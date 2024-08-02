@@ -152,7 +152,7 @@ class VectorOverlay:
         self.corners = []
 
     def check_corner(self, path, top=False):
-        self.corners = [[907, 188], [1139, 190], [1134, 541], [905, 539], [905, 541], [1133, 542], [1130, 887], [901, 888]] #select_points(video_path=path, top=top)
+        self.corners = select_points(video_path=path, top=top)
 
     def check_direction(self, points):
         # Assuming points is a list of tuples [(x1, y1), (x2, y2)]
