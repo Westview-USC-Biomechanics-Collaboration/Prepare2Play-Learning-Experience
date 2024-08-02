@@ -26,6 +26,10 @@
             width: 100%;
             height: 300px;
         }
+        #additional-plot {
+            width: 100%;
+            height: 300px;
+        }
         #value-container {
             margin-top: 10px;
         }
@@ -48,38 +52,37 @@
             <div id="plot"></div>
             <p>Integral of Force (X-Direction): {{ integral_forcex }} J</p>
             <p>Integral of Force (Y-Direction): {{ integral_forcey }} J</p>
+            <p>Integral of Force (Z-Direction): {{ integral_forcez }} J</p>
         </div>
-    </div>
 
-    <div>
-
+        <div id="additional-plot-container">
+            <h2>Force vs. Time Graph (Right Plate)</h2>
+            <div id="additional-plot"></div>
+            <p>Integral of Force (X-Direction Right): {{ integral_forcex2 }} J</p>
+            <p>Integral of Force (Y-Direction Right): {{ integral_forcey2 }} J</p>
+            <p>Integral of Force (Z-Direction Right): {{ integral_forcez2 }} J</p>
+        </div>
     </div>
 
     <script>
         var forcex = JSON.parse('{{ forcex | tojson | safe }}');
         var timex = JSON.parse('{{ timex | tojson | safe }}');
         var forcey = JSON.parse('{{ forcey | tojson | safe }}');
+        var forcez = JSON.parse('{{ forcez | tojson | safe }}');
+        var additionalForcex = JSON.parse('{{ additional_forcex | tojson | safe }}');
+        var additionalForcey = JSON.parse('{{ additional_forcey | tojson | safe }}');
+        var additionalForcez = JSON.parse('{{ additional_forcez | tojson | safe }}');
 
         var playbackSpeed = 1.2; // Slow down by 20%
         var initialFrameRendered = false;
         var threshold = 4; // Force threshold to start plotting
         var startIndex = threshold; // Index to start plotting
 
-<<<<<<< Updated upstream
-        // Find the index where forcex exceeds the threshold
-        for (var i = 0; i < forcex.length; i++) {
-            if (forcex[i] >= threshold) {
-                startIndex = i;
-                break;
-            }
-        }
-=======
-        var videoDuration = 18.33; // seconds
+        var videoDuration = 17; // seconds
         var offset = 0; // Adjust this value as needed
         
-        var dataDuration = 4.91; // seconds
+        var dataDuration = 4.31167; // seconds
         timex = timex.map(function(time) { return (time / dataDuration) * videoDuration - offset; });
->>>>>>> Stashed changes
 
         var trace1 = {
             x: timex.slice(startIndex),
@@ -99,12 +102,18 @@
             name: 'Force (Y-Direction)'
         };
 
+        var trace3 = {
+            x: timex.slice(startIndex),
+            y: forcez.slice(startIndex),
+            mode: 'lines+markers',
+            type: 'scatter',
+            fill: 'tozeroy',
+            name: 'Force (Z-Direction)'
+        };
+
         var layout = {
             xaxis: {
-<<<<<<< Updated upstream
-=======
                 range: [0, videoDuration + 3],
->>>>>>> Stashed changes
                 title: 'Time (s.)'
             },
             yaxis: {
@@ -114,19 +123,15 @@
             title: 'Force vs. Time Graph'
         };
 
-<<<<<<< Updated upstream
-        Plotly.newPlot('plot', [trace1, trace2], layout);
-=======
         Plotly.newPlot('plot', [trace1, trace2, trace3], layout);
 
-        // Additional graph
         var additionalTrace1 = {
             x: timex,
             y: additionalForcex,
             mode: 'lines+markers',
             type: 'scatter',
             fill: 'tozeroy',
-            name: 'Force (X-Direction)'
+            name: 'Force (X-Direction Right)'
         };
 
         var additionalTrace2 = {
@@ -135,7 +140,7 @@
             mode: 'lines+markers',
             type: 'scatter',
             fill: 'tozeroy',
-            name: 'Force (Y-Direction)'
+            name: 'Force (Y-Direction Right)'
         };
 
         var additionalTrace3 = {
@@ -144,7 +149,7 @@
             mode: 'lines+markers',
             type: 'scatter',
             fill: 'tozeroy',
-            name: 'Force (Z-Direction)'
+            name: 'Force (Z-Direction Right)'
         };
 
         var additionalLayout = {
@@ -160,7 +165,6 @@
         };
 
         Plotly.newPlot('additional-plot', [additionalTrace1, additionalTrace2, additionalTrace3], additionalLayout);
->>>>>>> Stashed changes
 
         function goBack() {
             window.location.href = '/';
@@ -172,37 +176,6 @@
 
             var frames = [{
                 data: [
-<<<<<<< Updated upstream
-                    { x: timex.slice(startIndex, frameIndex + 1), y: forcex.slice(startIndex, frameIndex + 1) },
-                    { x: timex.slice(startIndex, frameIndex + 1), y: forcey.slice(startIndex, frameIndex + 1) }
-                ]
-            }];
-
-            if (!initialFrameRendered) {
-                Plotly.animate('plot', frames, {
-                    transition: {
-                        duration: 0
-                    },
-                    frame: {
-                        duration: 0,
-                        redraw: false
-                    }
-                });
-                initialFrameRendered = true;
-            } else {
-                setTimeout(function () {
-                    Plotly.animate('plot', frames, {
-                        transition: {
-                            duration: 0, // No transition duration
-                        },
-                        frame: {
-                            duration: 1000 / playbackSpeed, // Slow down the animation by 20%
-                            redraw: false
-                        }
-                    });
-                }); // Delay for initial frame
-            }
-=======
                     {x: timex.slice(0, frameIndex + 1), y: forcex.slice(0, frameIndex + 1)},
                     {x: timex.slice(0, frameIndex + 1), y: forcey.slice(0, frameIndex + 1)},
                     {x: timex.slice(0, frameIndex + 1), y: forcez.slice(0, frameIndex + 1)}
@@ -236,7 +209,6 @@
                     redraw: false
                 }
             });
->>>>>>> Stashed changes
         }
 
         function findNearestFrameIndex(timeArray, videoTime) {
