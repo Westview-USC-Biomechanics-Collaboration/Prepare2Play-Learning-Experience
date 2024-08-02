@@ -150,7 +150,6 @@ class VectorOverlay:
         self.py2 = ()
 
         self.corners = []
-        self.readData()
 
     def check_corner(self, path, top=False):
         self.corners = [[907, 188], [1139, 190], [1134, 541], [905, 539], [905, 541], [1133, 542], [1130, 887], [901, 888]] #select_points(video_path=path, top=top)
@@ -202,7 +201,7 @@ class VectorOverlay:
     def readData(self):
         print("reading data")
         frame_count = self.data.shape[0]//10
-        step_size = 10
+        step_size = 600/self.fps
         print(f"This is step_size: {step_size}")
 
 
@@ -292,6 +291,7 @@ class VectorOverlay:
 
     def LongVectorOverlay(self, outputName):
         self.setFrameData(path=self.long_view_path)
+        self.readData()
         self.normalizeForces(self.fy1, self.fy2, self.fz1, self.fz2)
 
         if self.frame_width is None or self.frame_height is None:
@@ -343,6 +343,7 @@ class VectorOverlay:
 
     def TopVectorOverlay(self, outputName):
         self.setFrameData(path=self.top_view_path)
+        self.readData()
         self.normalizeForces(self.fy1, self.fy2, self.fx1, self.fx2)
 
         if self.frame_width is None or self.frame_height is None:
@@ -389,6 +390,7 @@ class VectorOverlay:
 # short view need more test
     def ShortVectorOverlay(self,outputName):
         self.setFrameData(path=self.short_view_path)
+        self.readData()
         self.normalizeForces(0, self.fx2, 0, self.fz2)
 
         if self.frame_width is None or self.frame_height is None:
