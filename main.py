@@ -16,6 +16,9 @@ def graph():
                        names=["time (s)", "Fx1", "Fy1", "Fz1", "Fx2", "Fy2", "Fz2"], header=0,
                        dtype={'time (s)': float, 'Fx1': float, 'Fy1': float, 'Fz1': float, 'Fx2': float, 'Fy2': float, 'Fz2': float})
 
+
+    timeMotionStarts = 3.6 #edit to where motion starts
+    forceatStart = 0 #this value will need to be different for each force direction
     # Data points for plotting
     timex_subset = df.iloc[:, 0].astype(float).tolist()
     forcex_subset = savgol_filter(df.iloc[:, 1].astype(float).tolist(), 51, 3).tolist()  
@@ -25,12 +28,12 @@ def graph():
     forcey2_subset = savgol_filter(df.iloc[:, 5].astype(float).tolist(), 51, 3).tolist()
     forcez2_subset = savgol_filter(df.iloc[:, 6].astype(float).tolist(), 51, 3).tolist()
     
-    integral_forcex = np.trapz(forcex_subset, timex_subset)
-    integral_forcey = np.trapz(forcey_subset, timex_subset)
-    integral_forcez = np.trapz(forcez_subset, timex_subset)
-    integral_forcex2 = np.trapz(forcex2_subset, timex_subset)
-    integral_forcey2 = np.trapz(forcey2_subset, timex_subset)
-    integral_forcez2 = np.trapz(forcez2_subset, timex_subset)
+    integral_forcex = np.trapz(forcex_subset, timex_subset) - timeMotionStarts * forceatStart
+    integral_forcey = np.trapz(forcey_subset, timex_subset) - timeMotionStarts * forceatStart
+    integral_forcez = np.trapz(forcez_subset, timex_subset) - timeMotionStarts * forceatStart
+    integral_forcex2 = np.trapz(forcex2_subset, timex_subset) - timeMotionStarts * forceatStart
+    integral_forcey2 = np.trapz(forcey2_subset, timex_subset) - timeMotionStarts * forceatStart
+    integral_forcez2 = np.trapz(forcez2_subset, timex_subset) - timeMotionStarts * forceatStart
 
     formatted_integral_forcex = f"{integral_forcex:.2f}"
     formatted_integral_forcey = f"{integral_forcey:.2f}"

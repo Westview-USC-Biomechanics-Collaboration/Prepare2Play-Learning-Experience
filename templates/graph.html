@@ -33,6 +33,9 @@
         #value-container {
             margin-top: 10px;
         }
+        #chooser {
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -49,18 +52,24 @@
         
         <div id="plot-container">
             <h2>Force vs. Time Graph</h2>
+            <h2>Force vs. Time Graph (Left Plate)</h2>
+            <div id="chooser">
+                <label for="forceChooser">Choose force components:</label>
+                <select id="forceChooser" onchange="plotGraph()">
+                    <option value="y_z">Force Y and Force Z</option>
+                    <option value="x_y">Force X and Force Y</option>
+                    <option value="y2_z2">Force Y2 and Force Z2</option>
+                    <option value="x2_z2">Force X2 and Force Z2</option>
+                </select>
+            </div>
             <div id="plot"></div>
-            <p>Integral of Force (X-Direction): {{ integral_forcex }} J</p>
-            <p>Integral of Force (Y-Direction): {{ integral_forcey }} J</p>
-            <p>Integral of Force (Z-Direction): {{ integral_forcez }} J</p>
+            <p id="integralForce">Integral of Force over time: Ns</p>
         </div>
 
         <div id="additional-plot-container">
             <h2>Force vs. Time Graph (Right Plate)</h2>
             <div id="additional-plot"></div>
-            <p>Integral of Force (X-Direction Right): {{ integral_forcex2 }} J</p>
-            <p>Integral of Force (Y-Direction Right): {{ integral_forcey2 }} J</p>
-            <p>Integral of Force (Z-Direction Right): {{ integral_forcez2 }} J</p>
+            <p id="integralForceRight">Integral of Force over time (Right): Ns</p>
         </div>
     </div>
 
@@ -78,93 +87,126 @@
         var threshold = 4; // Force threshold to start plotting
         var startIndex = threshold; // Index to start plotting
 
-        var videoDuration = 17; // seconds
+        var videoDuration = 0; // Declare videoDuration at the beginning
         var offset = 0; // Adjust this value as needed
         
         var dataDuration = 4.31167; // seconds
-        timex = timex.map(function(time) { return (time / dataDuration) * videoDuration - offset; });
 
-        var trace1 = {
-            x: timex.slice(startIndex),
-            y: forcex.slice(startIndex),
-            mode: 'lines+markers',
-            type: 'scatter',
-            fill: 'tozeroy',
-            name: 'Force (X-Direction)'
-        };
+        function updateTimex() {
+            timex = timex.map(function(time) { return (time / dataDuration) * videoDuration - offset; });
+        }
 
-        var trace2 = {
-            x: timex.slice(startIndex),
-            y: forcey.slice(startIndex),
-            mode: 'lines+markers',
-            type: 'scatter',
-            fill: 'tozeroy',
-            name: 'Force (Y-Direction)'
-        };
+        function plotGraph() {
+            var selectedOption = document.getElementById('forceChooser').value;
+            var force1, force2, additionalForce1, additionalForce2, integral, integralRight;
 
-        var trace3 = {
-            x: timex.slice(startIndex),
-            y: forcez.slice(startIndex),
-            mode: 'lines+markers',
-            type: 'scatter',
-            fill: 'tozeroy',
-            name: 'Force (Z-Direction)'
-        };
+            if (selectedOption === 'y_z') {
+                force1 = forcey;
+                force2 = forcez;
+                additionalForce1 = additionalForcey;
+                additionalForce2 = additionalForcez;
+                integral = '{{ integral_forcey }} and {{ integral_forcez }}';
+                integralRight = '{{ integral_forcey2 }} and {{ integral_forcez2 }}';
+                var forceone = 'Y'
+                var forcetwo = 'Z'
+            } else if (selectedOption === 'y2_z2') {
+                force1 = additionalForcey;
+                force2 = additionalForcez;
+                additionalForce1 = additionalForcey;
+                additionalForce2 = additionalForcez;
+                integral = '{{ integral_forcey2 }} and {{ integral_forcez2 }}';
+                integralRight = '{{ integral_forcey2 }} and {{ integral_forcez2 }}';
+                var forceone = 'Y'
+                var forcetwo = 'Z'
+            } 
+            else if (selectedOption === 'x_y') {
+                force1 = forcex;
+                force2 = forcey;
+                additionalForce1 = additionalForcex;
+                additionalForce2 = additionalForcey;
+                integral = '{{ integral_forcex }} and {{ integral_forcey }}';
+                integralRight = '{{ integral_forcex2 }} and {{ integral_forcey2 }}';
+                var forceone = 'X'
+                var forcetwo = 'Y'
+            }
+            else {
+                force1 = additionalForcex;
+                force2 = additionalForcez;
+                additionalForce1 = additionalForcex;
+                additionalForce2 = additionalForcez;
+                integral = '{{ integral_forcex2 }} and {{ integral_forcez2 }}';
+                integralRight = '{{ integral_forcex2 }} and {{ integral_forcez2 }}';
+                var forceone = 'X'
+                var forcetwo = 'Z'
+            }
 
-        var layout = {
-            xaxis: {
-                range: [0, videoDuration + 3],
-                title: 'Time (s.)'
-            },
-            yaxis: {
-                range: [-50, 50],  // Adjust y-axis range as needed
-                title: 'Force (N)'
-            },
-            title: 'Force vs. Time Graph'
-        };
+            var trace1 = {
+                x: timex.slice(startIndex),
+                y: force1.slice(startIndex),
+                mode: 'lines+markers',
+                type: 'scatter',
+                fill: 'tozeroy',
+                name: `Force 1 (${forceone})`
+            };
 
-        Plotly.newPlot('plot', [trace1, trace2, trace3], layout);
+            var trace2 = {
+                x: timex.slice(startIndex),
+                y: force2.slice(startIndex),
+                mode: 'lines+markers',
+                type: 'scatter',
+                fill: 'tozeroy',
+                name: `Force 2 (${forcetwo})`
+            };
 
-        var additionalTrace1 = {
-            x: timex,
-            y: additionalForcex,
-            mode: 'lines+markers',
-            type: 'scatter',
-            fill: 'tozeroy',
-            name: 'Force (X-Direction Right)'
-        };
+            var layout = {
+                xaxis: {
+                    range: [0, videoDuration + 3],
+                    title: 'Time (s.)'
+                },
+                yaxis: {
+                    range: [-50, 50],  // Adjust y-axis range as needed
+                    title: 'Force (N)'
+                },
+                title: `Force vs. Time Graph (Left Plate)`
+            };
 
-        var additionalTrace2 = {
-            x: timex,
-            y: additionalForcey,
-            mode: 'lines+markers',
-            type: 'scatter',
-            fill: 'tozeroy',
-            name: 'Force (Y-Direction Right)'
-        };
+            Plotly.newPlot('plot', [trace1, trace2], layout);
 
-        var additionalTrace3 = {
-            x: timex,
-            y: additionalForcez,
-            mode: 'lines+markers',
-            type: 'scatter',
-            fill: 'tozeroy',
-            name: 'Force (Z-Direction Right)'
-        };
+            var additionalTrace1 = {
+                x: timex,
+                y: additionalForce1,
+                mode: 'lines+markers',
+                type: 'scatter',
+                fill: 'tozeroy',
+                name: `Force 1 Right (${forceone})`
+            };
 
-        var additionalLayout = {
-            xaxis: {
-                range: [0, videoDuration + 3],
-                title: 'Time (s.)'
-            },
-            yaxis: {
-                range: [-550, 550],  
-                title: 'Force (N)'
-            },
-            title: 'Force vs. Time Graph (Right Plate)'
-        };
+            var additionalTrace2 = {
+                x: timex,
+                y: additionalForce2,
+                mode: 'lines+markers',
+                type: 'scatter',
+                fill: 'tozeroy',
+                name: `Force 2 Right (${forcetwo})`
+            };
 
-        Plotly.newPlot('additional-plot', [additionalTrace1, additionalTrace2, additionalTrace3], additionalLayout);
+            var additionalLayout = {
+                xaxis: {
+                    range: [0, videoDuration + 3],
+                    title: 'Time (s.)'
+                },
+                yaxis: {
+                    range: [-550, 550],  
+                    title: 'Force (N)'
+                },
+                title: `Force vs. Time Graph (Right Plate)`
+            };
+
+            Plotly.newPlot('additional-plot', [additionalTrace1, additionalTrace2], additionalLayout);
+
+            document.getElementById('integralForce').innerText = `Integral of Force over time (Left Plate): ${integral} Ns`;
+            document.getElementById('integralForceRight').innerText = `Integral of Force over time (Right Plate): ${integralRight} Ns`;
+        }
 
         function goBack() {
             window.location.href = '/';
@@ -173,12 +215,30 @@
         function animatePlot(videoTime) {
             var adjustedTime = videoTime / playbackSpeed;
             var frameIndex = findNearestFrameIndex(timex.slice(startIndex), adjustedTime) + startIndex;
+            var selectedOption = document.getElementById('forceChooser').value;
+            var force1, force2, additionalForce1, additionalForce2;
+
+            if (selectedOption === 'y_z') {
+                force1 = forcey;
+                force2 = forcez;
+                additionalForce1 = additionalForcey;
+                additionalForce2 = additionalForcez;
+            } else if (selectedOption === 'y2_z2') {
+                force1 = additionalForcey;
+                force2 = additionalForcez;
+                additionalForce1 = additionalForcey;
+                additionalForce2 = additionalForcez;
+            } else {
+                force1 = additionalForcex;
+                force2 = additionalForcez;
+                additionalForce1 = additionalForcex;
+                additionalForce2 = additionalForcez;
+            }
 
             var frames = [{
                 data: [
-                    {x: timex.slice(0, frameIndex + 1), y: forcex.slice(0, frameIndex + 1)},
-                    {x: timex.slice(0, frameIndex + 1), y: forcey.slice(0, frameIndex + 1)},
-                    {x: timex.slice(0, frameIndex + 1), y: forcez.slice(0, frameIndex + 1)}
+                    {x: timex.slice(0, frameIndex + 1), y: force1.slice(0, frameIndex + 1)},
+                    {x: timex.slice(0, frameIndex + 1), y: force2.slice(0, frameIndex + 1)}
                 ]
             }];
 
@@ -194,9 +254,8 @@
 
             var additionalFrames = [{
                 data: [
-                    {x: timex.slice(0, frameIndex + 1), y: additionalForcex.slice(0, frameIndex + 1)},
-                    {x: timex.slice(0, frameIndex + 1), y: additionalForcey.slice(0, frameIndex + 1)},
-                    {x: timex.slice(0, frameIndex + 1), y: additionalForcez.slice(0, frameIndex + 1)}
+                    {x: timex.slice(0, frameIndex + 1), y: additionalForce1.slice(0, frameIndex + 1)},
+                    {x: timex.slice(0, frameIndex + 1), y: additionalForce2.slice(0, frameIndex + 1)}
                 ]
             }];
 
@@ -227,6 +286,13 @@
             var url = URL.createObjectURL(file);
             videoPlayer.src = url;
 
+            
+            videoPlayer.addEventListener('loadedmetadata', function() {
+                videoDuration = videoPlayer.duration;
+                updateTimex(); 
+                plotGraph(); 
+            });
+
             videoPlayer.addEventListener('timeupdate', function() {
                 var currentTime = videoPlayer.currentTime;
                 animatePlot(currentTime);
@@ -234,7 +300,6 @@
 
             videoPlayer.play();
         }
-
     </script>
 </body>
 </html>
