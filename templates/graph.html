@@ -56,6 +56,13 @@
     </div>
 
     <script>
+        var initialForceReadingZ = 593.643382; // N
+        var initialForceReadingY = 593.643382; // N
+        var initialForceReadingX = 593.643382; // N
+        var initialForceReadingZ2 = 593.643382; // N
+        var initialForceReadingY2 = 593.643382; // N
+        var initialForceReadingX2 = 593.643382; // N
+
         var forcex = JSON.parse('{{ forcex | tojson | safe }}');
         var timex = JSON.parse('{{ timex | tojson | safe }}');
         var forcey = JSON.parse('{{ forcey | tojson | safe }}');
@@ -73,6 +80,7 @@
             }
         }
 
+<<<<<<< Updated upstream
         var trace1 = {
             x: timex.slice(startIndex),
             y: forcex.slice(startIndex),
@@ -90,6 +98,62 @@
             fill: 'tozeroy',
             name: 'Force (Y-Direction)'
         };
+=======
+        function normalizeForce(forceArray, initialReading) {
+            return forceArray.map(function(force) { return force / initialReading; });
+        }
+
+        var normalizedForcez = normalizeForce(forcez, initialForceReadingZ);
+        var normalizedAdditionalForcez = normalizeForce(additionalForcez, initialForceReadingZ2);
+        var normalizedForcey = normalizeForce(forcey, initialForceReadingY);
+        var normalizedAdditionalForcey = normalizeForce(additionalForcey, initialForceReadingY2);
+        var normalizedForcex = normalizeForce(forcex, initialForceReadingX);
+        var normalizedAdditionalForcex = normalizeForce(additionalForcex, initialForceReadingX2);
+
+        function plotGraph() {
+            var selectedOption = document.getElementById('forceChooser').value;
+            var force1, force2, additionalForce1, additionalForce2, integral, integralRight;
+
+            if (selectedOption === 'y_z') {
+                force1 = normalizedForcey;
+                force2 = normalizedForcez;
+                additionalForce1 = normalizedAdditionalForcey;
+                additionalForce2 = normalizedAdditionalForcez;
+                integral = '{{ integral_forcey }} and {{ integral_forcez }}';
+                integralRight = '{{ integral_forcey2 }} and {{ integral_forcez2 }}';
+                var forceone = 'Y'
+                var forcetwo = 'Z'
+            } else if (selectedOption === 'y2_z2') {
+                force1 = normalizedAdditionalForcey;
+                force2 = normalizedAdditionalForcez;
+                additionalForce1 = normalizedAdditionalForcey;
+                additionalForce2 = normalizedAdditionalForcez;
+                integral = '{{ integral_forcey2 }} and {{ integral_forcez2 }}';
+                integralRight = '{{ integral_forcey2 }} and {{ integral_forcez2 }}';
+                var forceone = 'Y'
+                var forcetwo = 'Z'
+            } 
+            else if (selectedOption === 'x_y') {
+                force1 = normalizedForcex;
+                force2 = normalizedForcey;
+                additionalForce1 = normalizedAdditionalForcex;
+                additionalForce2 = normalizedAdditionalForcey;
+                integral = '{{ integral_forcex }} and {{ integral_forcey }}';
+                integralRight = '{{ integral_forcex2 }} and {{ integral_forcey2 }}';
+                var forceone = 'X'
+                var forcetwo = 'Y'
+            }
+            else {
+                force1 = normalizedAdditionalForcex;
+                force2 = normalizedAdditionalForcez;
+                additionalForce1 = normalizedAdditionalForcex;
+                additionalForce2 = normalizedAdditionalForcez;
+                integral = '{{ integral_forcex2 }} and {{ integral_forcez2 }}';
+                integralRight = '{{ integral_forcex2 }} and {{ integral_forcez2 }}';
+                var forceone = 'X'
+                var forcetwo = 'Z'
+            }
+>>>>>>> Stashed changes
 
         var layout = {
             xaxis: {
@@ -102,7 +166,68 @@
             title: 'Force vs. Time Graph'
         };
 
+<<<<<<< Updated upstream
         Plotly.newPlot('plot', [trace1, trace2], layout);
+=======
+            var trace2 = {
+                x: timex.slice(startIndex),
+                y: force2.slice(startIndex),
+                mode: 'lines+markers',
+                type: 'scatter',
+                fill: 'tozeroy',
+                name: `Force 2 (${forcetwo})`
+            };
+
+            var layout = {
+                xaxis: {
+                    range: [0, videoDuration + 3],
+                    title: 'Time (s.)'
+                },
+                yaxis: {
+                    range: [-2, 2],  // Adjust y-axis range as needed
+                    title: 'Force (Body Weight)'
+                },
+                
+            };
+
+            Plotly.newPlot('plot', [trace1, trace2], layout);
+
+            var additionalTrace1 = {
+                x: timex,
+                y: additionalForce1,
+                mode: 'lines+markers',
+                type: 'scatter',
+                fill: 'tozeroy',
+                name: `Force 1 Right (${forceone})`
+            };
+
+            var additionalTrace2 = {
+                x: timex,
+                y: additionalForce2,
+                mode: 'lines+markers',
+                type: 'scatter',
+                fill: 'tozeroy',
+                name: `Force 2 Right (${forcetwo})`
+            };
+
+            var additionalLayout = {
+                xaxis: {
+                    range: [0, videoDuration + 3],
+                    title: 'Time (s.)'
+                },
+                yaxis: {
+                    range: [-2, 2],  // Adjust y-axis range as needed
+                    title: 'Force (Body Weight Units)'
+                },
+                
+            };
+
+            Plotly.newPlot('additional-plot', [additionalTrace1, additionalTrace2], additionalLayout);
+
+            document.getElementById('integralForce').innerText = `Integral of Force over time (Left Plate): ${integral} Ns`;
+            document.getElementById('integralForceRight').innerText = `Integral of Force over time (Right Plate): ${integralRight} Ns`;
+        }
+>>>>>>> Stashed changes
 
         function goBack() {
             window.location.href = '/';
@@ -111,6 +236,35 @@
         function animatePlot(videoTime) {
             var adjustedTime = videoTime / playbackSpeed;
             var frameIndex = findNearestFrameIndex(timex.slice(startIndex), adjustedTime) + startIndex;
+<<<<<<< Updated upstream
+=======
+            var selectedOption = document.getElementById('forceChooser').value;
+            var force1, force2, additionalForce1, additionalForce2;
+
+            if (selectedOption === 'y_z') {
+                force1 = normalizedForcey;
+                force2 = normalizedForcez;
+                additionalForce1 = normalizedAdditionalForcey;
+                additionalForce2 = normalizedAdditionalForcez;
+            } else if (selectedOption === 'y2_z2') {
+                force1 = normalizedAdditionalForcey;
+                force2 = normalizedAdditionalForcez;
+                additionalForce1 = normalizedAdditionalForcey;
+                additionalForce2 = normalizedAdditionalForcez;
+            } 
+            else if (selectedOption === 'x_y') {
+                force1 = normalizedForcex;
+                force2 = normalizedForcey;
+                additionalForce1 = normalizedAdditionalForcex;
+                additionalForce2 = normalizedAdditionalForcey;
+            }
+            else {
+                force1 = normalizedAdditionalForcex;
+                force2 = normalizedAdditionalForcez;
+                additionalForce1 = normalizedAdditionalForcex;
+                additionalForce2 = normalizedAdditionalForcez;
+            }
+>>>>>>> Stashed changes
 
             var frames = [{
                 data: [
