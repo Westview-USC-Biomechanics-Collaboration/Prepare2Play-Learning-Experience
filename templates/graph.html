@@ -42,7 +42,6 @@
     <div class="container">
         <button id="go-back-btn" onclick="goBack()">Back To Home</button>
         <div id="video-container">
-            <h2>Enter Video Below</h2>
             <video id="videoPlayer" controls style="width: 80%; max-width: 800px; display: block; margin: 0 auto;">
                 Your browser does not support the video tag.
             </video>
@@ -51,8 +50,7 @@
         </div>
         
         <div id="plot-container">
-            <h2>Force vs. Time Graph</h2>
-            <h2>Force vs. Time Graph (Left Plate)</h2>
+            
             <div id="chooser">
                 <label for="forceChooser">Choose force components:</label>
                 <select id="forceChooser" onchange="plotGraph()">
@@ -67,7 +65,7 @@
         </div>
 
         <div id="additional-plot-container">
-            <h2>Force vs. Time Graph (Right Plate)</h2>
+            
             <div id="additional-plot"></div>
             <p id="integralForceRight">Integral of Force over time (Right): Ns</p>
         </div>
@@ -167,7 +165,7 @@
                     range: [-50, 50],  // Adjust y-axis range as needed
                     title: 'Force (N)'
                 },
-                title: `Force vs. Time Graph (Left Plate)`
+                
             };
 
             Plotly.newPlot('plot', [trace1, trace2], layout);
@@ -199,7 +197,7 @@
                     range: [-550, 550],  
                     title: 'Force (N)'
                 },
-                title: `Force vs. Time Graph (Right Plate)`
+                
             };
 
             Plotly.newPlot('additional-plot', [additionalTrace1, additionalTrace2], additionalLayout);
