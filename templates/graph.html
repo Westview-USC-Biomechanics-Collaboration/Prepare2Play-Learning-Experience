@@ -90,19 +90,50 @@
         
         var dataDuration = 4.31167; // seconds
 
+        var frames = []
+        var n = 1000;
+        for (var i = 0; i < n; i++) {
+            frames[i] = {data: [{time:[],x1: [], y1: [], z1: [], x2: [], y2: [], z2: [], }]}
+            frames[i].data[0].time = timex.slice(0,i+1)
+            frames[i].data[0].x1 = forcex.slice(0, i+1);
+            frames[i].data[0].y1 = forcey.slice(0, i+1);
+            frames[i].data[0].z1 = forcez.slice(0, i+1);
+            frames[i].data[0].x2 = additionalForcex.slice(0, i+1);
+            frames[i].data[0].y2 = additionalForcey.slice(0, i+1);
+            frames[i].data[0].z2 = additionalForcez.slice(0, i+1);
+
+
+        }
+        
+
         function updateTimex() {
             timex = timex.map(function(time) { return (time / dataDuration) * videoDuration - offset; });
         }
 
-        function plotGraph() {
+        function plotGraph(frameIndex) {
             var selectedOption = document.getElementById('forceChooser').value;
             var force1, force2, additionalForce1, additionalForce2, integral, integralRight;
+            
+            console.log("This is frames")
+            console.log(frames)
+        
+            console.log("frameIndex: ")
+            console.log(frameIndex)
 
+            console.log("this is selcetion")
+            console.log(selectedOption)
+
+            console.log("test printout frame")
+            console.log(frames[frameIndex].data[0].y1)
             if (selectedOption === 'y_z') {
-                force1 = forcey;
-                force2 = forcez;
-                additionalForce1 = additionalForcey;
-                additionalForce2 = additionalForcez;
+                force1 = frames[frameIndex].data[0].y1;
+                force2 = frames[frameIndex].data[0].z1;
+                additionalForce1 = frames[frameIndex].data[0].y2;
+                additionalForce2 = frames[frameIndex].data[0].z2;
+                console.log("forces")
+                console.log(
+                    frames[frameIndex].data[0].y1
+                )
                 integral = '{{ integral_forcey }} and {{ integral_forcez }}';
                 integralRight = '{{ integral_forcey2 }} and {{ integral_forcez2 }}';
                 var forceone = 'Y'
@@ -139,8 +170,8 @@
             }
 
             var trace1 = {
-                x: timex.slice(startIndex),
-                y: force1.slice(startIndex),
+                x: frames[frameIndex].data[0].time,
+                y: force1,
                 mode: 'lines+markers',
                 type: 'scatter',
                 fill: 'tozeroy',
@@ -148,8 +179,8 @@
             };
 
             var trace2 = {
-                x: timex.slice(startIndex),
-                y: force2.slice(startIndex),
+                x: frames[frameIndex].data[0].time,
+                y: force2,
                 mode: 'lines+markers',
                 type: 'scatter',
                 fill: 'tozeroy',
@@ -215,57 +246,58 @@
             var frameIndex = findNearestFrameIndex(timex.slice(startIndex), adjustedTime) + startIndex;
             var selectedOption = document.getElementById('forceChooser').value;
             var force1, force2, additionalForce1, additionalForce2;
+            
+            plotGraph(frameIndex)
+            // if (selectedOption === 'y_z') {
+            //     force1 = forcey;
+            //     force2 = forcez;
+            //     additionalForce1 = additionalForcey;
+            //     additionalForce2 = additionalForcez;
+            // } else if (selectedOption === 'y2_z2') {
+            //     force1 = additionalForcey;
+            //     force2 = additionalForcez;
+            //     additionalForce1 = additionalForcey;
+            //     additionalForce2 = additionalForcez;
+            // } else {
+            //     force1 = additionalForcex;
+            //     force2 = additionalForcez;
+            //     additionalForce1 = additionalForcex;
+            //     additionalForce2 = additionalForcez;
+            // }
+            
+            // var frames = [{
+            //     data: [
+            //         {x: timex.slice(0, frameIndex + 1), y: force1.slice(0, frameIndex + 1)},
+            //         {x: timex.slice(0, frameIndex + 1), y: force2.slice(0, frameIndex + 1)}
+            //     ]
+            // }];
 
-            if (selectedOption === 'y_z') {
-                force1 = forcey;
-                force2 = forcez;
-                additionalForce1 = additionalForcey;
-                additionalForce2 = additionalForcez;
-            } else if (selectedOption === 'y2_z2') {
-                force1 = additionalForcey;
-                force2 = additionalForcez;
-                additionalForce1 = additionalForcey;
-                additionalForce2 = additionalForcez;
-            } else {
-                force1 = additionalForcex;
-                force2 = additionalForcez;
-                additionalForce1 = additionalForcex;
-                additionalForce2 = additionalForcez;
-            }
+            // Plotly.animate('plot', frames, {
+            //     transition: {
+            //         duration: 0
+            //     },
+            //     frame: {
+            //         duration: 0,
+            //         redraw: false
+            //     }
+            // });
 
-            var frames = [{
-                data: [
-                    {x: timex.slice(0, frameIndex + 1), y: force1.slice(0, frameIndex + 1)},
-                    {x: timex.slice(0, frameIndex + 1), y: force2.slice(0, frameIndex + 1)}
-                ]
-            }];
+            // var additionalFrames = [{
+            //     data: [
+            //         {x: timex.slice(0, frameIndex + 1), y: additionalForce1.slice(0, frameIndex + 1)},
+            //         {x: timex.slice(0, frameIndex + 1), y: additionalForce2.slice(0, frameIndex + 1)}
+            //     ]
+            // }];
 
-            Plotly.animate('plot', frames, {
-                transition: {
-                    duration: 0
-                },
-                frame: {
-                    duration: 0,
-                    redraw: false
-                }
-            });
-
-            var additionalFrames = [{
-                data: [
-                    {x: timex.slice(0, frameIndex + 1), y: additionalForce1.slice(0, frameIndex + 1)},
-                    {x: timex.slice(0, frameIndex + 1), y: additionalForce2.slice(0, frameIndex + 1)}
-                ]
-            }];
-
-            Plotly.animate('additional-plot', additionalFrames, {
-                transition: {
-                    duration: 0
-                },
-                frame: {
-                    duration: 0,
-                    redraw: false
-                }
-            });
+            // Plotly.animate('additional-plot', additionalFrames, {
+            //     transition: {
+            //         duration: 0
+            //     },
+            //     frame: {
+            //         duration: 0,
+            //         redraw: false
+            //     }
+            // });
         }
 
         function findNearestFrameIndex(timeArray, videoTime) {
