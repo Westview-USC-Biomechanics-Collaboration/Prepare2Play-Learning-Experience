@@ -391,7 +391,7 @@ class VectorOverlay:
     def ShortVectorOverlay(self,outputName):
         self.setFrameData(path=self.short_view_path)
         self.readData()
-        self.normalizeForces(0, self.fx2, 0, self.fz2)
+        self.normalizeForces([0], self.fx2, [0], self.fz2)
 
         if self.frame_width is None or self.frame_height is None:
             print("Error: Frame data not set.")
