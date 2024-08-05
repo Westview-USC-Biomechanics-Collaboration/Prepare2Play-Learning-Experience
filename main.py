@@ -21,17 +21,32 @@ def graph():
     forceatStart = 0 #this value will need to be different for each force direction
     # Data points for plotting
     rows = df.shape[0]
+
     time = []
+    fx1 = []
+    fy1 = []
+    fz1 = []
+    fx2 = []
+    fy2 = []
+    fz2 = []
+
+    BW = max(df.iloc[0][3], df.iloc[0][6])
     for i in range(rows):
         time.append(df.iloc[i][0]-df.iloc[0][0])
-    print(len(time))
+        fx1.append(df.iloc[i][1]/BW)
+        fy1.append(df.iloc[i][2] / BW)
+        fz1.append(df.iloc[i][3] / BW)
+        fx2.append(df.iloc[i][4] / BW)
+        fy2.append(df.iloc[i][5] / BW)
+        fz2.append(df.iloc[i][6] / BW)
+
     timex_subset = list(time)
-    forcex_subset = savgol_filter(df.iloc[:, 1].astype(float).tolist(), 51, 3).tolist()  
-    forcey_subset = savgol_filter(df.iloc[:, 2].astype(float).tolist(), 51, 3).tolist()
-    forcez_subset = savgol_filter(df.iloc[:, 3].astype(float).tolist(), 51, 3).tolist()
-    forcex2_subset = savgol_filter(df.iloc[:, 4].astype(float).tolist(), 51, 3).tolist()
-    forcey2_subset = savgol_filter(df.iloc[:, 5].astype(float).tolist(), 51, 3).tolist()
-    forcez2_subset = savgol_filter(df.iloc[:, 6].astype(float).tolist(), 51, 3).tolist()
+    forcex_subset = fx1
+    forcey_subset = fy1
+    forcez_subset = fz1
+    forcex2_subset = fx2
+    forcey2_subset = fy2
+    forcez2_subset = fz2
     
     integral_forcex = np.trapz(forcex_subset, timex_subset) - timeMotionStarts * forceatStart
     integral_forcey = np.trapz(forcey_subset, timex_subset) - timeMotionStarts * forceatStart

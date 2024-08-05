@@ -157,7 +157,7 @@
                     title: 'Time (s.)'
                 },
                 yaxis: {
-                    range: [0, 1000],  // Adjust y-axis range as needed
+                    range: [-3, 3],  // Adjust y-axis range as needed
                     title: 'Force (N)'
                 },
                 
@@ -189,7 +189,7 @@
                     title: 'Time (s.)'
                 },
                 yaxis: {
-                    range: [-550, 550],  
+                    range: [-3,3],  
                     title: 'Force (N)'
                 },
                 
@@ -218,8 +218,6 @@
             videoPlayer.addEventListener('loadedmetadata', function() {
             // Get the duration of the video
             duration = videoPlayer.duration;
-
-
             })
 
             videoPlayer.addEventListener('timeupdate', function(){
@@ -251,16 +249,6 @@
                 
                 plotGraph(currentFrame,(duration/4));
             })
-                
-
-
-            
-            
-
-
-            
-
-            
             
             videoPlayer.play();
         }
