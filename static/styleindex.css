@@ -315,15 +315,22 @@ input[type="radio"] {
 
 .popup-content iframe {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 40px); /* Adjust height to account for close button */
   border: none;
+  overflow: auto; /* Allow scrolling within the iframe */
+  display: block; /* Ensure it's a block element */
+  margin-top: 30px; /* Add some space at the top for the close button */
 }
 
 .close-btn {
   color: #aaa;
-  float: right;
+  position: absolute; /* Change from float to absolute positioning */
+  top: 10px; /* Add top positioning */
+  right: 10px; /* Add right positioning */
   font-size: 20px;
   font-weight: bold;
+  cursor: pointer; /* Add this for better UX */
+  z-index: 1; /* Ensure it's above other content */
 }
 
 .close-btn:hover,
