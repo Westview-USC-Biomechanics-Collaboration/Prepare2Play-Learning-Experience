@@ -12,7 +12,7 @@ def index():
 @app.route('/graph')
 def graph():
     # Load your CSV file
-    df = pd.read_excel('data\Trimmed of bjs_lr_DE_for01_Raw_Data.xlsx', skiprows=19, usecols=[0, 1, 2, 3, 10, 11, 12],
+    df = pd.read_excel("C:\\Users\\16199\Desktop\\vector_overlay\Chase\\Trimmed of bcp_lr_CC_for02_Raw_Data.xlsx", skiprows=19, usecols=[0, 1, 2, 3, 10, 11, 12],
                        names=["time (s)", "Fx1", "Fy1", "Fz1", "Fx2", "Fy2", "Fz2"], header=0,
                        dtype={'time (s)': float, 'Fx1': float, 'Fy1': float, 'Fz1': float, 'Fx2': float, 'Fy2': float, 'Fz2': float})
 
@@ -20,7 +20,12 @@ def graph():
     timeMotionStarts = 3.6 #edit to where motion starts
     forceatStart = 0 #this value will need to be different for each force direction
     # Data points for plotting
-    timex_subset = df.iloc[:, 0].astype(float).tolist()
+    rows = df.shape[0]
+    time = []
+    for i in range(rows):
+        time.append(df.iloc[i][0]-df.iloc[0][0])
+    print(len(time))
+    timex_subset = list(time)
     forcex_subset = savgol_filter(df.iloc[:, 1].astype(float).tolist(), 51, 3).tolist()  
     forcey_subset = savgol_filter(df.iloc[:, 2].astype(float).tolist(), 51, 3).tolist()
     forcez_subset = savgol_filter(df.iloc[:, 3].astype(float).tolist(), 51, 3).tolist()
@@ -42,7 +47,8 @@ def graph():
     formatted_integral_forcey2 = f"{integral_forcey2:.2f}"
     formatted_integral_forcez2 = f"{integral_forcez2:.2f}"
 
-    return render_template('graph.html', 
+    return render_template('graph.html',
+                           num_row = rows,
                            forcex=forcex_subset, 
                            timex=timex_subset,
                            forcey=forcey_subset,
