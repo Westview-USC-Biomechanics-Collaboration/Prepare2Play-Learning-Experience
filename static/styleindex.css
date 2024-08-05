@@ -450,8 +450,12 @@ transition: background-color 0.3s, color 0.3s;
 }
 
 .videoContaining {
-display: none;
-margin-top: 20px;
+  display: none;
+  margin-top: 20px;
+}
+
+.videoContaining.show {
+  display: block;
 }
 
 #uploadButton:hover {
