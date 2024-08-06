@@ -82,7 +82,7 @@ def uploaded_file(filename):
 @app.route('/graph')
 def graph():
     # Load your CSV file
-    df = pd.read_excel("C:\\Users\\16199\Desktop\\vector_overlay\Chase\\Trimmed of bcp_lr_CC_for02_Raw_Data.xlsx", skiprows=19, usecols=[0, 1, 2, 3, 10, 11, 12],
+    df = pd.read_excel("C:\\Users\\16199\\Desktop\\data\\Chase\\bcp_lr_CC_for02_Raw_Data.xlsx", skiprows=19, usecols=[0, 1, 2, 3, 10, 11, 12],
                        names=["time (s)", "Fx1", "Fy1", "Fz1", "Fx2", "Fy2", "Fz2"], header=0,
                        dtype={'time (s)': float, 'Fx1': float, 'Fy1': float, 'Fz1': float, 'Fx2': float, 'Fy2': float, 'Fz2': float})
 

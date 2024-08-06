@@ -232,6 +232,7 @@
                 if (frames.length === 0 ){
                     var n = Math.ceil(duration*30);
                     step_size = Math.round(rows/n)
+                    step_size = 20
                     console.log("Step size: " + step_size);
                     for (var i = 0; i < n; i++) {
                         frames[i] = {data: [{time:[],x1: [], y1: [], z1: [], x2: [], y2: [], z2: [], }]}
