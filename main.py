@@ -2,6 +2,7 @@ from flask import Flask, send_from_directory, render_template, request, redirect
 import pandas as pd
 import numpy as np
 import os
+import subprocess
 # from syncing.sync import VideoSync
 
 app = Flask(__name__)
@@ -55,6 +56,7 @@ def sports_template():
             # Save the uploaded file to a temporary location
             video_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             # NEED TO ADD POST PROCESSING STUFF HERE BEFORE SENDING THE FILE BACK TO SPORTS TEMPLATE
+            subprocess.run(['python', 'vector_overlay\vector-overlay-skeleton.py'])
             # Render the SportsTemplate.html template again with the uploaded video
             return render_template('SportsTemplate.html', video_file=filename, uploaded=True, video_url=url_for('uploaded_file', filename=filename))
         else:
