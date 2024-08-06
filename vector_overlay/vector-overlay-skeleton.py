@@ -56,6 +56,9 @@ Select corner sequence:
 
 
 # Initialization
+"""
+set your output path here
+"""
 def outputname(path):
     """
     use "\\" if you are in windows
@@ -177,11 +180,6 @@ class VectorOverlay:
             f"Frame width: {self.frame_width}, Frame height: {self.frame_height}, FPS: {self.fps}, Frame count: {self.frame_count}")
         cap.release()
 
-    """
-    You can adjust speed Mult in the readData function!!!
-    You may need to adjust this base on the fps of the video. 
-    Step size is not always 10!!
-    """
     def normalizeForces(self, x1, x2, y1, y2):
         max_force = max(
             max(abs(value) for value in x1),
@@ -189,7 +187,7 @@ class VectorOverlay:
             max(abs(value) for value in y1),
             max(abs(value) for value in y2)
         )
-        scale_factor = 800 / max_force
+        scale_factor = min(self.frame_height,self.frame_width)*0.8 / max_force
         
         self.fx1 = tuple(f * scale_factor for f in self.fx1)
         self.fy1 = tuple(f * scale_factor for f in self.fy1)
@@ -441,8 +439,7 @@ class VectorOverlay:
 use "\\" if you are in windows
 use "/" if you are in ios or windows
 """
-folder = "data/Anish"
-
+folder = "data\\mbm"
 
 # these are the file paths
 long_view, short_view, top_view, forcedata = find_files(folder)

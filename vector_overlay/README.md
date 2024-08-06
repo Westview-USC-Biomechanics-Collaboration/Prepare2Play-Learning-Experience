@@ -1,7 +1,7 @@
 # Vector overlay & stick figure
 
 - This is the vector overlay folder, you can use scripts inside for visual post-processing
-- Please use `Skeletonoverlay.py` for stick figure (This program doesn't work well in top view)
+- Please use `stick_figure_COM.py` for stick figure (This program doesn't work well in top view)
 - Please use `vector-overlay-skeleton.py` for vector overlay(This is the program that gets the force on force plate and visualize it)
 
 # Seting paths
@@ -11,7 +11,7 @@
 
 ## Skeleton overlay/stick figure (quick start)
 - change the path to your video in the `video_path` variable
-- run `Skeletonoverlay.py`
+- run `stick_figure_COM.py`
 
 ## Vector Overlay (quick start)
 - run `vector-overlay-skeleton.py`
@@ -26,7 +26,7 @@
 - In `vector_overlay/vector-overlay-skeleton.py`, update the path on line 426 with the name of your student (the same as the folder)
 - Now, in your terminal, make sure you are in the project, and run `python3 vector_overlay/vector-overlay-skeleton.py`
 - Select the order of the corners following this [diagram](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/blob/vector-overlay/vector_overlay/vector-overlay-skeleton.py) (each orientation has the numbers on the corners in the order to select them)
-- Navigate to `outputs/` and find the file with the appropriate naming convention for your movement
+- Navigate to `outputs/` and find the file with the appropriate naming convention for your movement. (*optional: set the path to your custom folder)
 - If you find any issues, please contact the software team! We are happy to help
 
 # Contributors

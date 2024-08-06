@@ -5,9 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="updated my code with Chase's">
-      <change beforePath="$PROJECT_DIR$/.idea/Prepare2Play-Learning-Experience-3.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Prepare2Play-Learning-Experience-3.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/stick_figure_COM.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/selected_points.txt" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/selected_points.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" afterDir="false" />
     </list>
@@ -127,7 +127,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Skeletonoverlay (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="stick_figure_COM" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -141,7 +141,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\vector_overlay\stick_figure_COM.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -220,7 +220,7 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.vector-overlay-skeleton" />
-        <item itemvalue="Python.Skeletonoverlay (1)" />
+        <item itemvalue="Python.stick_figure_COM" />
         <item itemvalue="Python.test_corners" />
         <item itemvalue="Python.Dash_graphing" />
         <item itemvalue="Python.testing (1)" />

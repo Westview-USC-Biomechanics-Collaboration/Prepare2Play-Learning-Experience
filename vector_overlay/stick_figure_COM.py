@@ -150,7 +150,7 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
 
 
 # Example usage:
-video_path = "outputs\\dlt_lr_ET_long_vid03_vector_overlay.mp4"  # Replace with your input video file path
+video_path = "outputs\\Trimmed of srd_lr_RM_long_vid01_vector_overlay.mp4"  # Replace with your input video file path
 
 """
 The function takes in video path, output file name, sex. 
@@ -164,7 +164,7 @@ Set the display element below
 """
 
 displayname = False
-displaystickfigure = False
+displaystickfigure =True
 displayCOM = True
 
 filename = "outputs\\" + video_path.split("\\")[-1][:-4]
