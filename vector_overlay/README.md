@@ -1,7 +1,7 @@
 # Vector overlay & stick figure
 
 - This is the vector overlay folder, you can use scripts inside for visual post-processing
-- Please use `Skeletonoverlay.py` for stick figure (This program doesn't work well in top view)
+- Please use `stick_figure_COM.py` for stick figure (This program doesn't work well in top view)
 - Please use `vector-overlay-skeleton.py` for vector overlay(This is the program that gets the force on force plate and visualize it)
 
 # Seting paths
@@ -11,7 +11,7 @@
 
 ## Skeleton overlay/stick figure (quick start)
 - change the path to your video in the `video_path` variable
-- run `Skeletonoverlay.py`
+- run `stick_figure_COM.py`
 
 ## Vector Overlay (quick start)
 - run `vector-overlay-skeleton.py`
@@ -20,14 +20,14 @@
 - run the program
 
 ##  Process your video with a vector overlay (detailed)
+- Create a two new folders in the main directory called `outputs` and 'data'.
 - Make sure your video and force file are trimmed to exactly when the ball hits the forceplate
-- Place your trimmed video (`.mp4` or `.mov`) and your trimmed force data (`.xlsx`or `.csv`) in the `data` folder.
-- In `vector_overlay/vector-overlay-skeleton.py` update the `side_view`, `forcedata_path`, and `top_view` variables with the appropriate paths `data/[FILENAME]`
-- At the bottom of the file, there are two comments, sideview, and topview (comments are marked with a # at the beginning of them). Depending on what code you want to run, uncomment those lines.
-  - EX: If you want the sideview, leave the code under `#sideview` uncommented, and the code under `#topview` should be commented so it doesn't run.
+- Place your trimmed videos (`.mp4') and your trimmed force data (`.xlsx`or `.csv`) in the `data/[NAME]` folder.
+- NOTE: make sure after the initials on the video, you include the format, (i.e. `spk_lr_AI_long_vid02.mp4`, where AI are initials, and long is the format)
+- In `vector_overlay/vector-overlay-skeleton.py`, update the path on line 424 with the name of your student (the same as the folder)
 - Now, in your terminal, make sure you are in the project, and run `python3 vector_overlay/vector-overlay-skeleton.py`
-- NOTE: If your video was made before the tape was place, you will have to manually select the 8 corners for the side view in this order `[INSERT CORNER ORDER HERE]`
-- Navigate to `outputs/` and find the file with the appropriate naming convention for your movement
+- Select the order of the corners following this [diagram](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/blob/main/vector_overlay/vector-overlay-skeleton.py) (each orientation has the numbers on the corners in the order to select them)
+- Navigate to `outputs/` and find the file with the appropriate naming convention for your movement. (*optional: set the path to your custom folder)
 - If you find any issues, please contact the software team! We are happy to help
 
 # Contributors

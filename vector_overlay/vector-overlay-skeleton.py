@@ -56,6 +56,9 @@ Select corner sequence:
 
 
 # Initialization
+"""
+set your output path here
+"""
 def outputname(path):
     """
     use "\\" if you are in windows
@@ -79,6 +82,8 @@ def find_files(directory):
                 short_file = os.path.join(directory, filename)
             elif "top" in filename:
                 top_file = os.path.join(directory, filename)
+            else:
+                long_file = os.path.join(directory, filename)
         elif filename.endswith(".xlsx"):
             data = os.path.join(directory, filename)
 
@@ -175,16 +180,26 @@ class VectorOverlay:
             f"Frame width: {self.frame_width}, Frame height: {self.frame_height}, FPS: {self.fps}, Frame count: {self.frame_count}")
         cap.release()
 
-    """
-    You can adjust speed Mult in the readData function!!!
-    You may need to adjust this base on the fps of the video. 
-    Step size is not always 10!!
-    """
+    def normalizeForces(self, x1, x2, y1, y2):
+        max_force = max(
+            max(abs(value) for value in x1),
+            max(abs(value) for value in x2),
+            max(abs(value) for value in y1),
+            max(abs(value) for value in y2)
+        )
+        scale_factor = min(self.frame_height,self.frame_width)*0.8 / max_force
+        
+        self.fx1 = tuple(f * scale_factor for f in self.fx1)
+        self.fy1 = tuple(f * scale_factor for f in self.fy1)
+        self.fz1 = tuple(f * scale_factor for f in self.fz1)
+        self.fx2 = tuple(f * scale_factor for f in self.fx2)
+        self.fy2 = tuple(f * scale_factor for f in self.fy2)
+        self.fz2 = tuple(f * scale_factor for f in self.fz2)
+    
     def readData(self):
         print("reading data")
-        frame_count = self.frame_count
-        step_size = 10
-        print(f"original step_size: {self.data.shape[0]/self.frame_count}")
+        frame_count = self.data.shape[0]//10
+        step_size = 600/self.fps
         print(f"This is step_size: {step_size}")
 
 
@@ -275,6 +290,7 @@ class VectorOverlay:
     def LongVectorOverlay(self, outputName):
         self.setFrameData(path=self.long_view_path)
         self.readData()
+        self.normalizeForces(self.fy1, self.fy2, self.fz1, self.fz2)
 
         if self.frame_width is None or self.frame_height is None:
             print("Error: Frame data not set.")
@@ -303,8 +319,8 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            fx1 = 1-self.fy1[int(frame_number)]
-            fx2 = 1-self.fy2[int(frame_number)]
+            fx1 = -self.fy1[int(frame_number)]
+            fx2 = -self.fy2[int(frame_number)]
             fy1 = self.fz1[int(frame_number)]
             fy2 = self.fz2[int(frame_number)]
             py1 = self.px1[int(frame_number)]
@@ -326,6 +342,7 @@ class VectorOverlay:
     def TopVectorOverlay(self, outputName):
         self.setFrameData(path=self.top_view_path)
         self.readData()
+        self.normalizeForces(self.fy1, self.fy2, self.fx1, self.fx2)
 
         if self.frame_width is None or self.frame_height is None:
             print("Error: Frame data not set.")
@@ -348,14 +365,14 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            fx1 = (1-self.fy1[frame_number]) #*10
-            fx2 = (1-self.fy2[frame_number]) #*10
-            fy1 = self.fx1[frame_number] #*10
-            fy2 = self.fx2[frame_number] #*10
-            py1 = self.px1[frame_number]
-            py2 = self.px2[frame_number]
-            px1 = self.py1[frame_number]
-            px2 = self.py2[frame_number]
+            fx1 = -self.fy1[int(frame_number)]
+            fx2 = -self.fy2[int(frame_number)]
+            fy1 = -self.fx1[int(frame_number)]
+            fy2 = -self.fx2[int(frame_number)]
+            py1 = self.px1[int(frame_number)]
+            px1 = self.py1[int(frame_number)]
+            py2 = self.px2[int(frame_number)]
+            px2 = self.py2[int(frame_number)]
             # print(f"x:{py1}, y:{py2}\n")
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
@@ -372,6 +389,7 @@ class VectorOverlay:
     def ShortVectorOverlay(self,outputName):
         self.setFrameData(path=self.short_view_path)
         self.readData()
+        self.normalizeForces([0], self.fx2, [0], self.fz2)
 
         if self.frame_width is None or self.frame_height is None:
             print("Error: Frame data not set.")
@@ -421,8 +439,7 @@ class VectorOverlay:
 use "\\" if you are in windows
 use "/" if you are in ios or windows
 """
-folder = "data\\Chase"
-
+folder = "data\\mbm"
 
 # these are the file paths
 long_view, short_view, top_view, forcedata = find_files(folder)
