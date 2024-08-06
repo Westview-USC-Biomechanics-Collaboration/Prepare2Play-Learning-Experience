@@ -147,6 +147,7 @@
                 y: force1.slice(startIndex),
                 mode: 'lines+markers',
                 type: 'scatter',
+                line: { width: 1 },
                 fill: 'tozeroy',
                 name: `Force 1 (${forceone})`
             };
@@ -156,6 +157,7 @@
                 y: force2.slice(startIndex),
                 mode: 'lines+markers',
                 type: 'scatter',
+                line: { width: 1 },
                 fill: 'tozeroy',
                 name: `Force 2 (${forcetwo})`
             };
@@ -177,7 +179,7 @@
             var additionalTrace1 = {
                 x: timex,
                 y: additionalForce1,
-                mode: 'lines+markers',
+                mode: 'lines',
                 type: 'scatter',
                 fill: 'tozeroy',
                 name: `Force 1 Right (${forceone})`
@@ -186,7 +188,7 @@
             var additionalTrace2 = {
                 x: timex,
                 y: additionalForce2,
-                mode: 'lines+markers',
+                mode: 'lines',
                 type: 'scatter',
                 fill: 'tozeroy',
                 name: `Force 2 Right (${forcetwo})`
