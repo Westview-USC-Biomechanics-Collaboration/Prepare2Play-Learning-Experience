@@ -1,11 +1,10 @@
-<<<<<<< HEAD
 from flask import Flask, render_template
 import pandas as pd
 import numpy as np
 from scipy.signal import savgol_filter
 
 app = Flask(__name__)
-=======
+
 from flask import Flask, send_from_directory, render_template, request, redirect, url_for, jsonify
 import pandas as pd
 import numpy as np
@@ -25,14 +24,12 @@ data = {
 def about():
     return render_template('about.html')
 
->>>>>>> main
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-<<<<<<< HEAD
-=======
+
 
 @app.route('/dropdown', methods=['POST', 'GET'])
 def dropdown():
@@ -78,7 +75,7 @@ def sports_template():
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
->>>>>>> main
+
 @app.route('/graph')
 def graph():
     # Load your CSV file
