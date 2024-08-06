@@ -367,14 +367,14 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            fx1 = -self.fx1[frame_number] #*10
-            fx2 = -self.fx2[frame_number] #*10
-            fy1 = self.fy1[frame_number] #*10
-            fy2 = self.fy2[frame_number] #*10
-            py1 = self.py1[frame_number]
-            py2 = self.py1[frame_number]
-            px1 = self.px1[frame_number]
-            px2 = self.px2[frame_number]
+            fx1 = -self.fy1[int(frame_number)]
+            fx2 = -self.fy2[int(frame_number)]
+            fy1 = -self.fx1[int(frame_number)]
+            fy2 = -self.fx2[int(frame_number)]
+            py1 = self.px1[int(frame_number)]
+            px1 = self.py1[int(frame_number)]
+            py2 = self.px2[int(frame_number)]
+            px2 = self.py2[int(frame_number)]
             # print(f"x:{py1}, y:{py2}\n")
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
@@ -441,7 +441,7 @@ class VectorOverlay:
 use "\\" if you are in windows
 use "/" if you are in ios or windows
 """
-folder = "data"
+folder = "data/Anish"
 
 
 # these are the file paths
