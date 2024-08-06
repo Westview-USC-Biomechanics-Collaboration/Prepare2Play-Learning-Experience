@@ -10,31 +10,41 @@
             padding: 0;
         }
         .container {
-            max-width: 900px;
-            margin: 20px auto;
+            max-width: 95%;
+            margin: 2px auto;
             padding: 20px;
             background-color: #f0f0f0;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         #video-container {
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        #video-container video {
+            flex: 1;
+            max-width: 40%;
         }
         #plot-container {
-            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
         }
-        #plot {
-            width: 100%;
-            height: 300px;
-        }
-        #additional-plot {
-            width: 100%;
+        .plot {
+            width: 48%;
             height: 300px;
         }
         #value-container {
             margin-top: 10px;
         }
         #chooser {
-            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            margin-left: 10px;
+        }
+        #chooser select {
+            margin-left: 10px;
         }
     </style>
 </head>
@@ -42,15 +52,10 @@
     <div class="container">
         <button id="go-back-btn" onclick="goBack()">Back To Home</button>
         <div id="video-container">
-            <video id="videoPlayer" controls style="width: 80%; max-width: 800px; display: block; margin: 0 auto;">
+            <video id="videoPlayer" controls style="margin-right: 20px;">
                 Your browser does not support the video tag.
             </video>
-            <br>
             <input type="file" id="videoInput" accept="video/*" onchange="playSelectedVideo()">
-        </div>
-        
-        <div id="plot-container">
-            
             <div id="chooser">
                 <label for="forceChooser">Choose force components:</label>
                 <select id="forceChooser" onchange="plotGraph()">
@@ -60,15 +65,14 @@
                     <option value="x2_z2">Force X2 and Force Z2</option>
                 </select>
             </div>
-            <div id="plot"></div>
-            <p id="integralForce">Integral of Force over time: Ns</p>
         </div>
-
-        <div id="additional-plot-container">
-            
-            <div id="additional-plot"></div>
-            <p id="integralForceRight">Integral of Force over time (Right): Ns</p>
+        
+        <div id="plot-container">
+            <div class="plot" id="plot"></div>
+            <div class="plot" id="additional-plot"></div>
         </div>
+        <p id="integralForce">Integral of Force over time (Left Plate): Ns</p>
+        <p id="integralForceRight">Integral of Force over time (Right Plate): Ns</p>
     </div>
 
     <script>
@@ -165,7 +169,7 @@
                     range: [-50, 50],  // Adjust y-axis range as needed
                     title: 'Force (N)'
                 },
-                
+                margin: {l: 15, r: 5, t: 5, b: 15}
             };
 
             Plotly.newPlot('plot', [trace1, trace2], layout);
@@ -197,7 +201,7 @@
                     range: [-550, 550],  
                     title: 'Force (N)'
                 },
-                
+                margin: {l: 15, r: 5, t: 5, b: 15}
             };
 
             Plotly.newPlot('additional-plot', [additionalTrace1, additionalTrace2], additionalLayout);

@@ -17,7 +17,7 @@ def graph():
                        dtype={'time (s)': float, 'Fx1': float, 'Fy1': float, 'Fz1': float, 'Fx2': float, 'Fy2': float, 'Fz2': float})
 
 
-    timeMotionStarts = 3.6 #edit to where motion starts
+    timeMotionStarts = 4.37042 #edit to where motion starts
     forceatStart = 0 #this value will need to be different for each force direction
     # Data points for plotting
     timex_subset = df.iloc[:, 0].astype(float).tolist()
