@@ -20,7 +20,7 @@
 | Description | Folder Link |
 | ------------- | ------------- | 
 | data files | ⚫ [Our data](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/tree/vector-overlay/data)| 
-| Vector Overlay | ![#add8e6](https://via.placeholder.com/15/add8e6/000000?text=+) [Vector Overlay](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/tree/vector-overlay/vector_overlay)|
+| Vector Overlay | ![#add8e6](https://via.placeholder.com/15/add8e6/000000?text=+) [Vector Overlay](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/tree/main/vector_overlay)|
 | output video | 🟢 [outputs](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/tree/vector-overlay/outputs) |
 
 ## Contributors:
