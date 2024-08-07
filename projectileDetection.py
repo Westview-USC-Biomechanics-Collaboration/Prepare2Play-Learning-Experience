@@ -3,7 +3,7 @@ import numpy as np
 import math
 
 # Open the video file
-cap = cv2.VideoCapture('data/kyleTest.mov')
+cap = cv2.VideoCapture('data\Trimmed of fot_Ir_UG_vid01.mp4')
 
 # Check if the video opened successfully
 if not cap.isOpened():
@@ -41,6 +41,13 @@ elif colorInput == 'brown':
     lower_color = np.array([4, 210, 47])
     upper_color = np.array([7, 230, 55])
 
+elif colorInput == 'brownish':
+    lower_color = np.array([7, 194, 23])
+    upper_color = np.array([17, 198, 60])
+
+brownish = np.uint8([[[6, 15, 26]]])
+brownish_hsv = cv2.cvtColor(brownish, cv2.COLOR_BGR2HSV)
+print(brownish_hsv)
 
 # Contour centroids
 posX = []
@@ -84,6 +91,8 @@ if cv2.waitKey(0) & 0xFF == ord('q'):
 # Get fps
 fps = cap.get(cv2.CAP_PROP_FPS)
 frame_counter = 0
+
+pixel_to_meter = 320
 
 # Create a named window with the ability to resize
 cv2.namedWindow('Resized Video Window', cv2.WINDOW_NORMAL)
@@ -178,18 +187,18 @@ while cap.isOpened():
         framenumber.append(frame_counter)
 
     if initialv == 0 and len(centroidX) > 1:
-        dx = (centroidX[-1] - centroidX[-2]) / 395
-        dy = (centroidY[-1] - centroidY[-2]) / 395
+        dx = (centroidX[-1] - centroidX[-2]) / pixel_to_meter
+        dy = (centroidY[-1] - centroidY[-2]) / pixel_to_meter
         t = (framenumber[-1] - framenumber[-2])/fps
 
         vx = dx/t
         vy = dy/t
 
         #tune this threshold
-        if vx**2 + vy**2 >= 10:
+        if vx**2 + vy**2 >= 8:
             initialv = vx**2 + vy**2 
             launch_angle = -np.degrees(np.arctan(dy/dx))
-            initial_height = centroidY[-2]/395
+            initial_height = centroidY[-2]/pixel_to_meter
             
             # print("Initial Velocity: ", initialv, " meters per second")
             # print("Launch Angle: ", launch_angle, " degrees")
