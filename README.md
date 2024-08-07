@@ -23,17 +23,17 @@
 
 
 ## Contributors:
+- Aarav Yadav
+- Chase Chen
+- Ayaan Irshad
 - Jessie Bao
 - Ross Brown
-- Chase Chen
 - Deren Erdem
 - Imri Fernandes
 - James Guo
 - Rayyan Hussain
-- Ayaan Irshad
 - Nishk Shah
 - Breanna Thayillam
-- Aarav Yadav
 - Christopher Yuan
 
 ##

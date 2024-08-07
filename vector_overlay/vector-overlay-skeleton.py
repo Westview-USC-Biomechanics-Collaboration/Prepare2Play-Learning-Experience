@@ -175,7 +175,6 @@ class VectorOverlay:
         self.frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
         self.fps = int(cap.get(cv.CAP_PROP_FPS))
         self.frame_count = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
-        print("####################################################")
         print(
             f"Frame width: {self.frame_width}, Frame height: {self.frame_height}, FPS: {self.fps}, Frame count: {self.frame_count}")
         cap.release()
@@ -220,12 +219,15 @@ class VectorOverlay:
             end_row = int(round(current_row + step_size))
             current_row+=step_size
 
+            # the dividing adding by a float is to normalize the data into the positive and then the divide is to normalize the range from 0 to 1 in both directions
             data_x1 = self.data.iloc[start_row:end_row, 1].astype('float64')
             data_y1 = self.data.iloc[start_row:end_row, 2].astype('float64')
             data_z1 = self.data.iloc[start_row:end_row, 3].astype('float64')
             pressure_x1 = (-self.data.iloc[start_row:end_row, 5].astype('float64')+0.3)/0.6
             pressure_y1 = (self.data.iloc[start_row:end_row, 6].astype('float64')+0.45)/0.9
 
+
+            # the dividing adding by a float is to normalize the data into the positive and then the divide is to normalize the range from 0 to 1 in both directions
             data_x2 = self.data.iloc[start_row:end_row, 10].astype('float64')
             data_y2 = self.data.iloc[start_row:end_row, 11].astype('float64')
             data_z2 = self.data.iloc[start_row:end_row, 12].astype('float64')
@@ -260,8 +262,13 @@ class VectorOverlay:
 
     def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2):
 
+
+        # the rect_to_trapezoid translates the normalized force data to the trapazoid that we see of the forceplate surface in the video for force plate 1
         start_point_1 = rect_to_trapezoid(px1, py1, 1, 1,
                                           [self.corners[0], self.corners[1], self.corners[2], self.corners[3]])
+        
+        
+        # the rect_to_trapezoid translates the normalized force data to the trapazoid that we see of the forceplate surface in the video for force plate 2
         start_point_2 = rect_to_trapezoid(px2, py2, 1, 1,
                                           [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
         # print(f"Startpoint1: {start_point_1}, Startpoint2:{start_point_2}")
