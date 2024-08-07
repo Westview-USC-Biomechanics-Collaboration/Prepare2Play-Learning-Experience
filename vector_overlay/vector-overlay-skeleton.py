@@ -219,12 +219,15 @@ class VectorOverlay:
             end_row = int(round(current_row + step_size))
             current_row+=step_size
 
+            # the dividing adding by a float is to normalize the data into the positive and then the divide is to normalize the range from 0 to 1 in both directions
             data_x1 = self.data.iloc[start_row:end_row, 1].astype('float64')
             data_y1 = self.data.iloc[start_row:end_row, 2].astype('float64')
             data_z1 = self.data.iloc[start_row:end_row, 3].astype('float64')
             pressure_x1 = (-self.data.iloc[start_row:end_row, 5].astype('float64')+0.3)/0.6
             pressure_y1 = (self.data.iloc[start_row:end_row, 6].astype('float64')+0.45)/0.9
 
+
+            # the dividing adding by a float is to normalize the data into the positive and then the divide is to normalize the range from 0 to 1 in both directions
             data_x2 = self.data.iloc[start_row:end_row, 10].astype('float64')
             data_y2 = self.data.iloc[start_row:end_row, 11].astype('float64')
             data_z2 = self.data.iloc[start_row:end_row, 12].astype('float64')
