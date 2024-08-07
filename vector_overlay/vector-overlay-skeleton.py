@@ -175,7 +175,6 @@ class VectorOverlay:
         self.frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
         self.fps = int(cap.get(cv.CAP_PROP_FPS))
         self.frame_count = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
-        print("####################################################")
         print(
             f"Frame width: {self.frame_width}, Frame height: {self.frame_height}, FPS: {self.fps}, Frame count: {self.frame_count}")
         cap.release()

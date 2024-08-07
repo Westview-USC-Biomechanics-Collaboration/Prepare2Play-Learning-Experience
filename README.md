@@ -24,17 +24,17 @@
 | output video | 🟢 [outputs](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/tree/vector-overlay/outputs) |
 
 ## Contributors:
+- Aarav Yadav
+- Chase Chen
+- Ayaan Irshad
 - Jessie Bao
 - Ross Brown
-- Chase Chen
 - Deren Erdem
 - Imri Fernandes
 - James Guo
 - Rayyan Hussain
-- Ayaan Irshad
 - Nishk Shah
 - Breanna Thayillam
-- Aarav Yadav
 - Christopher Yuan
 
 ##

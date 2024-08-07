@@ -30,10 +30,11 @@
 - Navigate to `outputs/` and find the file with the appropriate naming convention for your movement. (*optional: set the path to your custom folder)
 - If you find any issues, please contact the software team! We are happy to help
 
+
 # Contributors
-1. Ayaan Irshad
+1. Aarav Yadav
 2. Chase Chen
-3. Aarav Yadav
+3. Ayaan Irshad
 4. Deren Erdem
 5. Jessie Bao
 6. Ross Brown
