@@ -72,6 +72,7 @@ def find_files(directory):
     data = None
 
     for filename in os.listdir(directory):
+        print(filename)
         if filename.endswith(".mp4"):
             if "long" in filename:
                 long_file = os.path.join(directory, filename)
@@ -131,8 +132,9 @@ class VectorOverlay:
         self.top_view_path = top_view_path
         self.long_view_path = long_view_path
         self.short_view_path = short_view_path
+        print(f"This is datapath: {data_path}")
         self.data_path = data_path
-        df = pd.read_csv("D:\\USC Biomechanics Python Stuff\\Prepare2Play-Learning-Experience\\Nishk\\Trimmed of spu_lr_NS_for01_Raw_Data_new - spu_lr_NS_for01_Raw_Data_new.csv", skiprows=19)
+        df = pd.read_excel(self.data_path, skiprows=19)
         self.data = df
 
         self.frame_width, self.frame_height, self.fps, self.frame_count = None, None, None, None
@@ -441,7 +443,7 @@ class VectorOverlay:
 use "..\\" if you are in windows
 use "/" if you are in ios or windows
 """
-folder = "data"
+folder = "data\\Nishk"
 
 
 # these are the file paths

@@ -77,9 +77,9 @@ class Graph:
                 return seconds * self.targetFPS
 
 
-df = pd.read_excel("data/Citlali/Trimmed of ksk_rl_CM_for01_Raw_Data.xlsx")
+df = pd.read_excel("D:\\USC Biomechanics Python Stuff\\Prepare2Play-Learning-Experience\\data\\Nishk\\spu_lr_NS_for01_Raw_Data_new.xlsx")
 
-forcey_subset = {"data": df.iloc[18:10000, 2].astype(float).tolist(), "name": "ForceY", "min": -15, "max": 15}
+forcey_subset = {"data": df.iloc[18:10000, 1].astype(float).tolist(), "name": "ForceX", "min": -15, "max": 15}
 forcez_subset = {"data": df.iloc[18:10000, 3].astype(float).tolist(), "name": "ForceZ", "min": -15, "max": 15}
 
 timex_subset = {"data": df.iloc[18:10000, 0].astype(float).tolist(), "name": "Time", "min": 0, "max": 3}

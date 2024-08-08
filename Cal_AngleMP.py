@@ -28,7 +28,7 @@ def calculate_angle(a, b, c):
     return angle
 
 # Open the video file
-video_path = 'data/derenBasketballTest1.mp4'
+video_path = 'data/Nishk/Trimmed of spu_lr_NS_for01_long.mp4'
 
 # Extract the base name of the input video file
 base_name = os.path.splitext(os.path.basename(video_path))[0]
@@ -46,15 +46,15 @@ height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 fps = cap.get(cv2.CAP_PROP_FPS)
 
 # Only use below lines if cropping is necesary - adjust the decimals to crop
-# crop_x_start = int(width * 0.3) 
-# crop_x_end = int(width * 0.75) 
-crop_x_start = 0
-crop_x_end = width
+crop_x_start = int(width * 0.1) 
+crop_x_end = int(width * 0.75) 
+# crop_x_start = 0
+# crop_x_end = width
 crop_y_start = 0
 crop_y_end = height  # Adjusted to crop the full height
 
 # Output video writer
-output_directory = 'data'
+output_directory = 'outputs/JointAngleOuputs'
 output_video_path = os.path.join(output_directory, f'Angle(MP)OutputVideo_({base_name}).mp4')
 frame_size = (crop_x_end - crop_x_start, crop_y_end - crop_y_start)
 out = cv2.VideoWriter(output_video_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, frame_size)
