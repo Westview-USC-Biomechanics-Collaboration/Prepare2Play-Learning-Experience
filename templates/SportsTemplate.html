@@ -52,6 +52,192 @@
             </div>
             <div>
                 <p>Vector Overlay</p>
+                <div id="plot-container">
+            
+                    <div id="chooser">
+                        <label for="forceChooser">Choose force components:</label>
+                        <select id="forceChooser" onchange="playSelectedVideo()">
+                            <option value="y_z">Force Y and Force Z</option>
+                            <option value="x_y">Force X and Force Y</option>
+                            <option value="x_z">Force X and Force Z</option>
+        
+                        </select>
+                    </div>
+                    <div id="plot"></div>
+                    <p id="integralForce">Integral of Force over time: Ns</p>
+                </div>
+                <script>
+                    var rows = JSON.parse('{{ num_row | tojson | safe }}');
+                    var forcex = JSON.parse('{{ forcex | tojson | safe }}');
+                    var timex = JSON.parse('{{ timex | tojson | safe }}');
+                    var forcey = JSON.parse('{{ forcey | tojson | safe }}');
+                    var forcez = JSON.parse('{{ forcez | tojson | safe }}');
+                    var additionalForcex = JSON.parse('{{ additional_forcex | tojson | safe }}');
+                    var additionalForcey = JSON.parse('{{ additional_forcey | tojson | safe }}');
+                    var additionalForcez = JSON.parse('{{ additional_forcez | tojson | safe }}');
+                    var frames = []
+                    function plotGraph(frameIndex,duration) {
+                        var selectedOption = document.getElementById('forceChooser').value;
+                        var force1, force2, additionalForce1, additionalForce2, integral, integralRight;
+                        
+
+                    
+                        console.log("frameIndex: ")
+                        console.log(frameIndex)
+
+                        console.log("this is selcetion")
+                        console.log(selectedOption)
+
+
+
+                        var time = frames[frameIndex].data[0].time
+
+                        if (selectedOption === 'y_z') {
+                            force1 = frames[frameIndex].data[0].y1;
+                            force2 = frames[frameIndex].data[0].z1;
+                            additionalForce1 = frames[frameIndex].data[0].y2;
+                            additionalForce2 = frames[frameIndex].data[0].z2;
+
+                            integral = '{{ integral_forcey }} and {{ integral_forcez }}';
+                            integralRight = '{{ integral_forcey2 }} and {{ integral_forcez2 }}';
+                            var forceone = 'Y'
+                            var forcetwo = 'Z'
+                        } 
+                        else if (selectedOption === 'x_y') {
+                            force1 = frames[frameIndex].data[0].x1;
+                            force2 = frames[frameIndex].data[0].y1
+                            additionalForce1 = frames[frameIndex].data[0].x2
+                            additionalForce2 = frames[frameIndex].data[0].y2
+                            integral = '{{ integral_forcex }} and {{ integral_forcey }}';
+                            integralRight = '{{ integral_forcex2 }} and {{ integral_forcey2 }}';
+                            var forceone = 'X'
+                            var forcetwo = 'Y'
+                        }
+                        else {
+                            force1 = frames[frameIndex].data[0].x1
+                            force2 = frames[frameIndex].data[0].z1
+                            additionalForce1 = frames[frameIndex].data[0].x2
+                            additionalForce2 = frames[frameIndex].data[0].z2
+                            integral = '{{ integral_forcex2 }} and {{ integral_forcez2 }}';
+                            integralRight = '{{ integral_forcex2 }} and {{ integral_forcez2 }}';
+                            var forceone = 'X'
+                            var forcetwo = 'Z'
+                        }
+
+                        var trace1 = {
+                            x: time,
+                            y: force1,
+                            mode: 'lines',
+                            type: 'scatter',
+                            fill: 'tozeroy',
+                            name: `Force 1 (${forceone})`
+                        };
+
+                        var trace2 = {
+                            x: time,
+                            y: force2,
+                            mode: 'lines',
+                            type: 'scatter',
+                            fill: 'tozeroy',
+                            name: `Force 2 (${forcetwo})`
+                        };
+
+                        var layout = {
+                            xaxis: {
+                                range: [0, duration],
+                                title: 'Time (s.)'
+                            },
+                            yaxis: {
+                                range: [-3, 3],  // Adjust y-axis range as needed
+                                title: 'Force (N)'
+                            },
+                            
+                        };
+
+                        Plotly.newPlot('plot', [trace1, trace2], layout);
+
+                        var additionalTrace1 = {
+                            x: time,
+                            y: additionalForce1,
+                            mode: 'lines',
+                            type: 'scatter',
+                            fill: 'tozeroy',
+                            name: `Force 1 Right (${forceone})`
+                        };
+
+                        var additionalTrace2 = {
+                            x: time,
+                            y: additionalForce2,
+                            mode: 'lines',
+                            type: 'scatter',
+                            fill: 'tozeroy',
+                            name: `Force 2 Right (${forcetwo})`
+                        };
+
+                        var additionalLayout = {
+                            xaxis: {
+                                range: [0, duration],
+                                title: 'Time (s.)'
+                            },
+                            yaxis: {
+                                range: [-3,3],  
+                                title: 'Force (N)'
+                            },
+                            
+                        };
+
+                        Plotly.newPlot('additional-plot', [additionalTrace1, additionalTrace2], additionalLayout);
+
+                        document.getElementById('integralForce').innerText = `Integral of Force over time (Left Plate): ${integral} Ns`;
+                        document.getElementById('integralForceRight').innerText = `Integral of Force over time (Right Plate): ${integralRight} Ns`;
+                    }
+                    function playSelectedVideo() {
+                        var videoInput = document.getElementById('videoFile');
+                        var videoPlayer = document.getElementById('uploadedVideo');
+                        var file = videoInput.files[0];
+                        var url = URL.createObjectURL(file);
+                        var duration
+                        
+                        
+                        videoPlayer.src = url;
+                        
+                        videoPlayer.addEventListener('loadedmetadata', function() {
+                        // Get the duration of the video
+                        duration = videoPlayer.duration;
+                        })
+
+                        videoPlayer.addEventListener('timeupdate', function(){
+                            var currentTime = videoPlayer.currentTime;
+                            var currentFrame = Math.floor(currentTime * 30)
+                            var step_size
+
+                            console.log("This is current time")
+                            console.log(currentTime)
+                            console.log("This is duration of the video")
+                            console.log(duration)
+                            if (frames.length === 0 ){
+                                var n = Math.ceil(duration*30);
+                                step_size = Math.round(rows/n)
+                                step_size = 20
+                                console.log("Step size: " + step_size);
+                                for (var i = 0; i < n; i++) {
+                                    frames[i] = {data: [{time:[],x1: [], y1: [], z1: [], x2: [], y2: [], z2: [], }]}
+                                    frames[i].data[0].time = timex.slice(0,step_size*i)
+                                    frames[i].data[0].x1 = forcex.slice(0, step_size*i);
+                                    frames[i].data[0].y1 = forcey.slice(0, step_size*i);
+                                    frames[i].data[0].z1 = forcez.slice(0, step_size*i);
+                                    frames[i].data[0].x2 = additionalForcex.slice(0, step_size*i);
+                                    frames[i].data[0].y2 = additionalForcey.slice(0, step_size*i);
+                                    frames[i].data[0].z2 = additionalForcez.slice(0, step_size*i);
+                                }
+                            }
+            
+                            plotGraph(currentFrame,(duration/4));
+                        })
+                        
+                        videoPlayer.play();
+                    }
+                </script>
             </div>
             <div>
                 <h2>Stats</h2>

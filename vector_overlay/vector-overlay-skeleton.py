@@ -62,7 +62,7 @@ def outputname(path):
     use "/" if you are in ios
     """
     filename = path.split("\\")[-1][:-4]
-    output_name = "outputs\\" + filename + "_vector_overlay.mp4"
+    output_name = "C:\\Users\\16199\Desktop\data\Outputs\\" + filename + "_vector_overlay.mp4"
     return output_name
 
 def find_files(directory):
@@ -421,7 +421,7 @@ class VectorOverlay:
 use "\\" if you are in windows
 use "/" if you are in ios or windows
 """
-folder = "data\\Chase"
+folder = "C:\\Users\\16199\Desktop\data\\dlt"
 
 
 # these are the file paths
@@ -437,18 +437,18 @@ v = VectorOverlay(top_view, long_view, short_view, forcedata)
 """
 side view / long view
 """
-if long_view != None:
-    output_name = outputname(long_view)
-    print(f"output file name: {output_name}")
-    v.LongVectorOverlay(output_name)
-
-"""
-top view
-"""
-if top_view != None:
-    outputName = outputname(top_view)
-    print(f"output file name: {outputName}")
-    v.TopVectorOverlay(outputName)
+# if long_view != None:
+#     output_name = outputname(long_view)
+#     print(f"output file name: {output_name}")
+#     v.LongVectorOverlay(output_name)
+#
+# """
+# top view
+# """
+# if top_view != None:
+#     outputName = outputname(top_view)
+#     print(f"output file name: {outputName}")
+#     v.TopVectorOverlay(outputName)
 
 """
 front view / short view
