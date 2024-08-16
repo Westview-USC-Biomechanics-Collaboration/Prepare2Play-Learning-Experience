@@ -56,6 +56,9 @@ Select corner sequence:
 
 
 # Initialization
+"""
+set your output path here
+"""
 def outputname(path):
     """
     use "\\" if you are in windows
@@ -174,16 +177,10 @@ class VectorOverlay:
         self.frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
         self.fps = int(cap.get(cv.CAP_PROP_FPS))
         self.frame_count = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
-        print("####################################################")
         print(
             f"Frame width: {self.frame_width}, Frame height: {self.frame_height}, FPS: {self.fps}, Frame count: {self.frame_count}")
         cap.release()
 
-    """
-    You can adjust speed Mult in the readData function!!!
-    You may need to adjust this base on the fps of the video. 
-    Step size is not always 10!!
-    """
     def normalizeForces(self, x1, x2, y1, y2):
         max_force = max(
             max(abs(value) for value in x1),
@@ -191,7 +188,7 @@ class VectorOverlay:
             max(abs(value) for value in y1),
             max(abs(value) for value in y2)
         )
-        scale_factor = 800 / max_force
+        scale_factor = min(self.frame_height,self.frame_width)*0.8 / max_force
         
         self.fx1 = tuple(f * scale_factor for f in self.fx1)
         self.fy1 = tuple(f * scale_factor for f in self.fy1)
@@ -224,12 +221,15 @@ class VectorOverlay:
             end_row = int(round(current_row + step_size))
             current_row+=step_size
 
+            # the dividing adding by a float is to normalize the data into the positive and then the divide is to normalize the range from 0 to 1 in both directions
             data_x1 = self.data.iloc[start_row:end_row, 1].astype('float64')
             data_y1 = self.data.iloc[start_row:end_row, 2].astype('float64')
             data_z1 = self.data.iloc[start_row:end_row, 3].astype('float64')
             pressure_x1 = (-self.data.iloc[start_row:end_row, 5].astype('float64')+0.3)/0.6
             pressure_y1 = (self.data.iloc[start_row:end_row, 6].astype('float64')+0.45)/0.9
 
+
+            # the dividing adding by a float is to normalize the data into the positive and then the divide is to normalize the range from 0 to 1 in both directions
             data_x2 = self.data.iloc[start_row:end_row, 10].astype('float64')
             data_y2 = self.data.iloc[start_row:end_row, 11].astype('float64')
             data_z2 = self.data.iloc[start_row:end_row, 12].astype('float64')
@@ -264,8 +264,13 @@ class VectorOverlay:
 
     def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2):
 
+
+        # the rect_to_trapezoid translates the normalized force data to the trapazoid that we see of the forceplate surface in the video for force plate 1
         start_point_1 = rect_to_trapezoid(px1, py1, 1, 1,
                                           [self.corners[0], self.corners[1], self.corners[2], self.corners[3]])
+        
+        
+        # the rect_to_trapezoid translates the normalized force data to the trapazoid that we see of the forceplate surface in the video for force plate 2
         start_point_2 = rect_to_trapezoid(px2, py2, 1, 1,
                                           [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
         # print(f"Startpoint1: {start_point_1}, Startpoint2:{start_point_2}")
@@ -369,14 +374,14 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            fx1 = -self.fx1[frame_number] #*10
-            fx2 = -self.fx2[frame_number] #*10
-            fy1 = self.fy1[frame_number] #*10
-            fy2 = self.fy2[frame_number] #*10
-            py1 = self.py1[frame_number]
-            py2 = self.py1[frame_number]
-            px1 = self.px1[frame_number]
-            px2 = self.px2[frame_number]
+            fx1 = -self.fy1[int(frame_number)]
+            fx2 = -self.fy2[int(frame_number)]
+            fy1 = -self.fx1[int(frame_number)]
+            fy2 = -self.fx2[int(frame_number)]
+            py1 = self.px1[int(frame_number)]
+            px1 = self.py1[int(frame_number)]
+            py2 = self.px2[int(frame_number)]
+            px2 = self.py2[int(frame_number)]
             # print(f"x:{py1}, y:{py2}\n")
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
