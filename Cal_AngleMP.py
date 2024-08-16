@@ -28,7 +28,7 @@ def calculate_angle(a, b, c):
     return angle
 
 # Open the video file
-video_path = 'data/Nishk/Trimmed of spu_lr_NS_for01_long.mp4'
+video_path = 'data/Trimmed of cdt_lr_IG_vid02.mp4'
 
 # Extract the base name of the input video file
 base_name = os.path.splitext(os.path.basename(video_path))[0]
