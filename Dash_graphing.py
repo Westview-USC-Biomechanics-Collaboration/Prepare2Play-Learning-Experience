@@ -3,14 +3,18 @@ from dash import Dash, dcc, html
 from dash.dependencies import Input, Output
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
+import cv2 as cv
 
-TotalFrames = 100
+path_to_video = ""
+cap = cv.VideoCapture(path_to_video)
+frame_count = cap.get(cv.CAP_PROP_FRAME_COUNT)
+TotalFrames = frame_count
 
 # Initialize the Dash app
 app = Dash(__name__)
 
 # Load the data from the Excel file, starting from row 20, and assign column names
-df = pd.read_excel('data/Trimmed of gis_lr_CC_for03_Raw_Data.xlsx', skiprows=19, usecols=[0, 1, 2, 3, 10, 11, 12],
+df = pd.read_excel("C:\\Users\\16199\Desktop\data\Chase\\bcp_lr_CC_for02_Raw_Data.xlsx", skiprows=19, usecols=[0, 1, 2, 3, 10, 11, 12],
                    names=["time (s)", "Fx1", "Fy1", "Fz1", "Fx2", "Fy2", "Fz2"], header=0,
                    dtype={'time (s)': float, 'Fx1': float, 'Fy1': float, 'Fz1': float, 'Fx2': float, 'Fy2': float, 'Fz2': float})
 

@@ -65,7 +65,7 @@ def outputname(path):
     use "/" if you are in ios
     """
     filename = path.split("\\")[-1][:-4]
-    output_name = "outputs\\" + filename + "_vector_overlay.mp4"
+    output_name = "C:\\Users\\16199\Desktop\data\Outputs\\" + filename + "_vector_overlay.mp4"
     return output_name
 
 def find_files(directory):
@@ -446,7 +446,7 @@ class VectorOverlay:
 use "\\" if you are in windows
 use "/" if you are in ios or windows
 """
-folder = "data\\mbm"
+folder = "C:\\Users\\16199\Desktop\data\\cdt"
 
 # these are the file paths
 long_view, short_view, top_view, forcedata = find_files(folder)

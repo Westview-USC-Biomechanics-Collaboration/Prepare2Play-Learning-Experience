@@ -149,8 +149,6 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
     return annotated_image
 
 
-# Example usage:
-video_path = "outputs\\Trimmed of srd_lr_RM_long_vid01_vector_overlay.mp4"  # Replace with your input video file path
 
 """
 The function takes in video path, output file name, sex. 
@@ -162,12 +160,14 @@ use "/" if you are in ios
 
 Set the display element below
 """
+# Example usage:
+video_path = "C:\\Users\\16199\Desktop\data\Outputs\\Trimmed of tbh_lr_EL——long_vid01_vector_overlay.mp4"  # Replace with your input video file path
 
 displayname = False
-displaystickfigure =True
+displaystickfigure = True
 displayCOM = True
 
-filename = "outputs\\" + video_path.split("\\")[-1][:-4]
+filename = "C:\\Users\\16199\Desktop\data\Outputs\\" + video_path.split("\\")[-1][:-4]
 # adjust file name
 if displaystickfigure == True and displayCOM == True:
     filename += "_COM+Stickfigure.mp4"
