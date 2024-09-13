@@ -63,8 +63,12 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
     # Define the codec and create VideoWriter object to save the annotated video
     out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
 
+    #frame data
     raw_frames = []
     annotated_frames = []
+
+    #position data
+    position_data = []
     def update_frame(raw_list):
         # raw list means the raw_frames list
         # Define connections between landmarks
@@ -100,10 +104,13 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
         raw_frames.append(frame)
 
         # Draw landmarks on the frame
-        annotated_frame = draw_landmarks_on_image(np.copy(frame), pose_landmarks_list, sex, displayname,
+        annotated_frame,datain,dataout = draw_landmarks_on_image(np.copy(frame), pose_landmarks_list, sex, displayname,
                                                   displaystickfigure, displayCOM)
-        # store annotated frames
+        # store annotated frames, datain, dataout
         annotated_frames.append(annotated_frame)
+        datain["COM"] = dataout
+        position_data.append(datain)
+        print(f"datain in the while loop: {datain}\ndataout in the while loop: {dataout}")
         # Write the annotated frame to the output video file
         # out.write(annotated_frame)
 
@@ -119,17 +126,48 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
             pass
         elif key == 81:  # Left arrow (previous frame)
             pass
+
+
     # Release video capture and writer objects
     cap.release()
     out.release()
     cv2.destroyAllWindows()
+    print(f"frame objects:{raw_frames}")
+    print(f"position data: {position_data}")
+
+    current_frame = 0
+    while True:
+        #check current frame is in range
+        if (current_frame>frame_count-1):
+            current_frame = frame_count-1
+            print(f"This is the last frame!")
+        pass
+        cv2.imshow("manual correction", annotated_frames[current_frame])
+        key = cv2.waitKey(0) & 0xFF  # Wait indefinitely for a key press
+
+        if key == 27:  # Press 'Esc' to exit
+            break
+        elif key == 83:  # Right arrow (next frame)
+            # Increment current_frame, or handle next frame logic
+            current_frame += 1
+            print(f"current frame: {current_frame + 1}")
+        elif key == 81:  # Left arrow (previous frame)
+            # Decrement current_frame, or handle previous frame logic
+            current_frame -= 1
+            print(f"current frame: {current_frame + 1}")
+
+
+
+
+
 
 
 def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayname=False, displaystickfigure=False,
                             displayCOM=False):
     # Define connections between landmarks
     pose_connections = mp.solutions.pose.POSE_CONNECTIONS
-
+    joints = []
+    COM = []
     for idx in range(len(pose_landmarks_list)):
         pose_landmarks = pose_landmarks_list[idx]
         if not pose_landmarks:
@@ -173,13 +211,18 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
             columns_name.append(str(pose_landmark_names[i]) + "_x")
             columns_name.append(str(pose_landmark_names[i]) + "_y")
 
+        # convert data type
+        datain = pd.Series(data, index=columns_name, name="Datain Series")
+        dataout = calculateCOM(datain, sex)
+
+        # store data
+        joints.append(datain)
+        COM.append(dataout)
         # Find COM
         if displayCOM == True:
-            datain = pd.Series(data, index=columns_name, name="Datain Series")
-            dataout = calculateCOM(datain, sex)
             cv2.circle(annotated_image, (int(dataout[0]), int(dataout[1])), 12, (0, 0, 255), -1)
 
-    return annotated_image
+    return annotated_image, joints, COM
 
 
 
@@ -194,7 +237,7 @@ use "/" if you are in ios
 Set the display element below
 """
 # Example usage:
-video_path = "C:\\Users\\16199\Desktop\data\Outputs\\Trimmed of tbh_lr_EL——long_vid01_vector_overlay.mp4"  # Replace with your input video file path
+video_path = "C:\\Users\\16199\Desktop\data\Outputs\\Trimmed of fot_Ir_UG_long_vid01_vector_overlay.mp4"  # Replace with your input video file path
 
 displayname = False
 displaystickfigure = True
