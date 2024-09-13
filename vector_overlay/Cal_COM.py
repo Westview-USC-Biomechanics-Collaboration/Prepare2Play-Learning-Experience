@@ -26,8 +26,11 @@ def calculateCOM(dataIn, sex):
     trunkobject.find_trunk()
 
     rowname = ["upperarm"  , "forearm" , "hand"       , "thigh" , "shank"  , "foot"  ,]
-    origin  = ["LELBOW"     , "LELBOW"  , "LWRIST"     , "LHIP"  , "LKNEE"  , "LHEEL" ,  "RELBOW"   , "RELBOW"  , "RWRIST"      , "RHIP"  , "RKNEE"  , "RHEEL" ]
-    other   = ["LSHOULDER"  , "LWRIST"  , "left_index" , "LKNEE" , "LANKLE" , "LTOE"  , "RSHOULDER" , "RWRIST"  , "right_index" , "RKNEE" , "RANKLE" , "RTOE"]
+    origin = ["left_elbow", "left_elbow", "left_wrist", "left_hip", "left_knee", "left_heel",
+              "right_elbow", "right_elbow", "right_wrist", "right_hip", "right_knee", "right_heel"]
+
+    other = ["left_shoulder", "left_wrist", "left_index", "left_knee", "left_ankle", "left_foot_index",
+             "right_shoulder", "right_wrist", "right_index", "right_knee", "right_ankle", "right_foot_index"]
 
     count = 0
     other_list = []

@@ -31,14 +31,14 @@ class segments():
     def find_trunk(self):
         # print("This is the trunk method")
 
-        LSHOULDER_x = self.data["LSHOULDER_x"]
-        LSHOULDER_y = self.data["LSHOULDER_y"]
-        RSHOULDER_x = self.data["RSHOULDER_x"]
-        RSHOULDER_y = self.data["RSHOULDER_y"]
-        LHIP_x = self.data["LHIP_x"]
-        LHIP_y = self.data["LHIP_y"]
-        RHIP_x = self.data["RHIP_x"]
-        RHIP_y = self.data["RHIP_y"]
+        LSHOULDER_x = self.data["left_shoulder_x"]
+        LSHOULDER_y = self.data["left_shoulder_y"]
+        RSHOULDER_x = self.data["right_shoulder_x"]
+        RSHOULDER_y = self.data["right_shoulder_y"]
+        LHIP_x = self.data["left_hip_x"]
+        LHIP_y = self.data["left_hip_y"]
+        RHIP_x = self.data["right_hip_x"]
+        RHIP_y = self.data["right_hip_y"]
 
         SHOULDERMID_x = (LSHOULDER_x+RSHOULDER_x)/2
         SHOULDERMID_y = (LSHOULDER_y+RSHOULDER_y)/2

@@ -4,16 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="updated my code with Chase's">
-      <change afterPath="$PROJECT_DIR$/vector_overlay/example.in" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vector_overlay/pipeline.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/vector_overlay/test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dash_graphing.py" beforeDir="false" afterPath="$PROJECT_DIR$/Dash_graphing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_overlay/selected_points.txt" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/selected_points.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_overlay/stick_figure_COM.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/stick_figure_COM.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" afterDir="false" />
-    </list>
+    <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="updated my code with Chase's" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -87,7 +78,7 @@
     "Python.vector-overlay-skeleton.executor": "Run",
     "Python.vector_overlay_top.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "vector-overlay",
+    "git-widget-placeholder": "chase-immediate-feed-back",
     "last_opened_file_path": "C:/Users/16199/Desktop/Prepare2Play-Learning-Experience-deren-shoulder-trunk-angle",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
