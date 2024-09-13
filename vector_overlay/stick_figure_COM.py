@@ -8,7 +8,41 @@ from Cal_COM import calculateCOM
 This is the skeleton overlay/stick figure
 You need to scroll down to the last line an change the value of video_path in order to process the stick figure
 """""
-
+pose_landmark_names = {
+            0: "nose",
+            1: "left_eye_inner",
+            2: "left_eye",
+            3: "left_eye_outer",
+            4: "right_eye_inner",
+            5: "right_eye",
+            6: "right_eye_outer",
+            7: "left_ear",
+            8: "right_ear",
+            9: "mouth_left",
+            10: "mouth_right",
+            11: "left_shoulder",
+            12: "right_shoulder",
+            13: "left_elbow",
+            14: "right_elbow",
+            15: "left_wrist",
+            16: "right_wrist",
+            17: "left_pinky",
+            18: "right_pinky",
+            19: "left_index",
+            20: "right_index",
+            21: "left_thumb",
+            22: "right_thumb",
+            23: "left_hip",
+            24: "right_hip",
+            25: "left_knee",
+            26: "right_knee",
+            27: "left_ankle",
+            28: "right_ankle",
+            29: "left_heel",
+            30: "right_heel",
+            31: "left_foot_index",
+            32: "right_foot_index"
+        }
 
 def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displayname=False, displaystickfigure=False,
                      displayCOM=False):
@@ -29,6 +63,30 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
     # Define the codec and create VideoWriter object to save the annotated video
     out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
 
+    raw_frames = []
+    annotated_frames = []
+    def update_frame(raw_list):
+        # raw list means the raw_frames list
+        # Define connections between landmarks
+        pose_connections = mp.solutions.pose.POSE_CONNECTIONS
+        frame = raw_list[0]
+        for idx in range(len(pose_landmarks_list)):
+            pose_landmarks = pose_landmarks_list[idx]
+            if not pose_landmarks:
+                continue
+
+            data = []
+            # Draw circles at each landmark position
+            for id, landmark in enumerate(pose_landmarks.landmark):
+                landmark_name = pose_landmark_names.get(id, f"landmark_{id}")
+
+                # Only draw visible landmarks
+                if landmark.visibility > 0:
+                    h, w, _ = frame.shape
+                    cx, cy = int(landmark.x * w), int(landmark.y * h)
+                    data.append(cx)
+                    data.append(cy)
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -38,18 +96,29 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
         results = pose.process(frame)
         pose_landmarks_list = [results.pose_landmarks] if results.pose_landmarks else []
 
+        # store raw frames
+        raw_frames.append(frame)
+
         # Draw landmarks on the frame
         annotated_frame = draw_landmarks_on_image(np.copy(frame), pose_landmarks_list, sex, displayname,
                                                   displaystickfigure, displayCOM)
-
+        # store annotated frames
+        annotated_frames.append(annotated_frame)
         # Write the annotated frame to the output video file
-        out.write(annotated_frame)
+        # out.write(annotated_frame)
 
         # Display the annotated frame (optional)
         cv2.imshow('Annotated Frame', annotated_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
+        key = cv2.waitKey(30) & 0xFF
+        if key == 27:  # Press 'Esc' to exit
+            break
+        elif key == 83:  # Right arrow (next frame)
+            pass
+        elif key == 81:  # Left arrow (previous frame)
+            pass
     # Release video capture and writer objects
     cap.release()
     out.release()
@@ -58,42 +127,6 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
 
 def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayname=False, displaystickfigure=False,
                             displayCOM=False):
-    pose_landmark_names = {
-        0: "nose",
-        1: "left_eye_inner",
-        2: "left_eye",
-        3: "left_eye_outer",
-        4: "right_eye_inner",
-        5: "right_eye",
-        6: "right_eye_outer",
-        7: "left_ear",
-        8: "right_ear",
-        9: "mouth_left",
-        10: "mouth_right",
-        11: "left_shoulder",
-        12: "right_shoulder",
-        13: "left_elbow",
-        14: "right_elbow",
-        15: "left_wrist",
-        16: "right_wrist",
-        17: "left_pinky",
-        18: "right_pinky",
-        19: "left_index",
-        20: "right_index",
-        21: "left_thumb",
-        22: "right_thumb",
-        23: "left_hip",
-        24: "right_hip",
-        25: "left_knee",
-        26: "right_knee",
-        27: "left_ankle",
-        28: "right_ankle",
-        29: "left_heel",
-        30: "right_heel",
-        31: "left_foot_index",
-        32: "right_foot_index"
-    }
-
     # Define connections between landmarks
     pose_connections = mp.solutions.pose.POSE_CONNECTIONS
 
