@@ -1,30 +1,47 @@
 import cv2
 
-# Open the default camera (webcam)
-camera = cv2.VideoCapture(1)
 
-# Check if the camera opened successfully
-if not camera.isOpened():
-    print("Error: Could not open camera.")
-    exit()
+def main():
+    # Open the webcam (index 0 is usually the default webcam)
+    cap = cv2.VideoCapture(0)
 
-# Loop to continuously capture frames
-while True:
-    # Capture a frame
-    ret, frame = camera.read()
+    if not cap.isOpened():
+        print("Error: Could not open webcam.")
+        return
 
-    # Check if frame is captured successfully
-    if not ret:
-        print("Error: Could not read frame.")
-        break
+    current_frame = 0
+    print("Press the arrow keys to move frames, 'Esc' to exit.")
 
-    # Display the frame
-    cv2.imshow('Webcam', frame)
+    while True:
+        # Read a frame from the webcam
+        ret, frame = cap.read()
+        if not ret:
+            print("Error: Failed to capture frame.")
+            break
 
-    # Break the loop on pressing 'q'
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+        # Display the frame in a window
+        cv2.imshow("Webcam", frame)
 
-# Release the camera and close all OpenCV windows
-camera.release()
-cv2.destroyAllWindows()
+        # Wait for a key press
+        key = cv2.waitKey(0) & 0xFF  # Wait indefinitely for a key press
+
+        if key == 27:  # Press 'Esc' to exit
+            print("Esc pressed, exiting...")
+            break
+        elif key == ord('d'):  # Right arrow (next frame)
+            current_frame += 1
+            print(f"Right arrow pressed, next frame: {current_frame}")
+        elif key == ord('a'):  # Left arrow (previous frame)
+            current_frame -= 1
+            print(f"Left arrow pressed, previous frame: {current_frame}")
+        else:
+            # Print unhandled key press
+            print(f"Unhandled key pressed: {key}")
+
+    # Release the webcam and close windows
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    main()

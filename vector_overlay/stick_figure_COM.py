@@ -90,8 +90,9 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
                     cx, cy = int(landmark.x * w), int(landmark.y * h)
                     data.append(cx)
                     data.append(cy)
-
-    while cap.isOpened():
+    testframe = 0
+    #while cap.isOpened():
+    while testframe <= 60:
         ret, frame = cap.read()
         if not ret:
             break
@@ -104,13 +105,13 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
         raw_frames.append(frame)
 
         # Draw landmarks on the frame
-        annotated_frame,datain,dataout = draw_landmarks_on_image(np.copy(frame), pose_landmarks_list, sex, displayname,
+        annotated_frame, joints = draw_landmarks_on_image(np.copy(frame), pose_landmarks_list, sex, displayname,
                                                   displaystickfigure, displayCOM)
         # store annotated frames, datain, dataout
         annotated_frames.append(annotated_frame)
-        datain["COM"] = dataout
-        position_data.append(datain)
-        print(f"datain in the while loop: {datain}\ndataout in the while loop: {dataout}")
+
+        position_data.append(joints)
+        #print(f"datain in the while loop: {datain}\ndataout in the while loop: {dataout}")
         # Write the annotated frame to the output video file
         # out.write(annotated_frame)
 
@@ -127,6 +128,7 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
         elif key == 81:  # Left arrow (previous frame)
             pass
 
+        testframe += 1
 
     # Release video capture and writer objects
     cap.release()
@@ -137,24 +139,28 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
 
     current_frame = 0
     while True:
+        print(f"current frame: {current_frame}")
         #check current frame is in range
         if (current_frame>frame_count-1):
             current_frame = frame_count-1
             print(f"This is the last frame!")
         pass
+
         cv2.imshow("manual correction", annotated_frames[current_frame])
         key = cv2.waitKey(0) & 0xFF  # Wait indefinitely for a key press
 
         if key == 27:  # Press 'Esc' to exit
             break
-        elif key == 83:  # Right arrow (next frame)
+        elif key == ord('d'):  # Right arrow (next frame)
             # Increment current_frame, or handle next frame logic
             current_frame += 1
-            print(f"current frame: {current_frame + 1}")
-        elif key == 81:  # Left arrow (previous frame)
+            print(f"current frame after arrow key: {current_frame + 1}")
+        elif key == ord('a'):  # Left arrow (previous frame)
             # Decrement current_frame, or handle previous frame logic
             current_frame -= 1
-            print(f"current frame: {current_frame + 1}")
+            print(f"current frame after arrow key: {current_frame + 1}")
+
+
 
 
 
@@ -164,10 +170,13 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
 
 def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayname=False, displaystickfigure=False,
                             displayCOM=False):
+
+    if len(pose_landmarks_list)==0:
+        return annotated_image, None
     # Define connections between landmarks
     pose_connections = mp.solutions.pose.POSE_CONNECTIONS
-    joints = []
-    COM = []
+    print(pose_landmarks_list)
+    print(len(pose_landmarks_list))
     for idx in range(len(pose_landmarks_list)):
         pose_landmarks = pose_landmarks_list[idx]
         if not pose_landmarks:
@@ -211,18 +220,17 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
             columns_name.append(str(pose_landmark_names[i]) + "_x")
             columns_name.append(str(pose_landmark_names[i]) + "_y")
 
-        # convert data type
         datain = pd.Series(data, index=columns_name, name="Datain Series")
-        dataout = calculateCOM(datain, sex)
-
-        # store data
-        joints.append(datain)
-        COM.append(dataout)
+        COM = calculateCOM(datain, sex)
         # Find COM
         if displayCOM == True:
-            cv2.circle(annotated_image, (int(dataout[0]), int(dataout[1])), 12, (0, 0, 255), -1)
+            cv2.circle(annotated_image, (int(COM[0]), int(COM[1])), 12, (0, 0, 255), -1)
 
-    return annotated_image, joints, COM
+        datain["COM_x"] = COM[0]
+        datain["COM_y"] = COM[1]
+        return annotated_image, datain
+
+    return annotated_image
 
 
 
@@ -237,7 +245,7 @@ use "/" if you are in ios
 Set the display element below
 """
 # Example usage:
-video_path = "C:\\Users\\16199\Desktop\data\Outputs\\Trimmed of fot_Ir_UG_long_vid01_vector_overlay.mp4"  # Replace with your input video file path
+video_path = "C:\\Users\\16199\Desktop\data\Outputs\\Trimmed of spu_lr_NS_for01_long_Video_vector_overlay.mp4"  # Replace with your input video file path
 
 displayname = False
 displaystickfigure = True
