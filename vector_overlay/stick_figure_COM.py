@@ -61,37 +61,17 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     # Define the codec and create VideoWriter object to save the annotated video
-    out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
+
 
     #frame data
     raw_frames = []
 
     #position data
     position_data = []
-    def update_frame(raw_list):
-        # raw list means the raw_frames list
-        # Define connections between landmarks
-        pose_connections = mp.solutions.pose.POSE_CONNECTIONS
-        frame = raw_list[0]
-        for idx in range(len(pose_landmarks_list)):
-            pose_landmarks = pose_landmarks_list[idx]
-            if not pose_landmarks:
-                continue
 
-            data = []
-            # Draw circles at each landmark position
-            for id, landmark in enumerate(pose_landmarks.landmark):
-                landmark_name = pose_landmark_names.get(id, f"landmark_{id}")
-
-                # Only draw visible landmarks
-                if landmark.visibility > 0:
-                    h, w, _ = frame.shape
-                    cx, cy = int(landmark.x * w), int(landmark.y * h)
-                    data.append(cx)
-                    data.append(cy)
     testframe = 0
     #while cap.isOpened():
-    while testframe <= 10:
+    while testframe <= 600:
         ret, frame = cap.read()
         if not ret:
             break
@@ -114,19 +94,11 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-        key = cv2.waitKey(30) & 0xFF
-        if key == 27:  # Press 'Esc' to exit
-            break
-        elif key == 83:  # Right arrow (next frame)
-            pass
-        elif key == 81:  # Left arrow (previous frame)
-            pass
+        testframe+= 1
 
-        testframe += 1
 
     # Release video capture and writer objects
     cap.release()
-    out.release()
     cv2.destroyAllWindows()
     print(f"frame objects:{raw_frames}")
     print(f"position data: {position_data}")
@@ -197,22 +169,31 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
                 move_joint(name_and_joints_FRAME, select_joint, [x, y])
 
         def output_video():
+            out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
             for idx,frame in enumerate(raw_frames):
-                outputjoints = position_data[idx]
-                for num in pose_landmark_names[idx]:
-                    name = pose_landmark_names[num]
-                    x = int(outputjoints[f"{name}_x"])
-                    y = int(outputjoints[f"{name}_y"])
-                    cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
-                COM_x = outputjoints["COM_x"]
-                COM_y = outputjoints["COM_y"]
-                cv2.circle(frame, (COM_x, COM_y), 12, (20, 255, 57), -1)
+                try:
+                    outputjoints = position_data[idx]
+                    if outputjoints is None:
+                        continue
+                    for name in pose_landmark_names:
+                        name = pose_landmark_names[name]
+                        x = int(outputjoints[f"{name}_x"])
+                        y = int(outputjoints[f"{name}_y"])
+                        cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+                    COM_x = int(outputjoints["COM_x"])
+                    COM_y = int(outputjoints["COM_y"])
+                    cv2.circle(frame, (COM_x, COM_y), 12, (20, 255, 57), -1)
 
-                out.write(frame)
+                    out.write(frame)
+                except KeyError as e:
+                    print(f"error occurs\n{e}")
+                    out.write(frame)
+                    continue
 
-            cap.release()
+
             out.release()
             cv2.destroyAllWindows()
+
 
 
         """
@@ -248,6 +229,7 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
             select_joint += 1
         elif key == 13: # when pressing enter
             output_video()
+            break
 
         cv2.setMouseCallback("manual correction", get_mouse_position)
 
