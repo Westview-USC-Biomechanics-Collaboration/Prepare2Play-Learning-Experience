@@ -65,7 +65,6 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
 
     #frame data
     raw_frames = []
-    annotated_frames = []
 
     #position data
     position_data = []
@@ -92,7 +91,7 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
                     data.append(cy)
     testframe = 0
     #while cap.isOpened():
-    while testframe <= 60:
+    while testframe <= 10:
         ret, frame = cap.read()
         if not ret:
             break
@@ -107,8 +106,6 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
         # Draw landmarks on the frame
         annotated_frame, joints = draw_landmarks_on_image(np.copy(frame), pose_landmarks_list, sex, displayname,
                                                   displaystickfigure, displayCOM)
-        # store annotated frames, datain, dataout
-        annotated_frames.append(annotated_frame)
 
         position_data.append(joints)
         #print(f"datain in the while loop: {datain}\ndataout in the while loop: {dataout}")
@@ -138,27 +135,109 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
     print(f"position data: {position_data}")
 
     current_frame = 0
+    select_joint = 0
+
+    """
+    #frame data
+    raw_frames = []
+    annotated_frames = []
+
+    #position data
+    position_data = []
+    
+    A reminder for data
+    """
+
     while True:
+        joint_points = position_data[current_frame]
+        clean_frame = raw_frames[current_frame].copy()
+        cv2.imshow("clean window", raw_frames[current_frame])
+        def show_joints_name(frame,selection):
+            if joint_points is None:
+                cv2.putText(frame, "No pose detected" , (50,450 ), cv2.FONT_HERSHEY_SIMPLEX, 6,
+                            (0, 0, 0), 8, cv2.LINE_AA)
+                return frame
+            for idx in pose_landmark_names:
+                name = pose_landmark_names[idx]
+                x = int(joint_points[f"{name}_x"])
+                y = int(joint_points[f"{name}_y"])
+                if idx==selection:
+                    cv2.putText(frame, pose_landmark_names[idx], (100, 100 + idx * 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+                                (0, 0, 255), 1, cv2.LINE_AA)
+                    cv2.circle(frame, (x, y), 6, (0, 0, 255), -1)
+                else:
+                    cv2.putText(frame, pose_landmark_names[idx], (100, 100+ idx*15), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+                            (255, 255, 255), 1, cv2.LINE_AA)
+                    cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+            """
+            display & update COM
+            """
+            COM = calculateCOM(joint_points, sex)
+            cv2.circle(frame, (int(COM[0]), int(COM[1])), 12, (20, 255, 57), -1)
+            position_data[current_frame][f"COM_x"] = COM[0]
+            position_data[current_frame][f"COM_y"] = COM[1]
+
+            pose_connections = mp.solutions.pose.POSE_CONNECTIONS
+            for connection in pose_connections:
+                start_landmark = connection[0]
+                end_landmark = connection[1]
+
+                start_x, start_y = int(joint_points[str(pose_landmark_names[start_landmark])+ "_x"]), int(joint_points[str(pose_landmark_names[start_landmark])+ "_y"])
+                end_x, end_y = int(joint_points[str(pose_landmark_names[end_landmark]) + "_x"]), int(
+                    joint_points[str(pose_landmark_names[end_landmark]) + "_y"])
+                cv2.line(frame, (start_x, start_y), (end_x, end_y), (255, 255, 255), 2)
+
+            return frame
+
+        def move_joint(frame,selection,newposition):
+            name = pose_landmark_names[selection]
+            position_data[current_frame][f"{name}_x"] = newposition[0]
+            position_data[current_frame][f"{name}_y"] = newposition[1]
+
+        def get_mouse_position(event, x, y, flags, param):
+            if event == cv2.EVENT_LBUTTONDOWN:
+                print(f"Mouse position: ({x}, {y})")
+                move_joint(name_and_joints_FRAME, select_joint, [x, y])
+
+        def output_video():
+            pass
+
+
+        """
+        checking frame
+        """
         print(f"current frame: {current_frame}")
         #check current frame is in range
-        if (current_frame>frame_count-1):
-            current_frame = frame_count-1
-            print(f"This is the last frame!")
-        pass
+        if (current_frame>=frame_count-1):
+            current_frame = 0
+        if (current_frame<= (-1*frame_count - 1)):
+            current_frame = 0
+        if (select_joint>=(len(pose_landmark_names))):
+            select_joint = 0
 
-        cv2.imshow("manual correction", annotated_frames[current_frame])
-        key = cv2.waitKey(0) & 0xFF  # Wait indefinitely for a key press
+        name_and_joints_FRAME = show_joints_name(clean_frame,select_joint)
+
+        cv2.imshow("manual correction", name_and_joints_FRAME)
+
+        """
+        keyboard actions & mouse
+        """
+        key = cv2.waitKey(20) & 0xFF  # Wait indefinitely for a key press
 
         if key == 27:  # Press 'Esc' to exit
             break
         elif key == ord('d'):  # Right arrow (next frame)
             # Increment current_frame, or handle next frame logic
             current_frame += 1
-            print(f"current frame after arrow key: {current_frame + 1}")
         elif key == ord('a'):  # Left arrow (previous frame)
             # Decrement current_frame, or handle previous frame logic
             current_frame -= 1
-            print(f"current frame after arrow key: {current_frame + 1}")
+        elif key == ord(' '):
+            select_joint += 1
+
+        cv2.setMouseCallback("manual correction", get_mouse_position)
+
+
 
 
 
@@ -175,8 +254,7 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
         return annotated_image, None
     # Define connections between landmarks
     pose_connections = mp.solutions.pose.POSE_CONNECTIONS
-    print(pose_landmarks_list)
-    print(len(pose_landmarks_list))
+
     for idx in range(len(pose_landmarks_list)):
         pose_landmarks = pose_landmarks_list[idx]
         if not pose_landmarks:
@@ -230,7 +308,7 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
         datain["COM_y"] = COM[1]
         return annotated_image, datain
 
-    return annotated_image
+    return annotated_image, None
 
 
 
