@@ -108,9 +108,6 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
                                                   displaystickfigure, displayCOM)
 
         position_data.append(joints)
-        #print(f"datain in the while loop: {datain}\ndataout in the while loop: {dataout}")
-        # Write the annotated frame to the output video file
-        # out.write(annotated_frame)
 
         # Display the annotated frame (optional)
         cv2.imshow('Annotated Frame', annotated_frame)
@@ -200,7 +197,22 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
                 move_joint(name_and_joints_FRAME, select_joint, [x, y])
 
         def output_video():
-            pass
+            for idx,frame in enumerate(raw_frames):
+                outputjoints = position_data[idx]
+                for num in pose_landmark_names[idx]:
+                    name = pose_landmark_names[num]
+                    x = int(outputjoints[f"{name}_x"])
+                    y = int(outputjoints[f"{name}_y"])
+                    cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+                COM_x = outputjoints["COM_x"]
+                COM_y = outputjoints["COM_y"]
+                cv2.circle(frame, (COM_x, COM_y), 12, (20, 255, 57), -1)
+
+                out.write(frame)
+
+            cap.release()
+            out.release()
+            cv2.destroyAllWindows()
 
 
         """
@@ -234,16 +246,10 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
             current_frame -= 1
         elif key == ord(' '):
             select_joint += 1
+        elif key == 13: # when pressing enter
+            output_video()
 
         cv2.setMouseCallback("manual correction", get_mouse_position)
-
-
-
-
-
-
-
-
 
 
 

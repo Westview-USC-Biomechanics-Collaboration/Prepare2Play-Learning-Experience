@@ -7,7 +7,6 @@
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="updated my code with Chase's">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/stick_figure_COM.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/stick_figure_COM.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_overlay/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/test.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,7 +70,7 @@
     "Python.pipeline.executor": "Run",
     "Python.segdim_deleva.executor": "Run",
     "Python.skeletonChaseVersion (1).executor": "Run",
-    "Python.stick_figure_COM (1).executor": "Debug",
+    "Python.stick_figure_COM (1).executor": "Run",
     "Python.test.executor": "Run",
     "Python.test_corners.executor": "Run",
     "Python.testing (1).executor": "Run",
@@ -292,26 +291,5 @@
     <MESSAGE value="Refactored some code" />
     <MESSAGE value="updated my code with Chase's" />
     <option name="LAST_COMMIT_MESSAGE" value="updated my code with Chase's" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/vector_overlay/stick_figure_COM.py</url>
-          <line>174</line>
-          <option name="timeStamp" value="15" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/vector_overlay/stick_figure_COM.py</url>
-          <line>175</line>
-          <option name="timeStamp" value="16" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/vector_overlay/stick_figure_COM.py</url>
-          <line>176</line>
-          <option name="timeStamp" value="17" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>
