@@ -186,7 +186,11 @@ class VectorOverlay:
             max(abs(value) for value in y1),
             max(abs(value) for value in y2)
         )
-        scale_factor = min(self.frame_height,self.frame_width)*0.8 / max_force
+
+        """
+        Change scale_factor to about half of the screen
+        """
+        scale_factor = min((self.frame_height - self.py1),self.frame_width)*0.8 / max_force
         
         self.fx1 = tuple(f * scale_factor for f in self.fx1)
         self.fy1 = tuple(f * scale_factor for f in self.fy1)
@@ -275,24 +279,13 @@ class VectorOverlay:
 
         end_point_1 = (int(start_point_1[0] + xf1), int(start_point_1[1] - yf1))
         end_point_2 = (int(start_point_2[0] + xf2), int(start_point_2[1] - yf2))
-        # print(start_point_1)
-        # print(end_point_1)
-        #
-        # print(start_point_2)
-        # print(end_point_2)
-        cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
 
-        cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
+        """
+        This is where we draw arrows
+        """
+        cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 4)
 
-        # Draw red dots for centers
-        # cv.circle(frame, self.corners[0], 5, (0, 0, 255), -1)  # Red dot at start_point_1
-        # cv.circle(frame, self.corners[1], 5, (0, 0, 255), -1)  # Red dot at end_point_1
-        # cv.circle(frame, self.corners[2], 5, (0, 0, 255), -1)  # Red dot at start_point_2
-        # cv.circle(frame, self.corners[3], 5, (0, 0, 255), -1)  # Red dot at end_point_2
-        # cv.circle(frame, self.corners[4], 5, (0, 0, 255), -1)  # Red dot at start_point_1
-        # cv.circle(frame, self.corners[5], 5, (0, 0, 255), -1)  # Red dot at end_point_1
-        # cv.circle(frame, self.corners[6], 5, (0, 0, 255), -1)  # Red dot at start_point_2
-        # cv.circle(frame, self.corners[7], 5, (0, 0, 255), -1)  # Red dot at end_point_2
+        cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 4)
 
     def LongVectorOverlay(self, outputName):
         self.setFrameData(path=self.long_view_path)
