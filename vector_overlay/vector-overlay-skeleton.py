@@ -283,9 +283,9 @@ class VectorOverlay:
         """
         This is where we draw arrows
         """
-        cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 4)
+        cv.arrowedLine(frame, start_point_1, end_point_1, (54,243,137), 4)
 
-        cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 4)
+        cv.arrowedLine(frame, start_point_2, end_point_2, (222,92,48), 4)
 
     def LongVectorOverlay(self, outputName):
         self.setFrameData(path=self.long_view_path)
