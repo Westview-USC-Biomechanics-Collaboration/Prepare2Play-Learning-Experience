@@ -6,7 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="updated my code with Chase's">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/example.in" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/example.in" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/pipeline.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/pipeline.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/selected_points.txt" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/selected_points.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -104,7 +106,7 @@
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.stick_figure_COM (1)">
+  <component name="RunManager" selected="Python.pipeline">
     <configuration name="camera" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -218,10 +220,10 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.pipeline" />
         <item itemvalue="Python.stick_figure_COM (1)" />
         <item itemvalue="Python.test" />
         <item itemvalue="Python.camera" />
-        <item itemvalue="Python.pipeline" />
         <item itemvalue="Python.vector-overlay-skeleton" />
       </list>
     </recent_temporary>
