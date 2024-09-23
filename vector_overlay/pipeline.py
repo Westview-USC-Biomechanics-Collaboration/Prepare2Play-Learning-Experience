@@ -1,19 +1,10 @@
 import math
-
-import cv2
-import cv2 as cv
-import pandas as pd
 from test_corners import select_points
 import numpy as np
-import os
 
-with open("example.in") as fin:
-    data = fin.readline().split(" ")
-
-
-corner_list = select_points(0,top=True)
-
-
+"""
+the main() function takes in force data and corner data and RETURNS a new set of start point and end point
+"""
 
 def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     """
@@ -55,8 +46,6 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     return (int(new_x), int(new_y))
 
 def normalize_force(force,toTop):
-    pass
-    
     return force
 
 def main(data,corners):
@@ -81,7 +70,7 @@ def main(data,corners):
 
     dis_to_top = int((start_point1[1] + start_point2[1])/2)
 
-    fx1 = normalize_force(fx1,dis_to_top)
+    fx1 = normalize_force(fx1, dis_to_top)
     fy1 = normalize_force(fy1, dis_to_top)
     fz1 = normalize_force(fz1, dis_to_top)
 
@@ -97,7 +86,11 @@ def main(data,corners):
 
 
 if __name__ == "__main__":
-    points = main(data,corner_list)
+    with open("example.in") as fin:
+        data = fin.readline().split(" ")
+
+    corner_list = select_points(0, top=True)
+    points = main(data, corner_list)
     print(f"points: {points}")
 
 
