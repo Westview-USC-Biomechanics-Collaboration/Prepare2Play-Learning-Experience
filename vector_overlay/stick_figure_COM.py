@@ -70,8 +70,8 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
     position_data = []
 
     testframe = 0
-    #while cap.isOpened():
-    while testframe <= 600:
+    while cap.isOpened():
+    #while testframe <= 600:
         ret, frame = cap.read()
         if not ret:
             break
@@ -168,7 +168,7 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
                 print(f"Mouse position: ({x}, {y})")
                 move_joint(name_and_joints_FRAME, select_joint, [x, y])
 
-        def output_video():
+        def output_video(stick,COM):
             out = cv2.VideoWriter(filename, cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
             for idx,frame in enumerate(raw_frames):
                 try:
@@ -179,10 +179,12 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
                         name = pose_landmark_names[name]
                         x = int(outputjoints[f"{name}_x"])
                         y = int(outputjoints[f"{name}_y"])
-                        cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+                        if stick:
+                            cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
                     COM_x = int(outputjoints["COM_x"])
                     COM_y = int(outputjoints["COM_y"])
-                    cv2.circle(frame, (COM_x, COM_y), 12, (20, 255, 57), -1)
+                    if COM:
+                        cv2.circle(frame, (COM_x, COM_y), 12, (20, 0, 225), -1)
 
                     out.write(frame)
                 except KeyError as e:
@@ -227,8 +229,10 @@ def find_coordinates(video_path, sex, filename, confidencelevel=0.85, displaynam
             current_frame -= 1
         elif key == ord(' '):
             select_joint += 1
+        elif key == 16:  # Shift key
+            select_joint -= 1
         elif key == 13: # when pressing enter
-            output_video()
+            output_video(displaystickfigure,displayCOM)
             break
 
         cv2.setMouseCallback("manual correction", get_mouse_position)
@@ -273,7 +277,7 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
                             end_x, end_y = int(end_landmark.x * w), int(end_landmark.y * h)
 
                             # Draw the line between the two landmarks
-                            cv2.line(annotated_image, (start_x, start_y), (end_x, end_y), (255, 255, 255), 2)
+                            cv2.line(annotated_image, (start_x, start_y), (end_x, end_y), (255, 255, 255), 1)
 
                     # optional: Put text next to the joint
                     if displayname:
@@ -311,10 +315,10 @@ use "/" if you are in ios
 Set the display element below
 """
 # Example usage:
-video_path = "C:\\Users\\16199\Desktop\data\Outputs\\Trimmed of spu_lr_NS_for01_long_Video_vector_overlay.mp4"  # Replace with your input video file path
+video_path = "C:\\Users\\16199\Desktop\data\Outputs\\Trimmed_nishk 01 straight_vector_overlay.mp4"  # Replace with your input video file path
 
 displayname = False
-displaystickfigure = True
+displaystickfigure = False
 displayCOM = True
 
 filename = "C:\\Users\\16199\Desktop\data\Outputs\\" + video_path.split("\\")[-1][:-4]

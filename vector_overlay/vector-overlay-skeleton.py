@@ -126,7 +126,11 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     # Map y-coordinate
     new_y = top_y + (y / rect_height) * (bottom_y - top_y)
 
-    return (int(new_x), int(new_y))
+    try:
+        return (int(new_x), int(new_y))
+    except ValueError as e:
+        print("Last line of data being processed")
+        return (0,0)
 
 class VectorOverlay:
 
@@ -179,7 +183,7 @@ class VectorOverlay:
             f"Frame width: {self.frame_width}, Frame height: {self.frame_height}, FPS: {self.fps}, Frame count: {self.frame_count}")
         cap.release()
 
-    def normalizeForces(self, x1, x2, y1, y2):
+    def normalizeForces(self, x1, x2, y1, y2,startpoint):
         max_force = max(
             max(abs(value) for value in x1),
             max(abs(value) for value in x2),
@@ -190,7 +194,7 @@ class VectorOverlay:
         """
         Change scale_factor to about half of the screen
         """
-        scale_factor = min((self.frame_height - self.py1),self.frame_width)*0.8 / max_force
+        scale_factor = (startpoint+500) / max_force
         
         self.fx1 = tuple(f * scale_factor for f in self.fx1)
         self.fy1 = tuple(f * scale_factor for f in self.fy1)
@@ -203,6 +207,7 @@ class VectorOverlay:
         print("reading data")
         frame_count = self.data.shape[0]//10
         step_size = 600/self.fps
+        #step_size = 10
         print(f"This is step_size: {step_size}")
 
 
@@ -276,9 +281,13 @@ class VectorOverlay:
         start_point_2 = rect_to_trapezoid(px2, py2, 1, 1,
                                           [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
         # print(f"Startpoint1: {start_point_1}, Startpoint2:{start_point_2}")
-
-        end_point_1 = (int(start_point_1[0] + xf1), int(start_point_1[1] - yf1))
-        end_point_2 = (int(start_point_2[0] + xf2), int(start_point_2[1] - yf2))
+        try:
+            end_point_1 = (int(start_point_1[0] + xf1), int(start_point_1[1] - yf1))
+            end_point_2 = (int(start_point_2[0] + xf2), int(start_point_2[1] - yf2))
+        except ValueError as e:
+            print("NaN detected")
+            end_point_1 = (0,0)
+            end_point_2 = (0,0)
 
         """
         This is where we draw arrows
@@ -290,7 +299,7 @@ class VectorOverlay:
     def LongVectorOverlay(self, outputName):
         self.setFrameData(path=self.long_view_path)
         self.readData()
-        self.normalizeForces(self.fy1, self.fy2, self.fz1, self.fz2)
+
 
         if self.frame_width is None or self.frame_height is None:
             print("Error: Frame data not set.")
@@ -312,6 +321,7 @@ class VectorOverlay:
         N	N	N	N	    m	m				N	N	N	 N	    m	m
         """
         self.check_corner(self.long_view_path, top=False)
+        self.normalizeForces(self.fy1, self.fy2, self.fz1, self.fz2, self.corners[0][0])
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -389,7 +399,7 @@ class VectorOverlay:
     def ShortVectorOverlay(self,outputName):
         self.setFrameData(path=self.short_view_path)
         self.readData()
-        self.normalizeForces([0], self.fx2, [0], self.fz2)
+
 
         if self.frame_width is None or self.frame_height is None:
             print("Error: Frame data not set.")
@@ -405,6 +415,7 @@ class VectorOverlay:
         cap = cv.VideoCapture(self.short_view_path)
         frame_number = 0
         self.check_corner(self.short_view_path, top=False)
+        self.normalizeForces([0], self.fx2, [0], self.fz2,startpoint=self.corners[0][1])
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -412,14 +423,14 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
         # This only shows the force on force plate 2, you can adjust this part so that it shows the force on force plate 1
-            fx1 = 0
-            fx2 = self.fx2[int(frame_number)]
-            fy1 = 0
+            fx1 = -self.fx1[int(frame_number)]
+            fx2 = -self.fx2[int(frame_number)]
+            fy1 = self.fz1[int(frame_number)]
             fy2 = self.fz2[int(frame_number)]
             py1 = self.px1[int(frame_number)]
-            px1 = 1-self.py1[int(frame_number)]
+            px1 = self.py1[int(frame_number)]
             py2 = self.py2[int(frame_number)]
-            px2 = 1-self.px2[int(frame_number)]
+            px2 = self.px2[int(frame_number)]
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -444,6 +455,10 @@ folder = "C:\\Users\\16199\Desktop\data\\cdt"
 # these are the file paths
 long_view, short_view, top_view, forcedata = find_files(folder)
 
+short_view = None#"C:\\Users\\16199\Desktop\data\spu\cropped_Frontnishk 01 straight.mp4"
+long_view = "C:\\Users\\16199\Desktop\data\spu\Trimmed_nishk 01 straight.mp4"
+top_view = None
+forcedata = "C:\\Users\\16199\Desktop\data\spu\Trimmed of spu_lr_NS_for01.new2.xlsx"
 
 # verify file path
 print(f"This is top view path: {top_view}\n"
