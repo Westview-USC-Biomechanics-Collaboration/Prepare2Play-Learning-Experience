@@ -315,7 +315,7 @@ use "/" if you are in ios
 Set the display element below
 """
 # Example usage:
-video_path = "C:\\Users\\16199\Desktop\data\Outputs\\Trimmed_nishk 01 straight_vector_overlay.mp4"  # Replace with your input video file path
+video_path = "C:\\Users\\16199\Desktop\data\Outputs\\Trimmed_Front_nishk 01 right_vector_overlay.mp4"  # Replace with your input video file path
 
 displayname = False
 displaystickfigure = False

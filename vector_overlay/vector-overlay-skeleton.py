@@ -423,9 +423,9 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
         # This only shows the force on force plate 2, you can adjust this part so that it shows the force on force plate 1
-            fx1 = -self.fx1[int(frame_number)]
-            fx2 = -self.fx2[int(frame_number)]
-            fy1 = self.fz1[int(frame_number)]
+            fx1 = 0#-self.fx1[int(frame_number)]
+            fx2 = self.fx2[int(frame_number)]
+            fy1 = 0#self.fz1[int(frame_number)]
             fy2 = self.fz2[int(frame_number)]
             py1 = self.px1[int(frame_number)]
             px1 = self.py1[int(frame_number)]
@@ -455,10 +455,10 @@ folder = "C:\\Users\\16199\Desktop\data\\cdt"
 # these are the file paths
 long_view, short_view, top_view, forcedata = find_files(folder)
 
-short_view = None#"C:\\Users\\16199\Desktop\data\spu\cropped_Frontnishk 01 straight.mp4"
-long_view = "C:\\Users\\16199\Desktop\data\spu\Trimmed_nishk 01 straight.mp4"
+short_view = "C:\\Users\\16199\Desktop\data\spu\Trimmed_Front_nishk 01 right.mp4"
+long_view = None#"C:\\Users\\16199\Desktop\data\spu\Trimmed_nishk 01 straight.mp4"
 top_view = None
-forcedata = "C:\\Users\\16199\Desktop\data\spu\Trimmed of spu_lr_NS_for01.new2.xlsx"
+forcedata = "C:\\Users\\16199\Desktop\data\spu\spu_r_lr_NS_for01.new2.xlsx"
 
 # verify file path
 print(f"This is top view path: {top_view}\n"
