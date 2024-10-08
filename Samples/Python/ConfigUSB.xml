@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Devices xsi:noNamespaceSchemaLocation="C:\Program Files (x86)\Kistler\DataServer\DeviceConfiguration.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <ConfigurationName>Config 1</ConfigurationName>
+    <Device>
+        <StartChannel>1</StartChannel>
+        <Channels>8</Channels>
+        <Type>9281CA (SN&gt;616901)</Type>
+        <SerialNumber></SerialNumber>
+        <Name>Plate 1</Name>
+        <PlateInternalAmp>
+            <Physical>
+                <Width_mm>400</Width_mm>
+                <Length_mm>600</Length_mm>
+                <a_mm>120</a_mm>
+                <b_mm>200</b_mm>
+                <Azx_mm>-45</Azx_mm>
+            </Physical>
+            <Sensitivities>
+                <Sx12_mVperN>4</Sx12_mVperN>
+                <Sx34_mVperN>4</Sx34_mVperN>
+                <Sy14_mVperN>4</Sy14_mVperN>
+                <Sy23_mVperN>4</Sy23_mVperN>
+                <Sz1_mVperN>1</Sz1_mVperN>
+                <Sz2_mVperN>1</Sz2_mVperN>
+                <Sz3_mVperN>1</Sz3_mVperN>
+                <Sz4_mVperN>1</Sz4_mVperN>
+            </Sensitivities>
+            <Control>
+                <RangeXY>Range3</RangeXY>
+                <RangeZ>Range4</RangeZ>
+            </Control>
+            <Offsets>
+                <AutoAdjustOffsets>true</AutoAdjustOffsets>
+            </Offsets>
+            <COP_polynomial>
+                <X>7.92063e-015</X>
+                <X>-5.821e-010</X>
+                <X>-2.77102e-006</X>
+                <X>-1.76083e-010</X>
+                <X>1.29695e-005</X>
+                <X>-0.0413979</X>
+                <Y>8.82869e-015</Y>
+                <Y>-2.48554e-010</Y>
+                <Y>-1.76282e-006</Y>
+                <Y>-4.22186e-010</Y>
+                <Y>1.2091e-005</Y>
+                <Y>0.0516279</Y>
+            </COP_polynomial>
+            <Orientation>
+                <dx_mm>0</dx_mm>
+                <dy_mm>0</dy_mm>
+                <alpha_deg>0</alpha_deg>
+            </Orientation>
+        </PlateInternalAmp>
+    </Device>
+</Devices>

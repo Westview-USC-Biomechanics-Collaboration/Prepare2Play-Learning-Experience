@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Devices xsi:noNamespaceSchemaLocation="DeviceConfiguration.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<ConfigurationName>Configuration 1</ConfigurationName>
+  <Device>
+    <StartChannel>1</StartChannel>
+    <Channels>8</Channels>
+    <Type>9281CA</Type>
+    <SerialNumber>1645220</SerialNumber>
+    <Manufacturer>Kistler</Manufacturer>
+    <Name>Plate 1</Name>
+    <PlateInternalAmp>
+      <Physical>
+        <Width_mm>400</Width_mm>
+        <Length_mm>600</Length_mm>
+        <a_mm>120</a_mm>
+        <b_mm>200</b_mm>
+        <Azx_mm>-63</Azx_mm>
+      </Physical>
+      <Sensitivities>
+        <Sx12_mVperN>1000</Sx12_mVperN>
+        <Sx34_mVperN>1000</Sx34_mVperN>
+        <Sy14_mVperN>1000</Sy14_mVperN>
+        <Sy23_mVperN>1000</Sy23_mVperN>
+        <Sz1_mVperN>1000</Sz1_mVperN>
+        <Sz2_mVperN>1000</Sz2_mVperN>
+        <Sz3_mVperN>1000</Sz3_mVperN>
+        <Sz4_mVperN>1000</Sz4_mVperN>
+      </Sensitivities>
+      <Control>
+        <RangeXY>Range1</RangeXY>
+        <RangeZ>Range2</RangeZ>
+      </Control>
+       <Offsets>
+        <AutoAdjustOffsets>false</AutoAdjustOffsets>
+        <Offset_mV>0</Offset_mV>
+        <Offset_mV>0</Offset_mV>
+        <Offset_mV>0</Offset_mV>
+        <Offset_mV>0</Offset_mV>
+        <Offset_mV>0</Offset_mV>
+        <Offset_mV>0</Offset_mV>
+        <Offset_mV>0</Offset_mV>
+        <Offset_mV>0</Offset_mV>
+      </Offsets>
+    </PlateInternalAmp>
+  </Device>
+</Devices>

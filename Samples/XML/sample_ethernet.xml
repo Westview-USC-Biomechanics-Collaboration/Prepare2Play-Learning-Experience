@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Devices xsi:noNamespaceSchemaLocation="DeviceConfiguration.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ConfigurationName>Ethernet Sample Configuration</ConfigurationName>
+  <EthernetTriggerDevice>
+    <Type>5167A</Type>
+    <SerialNumber>5544495</SerialNumber>
+    <Manufacturer>Kistler</Manufacturer>
+    <Name>LabAmp-5544495</Name>
+    <Address>192.168.123.203</Address>  
+  </EthernetTriggerDevice>
+  <Device>
+    <Type>9287CBQ02</Type>
+    <SerialNumber>5582391</SerialNumber>
+    <Manufacturer>Kistler</Manufacturer>
+    <Name>Plate-5582391</Name>
+    <PlateEthernetAmp>
+      <Address>Plate-5582391</Address>  
+      <!-- <Address>192.168.100.101</Address> optional by IPv4 address -->
+      <Physical>
+        <Width_mm>600</Width_mm>
+        <Length_mm>900</Length_mm>
+        <a_mm>210</a_mm>
+        <b_mm>350</b_mm>
+        <Azx_mm>-652</Azx_mm>
+      </Physical>
+      <Control>
+        <RangeXY>Range2</RangeXY>
+        <RangeZ>Range3</RangeZ>
+        <UseTimeConstant>false</UseTimeConstant>
+      </Control>
+      <Offsets>
+        <AutoAdjustOffsets>false</AutoAdjustOffsets>
+      </Offsets>
+    </PlateEthernetAmp>
+  </Device>
+  <Device>
+    <Type>9287CBQ02</Type>
+    <SerialNumber>5582392</SerialNumber>
+    <Manufacturer>Kistler</Manufacturer>
+    <Name>Plate-5582392</Name>
+    <PlateEthernetAmp>
+      <Address>192.168.100.102</Address>  
+      <!-- <Address>Plate-5582392</Address> optional by name -->
+      <Physical>
+        <Width_mm>600</Width_mm>
+        <Length_mm>900</Length_mm>
+        <a_mm>210</a_mm>
+        <b_mm>350</b_mm>
+        <Azx_mm>-652</Azx_mm>
+      </Physical>
+      <Control>
+        <RangeXY>Range2</RangeXY>
+        <RangeZ>Range3</RangeZ>
+        <UseTimeConstant>false</UseTimeConstant>
+      </Control>
+      <Offsets>
+        <AutoAdjustOffsets>false</AutoAdjustOffsets>
+      </Offsets>
+    </PlateEthernetAmp>
+  </Device>
+  <Device>
+    <Type>9287CBQ02</Type>
+    <SerialNumber>5582395</SerialNumber>
+    <Manufacturer>Kistler</Manufacturer>
+    <Name>Plate-5582395</Name>
+    <PlateEthernetAmp>
+      <Address>192.168.100.103</Address> 
+      <!-- <Address>Plate-5582395</Address> optional by name -->      
+      <Physical>
+        <Width_mm>600</Width_mm>
+        <Length_mm>900</Length_mm>
+        <a_mm>210</a_mm>
+        <b_mm>350</b_mm>
+        <Azx_mm>-652</Azx_mm>
+      </Physical>
+      <Control>
+        <RangeXY>Range2</RangeXY>
+        <RangeZ>Range3</RangeZ>
+        <UseTimeConstant>false</UseTimeConstant>
+      </Control>
+      <Offsets>
+        <AutoAdjustOffsets>false</AutoAdjustOffsets>
+      </Offsets>
+    </PlateEthernetAmp>
+  </Device>
+</Devices>
+

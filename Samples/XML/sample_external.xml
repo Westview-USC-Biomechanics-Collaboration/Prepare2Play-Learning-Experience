@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Devices xsi:noNamespaceSchemaLocation="DeviceConfiguration.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  
+  <ConfigurationName>Configuration 1</ConfigurationName>
+  <Device>
+    <StartChannel>1</StartChannel>
+    <Channels>8</Channels>
+    <Type>9281B11</Type>
+    <SerialNumber>216137</SerialNumber>
+    <Manufacturer>Kistler</Manufacturer>
+    <Name>Plate 1</Name>
+    <PlateExternalAmp>
+      <Physical>
+        <Width_mm>400</Width_mm>
+        <Length_mm>600</Length_mm>
+        <a_mm>120</a_mm>
+        <b_mm>200</b_mm>
+        <Azx_mm>-163</Azx_mm>
+      </Physical>
+      <Sensitivities>
+        <Sx_pCperN>-7.78</Sx_pCperN>
+        <Sy_pCperN>-7.79</Sy_pCperN>
+        <Sz_pCperN>-3.85</Sz_pCperN>
+      </Sensitivities>
+      <Control>
+        <RangeXY>Range2</RangeXY>
+        <RangeZ>Range3</RangeZ>
+        <UseTimeConstant>false</UseTimeConstant>
+      </Control>
+      <Amplifier>
+        <RangeXY_pC>5000</RangeXY_pC>
+        <RangeZ_pC>10000</RangeZ_pC>
+        <FSO_mV>10000</FSO_mV>
+      </Amplifier>
+      <Offsets>
+        <AutoAdjustOffsets>false</AutoAdjustOffsets>
+        <Offset_mV>5</Offset_mV>
+        <Offset_mV>5</Offset_mV>
+        <Offset_mV>0</Offset_mV>
+        <Offset_mV>0</Offset_mV>
+        <Offset_mV>0</Offset_mV>
+        <Offset_mV>0</Offset_mV>
+        <Offset_mV>0</Offset_mV>
+        <Offset_mV>0</Offset_mV>
+      </Offsets>
+      <COP_polynomial>
+        <X>2.51997e-015</X>
+        <X>-2.18826e-010</X>
+        <X>-2.69254e-007</X>
+        <X>-4.85912e-011</X>
+        <X>4.55731e-006</X>
+        <X>-0.0418892</X>
+        <Y>2.8375e-015</Y>
+        <Y>-1.00051e-010</Y>
+        <Y>-2.05349e-006</Y>
+        <Y>-1.16374e-010</Y>
+        <Y>4.71553e-006</Y>
+        <Y>0.0689265</Y>
+      </COP_polynomial>
+      <Orientation>
+        <dx_mm>200</dx_mm>
+        <dy_mm>400</dy_mm>
+        <alpha_deg>315</alpha_deg>
+      </Orientation>
+    </PlateExternalAmp>
+  </Device>
+  
+</Devices>

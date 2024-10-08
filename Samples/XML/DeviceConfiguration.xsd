@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:element name="PlateExternalAmp" type="PlateExternalAmp"/>
+  <xsd:complexType name="PlateExternalAmp">
+    <xsd:sequence>
+      <xsd:element name="Physical" type="physical_t" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Sensitivities" type="Sensitivities3_t" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Control" type="control_t" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Amplifier" type="amplifier_t" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Offsets" type="offsets_t" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="COP_polynomial" type="COP_polynomial_t" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Crosstalk" type="Crosstalk_t" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Orientation" type="orientation_t" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Custom" type="Custom" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PlateEthernetAmp" type="PlateEthernetAmp"/>
+  <xsd:complexType name="PlateEthernetAmp">
+    <xsd:sequence>
+      <xsd:element name="Address" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Credentials" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Physical" type="physical_t" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Control" type="control_t" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Offsets" type="offsets_t" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="COP_polynomial" type="COP_polynomial_t" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Orientation" type="orientation_t" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Custom" type="Custom" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="devices_t" type="devices_t"/>
+  <xsd:complexType name="devices_t">
+    <xsd:sequence minOccurs="0" maxOccurs="1">
+      <xsd:element name="ConfigurationName" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="EthernetTriggerDevice" type="EthernetTriggerDevice" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Device" type="Device" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="COP_polynomial_t" type="COP_polynomial_t"/>
+  <xsd:complexType name="COP_polynomial_t">
+    <xsd:sequence>
+      <xsd:element name="X" type="xsd:float" minOccurs="1" maxOccurs="unbounded"/>
+      <xsd:element name="Y" type="xsd:float" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="physical_t" type="physical_t"/>
+  <xsd:complexType name="physical_t">
+    <xsd:sequence minOccurs="1" maxOccurs="1">
+      <xsd:element name="Width_mm" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Length_mm" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="a_mm" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="b_mm" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Azx_mm" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Azy_mm" type="xsd:float" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="offsets_t" type="offsets_t"/>
+  <xsd:complexType name="offsets_t">
+    <xsd:annotation>
+      <xsd:documentation>Offsets for channels</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="AutoAdjustOffsets" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Offset_mV" type="xsd:float" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="Sensitivities3_t" type="Sensitivities3_t"/>
+  <xsd:complexType name="Sensitivities3_t">
+    <xsd:sequence>
+      <xsd:element name="Sx_pCperN" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Sy_pCperN" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Sz_pCperN" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PlateStrainGage" type="PlateStrainGage"/>
+  <xsd:complexType name="PlateStrainGage">
+    <xsd:sequence>
+      <xsd:element name="Physical" type="physical_t" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Matrix" type="SensitivityMatrix6x6_t" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Offsets" type="offsets_t" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="AmplifierGain" type="AmplifierGain_t" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Orientation" type="orientation_t" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Custom" type="Custom" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SensitivitiesAux_t" type="SensitivitiesAux_t"/>
+  <xsd:complexType name="SensitivitiesAux_t">
+    <xsd:sequence>
+      <xsd:element name="S_mVperMU" type="xsd:float" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="Devices" type="devices_t"/>
+  <xsd:element name="Crosstalk_t" type="Crosstalk_t"/>
+  <xsd:complexType name="Crosstalk_t">
+    <xsd:sequence>
+      <xsd:element name="FxtoFy" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="FxtoFz" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="FytoFx" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="FytoFz" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="FztoFx" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="FztoFy" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="Auxiliary" type="Auxiliary"/>
+  <xsd:complexType name="Auxiliary">
+    <xsd:sequence>
+      <xsd:element name="Sensitivities" type="SensitivitiesAux_t" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Offsets" type="offsets_t" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Custom" type="Custom" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="Sensitivities8_t" type="Sensitivities8_t"/>
+  <xsd:complexType name="Sensitivities8_t">
+    <xsd:sequence>
+      <xsd:element name="Sx12_mVperN" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Sx34_mVperN" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Sy14_mVperN" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Sy23_mVperN" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Sz1_mVperN" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Sz2_mVperN" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Sz3_mVperN" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Sz4_mVperN" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SensitivityMatrix6x6_t" type="SensitivityMatrix6x6_t"/>
+  <xsd:complexType name="SensitivityMatrix6x6_t">
+    <xsd:sequence>
+      <xsd:element name="R1_S" type="xsd:float" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="R2_S" type="xsd:float" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="R3_S" type="xsd:float" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="R4_S" type="xsd:float" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="R5_S" type="xsd:float" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="R6_S" type="xsd:float" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="RangeEnum">
+    <xsd:annotation>
+      <xsd:documentation>Specify the amplifier range</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="Range1"/>
+      <xsd:enumeration value="Range2"/>
+      <xsd:enumeration value="Range3"/>
+      <xsd:enumeration value="Range4"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:element name="control_t" type="control_t"/>
+  <xsd:complexType name="control_t">
+    <xsd:sequence>
+      <xsd:element name="RangeXY" type="RangeEnum" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="RangeZ" type="RangeEnum" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="UseTimeConstant" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="amplifier_t" type="amplifier_t"/>
+  <xsd:complexType name="amplifier_t">
+    <xsd:sequence>
+      <xsd:element name="RangeXY_pC" type="xsd:float" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>FSO Range in pC</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="RangeZ_pC" type="xsd:float" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>FSO Range in pC</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="FSO_mV" type="xsd:float" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="Device" type="Device"/>
+  <xsd:complexType name="Device">
+    <xsd:sequence>
+      <xsd:element name="StartChannel" type="xsd:int" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Channels" type="xsd:int" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Type" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="SerialNumber" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Manufacturer" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Name" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Units" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Custom" type="Custom" minOccurs="0" maxOccurs="1" />
+      <xsd:choice minOccurs="1" maxOccurs="1">
+        <xsd:element name="PlateInternalAmp" type="PlateInternalAmp" minOccurs="1" maxOccurs="1"/>
+        <xsd:element name="PlateExternalAmp" type="PlateExternalAmp" minOccurs="1" maxOccurs="1"/>
+        <xsd:element name="Auxiliary" type="Auxiliary" minOccurs="1" maxOccurs="1"/>
+        <xsd:element name="PlateStrainGage" type="PlateStrainGage" minOccurs="1" maxOccurs="1"/>
+        <xsd:element name="VirtualPlate" type="VirtualPlate" minOccurs="1" maxOccurs="1"/>
+        <xsd:element name="PlateEthernetAmp" type="PlateEthernetAmp" minOccurs="1" maxOccurs="1"/>
+      </xsd:choice>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="EthernetTriggerDevice" type="EthernetTriggerDevice"/>
+  <xsd:complexType name="EthernetTriggerDevice">
+    <xsd:sequence>
+      <xsd:element name="Type" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="SerialNumber" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Manufacturer" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Name" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Address" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Credentials" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Custom" type="Custom" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PlateInternalAmp" type="PlateInternalAmp"/>
+  <xsd:complexType name="PlateInternalAmp">
+    <xsd:sequence>
+      <xsd:element name="Physical" type="physical_t" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Sensitivities" type="Sensitivities8_t" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Control" type="control_t" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="Offsets" type="offsets_t" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="COP_polynomial" type="COP_polynomial_t" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Crosstalk" type="Crosstalk_t" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="Orientation" type="orientation_t" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="AmplifierGain_t" type="AmplifierGain_t"/>
+  <xsd:complexType name="AmplifierGain_t">
+    <xsd:sequence>
+      <xsd:element name="Gain" type="xsd:float" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="orientation_t" type="orientation_t"/>
+  <xsd:complexType name="orientation_t">
+    <xsd:sequence>
+      <xsd:element name="dx_mm" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="dy_mm" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="alpha_deg" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="VirtualPlate" type="VirtualPlate"/>
+  <xsd:complexType name="VirtualPlate">
+    <xsd:sequence>
+      <xsd:element name="Name" type="xsd:string" minOccurs="1" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="Custom">
+    <xsd:sequence>
+      <xsd:any processContents="skip" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>
+
