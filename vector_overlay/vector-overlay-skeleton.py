@@ -422,7 +422,7 @@ class VectorOverlay:
         # which orientation?
         orientation = None
         #force plate 1
-        if(self.corners[0][1] <= self.corners[4][1]):
+        if(self.corners[0][1] <= self.corners[5][1]):
             print("force plate 2 in the front")
             orientation = 2
         else:
@@ -437,29 +437,30 @@ class VectorOverlay:
                 break
             # This only shows the force on force plate 2, you can adjust this part so that it shows the force on force plate 1
             if orientation == 2:
-                fx1 = self.fx1[int(frame_number)]
-                fx2 = self.fx2[int(frame_number)]
-                fy1 = -self.fy1[int(frame_number)]
-                fy2 = -self.fy2[int(frame_number)]
+                fx1 = -self.fx1[int(frame_number)]
+                fx2 = -self.fx2[int(frame_number)]
+                # fy1 = -self.fy1[int(frame_number)]
+                # fy2 = -self.fy2[int(frame_number)]
                 fz1 = self.fz1[int(frame_number)]
                 fz2 = self.fz2[int(frame_number)]
                 py1 = self.px1[int(frame_number)]
                 px1 = self.py1[int(frame_number)]
                 py2 = self.py2[int(frame_number)]
                 px2 = self.px2[int(frame_number)]
-                self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
+                print(fx1,fx2)
+                self.drawArrows(frame, fx1, fx2, fz1, fz2, px1, px2, py1, py2)
             else:
                 fx1 = self.fx1[int(frame_number)]
                 fx2 = self.fx2[int(frame_number)]
-                fy1 = -self.fy1[int(frame_number)]
-                fy2 = -self.fy2[int(frame_number)]
+                # fy1 = -self.fy1[int(frame_number)]
+                # fy2 = -self.fy2[int(frame_number)]
                 fz1 = self.fz1[int(frame_number)]
                 fz2 = self.fz2[int(frame_number)]
                 py1 = self.px1[int(frame_number)]
                 px1 = self.py1[int(frame_number)]
                 py2 = self.py2[int(frame_number)]
                 px2 = self.px2[int(frame_number)]
-                self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
+                self.drawArrows(frame, fx1, fx2, fz1, fz2, py1, py2, px1, px2)
 
 
             fx1 = -self.fx1[int(frame_number)]
@@ -470,7 +471,7 @@ class VectorOverlay:
             px1 = self.py1[int(frame_number)]
             py2 = self.py2[int(frame_number)]
             px2 = self.px2[int(frame_number)]
-            self.drawArrows(frame, fx1, fx2, fz1, fz2, px1, px2, py1, py2)
+            #self.drawArrows(frame, fx1, fx2, fz1, fz2, py1, py2, px1, px2)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
