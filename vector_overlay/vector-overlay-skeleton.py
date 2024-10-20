@@ -41,15 +41,15 @@ Select corner sequence:
     4               3  8                7
     
     shortview/ front view:
-                1        2
+                4        1
                 __________
                /          \\
               /            \\
-          4  |--------------| 3
-           5__________________   6
+          3  |--------------| 2
+           8__________________   5
            /                  \\
           /                    \\
-       8 /______________________\\ 7     
+       7/______________________\\ 6     
          |_______________________|
     
 """
@@ -98,11 +98,13 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     rect_width, rect_height: Dimensions of the original rectangle
     trapezoid_coords: List of four (x, y) tuples representing the trapezoid corners in order:
                       [(top_left), (top_right), (bottom_right), (bottom_left)]
+
+    rect_width and rect_height are both equal to 1
     
     Returns:
     new_x, new_y: Pixel coordinates of the mapped point in the trapezoid
     """
-    # Ensure input coordinates are within the rectangle
+    # Ensure input coordinates are within the rectangle make sure that the porportions are within the 1 by 1
     x = np.clip(x, 0, rect_width)
     y = np.clip(y, 0, rect_height)
 
@@ -416,22 +418,59 @@ class VectorOverlay:
         frame_number = 0
         self.check_corner(self.short_view_path, top=False)
         self.normalizeForces([0], self.fx2, [0], self.fz2,startpoint=self.corners[0][1])
+
+        # which orientation?
+        orientation = None
+        #force plate 1
+        if(self.corners[0][1] <= self.corners[4][1]):
+            print("force plate 2 in the front")
+            orientation = 2
+        else:
+            print("Force plate 1 in the front")
+            orientation = 1
+
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 # if this calls when the frame_number is equal to the total frame count then the stream has just ended
                 print(f"Can't read frame at position {frame_number}")
                 break
-        # This only shows the force on force plate 2, you can adjust this part so that it shows the force on force plate 1
-            fx1 = 0#-self.fx1[int(frame_number)]
+            # This only shows the force on force plate 2, you can adjust this part so that it shows the force on force plate 1
+            if orientation == 2:
+                fx1 = self.fx1[int(frame_number)]
+                fx2 = self.fx2[int(frame_number)]
+                fy1 = -self.fy1[int(frame_number)]
+                fy2 = -self.fy2[int(frame_number)]
+                fz1 = self.fz1[int(frame_number)]
+                fz2 = self.fz2[int(frame_number)]
+                py1 = self.px1[int(frame_number)]
+                px1 = self.py1[int(frame_number)]
+                py2 = self.py2[int(frame_number)]
+                px2 = self.px2[int(frame_number)]
+                self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
+            else:
+                fx1 = self.fx1[int(frame_number)]
+                fx2 = self.fx2[int(frame_number)]
+                fy1 = -self.fy1[int(frame_number)]
+                fy2 = -self.fy2[int(frame_number)]
+                fz1 = self.fz1[int(frame_number)]
+                fz2 = self.fz2[int(frame_number)]
+                py1 = self.px1[int(frame_number)]
+                px1 = self.py1[int(frame_number)]
+                py2 = self.py2[int(frame_number)]
+                px2 = self.px2[int(frame_number)]
+                self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
+
+
+            fx1 = -self.fx1[int(frame_number)]
             fx2 = self.fx2[int(frame_number)]
-            fy1 = 0#self.fz1[int(frame_number)]
+            fy1 = self.fz1[int(frame_number)]
             fy2 = self.fz2[int(frame_number)]
             py1 = self.px1[int(frame_number)]
             px1 = self.py1[int(frame_number)]
             py2 = self.py2[int(frame_number)]
             px2 = self.px2[int(frame_number)]
-            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
+            self.drawArrows(frame, fx1, fx2, fz1, fz2, px1, px2, py1, py2)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
