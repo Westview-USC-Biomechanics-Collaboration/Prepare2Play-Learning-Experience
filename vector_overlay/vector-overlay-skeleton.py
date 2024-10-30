@@ -89,7 +89,7 @@ def find_files(directory):
 
     return long_file, short_file, top_file, data
 
-def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
+def rect_to_trapezoid_long(x, y, rect_width, rect_height, trapezoid_coords):
     """
     Maps points from a rectangle to a trapezoid, simulating parallax distortion.
     
@@ -110,8 +110,8 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     (tl_x, tl_y), (tr_x, tr_y), (br_x, br_y), (bl_x, bl_y) = trapezoid_coords
 
     # Calculate the left and right edge positions for the current y
-    left_x = tl_x + (bl_x - tl_x) * (y / rect_height)
-    right_x = tr_x + (br_x - tr_x) * (y / rect_height)
+    left_x = bl_x + (tl_x - bl_x) * (y / rect_height)
+    right_x = br_x + (tr_x - br_x) * (y / rect_height)
 
     # Calculate the width of the trapezoid at the current y
     trapezoid_width = right_x - left_x
@@ -265,7 +265,7 @@ class VectorOverlay:
 
     def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2):
 
-
+        # already convert pressure to percentage when reading data, no need to do it here
         # the rect_to_trapezoid translates the normalized force data to the trapazoid that we see of the forceplate surface in the video for force plate 1
         start_point_1 = rect_to_trapezoid(px1, py1, 1, 1,
                                           [self.corners[0], self.corners[1], self.corners[2], self.corners[3]])
