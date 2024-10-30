@@ -41,15 +41,15 @@ Select corner sequence:
     4               3  8                7
     
     shortview/ front view:
-                1        2
+                4        1
                 __________
                /          \\
               /            \\
-          4  |--------------| 3
-           5__________________   6
+          3  |--------------| 2
+           8__________________   5
            /                  \\
           /                    \\
-       8 /______________________\\ 7     
+       7/______________________\\ 6     
          |_______________________|
     
 """
@@ -220,32 +220,35 @@ class VectorOverlay:
             current_row+=step_size
 
             # the dividing adding by a float is to normalize the data into the positive and then the divide is to normalize the range from 0 to 1 in both directions
-            data_x1 = self.data.iloc[start_row:end_row, 1].astype('float64')
-            data_y1 = self.data.iloc[start_row:end_row, 2].astype('float64')
-            data_z1 = self.data.iloc[start_row:end_row, 3].astype('float64')
-            pressure_x1 = (-self.data.iloc[start_row:end_row, 5].astype('float64')+0.3)/0.6
-            pressure_y1 = (self.data.iloc[start_row:end_row, 6].astype('float64')+0.45)/0.9
+            data_x1 = self.data.iloc[start_row, 1].astype('float64')
+            data_y1 = self.data.iloc[start_row, 2].astype('float64')
+            data_z1 = self.data.iloc[start_row, 3].astype('float64')
+            pressure_x1 = (-self.data.iloc[start_row, 5].astype('float64')+0.3)/0.6
+            pressure_y1 = (self.data.iloc[start_row, 6].astype('float64')+0.45)/0.9
 
 
             # the dividing adding by a float is to normalize the data into the positive and then the divide is to normalize the range from 0 to 1 in both directions
-            data_x2 = self.data.iloc[start_row:end_row, 10].astype('float64')
-            data_y2 = self.data.iloc[start_row:end_row, 11].astype('float64')
-            data_z2 = self.data.iloc[start_row:end_row, 12].astype('float64')
-            pressure_x2 = (-self.data.iloc[start_row:end_row, 14].astype('float64')+0.3)/0.6
-            pressure_y2 = (self.data.iloc[start_row:end_row, 15].astype('float64')+0.45)/0.9
+            data_x2 = self.data.iloc[start_row, 10].astype('float64')
+            data_y2 = self.data.iloc[start_row, 11].astype('float64')
+            data_z2 = self.data.iloc[start_row, 12].astype('float64')
+            pressure_x2 = (-self.data.iloc[start_row, 14].astype('float64')+0.3)/0.6
+            pressure_y2 = (self.data.iloc[start_row, 15].astype('float64')+0.45)/0.9
 
+            # we are not using the mean
+            # fx1.append(data_x1.mean())
+            # I only take the start row
 
-            fx1.append(data_x1.mean())
-            fy1.append(data_y1.mean())
-            fz1.append(data_z1.mean())
-            px1.append(pressure_x1.mean())
-            py1.append(pressure_y1.mean())
+            fx1.append(data_x1)
+            fy1.append(data_y1)
+            fz1.append(data_z1)
+            px1.append(pressure_x1)
+            py1.append(pressure_y1)
 
-            fx2.append(data_x2.mean())
-            fy2.append(data_y2.mean())
-            fz2.append(data_z2.mean())
-            px2.append(pressure_x2.mean())
-            py2.append(pressure_y2.mean())
+            fx2.append(data_x2)
+            fy2.append(data_y2)
+            fz2.append(data_z2)
+            px2.append(pressure_x2)
+            py2.append(pressure_y2)
 
 
         self.fx1 = tuple(fx1)
@@ -326,15 +329,19 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
+            # in all methods, we have fx and fy, that doesn't mean the actual fx and fy in force data
+            # Instead, that's the fx and fy in our video view. x and y direction
+
             fx1 = -self.fy1[int(frame_number)]
             fx2 = -self.fy2[int(frame_number)]
             fy1 = self.fz1[int(frame_number)]
             fy2 = self.fz2[int(frame_number)]
-            py1 = self.px1[int(frame_number)]
+
             px1 = self.py1[int(frame_number)]
-            py2 = self.px2[int(frame_number)]
+            py1 = self.px1[int(frame_number)]
             px2 = self.py2[int(frame_number)]
-            # def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2):
+            py2 = self.px2[int(frame_number)]
+
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -376,11 +383,11 @@ class VectorOverlay:
             fx2 = -self.fy2[int(frame_number)]
             fy1 = -self.fx1[int(frame_number)]
             fy2 = -self.fx2[int(frame_number)]
-            py1 = self.px1[int(frame_number)]
+
             px1 = self.py1[int(frame_number)]
-            py2 = self.px2[int(frame_number)]
+            py1 = self.px1[int(frame_number)]
             px2 = self.py2[int(frame_number)]
-            # print(f"x:{py1}, y:{py2}\n")
+            py2 = self.px2[int(frame_number)]
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
             cv2.imshow("window", frame)
