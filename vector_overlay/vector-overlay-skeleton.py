@@ -427,8 +427,8 @@ class VectorOverlay:
             fy2 = self.fz2[int(frame_number)]
             px1 = self.px1[int(frame_number)]
             px2 = self.px2[int(frame_number)]
-            py1 = -self.py1[int(frame_number)]
-            py2 = -self.py2[int(frame_number)]
+            py1 = 1-self.py1[int(frame_number)]
+            py2 = 1-self.py2[int(frame_number)]
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
             cv2.imshow("window", frame)
