@@ -51,45 +51,45 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Python.COM_humanbody.executor": "Run",
-    "Python.Dash_graphing.executor": "Run",
-    "Python.ForceTimeGraphs.executor": "Run",
-    "Python.GUI.executor": "Run",
-    "Python.GraphAnimationChaseVersion (1).executor": "Run",
-    "Python.Skeletonoverlay (1).executor": "Run",
-    "Python.Skeletonoverlay.executor": "Run",
-    "Python.animations.executor": "Run",
-    "Python.colorMask.executor": "Run",
-    "Python.contact-point.executor": "Run",
-    "Python.contact_point (1).executor": "Run",
-    "Python.contact_point (2).executor": "Run",
-    "Python.contact_point.executor": "Run",
-    "Python.filled-animation-graph.executor": "Run",
-    "Python.segdim_deleva.executor": "Run",
-    "Python.skeletonChaseVersion (1).executor": "Run",
-    "Python.test_corners.executor": "Run",
-    "Python.testing (1).executor": "Run",
-    "Python.testing.executor": "Run",
-    "Python.testing02.executor": "Run",
-    "Python.testinganimation.executor": "Run",
-    "Python.testingfile.executor": "Run",
-    "Python.vector-overlay-skeleton.executor": "Run",
-    "Python.vector_overlay_top.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "chase-GUI",
-    "last_opened_file_path": "C:/Users/16199/Desktop/Prepare2Play-Learning-Experience-deren-shoulder-trunk-angle",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;Python.COM_humanbody.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Dash_graphing.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ForceTimeGraphs.executor&quot;: &quot;Run&quot;,
+    &quot;Python.GUI.executor&quot;: &quot;Run&quot;,
+    &quot;Python.GraphAnimationChaseVersion (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.Skeletonoverlay (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.Skeletonoverlay.executor&quot;: &quot;Run&quot;,
+    &quot;Python.animations.executor&quot;: &quot;Run&quot;,
+    &quot;Python.colorMask.executor&quot;: &quot;Run&quot;,
+    &quot;Python.contact-point.executor&quot;: &quot;Run&quot;,
+    &quot;Python.contact_point (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.contact_point (2).executor&quot;: &quot;Run&quot;,
+    &quot;Python.contact_point.executor&quot;: &quot;Run&quot;,
+    &quot;Python.filled-animation-graph.executor&quot;: &quot;Run&quot;,
+    &quot;Python.segdim_deleva.executor&quot;: &quot;Run&quot;,
+    &quot;Python.skeletonChaseVersion (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_corners.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testing (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.testing.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testing02.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testinganimation.executor&quot;: &quot;Run&quot;,
+    &quot;Python.testingfile.executor&quot;: &quot;Run&quot;,
+    &quot;Python.vector-overlay-skeleton.executor&quot;: &quot;Run&quot;,
+    &quot;Python.vector_overlay_top.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;chase-GUI&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/16199/Desktop/Prepare2Play-Learning-Experience-deren-shoulder-trunk-angle&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
