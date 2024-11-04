@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="updated my code with Chase's">
+      <change afterPath="$PROJECT_DIR$/earth.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/GUI.py" afterDir="false" />
     </list>
@@ -23,7 +24,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="deren-shoulder-trunk-angle" />
+        <entry key="$PROJECT_DIR$" value="chase-vectory-overlay-fixing" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -95,11 +96,11 @@
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\vector_overlay" />
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data" />
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs" />
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\Mediapipe-pose_landmarker" />
-      <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
   <component name="RunManager" selected="Python.GUI">

@@ -1,10 +1,12 @@
 import tkinter as tk
-from tkinter import filedialog, Canvas, Label, Scale, Frame, Scrollbar
+from tkinter import filedialog, Canvas, Label, Scale, Frame, Scrollbar, PhotoImage
+from PIL import Image, ImageTk
 
 class DisplayApp:
     def __init__(self, master):
         self.master = master
         self.master.title("Multi-Window Display App")
+        self.master.geometry("1500x800")  # Fixed window size
 
         # Create a canvas for scrolling
         self.main_canvas = Canvas(master)
@@ -22,20 +24,16 @@ class DisplayApp:
         self.frame = Frame(self.main_canvas)
         self.main_canvas.create_window((0, 0), window=self.frame, anchor="nw")
 
-        # Configure weights for columns (0, 1, 2) and rows
-        for i in range(3):
-            self.master.columnconfigure(i, weight=1)  # Columns for canvases
-
         # Create three canvases for display in the first row
-        self.canvas1 = Canvas(self.frame, width=200, height=150, bg="lightgrey")
+        self.canvas1 = Canvas(self.frame, width=400, height=300, bg="lightgrey")
         self.canvas1.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
+        self.photo_image1 = None  # Initialize the PhotoImage variable
 
-        self.canvas2 = Canvas(self.frame, width=200, height=150, bg="lightgrey")
+        self.canvas2 = Canvas(self.frame, width=400, height=300, bg="lightgrey")
         self.canvas2.grid(row=0, column=1, padx=5, pady=5, sticky="nsew")
 
-        self.canvas3 = Canvas(self.frame, width=200, height=150, bg="lightgrey")
+        self.canvas3 = Canvas(self.frame, width=400, height=300, bg="lightgrey")
         self.canvas3.grid(row=0, column=2, padx=5, pady=5, sticky="nsew")
-
 
         # Create a slider in the middle row
         self.slider = Scale(self.frame, from_=0, to=100, orient="horizontal", label="Adjust Value",
@@ -67,7 +65,7 @@ class DisplayApp:
 
         # Force timeline
         self.force_timeline = Canvas(self.frame, width=1080, height=75, bg="lightblue")
-        self.force_timeline.grid(row=6, column=0, columnspan=3, pady=5)
+        self.force_timeline.grid(row=6, column=0, columnspan=3, pady=1)
 
         # Video timeline label
         self.video_timeline_label = Label(self.frame, text="Video Timeline (unit = frame)")
@@ -75,7 +73,7 @@ class DisplayApp:
 
         # Video timeline
         self.video_timeline = Canvas(self.frame, width=1080, height=75, bg="lightblue")
-        self.video_timeline.grid(row=8, column=0, columnspan=3, pady=5)
+        self.video_timeline.grid(row=8, column=0, columnspan=3, pady=1)
 
     def update_slider_value(self, value):
         # Update the label with the current slider value
@@ -92,10 +90,18 @@ class DisplayApp:
         file_path = filedialog.askopenfilename()
         if file_path:
             print(f"File uploaded: {file_path}")
+            self.display_image(file_path)
 
+    def display_image(self, file_path):
+        # Load and resize the image using Pillow
+        image = Image.open(file_path)
+        image = image.resize((400, 300), resample=Image.BICUBIC)
+
+        # Create the PhotoImage object and store it as an instance variable
+        self.photo_image1 = ImageTk.PhotoImage(image)
+        self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.geometry("600x400")  # Set a default window size
     app = DisplayApp(root)
     root.mainloop()
