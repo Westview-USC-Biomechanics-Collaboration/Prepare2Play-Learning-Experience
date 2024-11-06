@@ -88,8 +88,9 @@ class DisplayApp:
         # force data
         self.force_data = None
         self.rows = None
-        # video
 
+        # video
+        self.cam = None
 
 
 

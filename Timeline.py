@@ -16,7 +16,7 @@ class timeline():
         self.video_label = num
 
 
-    def create_rect(self):
+    def create_rect(self,loc,tag=None):
         # Create a blank image (e.g., 400x400 with a white background)
         image = np.ones((75,1080, 3), dtype="uint8") * 255
 
@@ -34,8 +34,12 @@ class timeline():
         cv2.rectangle(image, top_left, bottom_right, color, thickness)
 
         # Draw the filled triangle
-        cv2.fillPoly(image, [vertices], (255, 0, 0))
+        color = (255,0,0)
+        cv2.fillPoly(image, pts=[vertices], color=color)
 
+        # DRAW LINE
+        color = (0,255,0)
+        cv2.line(image, pt1=(loc, 0), pt2=(loc, image.shape[0]), color=color, thickness=2)
         # Save the image as a PNG file
         cv2.imwrite("rectangle.png", image)
 
@@ -44,5 +48,5 @@ class timeline():
 
 if __name__ == "__main__":
     Timeline = timeline(100,100)
-    Timeline.create_rect()
+    Timeline.create_rect(loc=50)
 
