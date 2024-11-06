@@ -11,6 +11,7 @@ class DisplayApp:
         self.master.title("Multi-Window Display App")
         self.master.geometry("1500x800")  # Fixed window size
 
+
         # Create a canvas for scrolling
         self.main_canvas = Canvas(master)
         self.main_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -50,35 +51,50 @@ class DisplayApp:
 
         # Upload buttons in the bottom row
         self.upload_video_button = tk.Button(self.frame, text="Upload Video", command=self.upload_video)
-        self.upload_video_button.grid(row=3, column=0, padx=5, pady=10, sticky="ew")
+        self.upload_video_button.grid(row=3, column=0, padx=5, pady=10, sticky="nsew")
 
-        self.upload_file_button = tk.Button(self.frame, text="Upload Other File", command=self.upload_file)
-        self.upload_file_button.grid(row=3, column=2, padx=5, pady=10, sticky="ew")
+        self.upload_force_button = tk.Button(self.frame, text="Upload force File", command=self.upload_file)
+        self.upload_force_button.grid(row=3, column=1, padx=5, pady=10, sticky="nsew")
 
         # Vector overlay button
-        self.show_vector_overlay = tk.Button(self.frame, text="Vector Overlay",
-                                             command=lambda: print("Vector overlay clicked"))
-        self.show_vector_overlay.grid(row=4, column=0, sticky="ew")
+        self.show_vector_overlay = tk.Button(self.frame, text="Vector Overlay", command=lambda: print("Vector overlay clicked"))
+        self.show_vector_overlay.grid(row=3, column=2, padx=5, pady=10, sticky="nsew")
+
+        # force button
+        self.force_button = tk.Button(self.frame, text="label video", command=lambda: print("Save clicked"))
+        self.force_button.grid(row=4, column=0, padx=5, pady=10, sticky="nsew")
+
+        # force button
+        self.force_button = tk.Button(self.frame, text="label force", command=lambda: print("Save clicked"))
+        self.force_button.grid(row=4, column=1,padx=5, pady=10, sticky="nsew")
 
         # Save button
         self.save_button = tk.Button(self.frame, text="Save", command=lambda: print("Save clicked"))
-        self.save_button.grid(row=4, column=2, sticky="ew")
+        self.save_button.grid(row=4, column=2,padx=5, pady=10, sticky="nsew")
 
         # Force timeline label
         self.force_timeline_label = Label(self.frame, text="Force Timeline (unit = frame)")
-        self.force_timeline_label.grid(row=5, column=0, sticky="w")
+        self.force_timeline_label.grid(row=6, column=0, sticky="w")
 
         # Force timeline
         self.force_timeline = Canvas(self.frame, width=1080, height=75, bg="lightblue")
-        self.force_timeline.grid(row=6, column=0, columnspan=3, pady=1)
+        self.force_timeline.grid(row=7, column=0, columnspan=3, pady=1)
 
         # Video timeline label
         self.video_timeline_label = Label(self.frame, text="Video Timeline (unit = frame)")
-        self.video_timeline_label.grid(row=7, column=0, sticky="w")
+        self.video_timeline_label.grid(row=8, column=0, sticky="w")
 
         # Video timeline
         self.video_timeline = Canvas(self.frame, width=1080, height=75, bg="lightblue")
-        self.video_timeline.grid(row=8, column=0, columnspan=3, pady=1)
+        self.video_timeline.grid(row=9, column=0, columnspan=3, pady=1)
+
+        # force data
+        self.force_data = None
+
+
+    def get_current_frame(self):
+        print(self.slider.get())
+        return int(self.slider.get())
 
         self.cam = None  # Video
 
@@ -90,6 +106,7 @@ class DisplayApp:
         # Update the label with the current slider value
         # print(type(value))
         self.setVideoFrame(float(value))
+        cur = self.get_current_frame()
         self.slider_value_label.config(text=f"Slider Value: {value}")
 
     def upload_video(self):
@@ -99,6 +116,12 @@ class DisplayApp:
             print(f"Video uploaded: {video_path}")
             self.openVideo(video_path)
 
+    def upload_force_data(self):
+        # Open a file dialog for any file type
+        file_path = filedialog.askopenfilename()
+        if file_path:
+            print(f"File uploaded: {file_path}")
+            self.display_image(file_path)
     def upload_file(self):
         # Open a file dialog for any file type
         file_path = filedialog.askopenfilename()
@@ -141,6 +164,7 @@ class DisplayApp:
         # Create the PhotoImage object and store it as an instance variable
         self.photo_image1 = ImageTk.PhotoImage(image)
         self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
+
 
 
 if __name__ == "__main__":
