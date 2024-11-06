@@ -1,12 +1,15 @@
 import tkinter as tk
-from tkinter import filedialog, Canvas, Label, Scale, Frame, Scrollbar, PhotoImage
+from tkinter import filedialog, Canvas, Label, Scale, Frame, Scrollbar
 from PIL import Image, ImageTk
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class DisplayApp:
     def __init__(self, master):
         self.master = master
         self.master.title("Multi-Window Display App")
-        self.master.geometry("1500x800")  # Fixed window size
+        self.master.geometry("1500x800")
 
         # Create a canvas for scrolling
         self.main_canvas = Canvas(master)
@@ -27,7 +30,6 @@ class DisplayApp:
         # Create three canvases for display in the first row
         self.canvas1 = Canvas(self.frame, width=400, height=300, bg="lightgrey")
         self.canvas1.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
-        self.photo_image1 = None  # Initialize the PhotoImage variable
 
         self.canvas2 = Canvas(self.frame, width=400, height=300, bg="lightgrey")
         self.canvas2.grid(row=0, column=1, padx=5, pady=5, sticky="nsew")
@@ -45,61 +47,58 @@ class DisplayApp:
         self.slider_value_label.grid(row=2, column=0, columnspan=3, pady=5)
 
         # Upload buttons in the bottom row
-        self.upload_video_button = tk.Button(self.frame, text="Upload Video", command=self.upload_video)
-        self.upload_video_button.grid(row=3, column=0, padx=5, pady=10, sticky="ew")
+        self.upload_csv_button = tk.Button(self.frame, text="Upload .csv", command=self.upload_csv)
+        self.upload_csv_button.grid(row=3, column=1, padx=5, pady=10, sticky="ew")
 
-        self.upload_file_button = tk.Button(self.frame, text="Upload Other File", command=self.upload_file)
-        self.upload_file_button.grid(row=3, column=2, padx=5, pady=10, sticky="ew")
-
-        # Vector overlay button
-        self.show_vector_overlay = tk.Button(self.frame, text="Vector Overlay", command=lambda: print("Vector overlay clicked"))
-        self.show_vector_overlay.grid(row=4, column=0, sticky="ew")
-
-        # Save button
-        self.save_button = tk.Button(self.frame, text="Save", command=lambda: print("Save clicked"))
-        self.save_button.grid(row=4, column=2, sticky="ew")
-
-        # Force timeline label
-        self.force_timeline_label = Label(self.frame, text="Force Timeline (unit = frame)")
-        self.force_timeline_label.grid(row=5, column=0, sticky="w")
-
-        # Force timeline
-        self.force_timeline = Canvas(self.frame, width=1080, height=75, bg="lightblue")
-        self.force_timeline.grid(row=6, column=0, columnspan=3, pady=1)
-
-        # Video timeline label
-        self.video_timeline_label = Label(self.frame, text="Video Timeline (unit = frame)")
-        self.video_timeline_label.grid(row=7, column=0, sticky="w")
-
-        # Video timeline
-        self.video_timeline = Canvas(self.frame, width=1080, height=75, bg="lightblue")
-        self.video_timeline.grid(row=8, column=0, columnspan=3, pady=1)
+        # Initialize the line reference
+        self.line = None
 
     def update_slider_value(self, value):
         # Update the label with the current slider value
         self.slider_value_label.config(text=f"Slider Value: {value}")
 
-    def upload_video(self):
-        # Open a file dialog for video files
-        video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4;*.avi")])
-        if video_path:
-            print(f"Video uploaded: {video_path}")
+        # Update the line position based on slider value if the line exists
+        if self.line:
+            max_val = self.slider['to']  # Maximum slider value
+            normalized_position = int(value) / max_val
+            x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
+            self.line.set_xdata([x_position, x_position])
+            self.canvas.draw()
 
-    def upload_file(self):
-        # Open a file dialog for any file type
-        file_path = filedialog.askopenfilename()
+    def upload_csv(self):
+        # Open a file dialog for CSV files
+        file_path = filedialog.askopenfilename(filetypes=[("CSV Files", "*.csv")])
         if file_path:
-            print(f"File uploaded: {file_path}")
-            self.display_image(file_path)
+            try:
+                # Load the CSV file starting from row 20, with the first two columns as x and y
+                data = pd.read_csv(file_path, skiprows=19, header=None)
+                x = data.iloc[:, 0]
+                y = data.iloc[:, 1]
+                
+                # Plot the data
+                self.plot_csv_data(x, y)
+            except Exception as e:
+                print(f"Error loading CSV: {e}")
 
-    def display_image(self, file_path):
-        # Load and resize the image using Pillow
-        image = Image.open(file_path)
-        image = image.resize((400, 300), resample=Image.BICUBIC)
+    def plot_csv_data(self, x, y):
+        # Clear previous figure on canvas2
+        for widget in self.canvas2.winfo_children():
+            widget.destroy()
 
-        # Create the PhotoImage object and store it as an instance variable
-        self.photo_image1 = ImageTk.PhotoImage(image)
-        self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
+        # Create a new figure and plot
+        self.fig, self.ax = plt.subplots(figsize=(4.75, 3.75))
+        self.ax.plot(x, y, marker='o', linestyle='-', color='blue', linewidth = 0.5)
+        self.ax.set_title("Force vs. Time")
+        self.ax.set_xlabel("Force (N.)")
+        self.ax.set_ylabel("Time (s.)")
+
+        # Draw an initial vertical line on the left
+        self.line = self.ax.axvline(x=x.iloc[0], color='red', linestyle='--', linewidth=1.5)
+
+        # Embed the matplotlib figure in the Tkinter canvas
+        self.canvas = FigureCanvasTkAgg(self.fig, self.canvas2)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack()
 
 if __name__ == "__main__":
     root = tk.Tk()
