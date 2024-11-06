@@ -23,6 +23,7 @@ class timeline():
         # Define rectangle parameters: top-left and bottom-right coordinates
         top_left = (10,10)
         bottom_right = (1070, 65)
+
         color = (0, 0, 255)  # Color in BGR (Blue, Green, Red) - here it's red
         thickness = -1  # Thickness of the rectangle border
 
