@@ -53,7 +53,7 @@ class DisplayApp:
         self.upload_video_button = tk.Button(self.frame, text="Upload Video", command=self.upload_video)
         self.upload_video_button.grid(row=3, column=0, padx=5, pady=10, sticky="nsew")
 
-        self.upload_force_button = tk.Button(self.frame, text="Upload force File", command=self.upload_file)
+        self.upload_force_button = tk.Button(self.frame, text="Upload force File", command=self.upload_force_data)
         self.upload_force_button.grid(row=3, column=1, padx=5, pady=10, sticky="nsew")
 
         # Vector overlay button
@@ -122,7 +122,8 @@ class DisplayApp:
 
     def upload_force_data(self):
         # Open a file dialog for any file type
-        file_path = filedialog.askopenfilename()
+        file_path = filedialog.askopenfilename(title="Select Force Data File",
+                                               filetypes=[("Excel Files", "*.xlsx;*.xls")])
         if file_path:
             print(f"File uploaded: {file_path}")
             self.display_image(file_path)
