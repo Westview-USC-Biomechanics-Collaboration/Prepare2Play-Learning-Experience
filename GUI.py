@@ -1,6 +1,11 @@
 import tkinter as tk
 from tkinter import filedialog, Canvas, Label, Scale, Frame, Scrollbar, PhotoImage
+import cv2
 from PIL import Image, ImageTk
+from tensorflow import double
+
+from Cal_AngleMP import frame
+
 
 class DisplayApp:
     def __init__(self, master):
@@ -75,15 +80,24 @@ class DisplayApp:
         self.video_timeline = Canvas(self.frame, width=1080, height=75, bg="lightblue")
         self.video_timeline.grid(row=8, column=0, columnspan=3, pady=1)
 
+        self.cam = None # Video
+
+    def getSliderVal(self):
+        print(self.slider.get())
+        return self.slider.get()
+
     def update_slider_value(self, value):
         # Update the label with the current slider value
+        # print(type(value))
+        self.setVideoFrame(int(value))
         self.slider_value_label.config(text=f"Slider Value: {value}")
 
     def upload_video(self):
         # Open a file dialog for video files
-        video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4;*.avi")])
+        video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv"), ("All Files", "*.*")])
         if video_path:
             print(f"Video uploaded: {video_path}")
+            self.openVideo(video_path)
 
     def upload_file(self):
         # Open a file dialog for any file type
@@ -91,6 +105,33 @@ class DisplayApp:
         if file_path:
             print(f"File uploaded: {file_path}")
             self.display_image(file_path)
+
+    def openVideo(self, video_path):
+        self.cam = cv2.VideoCapture(video_path)
+        total_frames = self.cam.get(cv2.CAP_PROP_FRAME_COUNT)
+        # print(total_frames)
+        self.slider.config(to=total_frames)
+        self.cam.set(cv2.CAP_PROP_FRAME_COUNT, self.getSliderVal())
+        ret, frame = self.cam.read()
+
+        if ret:
+            frame = Image.fromarray(frame).resize((400, 300), resample=Image.BICUBIC)
+            self.photo_image1 = ImageTk.PhotoImage(frame)
+            self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
+
+    def setVideoFrame(self, frameNum : double):
+
+        self.cam.set(cv2.CAP_PROP_FRAME_COUNT, frameNum)
+
+        # print(frameNum)
+        ret, frame = self.cam.read()
+
+        if not ret: return
+        frame = Image.fromarray(frame).resize((400, 300), resample=Image.BICUBIC)
+        self.photo_image1 = ImageTk.PhotoImage(frame)
+
+        self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
+
 
     def display_image(self, file_path):
         # Load and resize the image using Pillow
