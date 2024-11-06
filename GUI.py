@@ -4,8 +4,6 @@ import cv2
 from PIL import Image, ImageTk
 from tensorflow import double
 
-from Cal_AngleMP import frame
-
 
 class DisplayApp:
     def __init__(self, master):
@@ -23,7 +21,8 @@ class DisplayApp:
 
         # Configure the canvas to work with the scrollbar
         self.main_canvas.configure(yscrollcommand=self.scrollbar.set)
-        self.main_canvas.bind('<Configure>', lambda e: self.main_canvas.configure(scrollregion=self.main_canvas.bbox("all")))
+        self.main_canvas.bind('<Configure>',
+                              lambda e: self.main_canvas.configure(scrollregion=self.main_canvas.bbox("all")))
 
         # Create a frame inside the canvas to hold all widgets
         self.frame = Frame(self.main_canvas)
@@ -57,7 +56,8 @@ class DisplayApp:
         self.upload_file_button.grid(row=3, column=2, padx=5, pady=10, sticky="ew")
 
         # Vector overlay button
-        self.show_vector_overlay = tk.Button(self.frame, text="Vector Overlay", command=lambda: print("Vector overlay clicked"))
+        self.show_vector_overlay = tk.Button(self.frame, text="Vector Overlay",
+                                             command=lambda: print("Vector overlay clicked"))
         self.show_vector_overlay.grid(row=4, column=0, sticky="ew")
 
         # Save button
@@ -80,7 +80,7 @@ class DisplayApp:
         self.video_timeline = Canvas(self.frame, width=1080, height=75, bg="lightblue")
         self.video_timeline.grid(row=8, column=0, columnspan=3, pady=1)
 
-        self.cam = None # Video
+        self.cam = None  # Video
 
     def getSliderVal(self):
         print(self.slider.get())
@@ -89,7 +89,7 @@ class DisplayApp:
     def update_slider_value(self, value):
         # Update the label with the current slider value
         # print(type(value))
-        self.setVideoFrame(int(value))
+        self.setVideoFrame(float(value))
         self.slider_value_label.config(text=f"Slider Value: {value}")
 
     def upload_video(self):
@@ -107,11 +107,14 @@ class DisplayApp:
             self.display_image(file_path)
 
     def openVideo(self, video_path):
+        print("set1")
         self.cam = cv2.VideoCapture(video_path)
         total_frames = self.cam.get(cv2.CAP_PROP_FRAME_COUNT)
+
         # print(total_frames)
         self.slider.config(to=total_frames)
-        self.cam.set(cv2.CAP_PROP_FRAME_COUNT, self.getSliderVal())
+        self.cam.set(cv2.CAP_PROP_FRAME_COUNT, 600)
+
         ret, frame = self.cam.read()
 
         if ret:
@@ -119,11 +122,9 @@ class DisplayApp:
             self.photo_image1 = ImageTk.PhotoImage(frame)
             self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
 
-    def setVideoFrame(self, frameNum : double):
-
+    def setVideoFrame(self, frameNum: double):
+        self.canvas1.delete("all")
         self.cam.set(cv2.CAP_PROP_FRAME_COUNT, frameNum)
-
-        # print(frameNum)
         ret, frame = self.cam.read()
 
         if not ret: return
@@ -131,7 +132,6 @@ class DisplayApp:
         self.photo_image1 = ImageTk.PhotoImage(frame)
 
         self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
-
 
     def display_image(self, file_path):
         # Load and resize the image using Pillow
@@ -141,6 +141,7 @@ class DisplayApp:
         # Create the PhotoImage object and store it as an instance variable
         self.photo_image1 = ImageTk.PhotoImage(image)
         self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
