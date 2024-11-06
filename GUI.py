@@ -3,6 +3,7 @@ from tkinter import filedialog, Canvas, Label, Scale, Frame, Scrollbar, PhotoIma
 import cv2
 from PIL import Image, ImageTk
 from tensorflow import double
+import pandas as pd
 
 
 class DisplayApp:
@@ -90,7 +91,7 @@ class DisplayApp:
 
         # force data
         self.force_data = None
-
+        self.rows = None
         # video
 
 
@@ -125,8 +126,9 @@ class DisplayApp:
         file_path = filedialog.askopenfilename(title="Select Force Data File",
                                                filetypes=[("Excel Files", "*.xlsx;*.xls")])
         if file_path:
-            print(f"File uploaded: {file_path}")
-            self.display_image(file_path)
+            print(f"Force data uploaded: {file_path}")
+            self.forcedata = pd.read_excel(file_path,skiprows=19)
+            self.rows = self.forcedata.shape[0]
     def upload_file(self):
         # Open a file dialog for any file type
         file_path = filedialog.askopenfilename()
