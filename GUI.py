@@ -129,12 +129,15 @@ class DisplayApp:
 
     def upload_force_data(self):
         # Open a file dialog for any file type
-        file_path = filedialog.askopenfilename(title="Select Force Data File",
-                                               filetypes=[("Excel Files", "*.xlsx;*.xls")])
-        if file_path:
-            print(f"Force data uploaded: {file_path}")
+        file_path = filedialog.askopenfilename(title="Select Force Data File",filetypes=[("Excel or CSV Files", "*.xlsx;*.xls,*.csv")])
+        print(f"Force data uploaded: {file_path}")
+        # support both csv and excel
+        if file_path.endswith('.xlsx'):
             self.forcedata = pd.read_excel(file_path,skiprows=19)
-            self.rows = self.forcedata.shape[0]
+        elif file_path.endswith('.csv'):
+            self.forcedata = pd.read_csv(file_path,skiprows=19)   
+        self.rows = self.forcedata.shape[0]
+
     def upload_file(self):
         # Open a file dialog for any file type
         file_path = filedialog.askopenfilename()
