@@ -27,6 +27,10 @@ class DisplayApp:
         self.main_canvas.bind('<Configure>',
                               lambda e: self.main_canvas.configure(scrollregion=self.main_canvas.bbox("all")))
 
+
+        """
+        Deren's code for putting frame and canvas together
+        """
         # Create a frame inside the canvas to hold all widgets
         self.frame = Frame(self.main_canvas)
         self.main_canvas.create_window((0, 0), window=self.frame, anchor="nw")
@@ -34,12 +38,15 @@ class DisplayApp:
         # Create three canvases for display in the first row
         self.canvas1 = Canvas(self.frame, width=400, height=300, bg="lightgrey")
         self.canvas1.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
+        self.photo_image1 = None # place holder for the image object
 
         self.canvas2 = Canvas(self.frame, width=400, height=300, bg="lightgrey")
         self.canvas2.grid(row=0, column=1, padx=5, pady=5, sticky="nsew")
+        self.photo_image2 = None 
 
         self.canvas3 = Canvas(self.frame, width=400, height=300, bg="lightgrey")
         self.canvas3.grid(row=0, column=2, padx=5, pady=5, sticky="nsew")
+        self.photo_image3 = None 
 
         # Create a slider in the middle row
         self.slider = Scale(self.frame, from_=0, to=100, orient="horizontal", label="Adjust Value",
@@ -94,6 +101,12 @@ class DisplayApp:
         self.force_data = None
         self.rows = None
 
+        # Graph
+        self.x = None # x-axis data
+        self.y = None # y-axis data
+        self.line = None # Initialize the line reference
+        self.canvas = None # the widget for matplot
+
         # video
         self.cam = None
         self.total_frames = None
@@ -112,8 +125,7 @@ class DisplayApp:
         self.upload_csv_button = tk.Button(self.frame, text="Upload .csv", command=self.upload_csv)
         self.upload_csv_button.grid(row=3, column=1, padx=5, pady=10, sticky="ew")
 
-        # Initialize the line reference
-        self.line = None
+        
 
     def update_slider_value(self, value):
         # Update the label with the current slider value
@@ -123,7 +135,14 @@ class DisplayApp:
         self.slider_value_label.config(text=f"Slider Value: {value}")
 
         # things that need to update when the slider value changes
-        self.display_frame()
+        if self.cam:
+            self.display_frame()
+        if (self.rows>0 ):
+            normalized_position = int(value) / (self.slider['to'])
+            x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
+            self.line.set_xdata([x_position, x_position])
+            self.canvas.draw()
+
 
     def upload_video(self):
         # Open a file dialog for video files
@@ -142,6 +161,11 @@ class DisplayApp:
         elif file_path.endswith('.csv'):
             self.forcedata = pd.read_csv(file_path,skiprows=19)   
         self.rows = self.forcedata.shape[0]
+
+        self.x = self.forcedata.iloc[:, 0]
+        self.y = self.forcedata.iloc[:, 1]
+        self.plot_force_data()
+
         # Update the line position based on slider value if the line exists
         if self.line:
             max_val = self.slider['to']  # Maximum slider value
@@ -150,20 +174,6 @@ class DisplayApp:
             self.line.set_xdata([x_position, x_position])
             self.canvas.draw()
 
-    def upload_csv(self):
-        # Open a file dialog for CSV files
-        file_path = filedialog.askopenfilename(filetypes=[("CSV Files", "*.csv")])
-        if file_path:
-            try:
-                # Load the CSV file starting from row 20, with the first two columns as x and y
-                data = pd.read_csv(file_path, skiprows=19, header=None)
-                x = data.iloc[:, 0]
-                y = data.iloc[:, 1]
-                
-                # Plot the data
-                self.plot_csv_data(x, y)
-            except Exception as e:
-                print(f"Error loading CSV: {e}")
 
     def openVideo(self, video_path):
         print("set1")
@@ -172,7 +182,7 @@ class DisplayApp:
 
         # print(total_frames)
         self.slider.config(to=self.total_frames)
-        #self.cam.set(cv2.CAP_PROP_POS_FRAMES, 600) # set the total amount of frame to 600 for now   
+        self.display_frame()
 
     def display_frame(self):
         self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc-1) # pick current frame index 1st is 0
@@ -199,20 +209,21 @@ class DisplayApp:
         # Load and resize the image using Pillow
         image = Image.open(file_path)
         image = image.resize((400, 300), resample=Image.BICUBIC)
-    def plot_csv_data(self, x, y):
+
+    def plot_force_data(self):
         # Clear previous figure on canvas2
         for widget in self.canvas2.winfo_children():
             widget.destroy()
 
         # Create a new figure and plot
         self.fig, self.ax = plt.subplots(figsize=(4.75, 3.75))
-        self.ax.plot(x, y, marker='o', linestyle='-', color='blue', linewidth = 0.5)
+        self.ax.plot(self.x, self.y, linestyle='-', color='blue', linewidth = 0.5)
         self.ax.set_title("Force vs. Time")
         self.ax.set_xlabel("Force (N.)")
         self.ax.set_ylabel("Time (s.)")
 
         # Draw an initial vertical line on the left
-        self.line = self.ax.axvline(x=x.iloc[0], color='red', linestyle='--', linewidth=1.5)
+        self.line = self.ax.axvline(x=self.x.iloc[0], color='red', linestyle='--', linewidth=1.5)
 
         # Embed the matplotlib figure in the Tkinter canvas
         self.canvas = FigureCanvasTkAgg(self.fig, self.canvas2)
