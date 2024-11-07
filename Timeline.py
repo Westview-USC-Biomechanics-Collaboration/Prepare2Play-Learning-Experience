@@ -45,6 +45,7 @@ class timeline():
         cv2.imwrite("rectangle.png", image)
 
         print("Rectangle image saved as 'rectangle.png'")
+        return image
 
 
 if __name__ == "__main__":
