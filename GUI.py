@@ -160,6 +160,7 @@ class DisplayApp:
             self.photo_image1 = ImageTk.PhotoImage(frame)
             self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
     """
+    # Ayaan's code for displaying the frame
     def setVideoFrame(self, frameNum: double):
         self.canvas1.delete("all")
         self.cam.set(cv2.CAP_PROP_FRAME_COUNT, frameNum)
