@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, Canvas, Label, Scale, Frame, Scrollbar, PhotoImage
 import cv2
 from PIL import Image, ImageTk
-from tensorflow import double
+#from tensorflow import double
 import pandas as pd
 
 
@@ -54,6 +54,7 @@ class DisplayApp:
         self.upload_video_button = tk.Button(self.frame, text="Upload Video", command=self.upload_video)
         self.upload_video_button.grid(row=3, column=0, padx=5, pady=10, sticky="nsew")
 
+        # Upload button for force data
         self.upload_force_button = tk.Button(self.frame, text="Upload force File", command=self.upload_force_data)
         self.upload_force_button.grid(row=3, column=1, padx=5, pady=10, sticky="nsew")
 
@@ -62,8 +63,8 @@ class DisplayApp:
         self.show_vector_overlay.grid(row=3, column=2, padx=5, pady=10, sticky="nsew")
 
         # force button
-        self.force_button = tk.Button(self.frame, text="label video", command=lambda: print("Save clicked"))
-        self.force_button.grid(row=4, column=0, padx=5, pady=10, sticky="nsew")
+        self.video_button = tk.Button(self.frame, text="label video", command=lambda: print("Save clicked"))
+        self.video_button.grid(row=4, column=0, padx=5, pady=10, sticky="nsew")
 
         # force button
         self.force_button = tk.Button(self.frame, text="label force", command=lambda: print("Save clicked"))
@@ -95,14 +96,15 @@ class DisplayApp:
 
         # video
         self.cam = None
+        self.total_frames = None
 
+        # Global fram/location base on slider
+        self.loc = None
 
 
     def get_current_frame(self):
         print(self.slider.get())
-        return int(self.slider.get())
-
-        self.cam = None  # Video
+        return int(self.slider.get()) # return current frame, 1st return 1
 
     def getSliderVal(self):
         print(self.slider.get())
@@ -110,14 +112,17 @@ class DisplayApp:
 
     def update_slider_value(self, value):
         # Update the label with the current slider value
-        # print(type(value))
-        self.setVideoFrame(float(value))
-        cur = self.get_current_frame()
+        # the line below is Ayaan's code
+        #self.setVideoFrame(float(value))
+        self.loc = self.get_current_frame()
         self.slider_value_label.config(text=f"Slider Value: {value}")
+
+        # things that need to update when the slider value changes
+        self.display_frame()
 
     def upload_video(self):
         # Open a file dialog for video files
-        video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv"), ("All Files", "*.*")])
+        video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
         if video_path:
             print(f"Video uploaded: {video_path}")
             self.openVideo(video_path)
@@ -140,19 +145,21 @@ class DisplayApp:
     def openVideo(self, video_path):
         print("set1")
         self.cam = cv2.VideoCapture(video_path)
-        total_frames = self.cam.get(cv2.CAP_PROP_FRAME_COUNT)
+        self.total_frames = self.cam.get(cv2.CAP_PROP_FRAME_COUNT)
 
         # print(total_frames)
-        self.slider.config(to=total_frames)
-        self.cam.set(cv2.CAP_PROP_FRAME_COUNT, 600)
+        self.slider.config(to=self.total_frames)
+        #self.cam.set(cv2.CAP_PROP_POS_FRAMES, 600) # set the total amount of frame to 600 for now   
 
+    def display_frame(self):
+        self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc-1) # pick current frame index 1st is 0
         ret, frame = self.cam.read()
 
         if ret:
-            frame = Image.fromarray(frame).resize((400, 300), resample=Image.BICUBIC)
+            frame = Image.fromarray(frame).resize((400, 300), resample=Image.BICUBIC) # Resize the frame to 400 * 300
             self.photo_image1 = ImageTk.PhotoImage(frame)
             self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
-
+    """
     def setVideoFrame(self, frameNum: double):
         self.canvas1.delete("all")
         self.cam.set(cv2.CAP_PROP_FRAME_COUNT, frameNum)
@@ -163,7 +170,7 @@ class DisplayApp:
         self.photo_image1 = ImageTk.PhotoImage(frame)
 
         self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
-
+    """
     def display_image(self, file_path):
         # Load and resize the image using Pillow
         image = Image.open(file_path)
