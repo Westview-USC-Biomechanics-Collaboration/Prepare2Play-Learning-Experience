@@ -27,8 +27,8 @@ class timeline:
         image = np.ones((75, 1080, 3), dtype="uint8") * 255
 
         # Convert percentages to x-values
-        start_x = int(self.start * 1080 / 100)  # Map start percentage to canvas width
-        end_x = int(self.end * 1080 / 100)      # Map end percentage to canvas width
+        start_x = int(self.start * 1080)  # Map start percentage to canvas width
+        end_x = int(self.end * 1080)      # Map end percentage to canvas width
 
         # Define rectangle parameters: top-left and bottom-right coordinates
         top_left = (start_x, 10)

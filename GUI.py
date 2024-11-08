@@ -75,7 +75,7 @@ class DisplayApp:
         self.video_button.grid(row=4, column=0, padx=5, pady=10, sticky="nsew")
 
         # force label button
-        self.force_button = tk.Button(self.frame, text="label force", command=lambda: print("Save clicked"))
+        self.force_button = tk.Button(self.frame, text="label force", command=self.label_force)
         self.force_button.grid(row=4, column=1,padx=5, pady=10, sticky="nsew")
 
         # Save button
@@ -103,6 +103,7 @@ class DisplayApp:
         # force data
         self.force_data = None
         self.rows = None
+        self.force_frame = None   # convert rows to frames
 
         # Graph
         self.x = None # x-axis data
@@ -140,20 +141,27 @@ class DisplayApp:
         self.loc = self.get_current_frame()
         self.slider_value_label.config(text=f"Slider Value: {value}")
 
-        # things that need to update when the slider value changes
+        # Things that need to update when the slider value changes
         if self.cam:
+            # draw video canvas
             self.display_frame()
 
             # update video timeline
             videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc / self.total_frames))
             self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
             self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
-        if self.force_data:
+
+        if self.rows is not None:  # somehow self.forcedata is not None doesn't work, using self.rows as compensation
+            # draw graph canvas
             normalized_position = int(value) / (self.slider['to'])
             x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
             self.line.set_xdata([x_position, x_position])
             self.canvas.draw()
 
+            # update force timeline
+            forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc / self.slider['to']))
+            self.timeline_image1 = ImageTk.PhotoImage(forceTimeline)
+            self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
 
 
 
@@ -167,7 +175,7 @@ class DisplayApp:
             self.openVideo(video_path)
 
             # display video timeline
-            self.timeline2 = timeline(0,100)
+            self.timeline2 = timeline(0,1)
             videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc))
             self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
             self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
@@ -182,10 +190,18 @@ class DisplayApp:
         elif file_path.endswith('.csv'):
             self.forcedata = pd.read_csv(file_path,skiprows=19)   
         self.rows = self.forcedata.shape[0]
+        self.force_frame = int(self.rows/10)  # assume fix step size ---> result is num of frames(int)
 
         self.x = self.forcedata.iloc[:, 0]
         self.y = self.forcedata.iloc[:, 1]
         self.plot_force_data()
+
+        # create force timeline
+        print(f"force frame: {self.force_frame}")
+        self.timeline1 = timeline(0,self.force_frame/self.slider['to'])
+        forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc))
+        self.timeline_image1 = ImageTk.PhotoImage(forceTimeline)
+        self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
 
 
 
