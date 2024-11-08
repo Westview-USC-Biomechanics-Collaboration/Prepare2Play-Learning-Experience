@@ -23,8 +23,12 @@ class timeline:
         self.label = numIn
 
     def draw_rect(self, loc):
+        # Define the desired background color (BGR format)
+        background_color = (122, 98, 61) # Light blue color in (Blue, Green, Red) format
+
         # Create a blank image (height, width)
         image = np.ones((75, 1080, 3), dtype="uint8") * 255
+        image[:] = background_color  # Set the entire image to the background color
 
         # Convert percentages to x-values
         start_x = int(self.start * 1080)  # Map start percentage to canvas width
@@ -35,7 +39,7 @@ class timeline:
         bottom_right = (end_x, 65)
 
         # Draw the rectangle
-        color = (0, 0, 255)  # Red color in BGR format
+        color = (165, 143, 110)  # Red color in BGR format
         thickness = -1  # Fill the rectangle
         cv2.rectangle(image, top_left, bottom_right, color, thickness)
 
@@ -44,24 +48,24 @@ class timeline:
             label_x = int(self.label * 1080)  # Convert label percentage to x-value
             vertices = np.array([[label_x, 15], [label_x - 10, 5], [label_x + 10, 5]], np.int32)
             vertices = vertices.reshape((-1, 1, 2))
-            triangle_color = (255, 0, 0)  # Blue color for the triangle
+            triangle_color = (200, 229, 250)  # Blue color for the triangle
             cv2.fillPoly(image, pts=[vertices], color=triangle_color)
 
             print(self.label ,label_x)
 
         # Draw the vertical line
-        line_color = (0, 255, 0)  # Green color for the line
+        line_color = (250, 230, 200)   # Green color for the line
         loc_x = int(loc * 1080)
 
         cv2.line(image, pt1=(loc_x, 0), pt2=(loc_x, image.shape[0]), color=line_color, thickness=2)
 
         # Save the image as a PNG file
-        #cv2.imwrite("rectangle.png", image)
+        cv2.imwrite("rectangle.png", image)
         print("Rectangle image saved as 'rectangle.png'")
         return image
 
 
 if __name__ == "__main__":
-    timeline_obj = timeline(0, 100)
-    timeline_obj.update_label(50)  # Update label position to 50%
-    timeline_obj.draw_rect(loc=75)  # Draw the vertical line at 75%
+    timeline_obj = timeline(0, 1)
+    timeline_obj.update_label(0.5)  # Update label position to 50%
+    timeline_obj.draw_rect(loc=0.75)  # Draw the vertical line at 75%

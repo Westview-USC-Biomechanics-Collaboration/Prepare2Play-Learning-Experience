@@ -30,7 +30,7 @@ class DisplayApp:
 
 
         """
-        Deren's code for putting frame and canvas together
+        Deren's code (35~37) for putting frame and canvas together. I don't know how it works but it works
         """
         # Create a frame inside the canvas to hold all widgets
         self.frame = Frame(self.main_canvas)
@@ -119,7 +119,7 @@ class DisplayApp:
         self.timeline1 = None
         self.timeline2 = None
 
-        # Global fram/location base on slider
+        # Global frame/location base on slider
         self.loc = 0
 
 
@@ -135,13 +135,13 @@ class DisplayApp:
     ################## 
     """
     def update_slider_value(self, value):
+
         # Update the label with the current slider value
-        # the line below is Ayaan's code
-        #self.setVideoFrame(float(value))
         self.loc = self.get_current_frame()
         self.slider_value_label.config(text=f"Slider Value: {value}")
 
-        # Things that need to update when the slider value changes
+        # Things that need to be updated when the slider value changes
+
         if self.cam:
             # draw video canvas
             self.display_frame()
@@ -174,10 +174,10 @@ class DisplayApp:
             # display video
             self.openVideo(video_path)
 
-            # display video timeline
+            # Initialize video timeline
             self.timeline2 = timeline(0,1)
             videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc))
-            self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
+            self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)   # create image object that canvas object accept
             self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
     def upload_force_data(self):
@@ -186,47 +186,42 @@ class DisplayApp:
         print(f"Force data uploaded: {file_path}")
         # support both csv and excel
         if file_path.endswith('.xlsx'):
-            self.forcedata = pd.read_excel(file_path,skiprows=19)
+            self.forcedata = pd.read_excel(file_path,skiprows=19)   # ---> skip useless rows
         elif file_path.endswith('.csv'):
             self.forcedata = pd.read_csv(file_path,skiprows=19)   
         self.rows = self.forcedata.shape[0]
-        self.force_frame = int(self.rows/10)  # assume fix step size ---> result is num of frames(int)
+        self.force_frame = int(self.rows/10)  # assume fix step size (10)---> result is num of frames(int)
 
-        self.x = self.forcedata.iloc[:, 0]
-        self.y = self.forcedata.iloc[:, 1]
+        self.x = self.forcedata.iloc[:, 0] # time
+        self.y = self.forcedata.iloc[:, 1] # force x   ---> we need 2 radio button for picking the force place and 3 radio button to pick the force
         self.plot_force_data()
 
-        # create force timeline
+        # Initialize force timeline
         print(f"force frame: {self.force_frame}")
+        # create a timeline object, defining end as (num of frame in forcedata /  max slider value)
+        # Slider value should be updated to frame count when user upload the video file,
+        # otherwise we will use the default slider value(100).
         self.timeline1 = timeline(0,self.force_frame/self.slider['to'])
         forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc))
-        self.timeline_image1 = ImageTk.PhotoImage(forceTimeline)
+        self.timeline_image1 = ImageTk.PhotoImage(forceTimeline)  # create image object that canvas object accept
         self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
 
 
 
     def openVideo(self, video_path):
-        print("set1")
         self.cam = cv2.VideoCapture(video_path)
         self.total_frames = self.cam.get(cv2.CAP_PROP_FRAME_COUNT)
-
-        # print(total_frames)
-        self.slider.config(to=self.total_frames)
+        self.slider.config(to=self.total_frames)   # ---> reconfigure slider value. The max value is the total number of frame in the video
         self.display_frame()
 
     def display_frame(self):
-        self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc-1) # pick current frame index 1st is 0
-        ret, frame = self.cam.read()
+        self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc-1) # pick the corresponding frame to display || the 1st frame is index 0, therefore -1
+        ret, frame = self.cam.read()  # the `frame` object is now the frame we want
 
         if ret:
             frame = Image.fromarray(frame).resize((400, 300), resample=Image.BICUBIC) # Resize the frame to 400 * 300
-            self.photo_image1 = ImageTk.PhotoImage(frame)
+            self.photo_image1 = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
             self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
-
-    def display_image(self, file_path):
-        # Load and resize the image using Pillow
-        image = Image.open(file_path)
-        image = image.resize((400, 300), resample=Image.BICUBIC)
 
     def plot_force_data(self):
         # Clear previous figure on canvas2
@@ -244,13 +239,13 @@ class DisplayApp:
         self.line = self.ax.axvline(x=self.x.iloc[0], color='red', linestyle='--', linewidth=1.5)
 
         # Embed the matplotlib figure in the Tkinter canvas
-        self.canvas = FigureCanvasTkAgg(self.fig, self.canvas2)
+        self.canvas = FigureCanvasTkAgg(self.fig, self.canvas2)   # ---> self.canvas holds the object that represent image on canvas, I'm not too sure about this.
         self.canvas.draw()
         self.canvas.get_tk_widget().pack()
 
-    def label_force(self):
+    def label_force(self):  # ---> executed when user click label force
         self.timeline1.update_label(self.loc/self.slider['to'])
-    def label_video(self):
+    def label_video(self):  # ---> executed when user click label video
         self.timeline2.update_label(self.loc/self.slider['to'])
 
 
