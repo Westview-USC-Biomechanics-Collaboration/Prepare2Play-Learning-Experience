@@ -41,15 +41,15 @@ Select corner sequence:
     4               3  8                7
     
     shortview/ front view:
-                4        1
+                1        2
                 __________
                /          \\
               /            \\
-          3  |--------------| 2
-           8__________________   5
+          4  |--------------| 3
+           5__________________  6
            /                  \\
           /                    \\
-       7/______________________\\ 6     
+       8/______________________\\ 7     
          |_______________________|
     
 """
@@ -89,7 +89,7 @@ def find_files(directory):
 
     return long_file, short_file, top_file, data
 
-def rect_to_trapezoid_long(x, y, rect_width, rect_height, trapezoid_coords):
+def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     """
     Maps points from a rectangle to a trapezoid, simulating parallax distortion.
     
@@ -269,8 +269,7 @@ class VectorOverlay:
         # the rect_to_trapezoid translates the normalized force data to the trapazoid that we see of the forceplate surface in the video for force plate 1
         start_point_1 = rect_to_trapezoid(px1, py1, 1, 1,
                                           [self.corners[0], self.corners[1], self.corners[2], self.corners[3]])
-        
-        
+
         # the rect_to_trapezoid translates the normalized force data to the trapazoid that we see of the forceplate surface in the video for force plate 2
         start_point_2 = rect_to_trapezoid(px2, py2, 1, 1,
                                           [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
@@ -278,11 +277,7 @@ class VectorOverlay:
 
         end_point_1 = (int(start_point_1[0] + xf1), int(start_point_1[1] - yf1))
         end_point_2 = (int(start_point_2[0] + xf2), int(start_point_2[1] - yf2))
-        # print(start_point_1)
-        # print(end_point_1)
-        #
-        # print(start_point_2)
-        # print(end_point_2)
+
         cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
 
         cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
@@ -426,14 +421,15 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
         # This only shows the force on force plate 2, you can adjust this part so that it shows the force on force plate 1
-            fx1 = 0
-            fx2 = self.fx2[int(frame_number)]
-            fy1 = 0
+            fx1 = -self.fx1[int(frame_number)]
+            fx2 = -self.fx2[int(frame_number)]
+            fy1 = self.fz1[int(frame_number)]
             fy2 = self.fz2[int(frame_number)]
-            py1 = self.px1[int(frame_number)]
-            px1 = 1-self.py1[int(frame_number)]
-            py2 = self.py2[int(frame_number)]
-            px2 = 1-self.px2[int(frame_number)]
+            px1 = self.px1[int(frame_number)]
+            px2 = self.px2[int(frame_number)]
+            py1 = 1-self.py1[int(frame_number)]
+            py2 = 1-self.py2[int(frame_number)]
+
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
