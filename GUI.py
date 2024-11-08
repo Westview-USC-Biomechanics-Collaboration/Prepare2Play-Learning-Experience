@@ -79,7 +79,7 @@ class DisplayApp:
         self.force_button.grid(row=4, column=1,padx=5, pady=10, sticky="nsew")
 
         # Save button
-        self.save_button = tk.Button(self.frame, text="Save", command=lambda: print("Save clicked"))
+        self.save_button = tk.Button(self.frame, text="Save", command=self.save)
         self.save_button.grid(row=4, column=2,padx=5, pady=10, sticky="nsew")
 
         # Force timeline label
@@ -258,8 +258,14 @@ class DisplayApp:
         self.video_align = self.loc
         self.timeline2.update_label(self.loc/self.slider['to'])
 
+    """
+    The alignment method has a problem. The user can only use it once.
+    If the user use the align button twice, self.force_align lost true frame value relative to global
+    meaning that we are not able to convert self.force_align to the correct row in force data
+    This can be solve by adding a new variable that contain the labeled row.
+    """
     def align(self):
-        print("User clicked the align button")
+        print("User clicked align button")
         print(self.force_align, self.video_align)
 
         # update the timeline visually
@@ -273,7 +279,11 @@ class DisplayApp:
         self.timeline1.update_label(newlabel)
 
     def save(self):
-        
+        """
+        Assuming there is a labeled row value.
+        """
+        print("user clicked save button")
+        pass
 
 
 
