@@ -6,6 +6,7 @@ from PIL import Image, ImageTk
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from Timeline import timeline
 
 class DisplayApp:
     def __init__(self, master):
@@ -69,11 +70,11 @@ class DisplayApp:
         self.show_vector_overlay = tk.Button(self.frame, text="Vector Overlay", command=lambda: print("Vector overlay clicked"))
         self.show_vector_overlay.grid(row=3, column=2, padx=5, pady=10, sticky="nsew")
 
-        # force button
-        self.video_button = tk.Button(self.frame, text="label video", command=lambda: print("Save clicked"))
+        # video label button
+        self.video_button = tk.Button(self.frame, text="label video", command=self.label_video)
         self.video_button.grid(row=4, column=0, padx=5, pady=10, sticky="nsew")
 
-        # force button
+        # force label button
         self.force_button = tk.Button(self.frame, text="label force", command=lambda: print("Save clicked"))
         self.force_button.grid(row=4, column=1,padx=5, pady=10, sticky="nsew")
 
@@ -88,6 +89,7 @@ class DisplayApp:
         # Force timeline
         self.force_timeline = Canvas(self.frame, width=1080, height=75, bg="lightblue")
         self.force_timeline.grid(row=7, column=0, columnspan=3, pady=1)
+        self.timeline_image1 = None  # place holder for timeline cavas image object
 
         # Video timeline label
         self.video_timeline_label = Label(self.frame, text="Video Timeline (unit = frame)")
@@ -96,6 +98,7 @@ class DisplayApp:
         # Video timeline
         self.video_timeline = Canvas(self.frame, width=1080, height=75, bg="lightblue")
         self.video_timeline.grid(row=9, column=0, columnspan=3, pady=1)
+        self.timeline_image2 = None
 
         # force data
         self.force_data = None
@@ -111,22 +114,25 @@ class DisplayApp:
         self.cam = None
         self.total_frames = None
 
+        # timeline
+        self.timeline1 = None
+        self.timeline2 = None
+
         # Global fram/location base on slider
-        self.loc = None
+        self.loc = 0
+
 
 
     def get_current_frame(self):
         print(self.slider.get())
         return int(self.slider.get()) # return current frame, 1st return 1
 
-    def getSliderVal(self):
-        print(self.slider.get())
-        return self.slider.get()
-        self.upload_csv_button = tk.Button(self.frame, text="Upload .csv", command=self.upload_csv)
-        self.upload_csv_button.grid(row=3, column=1, padx=5, pady=10, sticky="ew")
-
-        
-
+    """
+    ################## 
+    Below is the method that is run everytime the user update the slider value
+    be sure to put everything you want to run under this method
+    ################## 
+    """
     def update_slider_value(self, value):
         # Update the label with the current slider value
         # the line below is Ayaan's code
@@ -137,11 +143,19 @@ class DisplayApp:
         # things that need to update when the slider value changes
         if self.cam:
             self.display_frame()
-        if (self.rows>0 ):
+
+            # update video timeline
+            videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc / self.total_frames))
+            self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
+            self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
+        if self.force_data:
             normalized_position = int(value) / (self.slider['to'])
             x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
             self.line.set_xdata([x_position, x_position])
             self.canvas.draw()
+
+
+
 
 
     def upload_video(self):
@@ -149,7 +163,14 @@ class DisplayApp:
         video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
         if video_path:
             print(f"Video uploaded: {video_path}")
+            # display video
             self.openVideo(video_path)
+
+            # display video timeline
+            self.timeline2 = timeline(0,100)
+            videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc))
+            self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
+            self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
     def upload_force_data(self):
         # Open a file dialog for any file type
@@ -166,13 +187,6 @@ class DisplayApp:
         self.y = self.forcedata.iloc[:, 1]
         self.plot_force_data()
 
-        # Update the line position based on slider value if the line exists
-        if self.line:
-            max_val = self.slider['to']  # Maximum slider value
-            normalized_position = int(value) / max_val
-            x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
-            self.line.set_xdata([x_position, x_position])
-            self.canvas.draw()
 
 
     def openVideo(self, video_path):
@@ -192,19 +206,7 @@ class DisplayApp:
             frame = Image.fromarray(frame).resize((400, 300), resample=Image.BICUBIC) # Resize the frame to 400 * 300
             self.photo_image1 = ImageTk.PhotoImage(frame)
             self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
-    """
-    # Ayaan's code for displaying the frame
-    def setVideoFrame(self, frameNum: double):
-        self.canvas1.delete("all")
-        self.cam.set(cv2.CAP_PROP_FRAME_COUNT, frameNum)
-        ret, frame = self.cam.read()
 
-        if not ret: return
-        frame = Image.fromarray(frame).resize((400, 300), resample=Image.BICUBIC)
-        self.photo_image1 = ImageTk.PhotoImage(frame)
-
-        self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
-    """
     def display_image(self, file_path):
         # Load and resize the image using Pillow
         image = Image.open(file_path)
@@ -229,6 +231,14 @@ class DisplayApp:
         self.canvas = FigureCanvasTkAgg(self.fig, self.canvas2)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack()
+
+    def label_force(self):
+        self.timeline1.update_label(self.loc/self.slider['to'])
+    def label_video(self):
+        self.timeline2.update_label(self.loc/self.slider['to'])
+
+
+
 
 
 

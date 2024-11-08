@@ -108,7 +108,7 @@
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\Mediapipe-pose_landmarker" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.Timeline">
+  <component name="RunManager" selected="Python.GUI">
     <configuration name="GUI" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -223,8 +223,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.Timeline" />
         <item itemvalue="Python.GUI" />
+        <item itemvalue="Python.Timeline" />
         <item itemvalue="Python.vector-overlay-skeleton" />
         <item itemvalue="Python.stick_figure_COM" />
         <item itemvalue="Python.test_corners" />
