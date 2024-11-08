@@ -18,6 +18,16 @@ class timeline:
         self.end = end
         self.label = None
 
+    def get_start_end(self):
+        return self.start, self.end
+
+    def get_label(self):
+        return self.label
+
+    def update_start_end(self,sIn, eIn):
+        self.start = sIn
+        self.end = eIn
+
     def update_label(self, numIn):
         # numIn will be a percentage value relative to global time/frame
         self.label = numIn
@@ -51,7 +61,7 @@ class timeline:
             triangle_color = (200, 229, 250)  # Blue color for the triangle
             cv2.fillPoly(image, pts=[vertices], color=triangle_color)
 
-            print(self.label ,label_x)
+            # print(self.label ,label_x)
 
         # Draw the vertical line
         line_color = (250, 230, 200)   # Green color for the line
@@ -60,8 +70,8 @@ class timeline:
         cv2.line(image, pt1=(loc_x, 0), pt2=(loc_x, image.shape[0]), color=line_color, thickness=2)
 
         # Save the image as a PNG file
-        cv2.imwrite("rectangle.png", image)
-        print("Rectangle image saved as 'rectangle.png'")
+        # cv2.imwrite("rectangle.png", image)
+        # print("Rectangle image saved as 'rectangle.png'")
         return image
 
 

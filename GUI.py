@@ -100,6 +100,10 @@ class DisplayApp:
         self.video_timeline.grid(row=9, column=0, columnspan=3, pady=1)
         self.timeline_image2 = None
 
+        # align botton 
+        self.align_button = tk.Button(self.frame, text="Align", command=self.align)
+        self.align_button.grid(row=10,column=0,padx=5,pady=10,sticky="nsew")
+
         # force data
         self.force_data = None
         self.rows = None
@@ -118,6 +122,10 @@ class DisplayApp:
         # timeline
         self.timeline1 = None
         self.timeline2 = None
+
+        # labels
+        self.force_align = None
+        self.video_align = None
 
         # Global frame/location base on slider
         self.loc = 0
@@ -244,10 +252,28 @@ class DisplayApp:
         self.canvas.get_tk_widget().pack()
 
     def label_force(self):  # ---> executed when user click label force
+        self.force_align = self.loc
         self.timeline1.update_label(self.loc/self.slider['to'])
     def label_video(self):  # ---> executed when user click label video
+        self.video_align = self.loc
         self.timeline2.update_label(self.loc/self.slider['to'])
 
+    def align(self):
+        print("User clicked the align button")
+        print(self.force_align, self.video_align)
+
+        # update the timeline visually
+        start, end = self.timeline1.get_start_end()
+        offset = self.force_align - self.video_align
+        newstart = start-offset/self.slider['to']
+        newend = end-offset/self.slider['to']
+        newlabel = self.timeline1.get_label()-offset/self.slider['to']
+        print(f"new start percentage: {newstart}\nnew end percentage: {newend}")
+        self.timeline1.update_start_end(newstart,newend)
+        self.timeline1.update_label(newlabel)
+
+    def save(self):
+        
 
 
 
