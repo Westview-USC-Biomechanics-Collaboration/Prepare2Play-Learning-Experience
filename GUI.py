@@ -110,6 +110,7 @@ class DisplayApp:
         self.force_data = None
         self.rows = None
         self.force_frame = None   # convert rows to frames
+        self.step_size = None
 
         # Graph
         self.x = None # x-axis data
@@ -163,7 +164,7 @@ class DisplayApp:
             #frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
             self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
-        if self.rows is not None:  # somehow self.forcedata is not None doesn't work, using self.rows as compensation
+        if self.rows is not None:  # somehow self.force_data is not None doesn't work, using self.rows as compensation
             # draw graph canvas
             normalized_position = int(value) / (self.slider['to'])
             x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
@@ -197,21 +198,24 @@ class DisplayApp:
         file_path = filedialog.askopenfilename(title="Select Force Data File",filetypes=[("Excel or CSV Files", "*.xlsx;*.xls,*.csv")])
         self.force_path = file_path
         print(f"Force data uploaded: {file_path}")
+
         # support both csv and excel
         if file_path.endswith('.xlsx'):
-            self.forcedata = pd.read_excel(file_path,skiprows=19)   # ---> skip useless rows
+            self.force_data = pd.read_excel(file_path,skiprows=19)   # ---> skip useless rows
         elif file_path.endswith('.csv'):
-            self.forcedata = pd.read_csv(file_path,skiprows=19)   
-        self.rows = self.forcedata.shape[0]
-        self.force_frame = int(self.rows/(600/self.cam.get(cv2.CAP_PROP_FPS)))  # assume fix step size (10)---> result is num of frames(int)
+            self.force_data = pd.read_csv(file_path,skiprows=19)
 
-        self.x = self.forcedata.iloc[:, 0] # time
-        self.y = self.forcedata.iloc[:, 1] # force x   ---> we need 2 radio button for picking the force place and 3 radio button to pick the force
+        self.rows = self.force_data.shape[0]
+        self.step_size = (600/self.cam.get(cv2.CAP_PROP_FPS)) # rows/frame
+        self.force_frame = int(self.rows/self.step_size)  # represent num of frames force data can cover
+
+        self.x = self.force_data.iloc[:, 0] # time
+        self.y = self.force_data.iloc[:, 1] # force x   ---> we need 2 radio button for picking the force place and 3 radio button to pick the force
         self.plot_force_data()
 
         # Initialize force timeline
         print(f"force frame: {self.force_frame}")
-        # create a timeline object, defining end as (num of frame in forcedata /  max slider value)
+        # create a timeline object, defining end as (num of frame in force_data /  max slider value)
         # Slider value should be updated to frame count when user upload the video file,
         # otherwise we will use the default slider value(100).
         self.timeline1 = timeline(0,self.force_frame/self.slider['to'])
@@ -284,6 +288,9 @@ class DisplayApp:
         self.timeline1.update_start_end(newstart,newend)
         self.timeline1.update_label(newlabel)
 
+        self.force_data = self.force_data[int(self.force_align*self.step_size)-1:] # -1 because indexing
+        print("cut force data")
+
     def save(self):
         """
         Assuming there is a labeled row value.
@@ -294,7 +301,7 @@ class DisplayApp:
     def vector_overlay(self):
         print("user clicked vector overlay button")
 
-        v = vectoroverlay_GUI.VectorOverlay(data=self.forcedata,video=self.cam)
+        v = vectoroverlay_GUI.VectorOverlay(data=self.force_data,video=self.cam)
         v.LongVectorOverlay(outputName="C:\\Users\\16199\Desktop\data\Chase\\testoutput.mp4")
 
 
