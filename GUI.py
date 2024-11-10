@@ -125,6 +125,8 @@ class DisplayApp:
         self.cam = None
         self.total_frames = None
 
+        self.vector_cam = None
+
         # timeline
         self.timeline1 = None
         self.timeline2 = None
@@ -136,11 +138,40 @@ class DisplayApp:
         # Global frame/location base on slider
         self.loc = 0
 
+        # Give direction
+        direction = ("This is the prototype syncing app. Please following the directions given, otherwise it won't work.\n"
+                     "REQUIREMENT:\n"
+                     "a)Video start at the moment when tennis ball collides force plate"
+                     "\n\n"
+                     "Step 1: upload video\n"
+                     "Step 2: upload forcedata\n"
+                     "Step 3: click `label video` when slider value is 0\n"
+                     "Step 4: drag the slider to find the force spike on the graph\n"
+                     "Step 5: click `label force`\n"
+                     "Step 6: click align, you may need to extend the window to see that button\n"
+                     "Step 7: click `vector overlay` button\n"
+                     "Step 8: click `save` button and set the output name")
+        self.pop_up(text=direction)
 
 
     def get_current_frame(self):
         print(self.slider.get())
         return int(self.slider.get()) # return current frame, 1st return 1
+
+    def pop_up(self,text):
+        popup = tk.Toplevel()
+        popup.title("Popup Window")
+        popup.geometry("500x300")
+
+        label = tk.Label(popup, text=text)
+        label.pack(pady=20)
+
+        close_button = tk.Button(popup, text="Close", command=popup.destroy)
+        close_button.pack()
+
+        popup.grab_set()
+        self.master.wait_window(popup)
+
 
     """
     ################## 
@@ -161,26 +192,89 @@ class DisplayApp:
             self.display_frame()
 
             # update video timeline
-            videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc / self.total_frames))
-            self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
-            #frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
-            self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
+            self.update_video_timeline()
+
 
         if self.rows is not None:  # somehow self.force_data is not None doesn't work, using self.rows as compensation
             # draw graph canvas
-            normalized_position = int(value) / (self.slider['to'])
-            x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
-            self.line.set_xdata([x_position, x_position])
-            self.canvas.draw()
+            # normalized_position = int(value) / (self.slider['to'])
+            # x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
+            try:
+                x_position = float(self.force_data.iloc[int(self.loc * self.step_size),0])
+                self.line.set_xdata([x_position])
+                self.canvas.draw()
+            except IndexError as e:
+                print("force data out of range")
 
             # update force timeline
-            forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc / self.slider['to']))
-            self.timeline_image1 = ImageTk.PhotoImage(forceTimeline)
-            self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
+            self.update_force_timeline()
 
 
 
 
+
+
+    def update_force_timeline(self):
+        forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc / self.slider['to']))
+        self.timeline_image1 = ImageTk.PhotoImage(forceTimeline)
+        self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
+
+    def update_video_timeline(self):
+        videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc / self.total_frames))
+        self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
+        self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
+
+    def openVideo(self, video_path):
+        self.cam = cv2.VideoCapture(video_path)
+        self.total_frames = self.cam.get(cv2.CAP_PROP_FRAME_COUNT)
+        self.slider.config(to=self.total_frames)   # ---> reconfigure slider value. The max value is the total number of frame in the video
+        self.display_frame()
+
+    def display_frame(self):
+        self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc) # pick the corresponding frame to display || the 1st frame is index 0, therefore -1
+        ret, frame = self.cam.read()  # the `frame` object is now the frame we want
+
+        if ret:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
+            frame = Image.fromarray(frame).resize((400, 300), resample=Image.BICUBIC) # Resize the frame to 400 * 300
+            self.photo_image1 = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
+            self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
+
+    def display_vector(self):
+        self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
+
+    def plot_force_data(self):
+        # Clear previous figure on canvas2
+        for widget in self.canvas2.winfo_children():
+            widget.destroy()
+
+        # Create a new figure and plot
+        self.fig, self.ax = plt.subplots(figsize=(4.75, 3.75))
+        self.ax.plot(self.x, self.y, linestyle='-', color='blue', linewidth = 0.5)
+        self.ax.set_title("Force vs. Time")
+        self.ax.set_xlabel("Force (N.)")
+        self.ax.set_ylabel("Time (s.)")
+
+        # Draw an initial vertical line on the left
+        self.line = self.ax.axvline(x=self.x.iloc[0], color='red', linestyle='--', linewidth=1.5)
+
+        # Embed the matplotlib figure in the Tkinter canvas
+        self.canvas = FigureCanvasTkAgg(self.fig, self.canvas2)   # ---> self.canvas holds the object that represent image on canvas, I'm not too sure about this.
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack()
+
+
+
+    """
+    # methods above are functions
+    
+    The alignment method has a problem. The user can only use it once.
+    If the user use the align button twice, self.force_align lost true frame value relative to global
+    meaning that we are not able to convert self.force_align to the correct row in force data
+    This can be solve by adding a new variable that contain the labeled row.
+    
+    # methods below are buttons
+    """
     def upload_video(self):
         # Open a file dialog for video files
         self.video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
@@ -208,7 +302,13 @@ class DisplayApp:
             self.force_data = pd.read_csv(file_path,skiprows=19)
 
         self.rows = self.force_data.shape[0]
-        self.step_size = (600/self.cam.get(cv2.CAP_PROP_FPS)) # rows/frame
+        try:
+            self.step_size = (600/self.cam.get(cv2.CAP_PROP_FPS)) # rows/frame
+        except AttributeError as e:
+            print("Video file missing!!!\nProceeding assuming step size is 20 rows/frame")
+            self.pop_up("Video file missing!!!\n\nProceeding assuming step size is 20 rows/frame\n\n"
+                        "Please reload the force data after uploading the video")
+            self.step_size = 20
         self.force_frame = int(self.rows/self.step_size)  # represent num of frames force data can cover
 
         self.x = self.force_data.iloc[:, 0] # time
@@ -217,81 +317,38 @@ class DisplayApp:
 
         # Initialize force timeline
         print(f"force frame: {self.force_frame}")
+        """
         # create a timeline object, defining end as (num of frame in force_data /  max slider value)
         # Slider value should be updated to frame count when user upload the video file,
         # otherwise we will use the default slider value(100).
+        """
         self.timeline1 = timeline(0,self.force_frame/self.slider['to'])
         forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc))
         self.timeline_image1 = ImageTk.PhotoImage(forceTimeline)  # create image object that canvas object accept
         self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
 
-
-
-    def openVideo(self, video_path):
-        self.cam = cv2.VideoCapture(video_path)
-        self.total_frames = self.cam.get(cv2.CAP_PROP_FRAME_COUNT)
-        self.slider.config(to=self.total_frames)   # ---> reconfigure slider value. The max value is the total number of frame in the video
-        self.display_frame()
-
-    def display_frame(self):
-        self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc-1) # pick the corresponding frame to display || the 1st frame is index 0, therefore -1
-        ret, frame = self.cam.read()  # the `frame` object is now the frame we want
-
-        if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
-            frame = Image.fromarray(frame).resize((400, 300), resample=Image.BICUBIC) # Resize the frame to 400 * 300
-            self.photo_image1 = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
-            self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
-
-    def plot_force_data(self):
-        # Clear previous figure on canvas2
-        for widget in self.canvas2.winfo_children():
-            widget.destroy()
-
-        # Create a new figure and plot
-        self.fig, self.ax = plt.subplots(figsize=(4.75, 3.75))
-        self.ax.plot(self.x, self.y, linestyle='-', color='blue', linewidth = 0.5)
-        self.ax.set_title("Force vs. Time")
-        self.ax.set_xlabel("Force (N.)")
-        self.ax.set_ylabel("Time (s.)")
-
-        # Draw an initial vertical line on the left
-        self.line = self.ax.axvline(x=self.x.iloc[0], color='red', linestyle='--', linewidth=1.5)
-
-        # Embed the matplotlib figure in the Tkinter canvas
-        self.canvas = FigureCanvasTkAgg(self.fig, self.canvas2)   # ---> self.canvas holds the object that represent image on canvas, I'm not too sure about this.
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack()
-
-    def label_force(self):  # ---> executed when user click label force
-        self.force_align = self.loc
-        self.timeline1.update_label(self.loc/self.slider['to'])
-    def label_video(self):  # ---> executed when user click label video
-        self.video_align = self.loc
-        self.timeline2.update_label(self.loc/self.slider['to'])
-
-    """
-    The alignment method has a problem. The user can only use it once.
-    If the user use the align button twice, self.force_align lost true frame value relative to global
-    meaning that we are not able to convert self.force_align to the correct row in force data
-    This can be solve by adding a new variable that contain the labeled row.
-    """
     def align(self):
         print("User clicked align button")
         print(self.force_align, self.video_align)
 
         # update the timeline visually
         start, end = self.timeline1.get_start_end()
-        offset = self.force_align - self.video_align
-        newstart = start-offset/self.slider['to']
-        newend = end-offset/self.slider['to']
-        newlabel = self.timeline1.get_label()-offset/self.slider['to']
-        print(f"new start percentage: {newstart}\nnew end percentage: {newend}")
-        self.timeline1.update_start_end(newstart,newend)
-        self.timeline1.update_label(newlabel)
+        try:
+            offset = self.force_align - self.video_align
+            newstart = start-offset/self.slider['to']
+            newend = end-offset/self.slider['to']
+            newlabel = self.timeline1.get_label()-offset/self.slider['to']
+            print(f"new start percentage: {newstart}\nnew end percentage: {newend}")
+            self.timeline1.update_start_end(newstart,newend)
+            self.timeline1.update_label(newlabel)
 
-        self.force_data = self.force_data[int(self.force_align*self.step_size)-1:] # -1 because indexing
-        print("cut force data")
+            self.force_data = self.force_data[int(self.force_align*self.step_size):]
+            print("cut force data")
+            self.slider.set(0)
+            self.plot_force_data()
+        except TypeError as e:
+            self.pop_up("Missing label!!!")
+            print("missing label")
 
     def save(self):
         print("user clicked save button")
@@ -304,9 +361,22 @@ class DisplayApp:
 
     def vector_overlay(self):
         print("user clicked vector overlay button")
-
+        temp_video = "vector_overlay_temp.mp4"
         v = vectoroverlay_GUI.VectorOverlay(data=self.force_data,video=self.cam)
-        v.LongVectorOverlay(outputName="vector_overlay_temp.mp4")
+        v.LongVectorOverlay(outputName=temp_video)
+
+        self.vector_cam = cv2.VideoCapture(temp_video)
+
+    def label_force(self):  # ---> executed when user click label force
+        self.force_align = self.loc
+        self.timeline1.update_label(self.loc/self.slider['to'])
+        self.update_force_timeline()
+
+    def label_video(self):  # ---> executed when user click label video
+        self.video_align = self.loc
+        self.timeline2.update_label(self.loc/self.slider['to'])
+        self.update_video_timeline()
+
 
 
 
