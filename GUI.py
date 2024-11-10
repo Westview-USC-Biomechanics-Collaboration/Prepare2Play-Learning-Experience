@@ -5,11 +5,12 @@ from PIL import Image, ImageTk
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import os
+import shutil
 # our script
 from Timeline import timeline
 from vector_overlay import vectoroverlay_GUI
-import os
-import shutil
+
 
 class DisplayApp:
     def __init__(self, master):
@@ -153,7 +154,6 @@ class DisplayApp:
                      "Step 8: click `save` button and set the output name")
         self.pop_up(text=direction)
 
-
     def get_current_frame(self):
         print(self.slider.get())
         return int(self.slider.get()) # return current frame, 1st return 1
@@ -172,10 +172,9 @@ class DisplayApp:
         popup.grab_set()
         self.master.wait_window(popup)
 
-
     """
     ################## 
-    Below is the method that is run everytime the user update the slider value
+    Below is the slider method that is run everytime the user update the slider value
     be sure to put everything you want to run under this method
     ################## 
     """
@@ -208,11 +207,6 @@ class DisplayApp:
 
             # update force timeline
             self.update_force_timeline()
-
-
-
-
-
 
     def update_force_timeline(self):
         forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc / self.slider['to']))
@@ -262,8 +256,6 @@ class DisplayApp:
         self.canvas = FigureCanvasTkAgg(self.fig, self.canvas2)   # ---> self.canvas holds the object that represent image on canvas, I'm not too sure about this.
         self.canvas.draw()
         self.canvas.get_tk_widget().pack()
-
-
 
     """
     # methods above are functions
@@ -376,11 +368,6 @@ class DisplayApp:
         self.video_align = self.loc
         self.timeline2.update_label(self.loc/self.slider['to'])
         self.update_video_timeline()
-
-
-
-
-
 
 if __name__ == "__main__":
     root = tk.Tk()
