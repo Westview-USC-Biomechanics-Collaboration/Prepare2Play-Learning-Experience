@@ -34,7 +34,7 @@ class timeline:
 
     def draw_rect(self, loc):
         # Define the desired background color (BGR format)
-        background_color = (122, 98, 61) # Light blue color in (Blue, Green, Red) format
+        background_color = (61, 98, 122) # Light blue color in (Blue, Green, Red) format
 
         # Create a blank image (height, width)
         image = np.ones((75, 1080, 3), dtype="uint8") * 255
@@ -49,7 +49,7 @@ class timeline:
         bottom_right = (end_x, 65)
 
         # Draw the rectangle
-        color = (165, 143, 110)  # Red color in BGR format
+        color = (110, 143, 165)  # Red color in BGR format
         thickness = -1  # Fill the rectangle
         cv2.rectangle(image, top_left, bottom_right, color, thickness)
 
@@ -58,13 +58,13 @@ class timeline:
             label_x = int(self.label * 1080)  # Convert label percentage to x-value
             vertices = np.array([[label_x, 15], [label_x - 10, 5], [label_x + 10, 5]], np.int32)
             vertices = vertices.reshape((-1, 1, 2))
-            triangle_color = (200, 229, 250)  # Blue color for the triangle
+            triangle_color = (250, 229, 200)  # Blue color for the triangle
             cv2.fillPoly(image, pts=[vertices], color=triangle_color)
 
             # print(self.label ,label_x)
 
         # Draw the vertical line
-        line_color = (250, 230, 200)   # Green color for the line
+        line_color = (200, 230, 250)   # Green color for the line
         loc_x = int(loc * 1080)
 
         cv2.line(image, pt1=(loc_x, 0), pt2=(loc_x, image.shape[0]), color=line_color, thickness=2)

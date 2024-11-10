@@ -2,7 +2,7 @@
 import cv2
 import cv2 as cv
 import pandas as pd
-from select_corners import select_points
+from vector_overlay.select_corners import select_points
 import numpy as np
 import os
 
@@ -342,7 +342,7 @@ class VectorOverlay:
             frame_number += 1
             out.write(frame)
 
-        cap.release()
+
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
@@ -387,7 +387,7 @@ class VectorOverlay:
             frame_number += 1
             out.write(frame)
 
-        cap.release()
+
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
@@ -432,7 +432,7 @@ class VectorOverlay:
             frame_number += 1
             out.write(frame)
 
-        cap.release()
+
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
 

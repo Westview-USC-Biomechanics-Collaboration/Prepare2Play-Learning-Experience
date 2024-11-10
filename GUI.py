@@ -2,11 +2,12 @@ import tkinter as tk
 from tkinter import filedialog, Canvas, Label, Scale, Frame, Scrollbar, PhotoImage
 import cv2
 from PIL import Image, ImageTk
-#from tensorflow import double
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+# our script
 from Timeline import timeline
+from vector_overlay import vectoroverlay_GUI
 
 class DisplayApp:
     def __init__(self, master):
@@ -67,7 +68,7 @@ class DisplayApp:
         self.upload_force_button.grid(row=3, column=1, padx=5, pady=10, sticky="nsew")
 
         # Vector overlay button
-        self.show_vector_overlay = tk.Button(self.frame, text="Vector Overlay", command=lambda: print("Vector overlay clicked"))
+        self.show_vector_overlay = tk.Button(self.frame, text="Vector Overlay", command=self.vector_overlay)
         self.show_vector_overlay.grid(row=3, column=2, padx=5, pady=10, sticky="nsew")
 
         # video label button
@@ -159,6 +160,7 @@ class DisplayApp:
             # update video timeline
             videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc / self.total_frames))
             self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
+            #frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
             self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
         if self.rows is not None:  # somehow self.forcedata is not None doesn't work, using self.rows as compensation
@@ -288,6 +290,12 @@ class DisplayApp:
         """
         print("user clicked save button")
         pass
+
+    def vector_overlay(self):
+        print("user clicked vector overlay button")
+
+        v = vectoroverlay_GUI.VectorOverlay(data=self.forcedata,video=self.cam)
+        v.LongVectorOverlay(outputName="C:\\Users\\16199\Desktop\data\Chase\\testoutput.mp4")
 
 
 
