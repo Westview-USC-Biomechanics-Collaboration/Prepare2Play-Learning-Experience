@@ -227,6 +227,7 @@ class DisplayApp:
         ret, frame = self.cam.read()  # the `frame` object is now the frame we want
 
         if ret:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
             frame = Image.fromarray(frame).resize((400, 300), resample=Image.BICUBIC) # Resize the frame to 400 * 300
             self.photo_image1 = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
             self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
