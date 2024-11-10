@@ -15,8 +15,25 @@ from vector_overlay import vectoroverlay_GUI
 class DisplayApp:
     def __init__(self, master):
         self.master = master
+        # Give direction
+        direction = (
+            "This is the prototype syncing app. Please following the directions given, otherwise it won't work.\n"
+            "REQUIREMENT:\n"
+            "a)Video start at the moment when tennis ball collides force plate"
+            "\n\n"
+            "Step 1: upload video\n"
+            "Step 2: upload forcedata\n"
+            "Step 3: click `label video` when slider value is 0\n"
+            "Step 4: drag the slider to find the force spike on the graph\n"
+            "Step 5: click `label force`\n"
+            "Step 6: click align, you may need to extend the window to see that button\n"
+            "Step 7: click `vector overlay` button\n"
+            "Step 8: click `save` button and set the output name")
+        self.pop_up(text=direction)
+
         self.master.title("Multi-Window Display App")
         self.master.geometry("1500x800")
+        self.master.lift()
 
 
         # Create a canvas for scrolling
@@ -47,11 +64,11 @@ class DisplayApp:
 
         self.canvas2 = Canvas(self.frame, width=400, height=300, bg="lightgrey")
         self.canvas2.grid(row=0, column=1, padx=5, pady=5, sticky="nsew")
-        self.photo_image2 = None 
+        self.photo_image2 = None
 
         self.canvas3 = Canvas(self.frame, width=400, height=300, bg="lightgrey")
         self.canvas3.grid(row=0, column=2, padx=5, pady=5, sticky="nsew")
-        self.photo_image3 = None 
+        self.photo_image3 = None
 
         # Create a slider in the middle row
         self.slider = Scale(self.frame, from_=0, to=100, orient="horizontal", label="Adjust Value",
@@ -139,37 +156,51 @@ class DisplayApp:
         # Global frame/location base on slider
         self.loc = 0
 
-        # Give direction
-        direction = ("This is the prototype syncing app. Please following the directions given, otherwise it won't work.\n"
-                     "REQUIREMENT:\n"
-                     "a)Video start at the moment when tennis ball collides force plate"
-                     "\n\n"
-                     "Step 1: upload video\n"
-                     "Step 2: upload forcedata\n"
-                     "Step 3: click `label video` when slider value is 0\n"
-                     "Step 4: drag the slider to find the force spike on the graph\n"
-                     "Step 5: click `label force`\n"
-                     "Step 6: click align, you may need to extend the window to see that button\n"
-                     "Step 7: click `vector overlay` button\n"
-                     "Step 8: click `save` button and set the output name")
-        self.pop_up(text=direction)
+
 
     def get_current_frame(self):
         print(self.slider.get())
         return int(self.slider.get()) # return current frame, 1st return 1
 
-    def pop_up(self,text):
-        popup = tk.Toplevel()
+    def pop_up(self, text):
+        # Create a new top-level window (popup)
+        popup = tk.Toplevel(self.master)
         popup.title("Popup Window")
+
+        # Set the geometry of the popup window (500x300 in this case)
         popup.geometry("500x300")
 
+        # Optionally, center the popup relative to the parent window
+        # Get the screen width and height
+        screen_width = self.master.winfo_screenwidth()
+        screen_height = self.master.winfo_screenheight()
+
+        # Get the dimensions of the popup
+        popup_width = 500
+        popup_height = 300
+
+        # Calculate the position to center the popup
+        position_top = int(screen_height / 2 - popup_height / 2)
+        position_right = int(screen_width / 2 - popup_width / 2)
+
+        # Set the geometry with calculated position
+        popup.geometry(f'{popup_width}x{popup_height}+{position_right}+{position_top}')
+
+        # Add label to the popup window
         label = tk.Label(popup, text=text)
         label.pack(pady=20)
 
+        # Add a close button to the popup window
         close_button = tk.Button(popup, text="Close", command=popup.destroy)
         close_button.pack()
 
+        # Ensure the popup stays above the main window
+        popup.lift()  # Bring the popup to the front
+
+        # Make the popup modal (blocks interaction with the main window)
         popup.grab_set()
+
+        # Wait for the popup to be destroyed before returning to the main window
         self.master.wait_window(popup)
 
     def update_force_timeline(self):
@@ -186,17 +217,19 @@ class DisplayApp:
         self.cam = cv2.VideoCapture(video_path)
         self.total_frames = self.cam.get(cv2.CAP_PROP_FRAME_COUNT)
         self.slider.config(to=self.total_frames)   # ---> reconfigure slider value. The max value is the total number of frame in the video
-        self.display_frame()
+        self.photo_image1 = self.display_frame(camera=self.cam)
+        self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
 
-    def display_frame(self):
-        self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc) # pick the corresponding frame to display || the 1st frame is index 0, therefore -1
-        ret, frame = self.cam.read()  # the `frame` object is now the frame we want
+    def display_frame(self,camera):
+        camera.set(cv2.CAP_PROP_POS_FRAMES, self.loc) # pick the corresponding frame to display || the 1st frame is index 0, therefore -1
+        ret, frame = camera.read()  # the `frame` object is now the frame we want
 
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
             frame = Image.fromarray(frame).resize((400, 300), resample=Image.BICUBIC) # Resize the frame to 400 * 300
-            self.photo_image1 = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
-            self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
+            photoImage = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
+            return photoImage
+
 
     def display_vector(self):
         self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
@@ -241,10 +274,15 @@ class DisplayApp:
 
         if self.cam:
             # draw video canvas
-            self.display_frame()
+            self.photo_image1 = self.display_frame(camera=self.cam)
+            self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
+        if self.vector_cam:
+            # draw vector overlay canvas
+            self.photo_image3 = self.display_frame(camera=self.vector_cam)
+            self.canvas3.create_image(0, 0, image=self.photo_image3, anchor=tk.NW)
 
-            # update video timeline
-            self.update_video_timeline()
+        # update video timeline
+        self.update_video_timeline()
 
 
         if self.rows is not None:  # somehow self.force_data is not None doesn't work, using self.rows as compensation
