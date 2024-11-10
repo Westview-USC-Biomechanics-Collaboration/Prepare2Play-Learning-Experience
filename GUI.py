@@ -8,6 +8,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 # our script
 from Timeline import timeline
 from vector_overlay import vectoroverlay_GUI
+import os
+import shutil
 
 class DisplayApp:
     def __init__(self, master):
@@ -292,17 +294,19 @@ class DisplayApp:
         print("cut force data")
 
     def save(self):
-        """
-        Assuming there is a labeled row value.
-        """
         print("user clicked save button")
-        pass
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".mp4",  # Default extension if none is provided
+            filetypes=[("MP4 file", "*.mp4"), ("All files", "*.*")]
+        )
+        shutil.copy("vector_overlay_temp.mp4",file_path)
+        os.remove("vector_overlay_temp.mp4")
 
     def vector_overlay(self):
         print("user clicked vector overlay button")
 
         v = vectoroverlay_GUI.VectorOverlay(data=self.force_data,video=self.cam)
-        v.LongVectorOverlay(outputName="C:\\Users\\16199\Desktop\data\Chase\\testoutput.mp4")
+        v.LongVectorOverlay(outputName="vector_overlay_temp.mp4")
 
 
 
