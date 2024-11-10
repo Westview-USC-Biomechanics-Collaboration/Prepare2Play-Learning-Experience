@@ -319,12 +319,20 @@ class DisplayApp:
         self.force_path = file_path
         print(f"Force data uploaded: {file_path}")
 
+        names = ["abs time (s)", "Fx1", "Fy1", "Fz1", "|Ft1|", "Ax1", "Ay1", "COM px1", "COM py1", "COM pz1",
+                 "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "COM px2", "COM py2", "COM pz2"]
         # support both csv and excel
         if file_path.endswith('.xlsx'):
-            self.force_data = pd.read_excel(file_path,skiprows=19)   # ---> skip useless rows
+            self.force_data = pd.read_excel(
+                file_path,
+            )
         elif file_path.endswith('.csv'):
-            self.force_data = pd.read_csv(file_path,skiprows=19)
+            self.force_data = pd.read_csv(
+                file_path
+            )
 
+        self.force_data = self.force_data.iloc[18:,0:len(names)].reset_index(drop=True)
+        self.force_data.columns = names
         self.rows = self.force_data.shape[0]
         try:
             self.step_size = (600/self.cam.get(cv2.CAP_PROP_FPS)) # rows/frame

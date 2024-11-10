@@ -135,8 +135,14 @@ class VectorOverlay:
         self.long_view_path = long_view_path
         self.short_view_path = short_view_path
         self.data_path = data_path
-        df = pd.read_excel(self.data_path, skiprows=19)
-        self.data = df
+        names = ["abs time (s)", "Fx1", "Fy1", "Fz1", "|Ft1|", "Ax1", "Ay1", "COM px1", "COM py1", "COM pz1",
+                 "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "COM px2", "COM py2", "COM pz2"]
+        df = pd.read_excel(
+            self.data_path
+        )
+        data = df.iloc[18:, 0:len(names)].reset_index(drop=True)
+        data.columns = names
+        self.data = data
 
         self.frame_width, self.frame_height, self.fps, self.frame_count = None, None, None, None
 

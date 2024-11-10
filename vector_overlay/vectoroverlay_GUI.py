@@ -57,45 +57,6 @@ Select corner sequence:
          |_______________________|
 
 """
-
-# Initialization
-"""
-set your output path here
-"""
-
-
-def outputname(path):
-    """
-    use "\\" if you are in windows
-    use "/" if you are in ios
-    """
-    filename = path.split("\\")[-1][:-4]
-    output_name = "outputs\\" + filename + "_vector_overlay.mp4"
-    return output_name
-
-
-def find_files(directory):
-    long_file = None
-    short_file = None
-    top_file = None
-    data = None
-
-    for filename in os.listdir(directory):
-        if filename.endswith(".mp4"):
-            if "long" in filename:
-                long_file = os.path.join(directory, filename)
-            elif "short" in filename:
-                short_file = os.path.join(directory, filename)
-            elif "top" in filename:
-                top_file = os.path.join(directory, filename)
-            else:
-                long_file = os.path.join(directory, filename)
-        elif filename.endswith(".xlsx"):
-            data = os.path.join(directory, filename)
-
-    return long_file, short_file, top_file, data
-
-
 def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     """
     Maps points from a rectangle to a trapezoid, simulating parallax distortion.
@@ -135,7 +96,6 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
 
     return (int(new_x), int(new_y))
 
-
 class VectorOverlay:
 
     def __init__(self, data, video):
@@ -169,16 +129,8 @@ class VectorOverlay:
         self.check_corner(cap=self.video)
         self.readData()
 
-
-
     def check_corner(self, cap):
         self.corners = select_points(cap=cap)
-
-    def check_direction(self, points):
-        # Assuming points is a list of tuples [(x1, y1), (x2, y2)]
-        if points[0][0] > points[1][0]:  # Compare the x-coordinates
-            return True
-        return False
 
     def setFrameData(self):
         cap = self.video
@@ -193,7 +145,6 @@ class VectorOverlay:
         self.frame_count = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
         print(
             f"Frame width: {self.frame_width}, Frame height: {self.frame_height}, FPS: {self.fps}, Frame count: {self.frame_count}")
-
 
     def normalizeForces(self, x1, x2, y1, y2):
         max_force = max(
@@ -275,23 +226,17 @@ class VectorOverlay:
 
     def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2):
 
-        # already convert pressure to percentage when reading data, no need to do it here
-        # the rect_to_trapezoid translates the normalized force data to the trapazoid that we see of the forceplate surface in the video for force plate 1
         start_point_1 = rect_to_trapezoid(px1, py1, 1, 1,
                                           [self.corners[0], self.corners[1], self.corners[2], self.corners[3]])
 
-        # the rect_to_trapezoid translates the normalized force data to the trapazoid that we see of the forceplate surface in the video for force plate 2
         start_point_2 = rect_to_trapezoid(px2, py2, 1, 1,
                                           [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
-        # print(f"Startpoint1: {start_point_1}, Startpoint2:{start_point_2}")
-
         end_point_1 = (int(start_point_1[0] + xf1), int(start_point_1[1] - yf1))
         end_point_2 = (int(start_point_2[0] + xf2), int(start_point_2[1] - yf2))
 
         cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
 
         cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
-
 
     def LongVectorOverlay(self, outputName):
         self.normalizeForces(self.fy1, self.fy2, self.fz1, self.fz2)
@@ -436,11 +381,8 @@ class VectorOverlay:
         out.release()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
-
 if __name__ == "__main__":
     df = pd.read_excel("C:\\Users\\16199\Desktop\data\Chase\\bcp_lr_CC_for02_Raw_Data.xlsx",skiprows=19)
     cap = cv2.VideoCapture("C:\\Users\\16199\Desktop\data\Chase\\bcp_lr_CC_vid02.mp4")
     v = VectorOverlay(df,cap)
     v.LongVectorOverlay(outputName="C:\\Users\\16199\Desktop\data\Chase\\testoutput.mp4")
-
-    pass
