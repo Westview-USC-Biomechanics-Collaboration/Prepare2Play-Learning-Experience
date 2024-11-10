@@ -172,42 +172,6 @@ class DisplayApp:
         popup.grab_set()
         self.master.wait_window(popup)
 
-    """
-    ################## 
-    Below is the slider method that is run everytime the user update the slider value
-    be sure to put everything you want to run under this method
-    ################## 
-    """
-    def update_slider_value(self, value):
-
-        # Update the label with the current slider value
-        self.loc = self.get_current_frame()
-        self.slider_value_label.config(text=f"Slider Value: {value}")
-
-        # Things that need to be updated when the slider value changes
-
-        if self.cam:
-            # draw video canvas
-            self.display_frame()
-
-            # update video timeline
-            self.update_video_timeline()
-
-
-        if self.rows is not None:  # somehow self.force_data is not None doesn't work, using self.rows as compensation
-            # draw graph canvas
-            # normalized_position = int(value) / (self.slider['to'])
-            # x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
-            try:
-                x_position = float(self.force_data.iloc[int(self.loc * self.step_size),0])
-                self.line.set_xdata([x_position])
-                self.canvas.draw()
-            except IndexError as e:
-                print("force data out of range")
-
-            # update force timeline
-            self.update_force_timeline()
-
     def update_force_timeline(self):
         forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc / self.slider['to']))
         self.timeline_image1 = ImageTk.PhotoImage(forceTimeline)
@@ -265,8 +229,38 @@ class DisplayApp:
     meaning that we are not able to convert self.force_align to the correct row in force data
     This can be solve by adding a new variable that contain the labeled row.
     
-    # methods below are buttons
+    # methods below are buttons and slider that user can interact with
     """
+    def update_slider_value(self, value):
+
+        # Update the label with the current slider value
+        self.loc = self.get_current_frame()
+        self.slider_value_label.config(text=f"Slider Value: {value}")
+
+        # Things that need to be updated when the slider value changes
+
+        if self.cam:
+            # draw video canvas
+            self.display_frame()
+
+            # update video timeline
+            self.update_video_timeline()
+
+
+        if self.rows is not None:  # somehow self.force_data is not None doesn't work, using self.rows as compensation
+            # draw graph canvas
+            # normalized_position = int(value) / (self.slider['to'])
+            # x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
+            try:
+                x_position = float(self.force_data.iloc[int(self.loc * self.step_size),0])
+                self.line.set_xdata([x_position])
+                self.canvas.draw()
+            except IndexError as e:
+                print("force data out of range")
+
+            # update force timeline
+            self.update_force_timeline()
+
     def upload_video(self):
         # Open a file dialog for video files
         self.video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
