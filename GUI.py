@@ -105,6 +105,7 @@ class DisplayApp:
         self.align_button.grid(row=10,column=0,padx=5,pady=10,sticky="nsew")
 
         # force data
+        self.force_path = None
         self.force_data = None
         self.rows = None
         self.force_frame = None   # convert rows to frames
@@ -116,6 +117,7 @@ class DisplayApp:
         self.canvas = None # the widget for matplot
 
         # video
+        self.video_path = None
         self.cam = None
         self.total_frames = None
 
@@ -176,11 +178,11 @@ class DisplayApp:
 
     def upload_video(self):
         # Open a file dialog for video files
-        video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
-        if video_path:
-            print(f"Video uploaded: {video_path}")
+        self.video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
+        if self.video_path:
+            print(f"Video uploaded: {self.video_path}")
             # display video
-            self.openVideo(video_path)
+            self.openVideo(self.video_path)
 
             # Initialize video timeline
             self.timeline2 = timeline(0,1)
@@ -191,6 +193,7 @@ class DisplayApp:
     def upload_force_data(self):
         # Open a file dialog for any file type
         file_path = filedialog.askopenfilename(title="Select Force Data File",filetypes=[("Excel or CSV Files", "*.xlsx;*.xls,*.csv")])
+        self.force_path = file_path
         print(f"Force data uploaded: {file_path}")
         # support both csv and excel
         if file_path.endswith('.xlsx'):
@@ -198,7 +201,7 @@ class DisplayApp:
         elif file_path.endswith('.csv'):
             self.forcedata = pd.read_csv(file_path,skiprows=19)   
         self.rows = self.forcedata.shape[0]
-        self.force_frame = int(self.rows/10)  # assume fix step size (10)---> result is num of frames(int)
+        self.force_frame = int(self.rows/(600/self.cam.get(cv2.CAP_PROP_FPS)))  # assume fix step size (10)---> result is num of frames(int)
 
         self.x = self.forcedata.iloc[:, 0] # time
         self.y = self.forcedata.iloc[:, 1] # force x   ---> we need 2 radio button for picking the force place and 3 radio button to pick the force
