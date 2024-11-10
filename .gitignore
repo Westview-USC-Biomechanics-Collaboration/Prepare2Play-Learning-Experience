@@ -2,6 +2,12 @@
 .venv
 *.pyc
 *.pyc
+*.png
+*.jpeg
+*.txt
+*.mp4
+*.exe
+*.venv
 
 outputs/
 data/
