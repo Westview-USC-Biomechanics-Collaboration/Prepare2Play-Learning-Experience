@@ -49,14 +49,13 @@ class DisplayApp:
         self.main_canvas.bind('<Configure>',
                               lambda e: self.main_canvas.configure(scrollregion=self.main_canvas.bbox("all")))
 
-
-        """
-        Deren's code (35~37) for putting frame and canvas together. I don't know how it works but it works
-        """
         # Create a frame inside the canvas to hold all widgets
         self.frame = Frame(self.main_canvas)
         self.main_canvas.create_window((0, 0), window=self.frame, anchor="nw")
 
+        """
+        Row 0
+        """
         # Create three canvases for display in the first row
         self.canvas1 = Canvas(self.frame, width=400, height=300, bg="lightgrey")
         self.canvas1.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
@@ -70,60 +69,91 @@ class DisplayApp:
         self.canvas3.grid(row=0, column=2, padx=5, pady=5, sticky="nsew")
         self.photo_image3 = None
 
+        """
+        Row 1
+        """
+        # align botton
+        self.align_button = tk.Button(self.frame, text="Align", command=self.align)
+        self.align_button.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+
+        self.graph_option = tk.Button(self.frame,text="graphing options",command=self.graph)
+        self.graph_option.grid(row=1,column = 1,padx=10,pady=10,sticky="nsew")
+
+        """
+        Row 2
+        """
         # Create a slider in the middle row
         self.slider = Scale(self.frame, from_=0, to=100, orient="horizontal", label="Adjust Value",
                             command=self.update_slider_value)
-        self.slider.grid(row=1, column=0, columnspan=3, padx=5, pady=10, sticky="ew")
+        self.slider.grid(row=2, column=0, columnspan=3, padx=5, pady=10, sticky="ew")
 
+        """
+        Row 3
+        """
         # Label to display slider value
         self.slider_value_label = Label(self.frame, text="Slider Value: 0")
-        self.slider_value_label.grid(row=2, column=0, columnspan=3, pady=5)
+        self.slider_value_label.grid(row=3, column=0, columnspan=3, pady=5)
+
+        """
+        Row 4
+        """
 
         # Upload buttons in the bottom row
         self.upload_video_button = tk.Button(self.frame, text="Upload Video", command=self.upload_video)
-        self.upload_video_button.grid(row=3, column=0, padx=5, pady=10, sticky="nsew")
+        self.upload_video_button.grid(row=4, column=0, padx=5, pady=10, sticky="nsew")
 
         # Upload button for force data
         self.upload_force_button = tk.Button(self.frame, text="Upload force File", command=self.upload_force_data)
-        self.upload_force_button.grid(row=3, column=1, padx=5, pady=10, sticky="nsew")
+        self.upload_force_button.grid(row=4, column=1, padx=5, pady=10, sticky="nsew")
 
         # Vector overlay button
         self.show_vector_overlay = tk.Button(self.frame, text="Vector Overlay", command=self.vector_overlay)
-        self.show_vector_overlay.grid(row=3, column=2, padx=5, pady=10, sticky="nsew")
+        self.show_vector_overlay.grid(row=4, column=2, padx=5, pady=10, sticky="nsew")
 
+        """
+        Row 5
+        """
         # video label button
         self.video_button = tk.Button(self.frame, text="label video", command=self.label_video)
-        self.video_button.grid(row=4, column=0, padx=5, pady=10, sticky="nsew")
+        self.video_button.grid(row=5, column=0, padx=5, pady=10, sticky="nsew")
 
         # force label button
         self.force_button = tk.Button(self.frame, text="label force", command=self.label_force)
-        self.force_button.grid(row=4, column=1,padx=5, pady=10, sticky="nsew")
+        self.force_button.grid(row=5, column=1,padx=5, pady=10, sticky="nsew")
 
         # Save button
         self.save_button = tk.Button(self.frame, text="Save", command=self.save)
-        self.save_button.grid(row=4, column=2,padx=5, pady=10, sticky="nsew")
+        self.save_button.grid(row=5, column=2,padx=5, pady=10, sticky="nsew")
 
+        """
+        Row 6
+        """
         # Force timeline label
         self.force_timeline_label = Label(self.frame, text="Force Timeline (unit = frame)")
-        self.force_timeline_label.grid(row=6, column=0, sticky="w")
+        self.force_timeline_label.grid(row=7, column=0, sticky="w")
 
+        """
+        Row 7
+        """
         # Force timeline
         self.force_timeline = Canvas(self.frame, width=1080, height=75, bg="lightblue")
-        self.force_timeline.grid(row=7, column=0, columnspan=3, pady=1)
+        self.force_timeline.grid(row=8, column=0, columnspan=3, pady=1)
         self.timeline_image1 = None  # place holder for timeline cavas image object
 
+        """
+        Row 8
+        """
         # Video timeline label
         self.video_timeline_label = Label(self.frame, text="Video Timeline (unit = frame)")
-        self.video_timeline_label.grid(row=8, column=0, sticky="w")
+        self.video_timeline_label.grid(row=9, column=0, sticky="w")
 
+        """
+        Row 9
+        """
         # Video timeline
         self.video_timeline = Canvas(self.frame, width=1080, height=75, bg="lightblue")
-        self.video_timeline.grid(row=9, column=0, columnspan=3, pady=1)
+        self.video_timeline.grid(row=10, column=0, columnspan=3, pady=1)
         self.timeline_image2 = None
-
-        # align botton 
-        self.align_button = tk.Button(self.frame, text="Align", command=self.align)
-        self.align_button.grid(row=10,column=0,padx=5,pady=10,sticky="nsew")
 
         # force data
         self.force_path = None
@@ -137,6 +167,10 @@ class DisplayApp:
         self.y = None # y-axis data
         self.line = None # Initialize the line reference
         self.canvas = None # the widget for matplot
+
+        # Graphing options
+        self.plate = tk.StringVar(value="Force Plate 1")
+        self.force = tk.StringVar(value="Fz")
 
         # video
         self.video_path = None
@@ -230,10 +264,6 @@ class DisplayApp:
             photoImage = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
             return photoImage
 
-
-    def display_vector(self):
-        self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-
     def plot_force_data(self):
         # Clear previous figure on canvas2
         for widget in self.canvas2.winfo_children():
@@ -241,6 +271,23 @@ class DisplayApp:
 
         # Create a new figure and plot
         self.fig, self.ax = plt.subplots(figsize=(4.75, 3.75))
+
+        print(self.plate,self.force)
+        if self.plate.get()=="Force Plate 1":
+            if self.force.get()=="Fx":
+                self.y=self.force_data.loc[:,"Fx1"]
+            elif self.force.get()=="Fy":
+                self.y=self.force_data.loc[:,"Fy1"]
+            elif self.force.get()=="Fz":
+                self.y=self.force_data.loc[:,"Fz1"]
+        elif self.plate.get()=="Force Plate 2":
+            if self.force.get()=="Fx":
+                self.y=self.force_data.loc[:,"Fx2"]
+            elif self.force.get()=="Fy":
+                self.y=self.force_data.loc[:,"Fy2"]
+            elif self.force.get()=="Fz":
+                self.y=self.force_data.loc[:,"Fz2"]
+
         self.ax.plot(self.x, self.y, linestyle='-', color='blue', linewidth = 0.5)
         self.ax.set_title("Force vs. Time")
         self.ax.set_xlabel("Force (N.)")
@@ -276,13 +323,14 @@ class DisplayApp:
             # draw video canvas
             self.photo_image1 = self.display_frame(camera=self.cam)
             self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
+            # update video timeline
+            self.update_video_timeline()
         if self.vector_cam:
             # draw vector overlay canvas
             self.photo_image3 = self.display_frame(camera=self.vector_cam)
             self.canvas3.create_image(0, 0, image=self.photo_image3, anchor=tk.NW)
 
-        # update video timeline
-        self.update_video_timeline()
+
 
 
         if self.rows is not None:  # somehow self.force_data is not None doesn't work, using self.rows as compensation
@@ -333,6 +381,10 @@ class DisplayApp:
 
         self.force_data = self.force_data.iloc[18:,0:len(names)].reset_index(drop=True)
         self.force_data.columns = names
+        self.force_data = self.force_data.apply(pd.to_numeric, errors='coerce')
+
+
+
         self.rows = self.force_data.shape[0]
         try:
             self.step_size = (600/self.cam.get(cv2.CAP_PROP_FPS)) # rows/frame
@@ -344,7 +396,7 @@ class DisplayApp:
         self.force_frame = int(self.rows/self.step_size)  # represent num of frames force data can cover
 
         self.x = self.force_data.iloc[:, 0] # time
-        self.y = self.force_data.iloc[:, 1] # force x   ---> we need 2 radio button for picking the force place and 3 radio button to pick the force
+        self.y = self.force_data.iloc[:, 3] # force z   ---> we need 2 radio button for picking the force place and 3 radio button to pick the force
         self.plot_force_data()
 
         # Initialize force timeline
@@ -408,6 +460,55 @@ class DisplayApp:
         self.video_align = self.loc
         self.timeline2.update_label(self.loc/self.slider['to'])
         self.update_video_timeline()
+
+    def graph(self):
+        # Create a new popup window
+        popup = tk.Toplevel(self.frame)
+        popup.title("Force Plate Selection")
+        popup.geometry("300x250")
+
+        # Variables to store selected radio button values
+        self.plate = tk.StringVar(value="Force Plate 1")
+        self.force = tk.StringVar(value="Fx")
+
+        # First row: Force Plate Selection
+        frame1 = tk.Frame(popup)
+        frame1.pack(pady=10)
+
+        tk.Label(frame1, text="Select Force Plate:").pack(side=tk.LEFT)
+        force_plate_1 = tk.Radiobutton(frame1, text="Force Plate 1", variable=self.plate,
+                                       value="Force Plate 1")
+        force_plate_1.pack(side=tk.LEFT)
+
+        force_plate_2 = tk.Radiobutton(frame1, text="Force Plate 2", variable=self.plate,
+                                       value="Force Plate 2")
+        force_plate_2.pack(side=tk.LEFT)
+
+        # Second row: Force Components
+        frame2 = tk.Frame(popup)
+        frame2.pack(pady=10)
+
+        tk.Label(frame2, text="Select Force").pack()
+
+        fx_radio = tk.Radiobutton(frame2, text="Fx", variable=self.force, value="Fx")
+        fx_radio.pack(side=tk.LEFT, padx=5)
+
+        fy_radio = tk.Radiobutton(frame2, text="Fy", variable=self.force, value="Fy")
+        fy_radio.pack(side=tk.LEFT, padx=5)
+
+        fz_radio = tk.Radiobutton(frame2, text="Fz", variable=self.force, value="Fz")
+        fz_radio.pack(side=tk.LEFT, padx=5)
+
+        def make_changes():
+            self.plot_force_data()
+            popup.destroy()
+
+        # Button to confirm and close the popup
+        confirm_btn = tk.Button(popup, text="Confirm", command=make_changes)
+        confirm_btn.pack(pady=10)
+
+
+
 
 if __name__ == "__main__":
     root = tk.Tk()
