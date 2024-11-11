@@ -17,24 +17,25 @@ class DisplayApp:
         self.master = master
         # Give direction
         direction = (
-            "This is the prototype syncing app. Please following the directions given, otherwise it won't work.\n"
+            "This is the prototype syncing app. Please follow the directions given, otherwise it won't work.\n"
             "REQUIREMENT:\n"
-            "a)Video start at the moment when tennis ball collides force plate"
+            "a)Video start at the moment when tennis ball collides with the force plate"
             "\n\n"
             "Step 1: upload video\n"
-            "Step 2: upload forcedata\n"
+            "Step 2: upload force data\n"
             "Step 3: click `label video` when slider value is 0\n"
             "Step 4: drag the slider to find the force spike on the graph\n"
             "Step 5: click `label force`\n"
             "Step 6: click align, you may need to extend the window to see that button\n"
             "Step 7: click `vector overlay` button\n"
-            "Step 8: click `save` button and set the output name")
+            "Step 8: click `save` button and set the output name"
+        )
         self.pop_up(text=direction)
 
         self.master.title("Multi-Window Display App")
-        self.master.geometry("1500x800")
+        self.master.geometry("1320x1080")
+        #self.master.resizable(False,False)
         self.master.lift()
-
 
         # Create a canvas for scrolling
         self.main_canvas = Canvas(master)
@@ -46,114 +47,93 @@ class DisplayApp:
 
         # Configure the canvas to work with the scrollbar
         self.main_canvas.configure(yscrollcommand=self.scrollbar.set)
-        self.main_canvas.bind('<Configure>',
-                              lambda e: self.main_canvas.configure(scrollregion=self.main_canvas.bbox("all")))
 
-        # Create a frame inside the canvas to hold all widgets
-        self.frame = Frame(self.main_canvas)
-        self.main_canvas.create_window((0, 0), window=self.frame, anchor="nw")
+        # Tk background
+        img_path = r"lookBack.jpg"
+        image = Image.open(img_path)
+        bg_image = ImageTk.PhotoImage(image)
 
-        """
-        Row 0
-        """
-        # Create three canvases for display in the first row
-        self.canvas1 = Canvas(self.frame, width=400, height=300, bg="lightgrey")
-        self.canvas1.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
-        self.photo_image1 = None # place holder for the image object
+        # Create a label to display the background image inside the canvas
+        self.bg_label = tk.Label(self.main_canvas, image=bg_image)
+        self.bg_label.place(relwidth=1, relheight=1)  # Stretch the label to fill the canvas
 
-        self.canvas2 = Canvas(self.frame, width=400, height=300, bg="lightgrey")
-        self.canvas2.grid(row=0, column=1, padx=5, pady=5, sticky="nsew")
-        self.photo_image2 = None
+        # Keep a reference to the image to prevent it from being garbage collected
+        self.bg_image = bg_image  # Store reference to image here
 
-        self.canvas3 = Canvas(self.frame, width=400, height=300, bg="lightgrey")
-        self.canvas3.grid(row=0, column=2, padx=5, pady=5, sticky="nsew")
-        self.photo_image3 = None
+        # Bind the <Configure> event to update the canvas and frame size dynamically
+        self.main_canvas.bind('<Configure>', self.on_canvas_resize)
 
-        """
-        Row 1
-        """
-        # align botton
-        self.align_button = tk.Button(self.frame, text="Align", command=self.align)
-        self.align_button.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
 
-        self.graph_option = tk.Button(self.frame,text="graphing options",command=self.graph)
-        self.graph_option.grid(row=1,column = 1,padx=10,pady=10,sticky="nsew")
+        # Row 0: Create three canvases for display
+        self.canvas1 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
+        self.canvas1.place(x=50, y=50, width=400, height=300)  # Position canvas1 at (50, 50)
+        canvas_x = 50
+        canvas_y = 50
 
-        """
-        Row 2
-        """
-        # Create a slider in the middle row
-        self.slider = Scale(self.frame, from_=0, to=100, orient="horizontal", label="Adjust Value",
-                            command=self.update_slider_value)
-        self.slider.grid(row=2, column=0, columnspan=3, padx=5, pady=10, sticky="ew")
+        self.canvas2 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
+        self.canvas2.place(x=canvas_x+410, y=50, width=400, height=300)  # Position canvas2 at (460, 50)
 
-        """
-        Row 3
-        """
-        # Label to display slider value
-        self.slider_value_label = Label(self.frame, text="Slider Value: 0")
-        self.slider_value_label.grid(row=3, column=0, columnspan=3, pady=5)
+        self.canvas3 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
+        self.canvas3.place(x=canvas_x+410+410, y=50, width=400, height=300)  # Position canvas3 at (870, 50)
 
-        """
-        Row 4
-        """
+        # Placeholders for images
+        self.photo_image1 = None  # Placeholder for image object for canvas1
+        self.photo_image2 = None  # Placeholder for image object for canvas2
+        self.photo_image3 = None  # Placeholder for image object for canvas3
 
-        # Upload buttons in the bottom row
-        self.upload_video_button = tk.Button(self.frame, text="Upload Video", command=self.upload_video)
-        self.upload_video_button.grid(row=4, column=0, padx=5, pady=10, sticky="nsew")
+        # Row 1: Buttons for alignment and graph options
+        self.align_button = tk.Button(self.main_canvas, text="Align", command=self.align)
+        self.align_button.place(x=150, y=canvas_y+320, width=200, height=40)
 
-        # Upload button for force data
-        self.upload_force_button = tk.Button(self.frame, text="Upload force File", command=self.upload_force_data)
-        self.upload_force_button.grid(row=4, column=1, padx=5, pady=10, sticky="nsew")
+        self.graph_option = tk.Button(self.main_canvas, text="Graphing options", command=self.graph)
+        self.graph_option.place(x=560, y=canvas_y+320, width=200, height=40)
 
-        # Vector overlay button
-        self.show_vector_overlay = tk.Button(self.frame, text="Vector Overlay", command=self.vector_overlay)
-        self.show_vector_overlay.grid(row=4, column=2, padx=5, pady=10, sticky="nsew")
+        # Row 2: Slider to adjust values
+        self.slider = Scale(self.main_canvas, from_=0, to=100, orient="horizontal", label="Adjust Value", command=self.update_slider_value)
+        self.slider.place(x=50, y=canvas_y+320+50, width=1220)  # Adjust width to fit in the window
 
-        """
-        Row 5
-        """
-        # video label button
-        self.video_button = tk.Button(self.frame, text="label video", command=self.label_video)
-        self.video_button.grid(row=5, column=0, padx=5, pady=10, sticky="nsew")
+        # Row 3: Label to display slider value
+        self.slider_value_label = Label(self.main_canvas, text="Slider Value: 0")
+        self.slider_value_label.place(x=50, y=470, width=1220)
 
-        # force label button
-        self.force_button = tk.Button(self.frame, text="label force", command=self.label_force)
-        self.force_button.grid(row=5, column=1,padx=5, pady=10, sticky="nsew")
+        # Row 4: Upload buttons for video and force data
+        self.upload_video_button = tk.Button(self.main_canvas, text="Upload Video", command=self.upload_video)
+        self.upload_video_button.place(x=50, y=510, width=350, height=40)
 
-        # Save button
-        self.save_button = tk.Button(self.frame, text="Save", command=self.save)
-        self.save_button.grid(row=5, column=2,padx=5, pady=10, sticky="nsew")
+        self.upload_force_button = tk.Button(self.main_canvas, text="Upload Force File", command=self.upload_force_data)
+        self.upload_force_button.place(x=460, y=510, width=350, height=40)
 
-        """
-        Row 6
-        """
-        # Force timeline label
-        self.force_timeline_label = Label(self.frame, text="Force Timeline (unit = frame)")
-        self.force_timeline_label.grid(row=7, column=0, sticky="w")
+        self.show_vector_overlay = tk.Button(self.main_canvas, text="Vector Overlay", command=self.vector_overlay)
+        self.show_vector_overlay.place(x=820, y=510, width=350, height=40)
 
-        """
-        Row 7
-        """
-        # Force timeline
-        self.force_timeline = Canvas(self.frame, width=1080, height=75, bg="lightblue")
-        self.force_timeline.grid(row=8, column=0, columnspan=3, pady=1)
-        self.timeline_image1 = None  # place holder for timeline cavas image object
+        # Row 5: Label buttons for video and force labeling
+        self.video_button = tk.Button(self.main_canvas, text="Label Video", command=self.label_video)
+        self.video_button.place(x=50, y=560, width=350, height=40)
 
-        """
-        Row 8
-        """
-        # Video timeline label
-        self.video_timeline_label = Label(self.frame, text="Video Timeline (unit = frame)")
-        self.video_timeline_label.grid(row=9, column=0, sticky="w")
+        self.force_button = tk.Button(self.main_canvas, text="Label Force", command=self.label_force)
+        self.force_button.place(x=410, y=560, width=350, height=40)
 
-        """
-        Row 9
-        """
-        # Video timeline
-        self.video_timeline = Canvas(self.frame, width=1080, height=75, bg="lightblue")
-        self.video_timeline.grid(row=10, column=0, columnspan=3, pady=1)
+        self.save_button = tk.Button(self.main_canvas, text="Save", command=self.save)
+        self.save_button.place(x=770, y=560, width=350, height=40)
+
+        # Row 6: Force timeline label
+        self.force_timeline_label = Label(self.main_canvas, text="Force Timeline (unit = frame)")
+        self.force_timeline_label.place(x=50, y=610, width=1120)
+
+        # Row 7: Force timeline canvas
+        self.force_timeline = Canvas(self.main_canvas, width=1080, height=75, bg="lightblue")
+        self.force_timeline.place(x=50, y=650, width=1080, height=75)
+        self.timeline_image1 = None
+
+        # Row 8: Video timeline label
+        self.video_timeline_label = Label(self.main_canvas, text="Video Timeline (unit = frame)")
+        self.video_timeline_label.place(x=50, y=740, width=1120)
+
+        # Row 9: Video timeline canvas
+        self.video_timeline = Canvas(self.main_canvas, width=1080, height=75, bg="lightblue")
+        self.video_timeline.place(x=50, y=780, width=1080, height=75)
         self.timeline_image2 = None
+
 
         # force data
         self.force_path = None
@@ -190,7 +170,13 @@ class DisplayApp:
         # Global frame/location base on slider
         self.loc = 0
 
-
+    def on_canvas_resize(self, event):
+        canvas_width = event.width
+        canvas_height = event.height
+        # Update the frame size to match the canvas size
+        self.main_canvas.config(width=canvas_width, height=canvas_height)
+        # Update the scroll region to include the entire content of the frame
+        self.main_canvas.configure(scrollregion=self.main_canvas.bbox("all"))
 
     def get_current_frame(self):
         print(self.slider.get())
@@ -272,7 +258,6 @@ class DisplayApp:
         # Create a new figure and plot
         self.fig, self.ax = plt.subplots(figsize=(4.75, 3.75))
 
-        print(self.plate,self.force)
         if self.plate.get()=="Force Plate 1":
             if self.force.get()=="Fx":
                 self.y=self.force_data.loc[:,"Fx1"]
@@ -463,7 +448,7 @@ class DisplayApp:
 
     def graph(self):
         # Create a new popup window
-        popup = tk.Toplevel(self.frame)
+        popup = tk.Toplevel(self.main_canvas)
         popup.title("Force Plate Selection")
         popup.geometry("300x250")
 
@@ -500,7 +485,10 @@ class DisplayApp:
         fz_radio.pack(side=tk.LEFT, padx=5)
 
         def make_changes():
-            self.plot_force_data()
+            try:
+                self.plot_force_data()
+            except AttributeError as e:
+                print("Missing force data !!!")
             popup.destroy()
 
         # Button to confirm and close the popup
