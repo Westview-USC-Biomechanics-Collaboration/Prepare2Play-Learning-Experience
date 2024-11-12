@@ -19,14 +19,14 @@ class DisplayApp:
         direction = (
             "This is the prototype syncing app. Please follow the directions given, otherwise it won't work.\n"
             "REQUIREMENT:\n"
-            "a)Video start at the moment when tennis ball collides with the force plate"
+            "a)force is recorded before video recording(force label greater than video label)"
             "\n\n"
             "Step 1: upload video\n"
             "Step 2: upload force data\n"
             "Step 3: click `label video` when slider value is 0\n"
             "Step 4: drag the slider to find the force spike on the graph\n"
             "Step 5: click `label force`\n"
-            "Step 6: click align, you may need to extend the window to see that button\n"
+            "Step 6: click align button,\n"
             "Step 7: click `vector overlay` button\n"
             "Step 8: click `save` button and set the output name"
         )
@@ -309,6 +309,11 @@ class DisplayApp:
     If the user use the align button twice, self.force_align lost true frame value relative to global
     meaning that we are not able to convert self.force_align to the correct row in force data
     This can be solve by adding a new variable that contain the labeled row.
+    
+    second problem, the alignment only works when force label is greater than video label,
+    if reversed, the graph will display the last few rows of the force data,
+    this can be solved by adding a new column that monitor the global index(frame)
+    
     
     # methods below are buttons and slider that user can interact with
     """
