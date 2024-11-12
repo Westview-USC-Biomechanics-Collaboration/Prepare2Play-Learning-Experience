@@ -467,7 +467,7 @@ class DisplayApp:
             filetypes=[("MP4 file", "*.mp4"), ("All files", "*.*")]
         )
         shutil.copy("vector_overlay_temp.mp4",file_path)
-        os.remove("vector_overlay_temp.mp4")
+
 
     def vector_overlay(self):
         print("user clicked vector overlay button")
