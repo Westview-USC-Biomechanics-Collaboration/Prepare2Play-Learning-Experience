@@ -5,11 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1ef67fc5-df0d-4fbb-a3e4-50076bc08b3a" name="Changes" comment="updated my code with Chase's">
+<<<<<<< Updated upstream
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_overlay/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_overlay/Skeletonoverlay.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/stick_figure_COM.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/GUI.py" afterDir="false" />
+=======
+      <change afterPath="$PROJECT_DIR$/vector_overlay/select_corners.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/GUI.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vector_overlay/selected_points.txt" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/selected_points.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/vector-overlay-skeleton.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vector_overlay/vectoroverlay_GUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/vector_overlay/vectoroverlay_GUI.py" afterDir="false" />
+>>>>>>> Stashed changes
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,7 +31,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="deren-shoulder-trunk-angle" />
+        <entry key="$PROJECT_DIR$" value="chase-vectory-overlay-fixing" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -43,6 +48,9 @@
     &quot;accountId&quot;: &quot;c33a8185-5ee1-4add-9b04-12b130191bb1&quot;
   }
 }</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/GUI.py" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
@@ -54,15 +62,18 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
+<<<<<<< Updated upstream
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
     &quot;Python.COM_humanbody.executor&quot;: &quot;Run&quot;,
     &quot;Python.Dash_graphing.executor&quot;: &quot;Run&quot;,
     &quot;Python.ForceTimeGraphs.executor&quot;: &quot;Run&quot;,
+    &quot;Python.GUI.executor&quot;: &quot;Run&quot;,
     &quot;Python.GraphAnimationChaseVersion (1).executor&quot;: &quot;Run&quot;,
     &quot;Python.Skeletonoverlay (1).executor&quot;: &quot;Run&quot;,
     &quot;Python.Skeletonoverlay.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Timeline.executor&quot;: &quot;Run&quot;,
     &quot;Python.animations.executor&quot;: &quot;Run&quot;,
     &quot;Python.colorMask.executor&quot;: &quot;Run&quot;,
     &quot;Python.contact-point.executor&quot;: &quot;Run&quot;,
@@ -81,8 +92,8 @@
     &quot;Python.vector-overlay-skeleton.executor&quot;: &quot;Run&quot;,
     &quot;Python.vector_overlay_top.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;vector-overlay&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/16199/Desktop/Prepare2Play-Learning-Experience-deren-shoulder-trunk-angle&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;chase-GUI&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/16199/Documents/GitHub/Prepare2Play-Learning-Experience-3/vector_overlay&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -90,22 +101,64 @@
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+=======
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python.COM_humanbody.executor": "Run",
+    "Python.Dash_graphing.executor": "Run",
+    "Python.ForceTimeGraphs.executor": "Run",
+    "Python.GUI.executor": "Run",
+    "Python.GraphAnimationChaseVersion (1).executor": "Run",
+    "Python.Skeletonoverlay (1).executor": "Run",
+    "Python.Skeletonoverlay.executor": "Run",
+    "Python.Timeline.executor": "Run",
+    "Python.animations.executor": "Run",
+    "Python.colorMask.executor": "Run",
+    "Python.contact-point.executor": "Run",
+    "Python.contact_point (1).executor": "Run",
+    "Python.contact_point (2).executor": "Run",
+    "Python.contact_point.executor": "Run",
+    "Python.filled-animation-graph.executor": "Run",
+    "Python.segdim_deleva.executor": "Run",
+    "Python.skeletonChaseVersion (1).executor": "Run",
+    "Python.test_corners.executor": "Run",
+    "Python.testing (1).executor": "Run",
+    "Python.testing.executor": "Run",
+    "Python.testing02.executor": "Run",
+    "Python.testinganimation.executor": "Run",
+    "Python.testingfile.executor": "Run",
+    "Python.vector-overlay-skeleton.executor": "Run",
+    "Python.vector_overlay_top.executor": "Run",
+    "Python.vectoroverlay_GUI.executor": "Debug",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "chase-GUI",
+    "last_opened_file_path": "C:/Users/16199/Documents/GitHub/Prepare2Play-Learning-Experience-3/vector_overlay",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
+>>>>>>> Stashed changes
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\vector_overlay" />
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\vector_overlay" />
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\data" />
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\outputs" />
       <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\Mediapipe-pose_landmarker" />
-      <recent name="C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.vector-overlay-skeleton">
-    <configuration name="Dash_graphing" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.vectoroverlay_GUI">
+    <configuration name="GUI" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -118,7 +171,31 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Dash_graphing.py" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/GUI.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Timeline" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Prepare2Play-Learning-Experience-3" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Timeline.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -150,6 +227,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+<<<<<<< Updated upstream
     <configuration name="test_corners" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -163,6 +241,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/vector_overlay/test_corners.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -172,28 +251,8 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="testing (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="Prepare2Play-Learning-Experience-3" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/testing.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+=======
+>>>>>>> Stashed changes
     <configuration name="vector-overlay-skeleton" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Prepare2Play-Learning-Experience-3" />
       <option name="ENV_FILES" value="" />
@@ -217,13 +276,35 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="vectoroverlay_GUI" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Prepare2Play-Learning-Experience-3" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/vector_overlay" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/vector_overlay/vectoroverlay_GUI.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.vectoroverlay_GUI" />
+        <item itemvalue="Python.GUI" />
+        <item itemvalue="Python.Timeline" />
         <item itemvalue="Python.vector-overlay-skeleton" />
         <item itemvalue="Python.stick_figure_COM" />
-        <item itemvalue="Python.test_corners" />
-        <item itemvalue="Python.Dash_graphing" />
-        <item itemvalue="Python.testing (1)" />
       </list>
     </recent_temporary>
   </component>
@@ -282,6 +363,17 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <ignored-roots>
@@ -292,5 +384,16 @@
     <MESSAGE value="Refactored some code" />
     <MESSAGE value="updated my code with Chase's" />
     <option name="LAST_COMMIT_MESSAGE" value="updated my code with Chase's" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/vector_overlay/vectoroverlay_GUI.py</url>
+          <line>310</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
