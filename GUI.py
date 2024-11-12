@@ -1,3 +1,4 @@
+import sys
 import tkinter as tk
 from tkinter import filedialog, Canvas, Label, Scale, Frame, Scrollbar, PhotoImage
 import cv2
@@ -39,11 +40,22 @@ class DisplayApp:
         # Bind the resize event of the master window
         self.master.bind('<Configure>', self.center_canvas)
 
+        # Determine the correct path based on whether the app is running as an exe or not
+        if getattr(sys, 'frozen', False):
+            # If running from the packaged executable
+            app_path = sys._MEIPASS  # Temporary folder where bundled files are extracted
+        else:
+            # If running from source code
+            app_path = os.path.dirname(__file__)
+
         # Load the background image
-        img_path = r"lookBack.jpg"
-        image = Image.open(img_path)
-        bg_image = ImageTk.PhotoImage(image)
-        self.bg_image = bg_image  # Store reference to image here to prevent garbage collection
+        img_path = os.path.join(app_path, "lookBack.jpg")
+        try:
+            image = Image.open(img_path)
+            bg_image = ImageTk.PhotoImage(image)
+            self.bg_image = bg_image  # Store reference to image here to prevent garbage collection
+        except FileNotFoundError:
+            print(f"Error: {img_path} not found.")
 
         # Create a background canvas
         self.background = Canvas(self.master)
