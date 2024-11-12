@@ -182,24 +182,39 @@ class VectorOverlay:
             end_row = int(round(current_row + step_size))
             current_row += step_size
 
-            # the dividing adding by a float is to normalize the data into the positive and then the divide is to normalize the range from 0 to 1 in both directions
-            data_x1 = self.data.iloc[start_row, 1].astype('float64')
-            data_y1 = self.data.iloc[start_row, 2].astype('float64')
-            data_z1 = self.data.iloc[start_row, 3].astype('float64')
-            pressure_x1 = (-self.data.iloc[start_row, 5].astype('float64') + 0.3) / 0.6
-            pressure_y1 = (self.data.iloc[start_row, 6].astype('float64') + 0.45) / 0.9
+            # Check if start_row exceeds the DataFrame length
+            if start_row >= len(self.data):
+                # If start_row is out of bounds, append default values (0.0)
+                data_x1 = 0.0
+                data_y1 = 0.0
+                data_z1 = 0.0
+                pressure_x1 = 0.0
+                pressure_y1 = 0.0
 
-            # the dividing adding by a float is to normalize the data into the positive and then the divide is to normalize the range from 0 to 1 in both directions
-            data_x2 = self.data.iloc[start_row, 10].astype('float64')
-            data_y2 = self.data.iloc[start_row, 11].astype('float64')
-            data_z2 = self.data.iloc[start_row, 12].astype('float64')
-            pressure_x2 = (-self.data.iloc[start_row, 14].astype('float64') + 0.3) / 0.6
-            pressure_y2 = (self.data.iloc[start_row, 15].astype('float64') + 0.45) / 0.9
+                data_x2 = 0.0
+                data_y2 = 0.0
+                data_z2 = 0.0
+                pressure_x2 = 0.0
+                pressure_y2 = 0.0
+            else:
+                # Normal data extraction if start_row is within bounds
+                data_x1 = self.data.iloc[start_row, 1] if not pd.isna(self.data.iloc[start_row, 1]) else 0.0
+                data_y1 = self.data.iloc[start_row, 2] if not pd.isna(self.data.iloc[start_row, 2]) else 0.0
+                data_z1 = self.data.iloc[start_row, 3] if not pd.isna(self.data.iloc[start_row, 3]) else 0.0
+                pressure_x1 = (-self.data.iloc[start_row, 5] + 0.3) / 0.6 if not pd.isna(
+                    self.data.iloc[start_row, 5]) else 0.0
+                pressure_y1 = (self.data.iloc[start_row, 6] + 0.45) / 0.9 if not pd.isna(
+                    self.data.iloc[start_row, 6]) else 0.0
 
-            # we are not using the mean
-            # fx1.append(data_x1.mean())
-            # I only take the start row
+                data_x2 = self.data.iloc[start_row, 10] if not pd.isna(self.data.iloc[start_row, 10]) else 0.0
+                data_y2 = self.data.iloc[start_row, 11] if not pd.isna(self.data.iloc[start_row, 11]) else 0.0
+                data_z2 = self.data.iloc[start_row, 12] if not pd.isna(self.data.iloc[start_row, 12]) else 0.0
+                pressure_x2 = (-self.data.iloc[start_row, 14] + 0.3) / 0.6 if not pd.isna(
+                    self.data.iloc[start_row, 14]) else 0.0
+                pressure_y2 = (self.data.iloc[start_row, 15] + 0.45) / 0.9 if not pd.isna(
+                    self.data.iloc[start_row, 15]) else 0.0
 
+            # Append the data to the lists
             fx1.append(data_x1)
             fy1.append(data_y1)
             fz1.append(data_z1)

@@ -34,109 +34,100 @@ class DisplayApp:
 
         self.master.title("Multi-Window Display App")
         self.master.geometry("1320x1080")
-        #self.master.resizable(False,False)
         self.master.lift()
 
-        # Create a canvas for scrolling
-        self.main_canvas = Canvas(master)
-        self.main_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        # Bind the resize event of the master window
+        self.master.bind('<Configure>', self.center_canvas)
 
-        # Add a scrollbar
-        self.scrollbar = Scrollbar(master, orient="vertical", command=self.main_canvas.yview)
-        self.scrollbar.pack(side=tk.RIGHT, fill="y")
-
-        # Configure the canvas to work with the scrollbar
-        self.main_canvas.configure(yscrollcommand=self.scrollbar.set)
-
-        # Tk background
+        # Load the background image
         img_path = r"lookBack.jpg"
         image = Image.open(img_path)
         bg_image = ImageTk.PhotoImage(image)
+        self.bg_image = bg_image  # Store reference to image here to prevent garbage collection
 
-        # Create a label to display the background image inside the canvas
-        self.bg_label = tk.Label(self.main_canvas, image=bg_image)
-        self.bg_label.place(relwidth=1, relheight=1)  # Stretch the label to fill the canvas
+        # Create a background canvas
+        self.background = Canvas(self.master)
+        self.background.pack(fill=tk.BOTH, expand=True)
 
-        # Keep a reference to the image to prevent it from being garbage collected
-        self.bg_image = bg_image  # Store reference to image here
+        # Display the background image on the canvas
+        self.background.create_image(0, 0, image=self.bg_image, anchor="nw")
 
-        # Bind the <Configure> event to update the canvas and frame size dynamically
-        self.main_canvas.bind('<Configure>', self.on_canvas_resize)
+        # Adjust the canvas size to fit the image
+        self.background.config(width=bg_image.width(), height=bg_image.height())
 
+        # Create a main canvas for content, centered within the background canvas
+        self.main_canvas = Canvas(self.background, width=800, height=600, bg="lightgrey")
+        self.main_canvas.place(relx=0.5, rely=0.5, anchor="center")
 
         # Row 0: Create three canvases for display
         self.canvas1 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
-        self.canvas1.place(x=50, y=50, width=400, height=300)  # Position canvas1 at (50, 50)
-        canvas_x = 50
-        canvas_y = 50
+        self.canvas1.grid(row=0, column=0, padx=20, pady=20)
 
         self.canvas2 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
-        self.canvas2.place(x=canvas_x+410, y=50, width=400, height=300)  # Position canvas2 at (460, 50)
+        self.canvas2.grid(row=0, column=1, padx=20, pady=20)
 
         self.canvas3 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
-        self.canvas3.place(x=canvas_x+410+410, y=50, width=400, height=300)  # Position canvas3 at (870, 50)
+        self.canvas3.grid(row=0, column=2, padx=20, pady=20)
+
+        # Row 1: Buttons for alignment and graph options
+        self.align_button = tk.Button(self.main_canvas, text="Align", command=self.align)
+        self.align_button.grid(row=1, column=0, padx=20, pady=10, sticky='ew')
+
+        self.graph_option = tk.Button(self.main_canvas, text="Graphing Options", command=self.graph)
+        self.graph_option.grid(row=1, column=2, padx=20, pady=10, sticky='ew')
+
+        # Row 2: Slider to adjust values
+        self.slider = Scale(self.main_canvas, from_=0, to=100, orient="horizontal", label="Adjust Value", command=self.update_slider_value)
+        self.slider.grid(row=2, column=0, columnspan=3, padx=20, pady=10, sticky='ew')
+
+        # Row 3: Label to display slider value
+        self.slider_value_label = Label(self.main_canvas, text="Slider Value: 0")
+        self.slider_value_label.grid(row=3, column=0, columnspan=3, padx=20, pady=10, sticky='ew')
+
+        # Row 4: Upload buttons for video and force data
+        self.upload_video_button = tk.Button(self.main_canvas, text="Upload Video", command=self.upload_video)
+        self.upload_video_button.grid(row=4, column=0, padx=20, pady=10, sticky='ew')
+
+        self.upload_force_button = tk.Button(self.main_canvas, text="Upload Force File", command=self.upload_force_data)
+        self.upload_force_button.grid(row=4, column=1, padx=20, pady=10, sticky='ew')
+
+        self.show_vector_overlay = tk.Button(self.main_canvas, text="Vector Overlay", command=self.vector_overlay)
+        self.show_vector_overlay.grid(row=4, column=2, padx=20, pady=10, sticky='ew')
+
+        # Row 5: Label buttons for video and force labeling
+        self.video_button = tk.Button(self.main_canvas, text="Label Video", command=self.label_video)
+        self.video_button.grid(row=5, column=0, padx=20, pady=10, sticky='ew')
+
+        self.force_button = tk.Button(self.main_canvas, text="Label Force", command=self.label_force)
+        self.force_button.grid(row=5, column=1, padx=20, pady=10, sticky='ew')
+
+        self.save_button = tk.Button(self.main_canvas, text="Save", command=self.save)
+        self.save_button.grid(row=5, column=2, padx=20, pady=10, sticky='ew')
+
+        # Row 6: Force timeline label
+        self.force_timeline_label = Label(self.main_canvas, text="Force Timeline (unit = frame)")
+        self.force_timeline_label.grid(row=6, column=0, columnspan=3, padx=20, pady=10, sticky='ew')
+
+        # Row 7: Force timeline canvas
+        self.force_timeline = Canvas(self.main_canvas, width=1080, height=75, bg="lightblue")
+        self.force_timeline.grid(row=7, column=0, columnspan=3, padx=20, pady=10, sticky='ew')
+
+        # Row 8: Video timeline label
+        self.video_timeline_label = Label(self.main_canvas, text="Video Timeline (unit = frame)")
+        self.video_timeline_label.grid(row=8, column=0, columnspan=3, padx=20, pady=10, sticky='ew')
+
+        # Row 9: Video timeline canvas
+        self.video_timeline = Canvas(self.main_canvas, width=1080, height=75, bg="lightblue")
+        self.video_timeline.grid(row=9, column=0, columnspan=3, padx=20, pady=10, sticky='ew')
 
         # Placeholders for images
         self.photo_image1 = None  # Placeholder for image object for canvas1
         self.photo_image2 = None  # Placeholder for image object for canvas2
         self.photo_image3 = None  # Placeholder for image object for canvas3
 
-        # Row 1: Buttons for alignment and graph options
-        self.align_button = tk.Button(self.main_canvas, text="Align", command=self.align)
-        self.align_button.place(x=150, y=canvas_y+320, width=200, height=40)
-
-        self.graph_option = tk.Button(self.main_canvas, text="Graphing options", command=self.graph)
-        self.graph_option.place(x=560, y=canvas_y+320, width=200, height=40)
-
-        # Row 2: Slider to adjust values
-        self.slider = Scale(self.main_canvas, from_=0, to=100, orient="horizontal", label="Adjust Value", command=self.update_slider_value)
-        self.slider.place(x=50, y=canvas_y+320+50, width=1220)  # Adjust width to fit in the window
-
-        # Row 3: Label to display slider value
-        self.slider_value_label = Label(self.main_canvas, text="Slider Value: 0")
-        self.slider_value_label.place(x=50, y=470, width=1220)
-
-        # Row 4: Upload buttons for video and force data
-        self.upload_video_button = tk.Button(self.main_canvas, text="Upload Video", command=self.upload_video)
-        self.upload_video_button.place(x=50, y=510, width=350, height=40)
-
-        self.upload_force_button = tk.Button(self.main_canvas, text="Upload Force File", command=self.upload_force_data)
-        self.upload_force_button.place(x=460, y=510, width=350, height=40)
-
-        self.show_vector_overlay = tk.Button(self.main_canvas, text="Vector Overlay", command=self.vector_overlay)
-        self.show_vector_overlay.place(x=820, y=510, width=350, height=40)
-
-        # Row 5: Label buttons for video and force labeling
-        self.video_button = tk.Button(self.main_canvas, text="Label Video", command=self.label_video)
-        self.video_button.place(x=50, y=560, width=350, height=40)
-
-        self.force_button = tk.Button(self.main_canvas, text="Label Force", command=self.label_force)
-        self.force_button.place(x=410, y=560, width=350, height=40)
-
-        self.save_button = tk.Button(self.main_canvas, text="Save", command=self.save)
-        self.save_button.place(x=770, y=560, width=350, height=40)
-
-        # Row 6: Force timeline label
-        self.force_timeline_label = Label(self.main_canvas, text="Force Timeline (unit = frame)")
-        self.force_timeline_label.place(x=50, y=610, width=1120)
-
-        # Row 7: Force timeline canvas
-        self.force_timeline = Canvas(self.main_canvas, width=1080, height=75, bg="lightblue")
-        self.force_timeline.place(x=50, y=650, width=1080, height=75)
-        self.timeline_image1 = None
-
-        # Row 8: Video timeline label
-        self.video_timeline_label = Label(self.main_canvas, text="Video Timeline (unit = frame)")
-        self.video_timeline_label.place(x=50, y=740, width=1120)
-
-        # Row 9: Video timeline canvas
-        self.video_timeline = Canvas(self.main_canvas, width=1080, height=75, bg="lightblue")
-        self.video_timeline.place(x=50, y=780, width=1080, height=75)
-        self.timeline_image2 = None
-
-
         # force data
         self.force_path = None
+        self.graph_data = None
         self.force_data = None
         self.rows = None
         self.force_frame = None   # convert rows to frames
@@ -146,6 +137,7 @@ class DisplayApp:
         self.x = None # x-axis data
         self.y = None # y-axis data
         self.line = None # Initialize the line reference
+        self.text_label = None
         self.canvas = None # the widget for matplot
 
         # Graphing options
@@ -170,13 +162,8 @@ class DisplayApp:
         # Global frame/location base on slider
         self.loc = 0
 
-    def on_canvas_resize(self, event):
-        canvas_width = event.width
-        canvas_height = event.height
-        # Update the frame size to match the canvas size
-        self.main_canvas.config(width=canvas_width, height=canvas_height)
-        # Update the scroll region to include the entire content of the frame
-        self.main_canvas.configure(scrollregion=self.main_canvas.bbox("all"))
+    def center_canvas(self, event=None):
+        self.main_canvas.place(x=0, y=0,anchor="center")
 
     def get_current_frame(self):
         print(self.slider.get())
@@ -224,13 +211,36 @@ class DisplayApp:
         self.master.wait_window(popup)
 
     def update_force_timeline(self):
+        # Assuming self.timeline1.draw_rect() returns an image
         forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc / self.slider['to']))
+
+        # Resize the image to fit the canvas size
+        canvas_width = self.force_timeline.winfo_width()  # Get the width of the canvas
+        canvas_height = self.force_timeline.winfo_height()  # Get the height of the canvas
+
+        # Resize the image to match the canvas size using the new resampling method
+        forceTimeline = forceTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
+
+        # Convert the resized image to PhotoImage
         self.timeline_image1 = ImageTk.PhotoImage(forceTimeline)
+
+        # Create the image on the canvas, anchoring it at the top-left (0, 0)
         self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
 
     def update_video_timeline(self):
+        # Assuming self.video_timeline is the canvas and self.timeline2.draw_rect() returns an image
         videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc / self.total_frames))
+
+        # Resize the image to fit the canvas size
+        canvas_width = self.video_timeline.winfo_width()  # Get the width of the canvas
+        canvas_height = self.video_timeline.winfo_height()  # Get the height of the canvas
+        # Resize the image to match the canvas size
+        videoTimeline = videoTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
+
+        # Convert the resized image to PhotoImage
         self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
+
+        # Create the image on the canvas, anchoring it at the top-left (0, 0)
         self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
     def openVideo(self, video_path):
@@ -240,8 +250,12 @@ class DisplayApp:
         self.photo_image1 = self.display_frame(camera=self.cam)
         self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
 
-    def display_frame(self,camera):
-        camera.set(cv2.CAP_PROP_POS_FRAMES, self.loc) # pick the corresponding frame to display || the 1st frame is index 0, therefore -1
+    def display_frame(self,camera,vector=False):
+        if vector:
+            camera.set(cv2.CAP_PROP_POS_FRAMES, self.loc-self.video_align) # pick the corresponding frame to display || the 1st frame is index 0, therefore -1
+        else:
+            camera.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
+
         ret, frame = camera.read()  # the `frame` object is now the frame we want
 
         if ret:
@@ -258,28 +272,30 @@ class DisplayApp:
         # Create a new figure and plot
         self.fig, self.ax = plt.subplots(figsize=(4.75, 3.75))
 
-        if self.plate.get()=="Force Plate 1":
-            if self.force.get()=="Fx":
-                self.y=self.force_data.loc[:,"Fx1"]
-            elif self.force.get()=="Fy":
-                self.y=self.force_data.loc[:,"Fy1"]
-            elif self.force.get()=="Fz":
-                self.y=self.force_data.loc[:,"Fz1"]
-        elif self.plate.get()=="Force Plate 2":
-            if self.force.get()=="Fx":
-                self.y=self.force_data.loc[:,"Fx2"]
-            elif self.force.get()=="Fy":
-                self.y=self.force_data.loc[:,"Fy2"]
-            elif self.force.get()=="Fz":
-                self.y=self.force_data.loc[:,"Fz2"]
+        # read data base on plate and force
+        plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
+        x_position = float(self.graph_data.iloc[int(self.loc * self.step_size), 0])
+        y_value = float(self.graph_data.loc[int(self.loc * self.step_size), f"{self.force.get()}{plate_number}"])
+
+        # set x and y
+        self.x = self.graph_data.iloc[:, 0]
+        self.y = self.graph_data.loc[:, f"{self.force.get()}{plate_number}"]
 
         self.ax.plot(self.x, self.y, linestyle='-', color='blue', linewidth = 0.5)
         self.ax.set_title("Force vs. Time")
-        self.ax.set_xlabel("Force (N.)")
-        self.ax.set_ylabel("Time (s.)")
+        self.ax.set_xlabel("Time (s.)")
+        self.ax.set_ylabel("Force (N.)")
 
         # Draw an initial vertical line on the left
-        self.line = self.ax.axvline(x=self.x.iloc[0], color='red', linestyle='--', linewidth=1.5)
+        self.line = self.ax.axvline(x=x_position, color='red', linestyle='--', linewidth=1.5)
+
+        # Add a label with the force type inside the plot (top-left corner)
+        self.text_label = self.ax.text(0.05, 0.95, f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}", transform=self.ax.transAxes,
+                     fontsize=12, color='black', verticalalignment='top', horizontalalignment='left',
+                     bbox=dict(facecolor='white', edgecolor='none', alpha=0.5))
+
+        self.line.set_xdata([x_position])
+        self.text_label.set_text(f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}")
 
         # Embed the matplotlib figure in the Tkinter canvas
         self.canvas = FigureCanvasTkAgg(self.fig, self.canvas2)   # ---> self.canvas holds the object that represent image on canvas, I'm not too sure about this.
@@ -312,19 +328,25 @@ class DisplayApp:
             self.update_video_timeline()
         if self.vector_cam:
             # draw vector overlay canvas
-            self.photo_image3 = self.display_frame(camera=self.vector_cam)
+            if self.loc>=self.video_align:
+                self.photo_image3 = self.display_frame(camera=self.vector_cam,vector=True)
+
+            else:
+                self.photo_image3 = self.display_frame(camera=self.cam)
+
             self.canvas3.create_image(0, 0, image=self.photo_image3, anchor=tk.NW)
-
-
-
 
         if self.rows is not None:  # somehow self.force_data is not None doesn't work, using self.rows as compensation
             # draw graph canvas
             # normalized_position = int(value) / (self.slider['to'])
             # x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
             try:
-                x_position = float(self.force_data.iloc[int(self.loc * self.step_size),0])
+                plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
+                x_position = float(self.graph_data.iloc[int(self.loc * self.step_size),0])
+                y_value = float(self.graph_data.loc[int(self.loc * self.step_size),f"{self.force.get()}{plate_number}"])
+
                 self.line.set_xdata([x_position])
+                self.text_label.set_text(f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}")
                 self.canvas.draw()
             except IndexError as e:
                 print("force data out of range")
@@ -343,6 +365,12 @@ class DisplayApp:
             # Initialize video timeline
             self.timeline2 = timeline(0,1)
             videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc))
+            # Resize the image to fit the canvas size
+            canvas_width = self.video_timeline.winfo_width()  # Get the width of the canvas
+            canvas_height = self.video_timeline.winfo_height()  # Get the height of the canvas
+
+            # Resize the image to match the canvas size using the new resampling method
+            videoTimeline = videoTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
             self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)   # create image object that canvas object accept
             self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
@@ -368,7 +396,8 @@ class DisplayApp:
         self.force_data.columns = names
         self.force_data = self.force_data.apply(pd.to_numeric, errors='coerce')
 
-
+        # make a copy
+        self.graph_data = self.force_data.copy()
 
         self.rows = self.force_data.shape[0]
         try:
@@ -380,8 +409,6 @@ class DisplayApp:
             self.step_size = 20
         self.force_frame = int(self.rows/self.step_size)  # represent num of frames force data can cover
 
-        self.x = self.force_data.iloc[:, 0] # time
-        self.y = self.force_data.iloc[:, 3] # force z   ---> we need 2 radio button for picking the force place and 3 radio button to pick the force
         self.plot_force_data()
 
         # Initialize force timeline
@@ -393,7 +420,13 @@ class DisplayApp:
         """
         self.timeline1 = timeline(0,self.force_frame/self.slider['to'])
         forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc))
-        self.timeline_image1 = ImageTk.PhotoImage(forceTimeline)  # create image object that canvas object accept
+        # Resize the image to fit the canvas size
+        canvas_width = self.force_timeline.winfo_width()  # Get the width of the canvas
+        canvas_height = self.force_timeline.winfo_height()  # Get the height of the canvas
+
+        # Resize the image to match the canvas size using the new resampling method
+        newforceTimeline = forceTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
+        self.timeline_image1 = ImageTk.PhotoImage(newforceTimeline)  # create image object that canvas object accept
         self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
 
     def align(self):
@@ -411,9 +444,12 @@ class DisplayApp:
             self.timeline1.update_start_end(newstart,newend)
             self.timeline1.update_label(newlabel)
 
-            self.force_data = self.force_data[int(self.force_align*self.step_size):]
+            self.graph_data = self.graph_data.iloc[int(offset*self.step_size):,:].reset_index(drop=True)
+            self.force_data = self.force_data.iloc[int(self.force_align*self.step_size):,:].reset_index(drop=True)
             print("cut force data")
+
             self.slider.set(0)
+            self.loc = 0
             self.plot_force_data()
         except TypeError as e:
             self.pop_up("Missing label!!!")
@@ -431,10 +467,18 @@ class DisplayApp:
     def vector_overlay(self):
         print("user clicked vector overlay button")
         temp_video = "vector_overlay_temp.mp4"
+        self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.video_align)
         v = vectoroverlay_GUI.VectorOverlay(data=self.force_data,video=self.cam)
         v.LongVectorOverlay(outputName=temp_video)
 
         self.vector_cam = cv2.VideoCapture(temp_video)
+        self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
+
+        if self.loc>=self.video_align:
+            self.photo_image3 = self.display_frame(camera=self.vector_cam,vector=True)
+        else:
+            self.photo_image3 = self.display_frame(camera=self.cam)
 
     def label_force(self):  # ---> executed when user click label force
         self.force_align = self.loc
