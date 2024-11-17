@@ -48,6 +48,9 @@ class DisplayApp:
             # If running from source code
             app_path = os.path.dirname(__file__)
 
+        scale_factor = 1.0/self.master.tk.call('tk', 'scaling')
+        self.master.tk.call('tk', 'scaling', scale_factor)
+
         # Load the background image
         img_path = os.path.join(app_path, "lookBack.jpg")
         try:
