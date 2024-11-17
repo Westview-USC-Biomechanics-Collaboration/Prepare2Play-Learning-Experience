@@ -48,8 +48,8 @@ class DisplayApp:
             # If running from source code
             app_path = os.path.dirname(__file__)
 
-        scale_factor = 1.0/self.master.tk.call('tk', 'scaling')
-        self.master.tk.call('tk', 'scaling', scale_factor)
+        # scale_factor = 1.0/self.master.tk.call('tk', 'scaling')
+        # self.master.tk.call('tk', 'scaling', scale_factor)
 
         # Load the background image
         img_path = os.path.join(app_path, "lookBack.jpg")
@@ -284,8 +284,11 @@ class DisplayApp:
         for widget in self.canvas2.winfo_children():
             widget.destroy()
 
+        canvas_width = self.canvas2.winfo_width()
+        canvas_height = self.canvas2.winfo_height()
+
         # Create a new figure and plot
-        self.fig, self.ax = plt.subplots(figsize=(4.75, 3.75))
+        self.fig, self.ax = plt.subplots(figsize=(canvas_width/100, canvas_height/100),dpi=100)
 
         # read data base on plate and force
         plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
