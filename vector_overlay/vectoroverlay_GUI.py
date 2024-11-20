@@ -164,7 +164,7 @@ class VectorOverlay:
 
     def readData(self):
         frame_count = self.frame_count
-        step_size = (600/self.fps)
+        step_size = round(600/self.fps)
         current_row = 0
         fx1 = []
         fy1 = []
