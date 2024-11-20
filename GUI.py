@@ -53,6 +53,7 @@ class DisplayApp:
 
         # Load the background image
         img_path = os.path.join(app_path, "lookBack.jpg")
+        self.bg_image = None
         try:
             image = Image.open(img_path)
             bg_image = ImageTk.PhotoImage(image)
@@ -299,6 +300,9 @@ class DisplayApp:
         self.x = self.graph_data.iloc[:, 0]
         self.y = self.graph_data.loc[:, f"{self.force.get()}{plate_number}"]
 
+        # debug
+        #print(self.graph_data.head())
+
         self.ax.plot(self.x, self.y, linestyle='-', color='blue', linewidth = 0.5)
         self.ax.set_title("Force vs. Time")
         self.ax.set_xlabel("Time (s.)")
@@ -467,7 +471,15 @@ class DisplayApp:
             self.timeline1.update_start_end(newstart,newend)
             self.timeline1.update_label(newlabel)
 
-            self.graph_data = self.graph_data.iloc[int(offset*self.step_size):,:].reset_index(drop=True)
+            # debug
+            print(offset)
+            #check positive or negative offset:
+            if(offset>0):
+                self.graph_data = self.graph_data.iloc[int(offset*self.step_size):,:].reset_index(drop=True)
+            else:
+                self.graph_data = self.graph_data.shift(int(-offset*self.step_size))
+                print(self.graph_data)
+
             self.force_data = self.force_data.iloc[int(self.force_align*self.step_size):,:].reset_index(drop=True)
             print("cut force data")
 
