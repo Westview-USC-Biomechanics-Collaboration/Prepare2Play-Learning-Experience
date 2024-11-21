@@ -324,14 +324,15 @@ class DisplayApp:
         self.figure_canvas.draw()
         self.figure_canvas.get_tk_widget().place(x=0, y=0, width=canvas_width, height=canvas_height)
 
-        print("creating expand button")
-        print(f"canvas width: {canvas_width}\ncanvas height: {canvas_height}")
+        # print("creating expand button")
+        # print(f"canvas width: {canvas_width}\ncanvas height: {canvas_height}")
+
         self.expanded_graph = tk.Button(self.canvas2, text="Expand", command=self._expand_graph)
-        self.canvas2.create_window(50, 100, window=self.expanded_graph)
+        self.canvas2.create_window(300, 50, window=self.expanded_graph)
 
     def _expand_graph(self):
         # Create a new window for the expanded graph
-        zoom_window = tk.Toplevel(self.master)
+        zoom_window = tk.Toplevel(self.master)   # the zoom_window is the main/mast canvas for that small window
         zoom_window.title("Expanded Graph")
 
         # Create a new Matplotlib figure for the zoomed-in data
@@ -344,25 +345,26 @@ class DisplayApp:
         zoom_y = self.graph_data.loc[current_row-self.step_size:current_row+self.step_size-1,f"{self.force.get()}{plate_number}"] 
 
         # debug
-        print(zoom_x,zoom_y)
+        #print(zoom_x,zoom_y)
 
 
-        ax.plot(zoom_x, zoom_y)
+        ax.plot(zoom_x, zoom_y,linestyle='-', color='blue', linewidth = 0.5)
         ax.set_title("Zoomed-in View")
-        ax.set_xlabel("X-axis")
-        ax.set_ylabel("Y-axis")
+        ax.set_xlabel("Time")
+        ax.set_ylabel(f"{self.force.get()}")
+        ax.axvline(x=self.graph_data.iloc[current_row,0], color='red', linestyle='--', linewidth=1.5)
 
         # Embed the new plot into the new window
         canvas_zoom = FigureCanvasTkAgg(fig, zoom_window)
         canvas_zoom.draw()
         canvas_zoom.get_tk_widget().pack()
 
-
-
-
+        test_button = tk.Button(zoom_window, text="test", command=lambda: print("user clicked test_button"))
+        test_button.pack()
+        #small_slider = Scale(zoom_window, from_=current_row-self.step_size, to=self.step_size:current_row+self.step_size-1, orient="horizontal", label="zoom in",command=self.update_slider_value)
 
     """
-    # methods above are functions
+    # methods above are internal functions
     
     The alignment method has a problem. The user can only use it once.
     If the user use the align button twice, self.force_align lost true frame value relative to global
