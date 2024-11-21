@@ -320,9 +320,46 @@ class DisplayApp:
         self.text_label.set_text(f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}")
 
         # Embed the matplotlib figure in the Tkinter canvas
-        self.canvas = FigureCanvasTkAgg(self.fig, self.canvas2)   # ---> self.canvas holds the object that represent image on canvas, I'm not too sure about this.
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack()
+        self.figure_canvas = FigureCanvasTkAgg(self.fig, self.canvas2)   # ---> self.figure_canvas holds the object that represent image on canvas, I'm not too sure about this.
+        self.figure_canvas.draw()
+        self.figure_canvas.get_tk_widget().place(x=0, y=0, width=canvas_width, height=canvas_height)
+
+        print("creating expand button")
+        print(f"canvas width: {canvas_width}\ncanvas height: {canvas_height}")
+        self.expanded_graph = tk.Button(self.canvas2, text="Expand", command=self._expand_graph)
+        self.canvas2.create_window(50, 100, window=self.expanded_graph)
+
+    def _expand_graph(self):
+        # Create a new window for the expanded graph
+        zoom_window = tk.Toplevel(self.master)
+        zoom_window.title("Expanded Graph")
+
+        # Create a new Matplotlib figure for the zoomed-in data
+        fig, ax = plt.subplots(figsize=(6, 4))
+
+        # Adjust the data range for the zoomed-in view 
+        current_row = int(self.loc*self.step_size)# current row 
+        plate_number = "1" if self.plate.get() == "Force Plate 1" else "2" # plate number
+        zoom_x = self.graph_data.iloc[current_row-self.step_size:current_row+self.step_size,0]  
+        zoom_y = self.graph_data.loc[current_row-self.step_size:current_row+self.step_size-1,f"{self.force.get()}{plate_number}"] 
+
+        # debug
+        print(zoom_x,zoom_y)
+
+
+        ax.plot(zoom_x, zoom_y)
+        ax.set_title("Zoomed-in View")
+        ax.set_xlabel("X-axis")
+        ax.set_ylabel("Y-axis")
+
+        # Embed the new plot into the new window
+        canvas_zoom = FigureCanvasTkAgg(fig, zoom_window)
+        canvas_zoom.draw()
+        canvas_zoom.get_tk_widget().pack()
+
+
+
+
 
     """
     # methods above are functions
@@ -374,7 +411,7 @@ class DisplayApp:
 
                 self.line.set_xdata([x_position])
                 self.text_label.set_text(f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}")
-                self.canvas.draw()
+                self.figure_canvas.draw()
             except IndexError as e:
                 print("force data out of range")
 
@@ -428,7 +465,7 @@ class DisplayApp:
 
         self.rows = self.force_data.shape[0]
         try:
-            self.step_size = (600/self.cam.get(cv2.CAP_PROP_FPS)) # rows/frame
+            self.step_size = int(600/self.cam.get(cv2.CAP_PROP_FPS)) # rows/frame
         except AttributeError as e:
             print("Video file missing!!!\nProceeding assuming step size is 20 rows/frame")
             self.pop_up("Video file missing!!!\n\nProceeding assuming step size is 20 rows/frame\n\n"
