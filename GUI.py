@@ -366,23 +366,22 @@ class DisplayApp:
         self.canvas_zoom.draw()
         self.canvas_zoom.get_tk_widget().pack()
 
-        left_button = tk.Button(self.zoom_window, text="backward", command=lambda: print("user clicked left_button"))
+        left_button = tk.Button(self.zoom_window, text="backward", command=self._backwardButton)
         left_button.pack(side="left",padx=20)
 
-        right_button = tk.Button(self.zoom_window, text="forward", command=lambda: print("user clicked right_button"))
+        right_button = tk.Button(self.zoom_window, text="forward", command=self._forwardButton)
         right_button.pack(side="right",padx=20)
 
     def _backwardButton(self):
         self.zoom_pos -=1
-        self.zoom_lineset.set_xdata(self.graph_data.iloc[self.zoom_pos,0])
-        pass
+        self.zoom_line.set_xdata([self.graph_data.iloc[self.zoom_pos, 0]])
         self.canvas_zoom.draw()
+        self.zoom_window.update()
     def _forwardButton(self):
         self.zoom_pos += 1
-        self.zoom_line = self.axzoom.axvline(x=self.graph_data.iloc[self.zoom_pos, 0], color='red', linestyle='--',
-                                             linewidth=1.5)
-        pass
+        self.zoom_line.set_xdata([self.graph_data.iloc[self.zoom_pos, 0]])
         self.canvas_zoom.draw()
+
 
 
     """
