@@ -161,9 +161,9 @@ class DisplayApp:
         self.force = tk.StringVar(value="Fz")
 
         # Zoom Window graphing attributes
-        self.zoom_window = None
+        self.zoom_window = None  
         self.canvas_zoom = None
-        self.zoom_pos = None # position in rows
+        self.zoom_pos = 0 # force data offset -step size<zoom_pos<+step sized
 
 
         # video
@@ -299,8 +299,8 @@ class DisplayApp:
 
         # read data base on plate and force
         plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
-        x_position = float(self.graph_data.iloc[int(self.loc * self.step_size), 0])
-        y_value = float(self.graph_data.loc[int(self.loc * self.step_size), f"{self.force.get()}{plate_number}"])
+        x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos), 0])
+        y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos), f"{self.force.get()}{plate_number}"])
 
         # set x and y
         self.x = self.graph_data.iloc[:, 0]
@@ -345,8 +345,7 @@ class DisplayApp:
         self.figzoom, self.axzoom = plt.subplots(figsize=(6, 4))
 
         # Adjust the data range for the zoomed-in view 
-        current_row = int(self.loc*self.step_size)# current row
-        self.zoom_pos = current_row
+        current_row = int(self.loc*self.step_size) # current row
         plate_number = "1" if self.plate.get() == "Force Plate 1" else "2" # plate number
         zoom_x = self.graph_data.iloc[current_row-self.step_size:current_row+self.step_size,0]  
         zoom_y = self.graph_data.loc[current_row-self.step_size:current_row+self.step_size-1,f"{self.force.get()}{plate_number}"] 
@@ -359,8 +358,11 @@ class DisplayApp:
         self.axzoom.set_title("Zoomed-in View")
         self.axzoom.set_xlabel("Time")
         self.axzoom.set_ylabel(f"{self.force.get()}")
-        self.zoom_line = self.axzoom.axvline(x=self.graph_data.iloc[current_row,0], color='red', linestyle='--', linewidth=1.5)
-
+        self.zoom_textLabel = self.axzoom.text(0.05, 0.95, f"{self.plate.get()}\n{self.force.get()}: {(self.graph_data.loc[current_row+self.zoom_pos,f'{self.force.get()}{plate_number}']):.2f}", transform=self.ax.transAxes,
+                     fontsize=12, color='black', verticalalignment='top', horizontalalignment='left',
+                     bbox=dict(facecolor='white', edgecolor='none', alpha=0.5))
+        self.zoom_line = self.axzoom.axvline(x=self.graph_data.iloc[current_row+self.zoom_pos,0], color='red', linestyle='--', linewidth=1.5)
+        self.zoom_baseline = self.axzoom.axvline(x=self.graph_data.iloc[current_row,0], color='grey', linestyle='--', linewidth=1)
         # Embed the new plot into the new window
         self.canvas_zoom = FigureCanvasTkAgg(self.figzoom, self.zoom_window)
         self.canvas_zoom.draw()
@@ -372,15 +374,44 @@ class DisplayApp:
         right_button = tk.Button(self.zoom_window, text="forward", command=self._forwardButton)
         right_button.pack(side="right",padx=20)
 
+        # Make the popup modal (blocks interaction with the main window)
+        self.zoom_window.grab_set()
+
+        # Wait for the popup to be destroyed before returning to the main window
+        self.master.wait_window(self.zoom_window)
+
+    """
+    The two call function can be written as one with a parameter.
+    """
     def _backwardButton(self):
+        plate_number = "1" if self.plate.get() == "Force Plate 1" else "2" # plate number
         self.zoom_pos -=1
-        self.zoom_line.set_xdata([self.graph_data.iloc[self.zoom_pos, 0]])
+        self.zoom_line.set_xdata([self.graph_data.iloc[self.loc*self.step_size+self.zoom_pos, 0]])
+        self.zoom_textLabel.set_text(f"{self.plate.get()}\n{self.force.get()}: {(self.graph_data.loc[self.loc*self.step_size+self.zoom_pos,f'{self.force.get()}{plate_number}']):.2f}")
         self.canvas_zoom.draw()
-        self.zoom_window.update()
+
+        # also update the original graph
+        x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos),0])
+        y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.force.get()}{plate_number}"])
+        self.line.set_xdata([x_position])
+        self.text_label.set_text(f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}")
+        self.figure_canvas.draw()
+
+        print(self.zoom_pos)
     def _forwardButton(self):
+        plate_number = "1" if self.plate.get() == "Force Plate 1" else "2" # plate number
         self.zoom_pos += 1
-        self.zoom_line.set_xdata([self.graph_data.iloc[self.zoom_pos, 0]])
+        self.zoom_line.set_xdata([self.graph_data.iloc[self.loc*self.step_size+self.zoom_pos, 0]])
+        self.zoom_textLabel.set_text(f"{self.plate.get()}\n{self.force.get()}: {(self.graph_data.loc[self.loc*self.step_size+self.zoom_pos,f'{self.force.get()}{plate_number}']):.2f}")
         self.canvas_zoom.draw()
+
+        x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos),0])
+        y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.force.get()}{plate_number}"])
+        self.line.set_xdata([x_position])
+        self.text_label.set_text(f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}")
+        self.figure_canvas.draw()
+
+        print(self.zoom_pos)
 
 
 
@@ -429,12 +460,13 @@ class DisplayApp:
             # x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
             try:
                 plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
-                x_position = float(self.graph_data.iloc[int(self.loc * self.step_size),0])
-                y_value = float(self.graph_data.loc[int(self.loc * self.step_size),f"{self.force.get()}{plate_number}"])
+                x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos),0])
+                y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.force.get()}{plate_number}"])
 
                 self.line.set_xdata([x_position])
                 self.text_label.set_text(f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}")
                 self.figure_canvas.draw()
+
             except IndexError as e:
                 print("force data out of range")
 
@@ -535,12 +567,12 @@ class DisplayApp:
             print(offset)
             #check positive or negative offset:
             if(offset>0):
-                self.graph_data = self.graph_data.iloc[int(offset*self.step_size):,:].reset_index(drop=True)
+                self.graph_data = self.graph_data.iloc[int(offset*self.step_size + self.zoom_pos):,:].reset_index(drop=True)
             else:
-                self.graph_data = self.graph_data.shift(int(-offset*self.step_size))
+                self.graph_data = self.graph_data.shift(int(-offset*self.step_size + self.zoom_pos))
                 print(self.graph_data)
 
-            self.force_data = self.force_data.iloc[int(self.force_align*self.step_size):,:].reset_index(drop=True)
+            self.force_data = self.force_data.iloc[int(self.force_align*self.step_size + self.zoom_pos):,:].reset_index(drop=True)
             print("cut force data")
 
             self.slider.set(0)
