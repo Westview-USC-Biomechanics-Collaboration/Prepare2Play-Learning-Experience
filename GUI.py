@@ -170,8 +170,13 @@ class DisplayApp:
         self.video_path = None
         self.cam = None
         self.total_frames = None
-
         self.vector_cam = None
+
+        # video zoom window
+        self.expand_video = None   # holds a tk button
+        self.video_window = None # top level window
+        self.big_video = None # canvas object
+        self.window_photoImage =None # photoimage place holder
 
         # timeline
         self.timeline1 = None
@@ -271,6 +276,8 @@ class DisplayApp:
         self.slider.config(to=self.total_frames)   # ---> reconfigure slider value. The max value is the total number of frame in the video
         self.photo_image1 = self.display_frame(camera=self.cam)
         self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
+        self.expand_video = tk.Button(self.canvas1, text="Expand", command=self._expand_video)
+        self.canvas1.create_window(300, 50, window=self.expand_video)
 
     def display_frame(self,camera,vector=False):
         if vector:
@@ -374,11 +381,9 @@ class DisplayApp:
         right_button = tk.Button(self.zoom_window, text="forward", command=self._forwardButton)
         right_button.pack(side="right",padx=20)
 
-        # Make the popup modal (blocks interaction with the main window)
+        self.zoom_window.attributes("-topmost", True)
         self.zoom_window.grab_set()
-
-        # Wait for the popup to be destroyed before returning to the main window
-        self.master.wait_window(self.zoom_window)
+        self.master.wait_window(self.zoom_window)  # block main window action
 
     """
     The two call function can be written as one with a parameter.
@@ -414,19 +419,29 @@ class DisplayApp:
         print(self.zoom_pos)
 
 
+    def _expand_video(self):
+        print("user clicked expand video")
+        self.video_window = tk.Toplevel(self.master)
+        self.video_window.title("Big video")
+        self.big_video = Canvas(self.video_window,width=640, height=480, bg="lightgrey")
+        self.big_video.pack(fill="both", expand=True)
+
+        ret, frame = self.cam.read()  # the `frame` object is now the frame we want
+
+        if ret:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
+            frame = Image.fromarray(frame).resize((640, 480), resample=Image.BICUBIC)  # Resize the frame to 400 * 300
+            self.window_photoImage = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
+            self.big_video.create_image(0, 0, image=self.window_photoImage, anchor=tk.NW)
+
+        self.video_window.attributes("-topmost", True)
+        #self.video_window.grab_set()
+
+
+
 
     """
-    # methods above are internal functions
-    
-    The alignment method has a problem. The user can only use it once.
-    If the user use the align button twice, self.force_align lost true frame value relative to global
-    meaning that we are not able to convert self.force_align to the correct row in force data
-    This can be solve by adding a new variable that contain the labeled row.
-    
-    second problem, the alignment only works when force label is greater than video label,
-    if reversed, the graph will display the last few rows of the force data,
-    this can be solved by adding a new column that monitor the global index(frame)
-    
+    # methods above are internal functions    
     
     # methods below are buttons and slider that user can interact with
     """
@@ -453,6 +468,7 @@ class DisplayApp:
                 self.photo_image3 = self.display_frame(camera=self.cam)
 
             self.canvas3.create_image(0, 0, image=self.photo_image3, anchor=tk.NW)
+            
 
         if self.rows is not None:  # somehow self.force_data is not None doesn't work, using self.rows as compensation
             # draw graph canvas
