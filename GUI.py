@@ -160,6 +160,12 @@ class DisplayApp:
         self.plate = tk.StringVar(value="Force Plate 1")
         self.force = tk.StringVar(value="Fz")
 
+        # Zoom Window graphing attributes
+        self.zoom_window = None
+        self.canvas_zoom = None
+        self.zoom_pos = None # position in rows
+
+
         # video
         self.video_path = None
         self.cam = None
@@ -332,14 +338,15 @@ class DisplayApp:
 
     def _expand_graph(self):
         # Create a new window for the expanded graph
-        zoom_window = tk.Toplevel(self.master)   # the zoom_window is the main/mast canvas for that small window
-        zoom_window.title("Expanded Graph")
+        self.zoom_window = tk.Toplevel(self.master)   # the zoom_window is the main/mast canvas for that small window
+        self.zoom_window.title("Expanded Graph")
 
         # Create a new Matplotlib figure for the zoomed-in data
-        fig, ax = plt.subplots(figsize=(6, 4))
+        self.figzoom, self.axzoom = plt.subplots(figsize=(6, 4))
 
         # Adjust the data range for the zoomed-in view 
-        current_row = int(self.loc*self.step_size)# current row 
+        current_row = int(self.loc*self.step_size)# current row
+        self.zoom_pos = current_row
         plate_number = "1" if self.plate.get() == "Force Plate 1" else "2" # plate number
         zoom_x = self.graph_data.iloc[current_row-self.step_size:current_row+self.step_size,0]  
         zoom_y = self.graph_data.loc[current_row-self.step_size:current_row+self.step_size-1,f"{self.force.get()}{plate_number}"] 
@@ -348,20 +355,35 @@ class DisplayApp:
         #print(zoom_x,zoom_y)
 
 
-        ax.plot(zoom_x, zoom_y,linestyle='-', color='blue', linewidth = 0.5)
-        ax.set_title("Zoomed-in View")
-        ax.set_xlabel("Time")
-        ax.set_ylabel(f"{self.force.get()}")
-        ax.axvline(x=self.graph_data.iloc[current_row,0], color='red', linestyle='--', linewidth=1.5)
+        self.axzoom.plot(zoom_x, zoom_y,linestyle='-', color='blue', linewidth = 0.5)
+        self.axzoom.set_title("Zoomed-in View")
+        self.axzoom.set_xlabel("Time")
+        self.axzoom.set_ylabel(f"{self.force.get()}")
+        self.zoom_line = self.axzoom.axvline(x=self.graph_data.iloc[current_row,0], color='red', linestyle='--', linewidth=1.5)
 
         # Embed the new plot into the new window
-        canvas_zoom = FigureCanvasTkAgg(fig, zoom_window)
-        canvas_zoom.draw()
-        canvas_zoom.get_tk_widget().pack()
+        self.canvas_zoom = FigureCanvasTkAgg(self.figzoom, self.zoom_window)
+        self.canvas_zoom.draw()
+        self.canvas_zoom.get_tk_widget().pack()
 
-        test_button = tk.Button(zoom_window, text="test", command=lambda: print("user clicked test_button"))
-        test_button.pack()
-        #small_slider = Scale(zoom_window, from_=current_row-self.step_size, to=self.step_size:current_row+self.step_size-1, orient="horizontal", label="zoom in",command=self.update_slider_value)
+        left_button = tk.Button(self.zoom_window, text="backward", command=lambda: print("user clicked left_button"))
+        left_button.pack(side="left",padx=20)
+
+        right_button = tk.Button(self.zoom_window, text="forward", command=lambda: print("user clicked right_button"))
+        right_button.pack(side="right",padx=20)
+
+    def _backwardButton(self):
+        self.zoom_pos -=1
+        self.zoom_lineset.set_xdata(self.graph_data.iloc[self.zoom_pos,0])
+        pass
+        self.canvas_zoom.draw()
+    def _forwardButton(self):
+        self.zoom_pos += 1
+        self.zoom_line = self.axzoom.axvline(x=self.graph_data.iloc[self.zoom_pos, 0], color='red', linestyle='--',
+                                             linewidth=1.5)
+        pass
+        self.canvas_zoom.draw()
+
 
     """
     # methods above are internal functions
