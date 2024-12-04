@@ -583,7 +583,7 @@ class DisplayApp:
             if(offset>0):
                 self.graph_data = self.graph_data.iloc[int(offset*self.step_size + self.zoom_pos):,:].reset_index(drop=True)
             else:
-                self.graph_data = self.graph_data.shift(int(-offset*self.step_size - self.zoom_pos))
+                self.graph_data = self.graph_data.shift(int(-offset*self.step_size + self.zoom_pos))  # We are using + because when we have a positive zoom_pos , the number of added rows is offset*step_size - zoom_pos
                 print(self.graph_data)
 
             self.force_data = self.force_data.iloc[int(self.force_align*self.step_size + self.zoom_pos):,:].reset_index(drop=True)
