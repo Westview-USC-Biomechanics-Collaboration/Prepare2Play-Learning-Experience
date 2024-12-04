@@ -439,7 +439,6 @@ class DisplayApp:
 
 
 
-
     """
     # methods above are internal functions    
     
@@ -468,7 +467,6 @@ class DisplayApp:
                 self.photo_image3 = self.display_frame(camera=self.cam)
 
             self.canvas3.create_image(0, 0, image=self.photo_image3, anchor=tk.NW)
-            
 
         if self.rows is not None:  # somehow self.force_data is not None doesn't work, using self.rows as compensation
             # draw graph canvas
@@ -585,12 +583,13 @@ class DisplayApp:
             if(offset>0):
                 self.graph_data = self.graph_data.iloc[int(offset*self.step_size + self.zoom_pos):,:].reset_index(drop=True)
             else:
-                self.graph_data = self.graph_data.shift(int(-offset*self.step_size + self.zoom_pos))
+                self.graph_data = self.graph_data.shift(int(-offset*self.step_size - self.zoom_pos))
                 print(self.graph_data)
 
             self.force_data = self.force_data.iloc[int(self.force_align*self.step_size + self.zoom_pos):,:].reset_index(drop=True)
             print("cut force data")
 
+            self.zoom_pos = 0
             self.slider.set(0)
             self.loc = 0
             self.plot_force_data()
