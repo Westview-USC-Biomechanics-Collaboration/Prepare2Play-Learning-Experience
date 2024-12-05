@@ -186,6 +186,20 @@ class DisplayApp:
         self.force_align = None
         self.video_align = None
 
+        # saving
+        self.save_window = None            # Top level window
+        self.save_view_canvas = None       # Canvas
+        self.save_photoImage =None         # photoimage for canvas
+        self.save_scroll_bar = None        # Scale bar
+        self.save_loc = None               # location for sacle bar
+        self.save_start_button = None      # Label Start Button
+        self.StartLabel = None             # Start label
+        self.save_end_button = None        # Label End Button
+        self.EndLabel = None               # End Label
+        self.save_confrim_button = None    # Final Saving Button
+        self.save_start = None             # Start frame
+        self.save_end = None               # End frame
+
         # Global frame/location base on slider
         self.loc = 0
 
@@ -603,6 +617,60 @@ class DisplayApp:
             defaultextension=".mp4",  # Default extension if none is provided
             filetypes=[("MP4 file", "*.mp4"), ("All files", "*.*")]
         )
+
+        def _label(com_in):
+            if(com_in<0):# label start
+                print("You just labeled start")
+                self.save_start = self.save_loc
+                self.StartLabel.config(text=f"start frame: {self.save_start}")
+
+            else:
+                print("You just labeled end")
+                self.save_end = self.save_loc
+                self.EndLabel.config(text=f"start frame: {self.save_end}")
+
+        def _scrollBar(value):
+            print("You just moved scroll bar") 
+            self.save_loc = self.save_scroll_bar.get()
+            self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_loc)
+            self.save_photoImage = self.display_frame(camera=self.cam)
+            self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW)
+
+
+        # Creating top level
+        self.save_window = tk.Toplevel(self.master)
+        self.save_window.title("New Window")
+        self.save_window.geometry("1920x1080")
+
+        # local variables
+        self.save_loc=0
+
+        # layout
+        self.save_view_canvas = Canvas(self.save_window,width=12800, height=720, bg="lightgrey")
+        self.save_photoImage = self.display_frame(camera=self.cam) # change to self.vector_cam after testing
+        self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW)
+        self.save_view_canvas.pack()
+
+        self.save_scroll_bar = Scale(self.save_window, from_=0, to=self.total_frames, orient="horizontal", label="select start and end", command=_scrollBar)
+        self.save_scroll_bar.pack(expand=True)
+
+        self.StartLabel = Label(self.save_window,text=f"start frame: {self.save_start}")
+        self.StartLabel.pack()
+        self.save_start_button = tk.Button(self.save_window,text="label start",command=lambda:_label(-1))
+        self.save_start_button.pack()
+
+        self.EndLabel = Label(self.save_window,text=f"end frame: {self.save_end}")
+        self.EndLabel.pack()
+        self.save_end_button = tk.Button(self.save_window,text="label end",command=lambda:_label(1))
+        self.save_end_button.pack()
+
+        self.save_confirm_button = tk.Button(self.save_window,text="export video",command=None)
+        self.save_confirm_button.pack()
+        
+        
+
+        self.save_window.lift()
+
         shutil.copy("vector_overlay_temp.mp4",file_path)
 
 
