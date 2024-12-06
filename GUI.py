@@ -297,7 +297,7 @@ class DisplayApp:
         if vector:
             camera.set(cv2.CAP_PROP_POS_FRAMES, self.loc-self.video_align) # pick the corresponding frame to display || the 1st frame is index 0, therefore -1
         else:
-            camera.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
+            camera.set(cv2.CAP_PROP_POS_FRAMES, self.loc)   # This is where things mess up, the function only works for the main scroll bar. I can add flexibility to this so more than one scroll bar can use this function. ADD MORE PARAMS!!!
 
         ret, frame = camera.read()  # the `frame` object is now the frame we want
 
@@ -481,6 +481,14 @@ class DisplayApp:
                 self.photo_image3 = self.display_frame(camera=self.cam)
 
             self.canvas3.create_image(0, 0, image=self.photo_image3, anchor=tk.NW)
+        if self.save_view_canvas:
+            # self.save_loc = self.save_scroll_bar.get()
+            print(f"You just moved scroll bar to {self.loc}") 
+            self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
+            self.save_photoImage = self.display_frame(camera=self.cam)
+            self.save_view_canvas.delete("frame_image")
+            self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
+
 
         if self.rows is not None:  # somehow self.force_data is not None doesn't work, using self.rows as compensation
             # draw graph canvas
@@ -630,11 +638,17 @@ class DisplayApp:
                 self.EndLabel.config(text=f"start frame: {self.save_end}")
 
         def _scrollBar(value):
-            print("You just moved scroll bar") 
             self.save_loc = self.save_scroll_bar.get()
+            print(f"You just moved scroll bar to {self.save_loc}") 
             self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_loc)
             self.save_photoImage = self.display_frame(camera=self.cam)
-            self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW)
+            self.save_view_canvas.delete("frame_image")
+            self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
+            
+            """
+            I notice that when I alter the scroll bar in main window, and then move the scroll bar in toplevel window, the image update
+            Possibly because scroll bar in main can also change self.cam. therefore the solution is to link the two together.
+            """
 
 
         # Creating top level
@@ -642,16 +656,20 @@ class DisplayApp:
         self.save_window.title("New Window")
         self.save_window.geometry("1920x1080")
 
+        # Freeze the main window
+        # self.save_window.grab_set()
+
         # local variables
         self.save_loc=0
 
         # layout
         self.save_view_canvas = Canvas(self.save_window,width=12800, height=720, bg="lightgrey")
-        self.save_photoImage = self.display_frame(camera=self.cam) # change to self.vector_cam after testing
-        self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW)
+        #self.save_photoImage = self.display_frame(camera=self.cam) # change to self.vector_cam after testing
+        self.save_view_canvas.create_image(0, 0, image=self.photo_image1, anchor=tk.NW, tags="frame_image")
+        # print(self.save_view_canvas.configure().keys())
         self.save_view_canvas.pack()
 
-        self.save_scroll_bar = Scale(self.save_window, from_=0, to=self.total_frames, orient="horizontal", label="select start and end", command=_scrollBar)
+        self.save_scroll_bar = Scale(self.save_window, from_=0, to=self.total_frames, orient="horizontal", label="select start and end", command=update_slider_value)
         self.save_scroll_bar.pack(expand=True)
 
         self.StartLabel = Label(self.save_window,text=f"start frame: {self.save_start}")
