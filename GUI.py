@@ -81,15 +81,19 @@ class DisplayApp:
         self.canvas1.grid(row=0, column=0, padx=20, pady=20)
         self.canvasID_1 = None
         # Bind mouse events for zoom and drag
-        self.canvas1.bind("<ButtonPress-1>", self._on_drag)
-        self.canvas1.bind("<B1-Motion>", self._on_drag)
-        self.canvas1.bind("<ButtonRelease-1>", self._on_drag)
-        self.canvas1.bind("<MouseWheel>", self._on_zoom)
+        self.canvas1.bind("<ButtonPress-1>", lambda event:self._on_drag(event,canvas=1))
+        self.canvas1.bind("<B1-Motion>", lambda event:self._on_drag(event,canvas=1))
+        self.canvas1.bind("<ButtonRelease-1>", lambda event:self._on_drag(event,canvas=1))
+        self.canvas1.bind("<MouseWheel>", lambda event:self._on_zoom(event,canvas=1))
 
         self.canvas2 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
         self.canvas2.grid(row=0, column=1, padx=20, pady=20)
 
         self.canvas3 = Canvas(self.main_canvas, width=400, height=300,bg="lightgrey")
+        self.canvas3.bind("<ButtonPress-1>", lambda event:self._on_drag(event,canvas=3))
+        self.canvas3.bind("<B1-Motion>", lambda event:self._on_drag(event,canvas=3))
+        self.canvas3.bind("<ButtonRelease-1>", lambda event:self._on_drag(event,canvas=3))
+        self.canvas3.bind("<MouseWheel>", lambda event:self._on_zoom(event,canvas=3))
         # self.canvas3.create_bitmap(100,100,bitmap="error") # just good to know that there is a bitmap thing
         self.canvas3.grid(row=0, column=2, padx=20, pady=20)
 
@@ -189,10 +193,14 @@ class DisplayApp:
         self.frame_height = None
 
         # video canvas 1
-        self.zoom_factor =1.0
-        self.initplace = None
-        self.offset_x = 200
-        self.offset_y = 150
+        self.zoom_factor1 =1.0
+        self.zoom_factor3 = 1.0
+        self.placeloc1 = None
+        self.placeloc3 = None
+        self.offset_x1 = 200
+        self.offset_y1 = 150
+        self.offset_x3 = 200
+        self.offset_y3 = 150
 
         # video zoom window
         self.expand_video = None   # holds a tk button
@@ -238,49 +246,65 @@ class DisplayApp:
             self.loc-=1
         self.slider.set(self.loc)
 
-    def zoom_frame(self, frame):
-        # Resize based on zoom factor
-        height, width = frame.shape[:2]
-        new_width = int(width * self.zoom_factor)
-        new_height = int(height * self.zoom_factor)
+    def _on_zoom(self,event,canvas):
+        if (canvas == 1):
+            if event.delta > 0:
+                self.zoom_factor1 *= 1.1  # Zoom in
+            else:
+                self.zoom_factor1 *= 0.9  # Zoom out
 
-        # Resize the frame
-        zoomed_frame = cv2.resize(frame, (new_width, new_height))
-        return zoomed_frame
-
-    def _on_zoom(self,event):
-        self.canvas1.delete("all")
-        # Adjust zoom factor based on mouse wheel
-        if event.delta > 0:
-            self.zoom_factor *= 1.1  # Zoom in
-        else:
-            self.zoom_factor *= 0.9  # Zoom out
-
-        # Make sure the zoom factor is reasonable
-        self.zoom_factor = max(0.1, min(self.zoom_factor, 5.0))  # Limiting zoom range
-        print(self.zoom_factor)
-
-        # Update the frame with the new zoom factor
-        self.photo_image1 = self.display_frame(camera=self.cam,width=round(self.frame_width*self.zoom_factor),height=round(self.frame_height*self.zoom_factor))
-        self.canvas1.create_image(self.offset_x, self.offset_y, image=self.photo_image1, anchor="center")
-
-    def _on_drag(self, event):
-        if(event.type=="4"):
-            print("initalize place")
-            self.initplace = [event.x,event.y]
-        if(event.type=="6"):
-            self.offset_x += event.x-self.initplace[0]
-            self.offset_y += event.y-self.initplace[1]
-            self.initplace[0]=event.x
-            self.initplace[1]=event.y
+            # Make sure the zoom factor is reasonable
+            self.zoom_factor1 = max(0.1, min(self.zoom_factor1, 5.0))  # Limiting zoom range
+            print(self.zoom_factor1)
             self.canvas1.delete("all")
-            self.canvas1.create_image(self.offset_x, self.offset_y, image=self.photo_image1, anchor="center")
+            self.photo_image1 = self.display_frame(camera=self.cam, width=round(self.frame_width * self.zoom_factor1),
+                                                   height=round(self.frame_height * self.zoom_factor1))
+            self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
 
+        elif (canvas == 3):
+            if event.delta > 0:
+                self.zoom_factor3 *= 1.1  # Zoom in
+            else:
+                self.zoom_factor3 *= 0.9  # Zoom out
+
+            # Make sure the zoom factor is reasonable
+            self.zoom_factor1 = max(0.1, min(self.zoom_factor3, 5.0))  # Limiting zoom range
+            print(self.zoom_factor3)
+            self.canvas3.delete("all")
+            self.photo_image3 = self.display_frame(camera=self.vector_cam, width=round(self.frame_width * self.zoom_factor3),
+                                                   height=round(self.frame_height * self.zoom_factor3))
+            self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
+
+    def _on_drag(self, event, canvas):
+        if(event.type=="4"):
+            if(canvas==1):
+                self.placeloc1 = [event.x,event.y]
+            elif(canvas==3):
+                self.placeloc3 = [event.x,event.y]
+        if(event.type=="6"):
+            if(canvas==1):
+                self.offset_x1 += event.x - self.placeloc1[0]
+                self.offset_y1 += event.y - self.placeloc1[1]
+                self.placeloc1[0] = event.x
+                self.placeloc1[1] = event.y
+                self.canvas1.delete("all")
+                self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
+            elif(canvas==3):
+                print(event.x,event.y)
+                self.offset_x3 += event.x - self.placeloc3[0]
+                self.offset_y3 += event.y - self.placeloc3[1]
+                self.placeloc3[0] = event.x
+                self.placeloc3[1] = event.y
+                self.canvas3.delete("all")
+                self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
 
         if(event.type=="5"):
-            self.canvas1.delete("all")
-            self.canvas1.create_image(self.offset_x, self.offset_y, image=self.photo_image1, anchor="center")
-
+            if(canvas==1):
+                self.canvas1.delete("all")
+                self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
+            elif(canvas==3):
+                self.canvas3.delete("all")
+                self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
 
     def pop_up(self, text):
         # Create a new top-level window (popup)
@@ -563,22 +587,25 @@ class DisplayApp:
         if self.cam:
             # draw video canvas
             self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-            self.photo_image1 = self.display_frame(camera=self.cam, width=round(self.frame_width * self.zoom_factor),
-                                                   height=round(self.frame_height * self.zoom_factor))
-            self.canvas1.create_image(self.offset_x, self.offset_y, image=self.photo_image1, anchor="center")
+            self.photo_image1 = self.display_frame(camera=self.cam, width=round(self.frame_width * self.zoom_factor1),
+                                                   height=round(self.frame_height * self.zoom_factor1))
+            self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
             # update video timeline
             self.update_video_timeline()
         if self.vector_cam:
             # draw vector overlay canvas
             if self.loc>=self.video_align:
                 self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc - self.video_align)
-                self.photo_image3 = self.display_frame(camera=self.vector_cam)
-
+                self.photo_image3 = self.display_frame(camera=self.vector_cam,
+                                                       width=round(self.frame_width * self.zoom_factor3),
+                                                       height=round(self.frame_height * self.zoom_factor3))
             else:
                 self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-                self.photo_image3 = self.display_frame(camera=self.cam)
+                self.photo_image3 = self.display_frame(camera=self.cam, width=round(self.frame_width * self.zoom_factor1),
+                                                   height=round(self.frame_height * self.zoom_factor1))
+                
+            self.canvas3.create_image(self.offset_x3, self.offset_x3, image=self.photo_image3, anchor="center")
 
-            self.canvas3.create_image(0, 0, image=self.photo_image3, anchor=tk.NW)
         if self.save_view_canvas:
             # self.save_loc = self.save_scroll_bar.get()
             print(f"You just moved scroll bar to {self.loc}") 
@@ -816,7 +843,9 @@ class DisplayApp:
         self.vector_cam = cv2.VideoCapture(temp_video)
         self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
-
+        """
+        display 
+        """
         if self.loc>=self.video_align:
             self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc - self.video_align)
             self.photo_image3 = self.display_frame(camera=self.vector_cam)
