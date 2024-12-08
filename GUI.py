@@ -79,8 +79,11 @@ class DisplayApp:
         # Row 0: Create three canvases for display
         self.canvas1 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
         self.canvas1.grid(row=0, column=0, padx=20, pady=20)
+        self.canvasID_1 = None
         # Bind mouse events for zoom and drag
+        self.canvas1.bind("<ButtonPress-1>", self._on_drag)
         self.canvas1.bind("<B1-Motion>", self._on_drag)
+        self.canvas1.bind("<ButtonRelease-1>", self._on_drag)
         self.canvas1.bind("<MouseWheel>", self._on_zoom)
 
         self.canvas2 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
@@ -184,6 +187,12 @@ class DisplayApp:
         self.frame_width = None
         self.frame_height = None
 
+        # video canvas 1
+        self.zoom_factor =1.0
+        self.initplace = None
+        self.offset_x = 200
+        self.offset_y = 150
+
         # video zoom window
         self.expand_video = None   # holds a tk button
         self.video_window = None # top level window
@@ -228,7 +237,18 @@ class DisplayApp:
             self.loc-=1
         self.slider.set(self.loc)
 
+    def zoom_frame(self, frame):
+        # Resize based on zoom factor
+        height, width = frame.shape[:2]
+        new_width = int(width * self.zoom_factor)
+        new_height = int(height * self.zoom_factor)
+
+        # Resize the frame
+        zoomed_frame = cv2.resize(frame, (new_width, new_height))
+        return zoomed_frame
+
     def _on_zoom(self,event):
+        self.canvas1.delete("all")
         # Adjust zoom factor based on mouse wheel
         if event.delta > 0:
             self.zoom_factor *= 1.1  # Zoom in
@@ -237,9 +257,30 @@ class DisplayApp:
 
         # Make sure the zoom factor is reasonable
         self.zoom_factor = max(0.1, min(self.zoom_factor, 5.0))  # Limiting zoom range
+        print(self.zoom_factor)
 
         # Update the frame with the new zoom factor
-        self.update_frame()
+        self.photo_image1 = self.display_frame(camera=self.cam,width=round(self.frame_width*self.zoom_factor),height=round(self.frame_height*self.zoom_factor))
+        self.canvas1.create_image(self.offset_x, self.offset_y, image=self.photo_image1, anchor="center")
+
+    def _on_drag(self, event):
+        if(event.type=="4"):
+            print("initalize place")
+            self.initplace = [event.x,event.y]
+        if(event.type=="6"):
+            self.offset_x += event.x-self.initplace[0]
+            self.offset_y += event.y-self.initplace[1]
+            self.initplace[0]=event.x
+            self.initplace[1]=event.y
+            self.canvas1.delete("all")
+            self.canvas1.create_image(self.offset_x, self.offset_y, image=self.photo_image1, anchor="center")
+
+
+        if(event.type=="5"):
+            self.canvas1.delete("all")
+            self.canvas1.create_image(self.offset_x, self.offset_y, image=self.photo_image1, anchor="center")
+
+
     def pop_up(self, text):
         # Create a new top-level window (popup)
         popup = tk.Toplevel(self.master)
@@ -322,12 +363,12 @@ class DisplayApp:
         self.total_frames = int(self.cam.get(cv2.CAP_PROP_FRAME_COUNT))
         self.slider.config(to=self.total_frames)   # ---> reconfigure slider value. The max value is the total number of frame in the video
         self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-        self.photo_image1 = self.display_frame(camera=self.cam)
-        self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
+        self.photo_image1 = self.display_frame(camera=self.cam,width=self.frame_width,height=self.frame_height)
+        self.canvasID_1 = self.canvas1.create_image(200, 150, image=self.photo_image1, anchor="center")
         self.expand_video = tk.Button(self.canvas1, text="Expand", command=self._expand_video)
         self.canvas1.create_window(300, 50, window=self.expand_video)
 
-    def display_frame(self,camera,width=300, height=400):
+    def display_frame(self,camera,width=400, height=300):
         """
         This internal function only convert fram to object tkinter accept,
         you need to set the camera frame outside this function
@@ -338,7 +379,7 @@ class DisplayApp:
 
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
-            frame = Image.fromarray(frame).resize((height, width), resample=Image.BICUBIC) # Resize the frame to 400 * 300
+            frame = Image.fromarray(frame).resize((width, height), resample=Image.BICUBIC) # Resize the frame to 400 * 300
             photoImage = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
             return photoImage
 
@@ -521,8 +562,9 @@ class DisplayApp:
         if self.cam:
             # draw video canvas
             self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-            self.photo_image1 = self.display_frame(camera=self.cam)
-            self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
+            self.photo_image1 = self.display_frame(camera=self.cam, width=round(self.frame_width * self.zoom_factor),
+                                                   height=round(self.frame_height * self.zoom_factor))
+            self.canvas1.create_image(self.offset_x, self.offset_y, image=self.photo_image1, anchor="center")
             # update video timeline
             self.update_video_timeline()
         if self.vector_cam:
