@@ -5,6 +5,7 @@ import cv2
 from PIL import Image, ImageTk
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 import shutil
@@ -78,6 +79,9 @@ class DisplayApp:
         # Row 0: Create three canvases for display
         self.canvas1 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
         self.canvas1.grid(row=0, column=0, padx=20, pady=20)
+        # Bind mouse events for zoom and drag
+        self.canvas1.bind("<B1-Motion>", self._on_drag)
+        self.canvas1.bind("<MouseWheel>", self._on_zoom)
 
         self.canvas2 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
         self.canvas2.grid(row=0, column=1, padx=20, pady=20)
@@ -93,8 +97,14 @@ class DisplayApp:
         self.graph_option.grid(row=1, column=2, padx=20, pady=10, sticky='ew')
 
         # Row 2: Slider to adjust values
-        self.slider = Scale(self.main_canvas, from_=0, to=100, orient="horizontal", label="Adjust Value", command=self.update_slider_value)
-        self.slider.grid(row=2, column=0, columnspan=3, padx=20, pady=10, sticky='ew')
+        self.slider = Scale(self.main_canvas, from_=0, to=100, orient="horizontal", label="pick frame", command=self.update_slider_value)
+        self.slider.grid(row=2, column=1, pady=10, sticky='ew')
+
+        self.step_forward = tk.Button(self.main_canvas, text="+1frame",command=lambda: self._stepF(1))
+        self.step_forward.grid(row=2, column=2, padx=20, pady=10, sticky='w')
+
+        self.step_backward = tk.Button(self.main_canvas, text="-1frame", command=lambda: self._stepF(-1))
+        self.step_backward.grid(row=2, column=0, padx=20, pady=10, sticky='e')
 
         # Row 3: Label to display slider value
         self.slider_value_label = Label(self.main_canvas, text="Slider Value: 0")
@@ -211,7 +221,25 @@ class DisplayApp:
     def get_current_frame(self):
         print(self.slider.get())
         return int(self.slider.get()) # return current frame, 1st return 1
+    def _stepF(self, dirc):
+        if(dirc>0):
+            self.loc+=1
+        else:
+            self.loc-=1
+        self.slider.set(self.loc)
 
+    def _on_zoom(self,event):
+        # Adjust zoom factor based on mouse wheel
+        if event.delta > 0:
+            self.zoom_factor *= 1.1  # Zoom in
+        else:
+            self.zoom_factor *= 0.9  # Zoom out
+
+        # Make sure the zoom factor is reasonable
+        self.zoom_factor = max(0.1, min(self.zoom_factor, 5.0))  # Limiting zoom range
+
+        # Update the frame with the new zoom factor
+        self.update_frame()
     def pop_up(self, text):
         # Create a new top-level window (popup)
         popup = tk.Toplevel(self.master)
@@ -314,7 +342,11 @@ class DisplayApp:
             photoImage = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
             return photoImage
 
+    def on_click(self, event):
+        if event.inaxes:  # Check if the click occurred inside the plot area
+            print(f"Clicked at: x={event.xdata}, y={event.ydata}")
     def plot_force_data(self):
+
         # Clear previous figure on canvas2
         for widget in self.canvas2.winfo_children():
             widget.destroy()
@@ -323,46 +355,65 @@ class DisplayApp:
         canvas_height = self.canvas2.winfo_height()
 
         # Create a new figure and plot
-        self.fig, self.ax = plt.subplots(figsize=(canvas_width/100, canvas_height/100),dpi=100)
+        self.fig, self.ax = plt.subplots(figsize=(canvas_width / 100, canvas_height / 100), dpi=100)
 
-        # read data base on plate and force
+        # Read data based on plate and force
         plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
         x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos), 0])
-        y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos), f"{self.force.get()}{plate_number}"])
+        y_value = float(
+            self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos), f"{self.force.get()}{plate_number}"])
 
-        # set x and y
+        # Set x and y
         self.x = self.graph_data.iloc[:, 0]
         self.y = self.graph_data.loc[:, f"{self.force.get()}{plate_number}"]
 
-        # debug
-        #print(self.graph_data.head())
-
-        self.ax.plot(self.x, self.y, linestyle='-', color='blue', linewidth = 0.5)
+        # Plot data
+        self.ax.plot(self.x, self.y, linestyle='-', color='blue', linewidth=0.5)
         self.ax.set_title("Force vs. Time")
         self.ax.set_xlabel("Time (s.)")
         self.ax.set_ylabel("Force (N.)")
 
         # Draw an initial vertical line on the left
         self.line = self.ax.axvline(x=x_position, color='red', linestyle='--', linewidth=1.5)
-
+        self.zoom_baseline = self.ax.axvline(x=x_position, color='grey', linestyle='--',
+                                                 linewidth=1)
         # Add a label with the force type inside the plot (top-left corner)
-        self.text_label = self.ax.text(0.05, 0.95, f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}", transform=self.ax.transAxes,
-                     fontsize=12, color='black', verticalalignment='top', horizontalalignment='left',
-                     bbox=dict(facecolor='white', edgecolor='none', alpha=0.5))
+        self.text_label = self.ax.text(
+            0.05, 0.95, f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}",
+            transform=self.ax.transAxes, fontsize=12, color='black', verticalalignment='top',
+            horizontalalignment='left', bbox=dict(facecolor='white', edgecolor='none', alpha=0.5)
+        )
 
+        # Update line and text
+        self.zoom_baseline.set_xdata([x_position])
         self.line.set_xdata([x_position])
         self.text_label.set_text(f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}")
 
-        # Embed the matplotlib figure in the Tkinter canvas
-        self.figure_canvas = FigureCanvasTkAgg(self.fig, self.canvas2)   # ---> self.figure_canvas holds the object that represent image on canvas, I'm not too sure about this.
+        # Embed the Matplotlib figure in the Tkinter canvas
+        self.figure_canvas = FigureCanvasTkAgg(self.fig, self.canvas2)
         self.figure_canvas.draw()
         self.figure_canvas.get_tk_widget().place(x=0, y=0, width=canvas_width, height=canvas_height)
 
-        # print("creating expand button")
-        # print(f"canvas width: {canvas_width}\ncanvas height: {canvas_height}")
+        # Enable Matplotlib interactivity
+        self.figure_canvas.mpl_connect("button_press_event", self.on_click)  # Example: Connect a click event
 
+        # Optional: Add an interactive toolbar
+        toolbar_frame = tk.Frame(self.canvas2)
+        toolbar_frame.place(x=0, y=canvas_height - 30, width=canvas_width, height=30)
+        toolbar = NavigationToolbar2Tk(self.figure_canvas, toolbar_frame)
+        toolbar.update()
+
+        # Expand button
         self.expanded_graph = tk.Button(self.canvas2, text="Expand", command=self._expand_graph)
-        self.canvas2.create_window(300, 50, window=self.expanded_graph)
+        self.canvas2.create_window(350, 50, window=self.expanded_graph)
+
+        forward = tk.Button(self.canvas2, text="forward", command=self._forwardButton)
+        self.canvas2.create_window(350, 270, window=forward)
+
+        backward = tk.Button(self.canvas2, text="backward", command=self._backwardButton)
+        self.canvas2.create_window(30, 270, window=backward)
+
+
 
     def _expand_graph(self):
         # Create a new window for the expanded graph
@@ -412,9 +463,6 @@ class DisplayApp:
     def _backwardButton(self):
         plate_number = "1" if self.plate.get() == "Force Plate 1" else "2" # plate number
         self.zoom_pos -=1
-        self.zoom_line.set_xdata([self.graph_data.iloc[self.loc*self.step_size+self.zoom_pos, 0]])
-        self.zoom_textLabel.set_text(f"{self.plate.get()}\n{self.force.get()}: {(self.graph_data.loc[self.loc*self.step_size+self.zoom_pos,f'{self.force.get()}{plate_number}']):.2f}")
-        self.canvas_zoom.draw()
 
         # also update the original graph
         x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos),0])
@@ -427,9 +475,6 @@ class DisplayApp:
     def _forwardButton(self):
         plate_number = "1" if self.plate.get() == "Force Plate 1" else "2" # plate number
         self.zoom_pos += 1
-        self.zoom_line.set_xdata([self.graph_data.iloc[self.loc*self.step_size+self.zoom_pos, 0]])
-        self.zoom_textLabel.set_text(f"{self.plate.get()}\n{self.force.get()}: {(self.graph_data.loc[self.loc*self.step_size+self.zoom_pos,f'{self.force.get()}{plate_number}']):.2f}")
-        self.canvas_zoom.draw()
 
         x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos),0])
         y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.force.get()}{plate_number}"])
@@ -508,7 +553,7 @@ class DisplayApp:
                 plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
                 x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos),0])
                 y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.force.get()}{plate_number}"])
-
+                self.zoom_baseline.set_xdata([self.graph_data.iloc[self.loc*self.step_size,0]])
                 self.line.set_xdata([x_position])
                 self.text_label.set_text(f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}")
                 self.figure_canvas.draw()
@@ -538,6 +583,9 @@ class DisplayApp:
             videoTimeline = videoTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
             self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)   # create image object that canvas object accept
             self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
+
+            # set step size
+            self.step_size = int(600 / self.cam.get(cv2.CAP_PROP_FPS))
 
     def upload_force_data(self):
         # Open a file dialog for any file type
