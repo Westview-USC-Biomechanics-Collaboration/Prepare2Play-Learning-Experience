@@ -165,12 +165,14 @@ class DisplayApp:
         self.canvas_zoom = None
         self.zoom_pos = 0 # force data offset -step size<zoom_pos<+step sized
 
-
         # video
         self.video_path = None
         self.cam = None
         self.total_frames = None
         self.vector_cam = None
+        self.fps = None
+        self.frame_width = None
+        self.frame_height = None
 
         # video zoom window
         self.expand_video = None   # holds a tk button
@@ -286,24 +288,29 @@ class DisplayApp:
 
     def openVideo(self, video_path):
         self.cam = cv2.VideoCapture(video_path)
-        self.total_frames = self.cam.get(cv2.CAP_PROP_FRAME_COUNT)
+        self.fps = int(self.cam.get(cv2.CAP_PROP_FPS))
+        self.frame_height = int(self.cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.frame_width = int(self.cam.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.total_frames = int(self.cam.get(cv2.CAP_PROP_FRAME_COUNT))
         self.slider.config(to=self.total_frames)   # ---> reconfigure slider value. The max value is the total number of frame in the video
+        self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
         self.photo_image1 = self.display_frame(camera=self.cam)
         self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
         self.expand_video = tk.Button(self.canvas1, text="Expand", command=self._expand_video)
         self.canvas1.create_window(300, 50, window=self.expand_video)
 
-    def display_frame(self,camera,vector=False):
-        if vector:
-            camera.set(cv2.CAP_PROP_POS_FRAMES, self.loc-self.video_align) # pick the corresponding frame to display || the 1st frame is index 0, therefore -1
-        else:
-            camera.set(cv2.CAP_PROP_POS_FRAMES, self.loc)   # This is where things mess up, the function only works for the main scroll bar. I can add flexibility to this so more than one scroll bar can use this function. ADD MORE PARAMS!!!
+    def display_frame(self,camera,width=300, height=400):
+        """
+        This internal function only convert fram to object tkinter accept,
+        you need to set the camera frame outside this function
+        ex. self.cam.set(...)
+        """
 
         ret, frame = camera.read()  # the `frame` object is now the frame we want
 
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
-            frame = Image.fromarray(frame).resize((400, 300), resample=Image.BICUBIC) # Resize the frame to 400 * 300
+            frame = Image.fromarray(frame).resize((height, width), resample=Image.BICUBIC) # Resize the frame to 400 * 300
             photoImage = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
             return photoImage
 
@@ -468,6 +475,7 @@ class DisplayApp:
 
         if self.cam:
             # draw video canvas
+            self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
             self.photo_image1 = self.display_frame(camera=self.cam)
             self.canvas1.create_image(0, 0, image=self.photo_image1, anchor=tk.NW)
             # update video timeline
@@ -475,9 +483,11 @@ class DisplayApp:
         if self.vector_cam:
             # draw vector overlay canvas
             if self.loc>=self.video_align:
-                self.photo_image3 = self.display_frame(camera=self.vector_cam,vector=True)
+                self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc - self.video_align)
+                self.photo_image3 = self.display_frame(camera=self.vector_cam)
 
             else:
+                self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
                 self.photo_image3 = self.display_frame(camera=self.cam)
 
             self.canvas3.create_image(0, 0, image=self.photo_image3, anchor=tk.NW)
@@ -640,21 +650,38 @@ class DisplayApp:
         def _scrollBar(value):
             self.save_loc = self.save_scroll_bar.get()
             print(f"You just moved scroll bar to {self.save_loc}") 
-            self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_loc)
-            self.save_photoImage = self.display_frame(camera=self.cam)
+            self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_loc)
+            self.save_photoImage = self.display_frame(camera=self.vector_cam)
             self.save_view_canvas.delete("frame_image")
             self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
             
             """
             I notice that when I alter the scroll bar in main window, and then move the scroll bar in toplevel window, the image update
             Possibly because scroll bar in main can also change self.cam. therefore the solution is to link the two together.
+            ### solved
             """
+        def _export():
+            self.pop_up(text="Processing video ...")
+            self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start)
+            count = self.save_start
+            out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), self.fps,(self.frame_width, self.frame_height))
 
+            while(count<=self.save_end):
+                ret, frame = self.vector_cam.read()
+                if not ret:
+                    # if this calls when the frame_number is equal to the total frame count then the stream has just ended
+                    print(f"Can't read frame at position {count}")
+                    break
+
+                out.write(frame)
+                count+=1
+            self.pop_up(text=f"Successfully save vector overlay at {file_path}")
+            print(f"Successfully save vector overlay at {file_path}")
 
         # Creating top level
         self.save_window = tk.Toplevel(self.master)
-        self.save_window.title("New Window")
-        self.save_window.geometry("1920x1080")
+        self.save_window.title("Save Window")
+        self.save_window.geometry("400x560")
 
         # Freeze the main window
         # self.save_window.grab_set()
@@ -663,33 +690,29 @@ class DisplayApp:
         self.save_loc=0
 
         # layout
-        self.save_view_canvas = Canvas(self.save_window,width=12800, height=720, bg="lightgrey")
-        #self.save_photoImage = self.display_frame(camera=self.cam) # change to self.vector_cam after testing
+        self.save_view_canvas = Canvas(self.save_window,width=400, height=300, bg="lightgrey")
         self.save_view_canvas.create_image(0, 0, image=self.photo_image1, anchor=tk.NW, tags="frame_image")
-        # print(self.save_view_canvas.configure().keys())
-        self.save_view_canvas.pack()
+        self.save_view_canvas.grid(row=0,column=0,columnspan=3,sticky="nsew")
 
-        self.save_scroll_bar = Scale(self.save_window, from_=0, to=self.total_frames, orient="horizontal", label="select start and end", command=update_slider_value)
-        self.save_scroll_bar.pack(expand=True)
+        self.save_scroll_bar = Scale(self.save_window, from_=0, to=self.total_frames, orient="horizontal", label="select start and end", command=_scrollBar)
+        self.save_scroll_bar.grid(row=1,column=0,columnspan=3,sticky="nsew",pady=10)
 
         self.StartLabel = Label(self.save_window,text=f"start frame: {self.save_start}")
-        self.StartLabel.pack()
+        self.StartLabel.grid(row=2,column=0,sticky="nsew",padx=10,pady=10)
         self.save_start_button = tk.Button(self.save_window,text="label start",command=lambda:_label(-1))
-        self.save_start_button.pack()
+        self.save_start_button.grid(row=3,column=0,sticky="nsew",padx=10,pady=10)
 
         self.EndLabel = Label(self.save_window,text=f"end frame: {self.save_end}")
-        self.EndLabel.pack()
+        self.EndLabel.grid(row=2,column=2,sticky="nsew",padx=10,pady=10)
         self.save_end_button = tk.Button(self.save_window,text="label end",command=lambda:_label(1))
-        self.save_end_button.pack()
+        self.save_end_button.grid(row=3,column=2,sticky="nsew",padx=10,pady=10)
 
-        self.save_confirm_button = tk.Button(self.save_window,text="export video",command=None)
-        self.save_confirm_button.pack()
-        
-        
+        self.save_confirm_button = tk.Button(self.save_window,text="export video",command=_export)
+        self.save_confirm_button.grid(row=4,column=0,columnspan=3,sticky="nsew",padx=10,pady=10)
 
         self.save_window.lift()
 
-        shutil.copy("vector_overlay_temp.mp4",file_path)
+        # shutil.copy("vector_overlay_temp.mp4",file_path)
 
 
     def vector_overlay(self):
@@ -704,8 +727,10 @@ class DisplayApp:
 
 
         if self.loc>=self.video_align:
-            self.photo_image3 = self.display_frame(camera=self.vector_cam,vector=True)
+            self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc - self.video_align)
+            self.photo_image3 = self.display_frame(camera=self.vector_cam)
         else:
+            self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
             self.photo_image3 = self.display_frame(camera=self.cam)
 
     def label_force(self):  # ---> executed when user click label force
