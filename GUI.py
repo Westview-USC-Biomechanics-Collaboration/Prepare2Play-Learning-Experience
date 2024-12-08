@@ -89,7 +89,8 @@ class DisplayApp:
         self.canvas2 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
         self.canvas2.grid(row=0, column=1, padx=20, pady=20)
 
-        self.canvas3 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
+        self.canvas3 = Canvas(self.main_canvas, width=400, height=300,bg="lightgrey")
+        # self.canvas3.create_bitmap(100,100,bitmap="error") # just good to know that there is a bitmap thing
         self.canvas3.grid(row=0, column=2, padx=20, pady=20)
 
         # Row 1: Buttons for alignment and graph options
