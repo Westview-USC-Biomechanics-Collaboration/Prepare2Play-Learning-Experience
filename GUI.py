@@ -33,7 +33,7 @@ class DisplayApp:
             "Step 8: click `save` button and set the output name"
         )
         self.pop_up(text=direction)
-        self.selected_view = None
+        self.selected_view = tk.StringVar(value="Long View") 
         self.master.title("Multi-Window Display App")
         self.master.geometry("1320x1080")
         self.master.lift()
