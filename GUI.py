@@ -33,7 +33,7 @@ class DisplayApp:
             "Step 8: click `save` button and set the output name"
         )
         self.pop_up(text=direction)
-        self.selected_view = tk.StringVar(value="Long View") 
+        self.selected_view = None
         self.master.title("Multi-Window Display App")
         self.master.geometry("1320x1080")
         self.master.lift()
@@ -640,7 +640,7 @@ class DisplayApp:
         view_popup = tk.Toplevel(self.master)
         view_popup.title("Select View")
 
-          # Create radio buttons for view options
+        # Create radio buttons for view options
         tk.Radiobutton(view_popup, text="Long View", variable=self.selected_view, value="Long View").pack(anchor=tk.W)
         tk.Radiobutton(view_popup, text="Top View", variable=self.selected_view, value="Top View").pack(anchor=tk.W)
         tk.Radiobutton(view_popup, text="Short View", variable=self.selected_view, value="Short View").pack(anchor=tk.W)
@@ -687,13 +687,12 @@ class DisplayApp:
         #self.video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
         if self.video_path:
             print(f"Video uploaded: {self.video_path}")
-
+            self.openVideo(self.video_path)  # Use the current openVideo 
             # Handle different views here
-            if selected_view == "Long View":
-                self.openVideo(self.video_path)  # Use the current openVideo 
+            if selected_view == "Long View":                
                 self.selected_view = tk.StringVar(value="Long View") 
+                print("Long View selected")
             elif selected_view == "Top View":
-
                 # Top View chosen
                 self.selected_view = tk.StringVar(value="Top View") 
                 print("Top View selected")
@@ -883,11 +882,12 @@ class DisplayApp:
         self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.video_align)
         v = vectoroverlay_GUI.VectorOverlay(data=self.force_data,video=self.cam)
         
-         
-        v.LongVectorOverlay(outputName=temp_video)
-
-        v.ShortVectorOverlay(outputName=temp_video)
-        v.TopVectorOverlay(outputName=temp_video)
+        if(self.selected_view=="Long View"):
+            v.LongVectorOverlay(outputName=temp_video)
+        elif(self.selected_view=="Short View"):
+            v.ShortVectorOverlay(outputName=temp_video)
+        elif(self.selected_view=="Top View"):
+            v.TopVectorOverlay(outputName=temp_video)
 
         self.vector_cam = cv2.VideoCapture(temp_video)
         self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
