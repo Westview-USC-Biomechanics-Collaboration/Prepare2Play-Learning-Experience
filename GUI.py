@@ -33,10 +33,11 @@ class DisplayApp:
             "Step 8: click `save` button and set the output name"
         )
         self.pop_up(text=direction)
-
+        self.selected_view = tk.StringVar(value="Long View") 
         self.master.title("Multi-Window Display App")
         self.master.geometry("1320x1080")
         self.master.lift()
+        
 
         # Bind the resize event of the master window
         self.master.bind('<Configure>', self.center_canvas)
@@ -636,8 +637,25 @@ class DisplayApp:
 
     def upload_video(self):
         # Open a file dialog for video files
+        view_popup = tk.Toplevel(self.master)
+        view_popup.title("Select View")
+
+          # Create radio buttons for view options
+        tk.Radiobutton(view_popup, text="Long View", variable=self.selected_view, value="Long View").pack(anchor=tk.W)
+        tk.Radiobutton(view_popup, text="Top View", variable=self.selected_view, value="Top View").pack(anchor=tk.W)
+        tk.Radiobutton(view_popup, text="Short View", variable=self.selected_view, value="Short View").pack(anchor=tk.W)
+
+        # Create a button to confirm the selection
+        confirm_button = tk.Button(view_popup, text="Confirm", command=lambda: self._upload_video_with_view(view_popup))
+        confirm_button.pack(pady=10)
+
+        # Block the main window until the popup is closed
+        self.master.wait_window(view_popup)
+
         self.video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
         if self.video_path:
+
+             
             print(f"Video uploaded: {self.video_path}")
             # display video
             self.openVideo(self.video_path)
@@ -656,7 +674,33 @@ class DisplayApp:
 
             # set step size
             self.step_size = int(600 / self.cam.get(cv2.CAP_PROP_FPS))
+            
+    def _upload_video_with_view(self, popup_window):
+        # Get the selected view
+        selected_view = self.selected_view.get()
+        print(f"Selected View: {selected_view}") 
 
+        # Close the popup window
+        popup_window.destroy()  
+
+        # Proceed with video upload based on the selected view
+        #self.video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
+        if self.video_path:
+            print(f"Video uploaded: {self.video_path}")
+
+            # Handle different views here
+            if selected_view == "Long View":
+                self.openVideo(self.video_path)  # Use the current openVideo 
+                self.selected_view = tk.StringVar(value="Long View") 
+            elif selected_view == "Top View":
+
+                # Top View chosen
+                self.selected_view = tk.StringVar(value="Top View") 
+                print("Top View selected")
+            elif selected_view == "Short View":
+                # Short view chosen
+                self.selected_view = tk.StringVar(value="Short View") 
+                print("Short View selected")
     def upload_force_data(self):
         # Open a file dialog for any file type
         file_path = filedialog.askopenfilename(title="Select Force Data File",filetypes=[("Excel or CSV Files", "*.xlsx;*.xls,*.csv")])
@@ -838,7 +882,12 @@ class DisplayApp:
         temp_video = "vector_overlay_temp.mp4"
         self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.video_align)
         v = vectoroverlay_GUI.VectorOverlay(data=self.force_data,video=self.cam)
+        
+         
         v.LongVectorOverlay(outputName=temp_video)
+
+        v.ShortVectorOverlay(outputName=temp_video)
+        v.TopVectorOverlay(outputName=temp_video)
 
         self.vector_cam = cv2.VideoCapture(temp_video)
         self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
