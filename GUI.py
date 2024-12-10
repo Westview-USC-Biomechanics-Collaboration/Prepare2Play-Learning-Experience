@@ -4,6 +4,7 @@ from tkinter import filedialog, Canvas, Label, Scale, Frame, Scrollbar, PhotoIma
 import cv2
 from PIL import Image, ImageTk
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -268,7 +269,7 @@ class DisplayApp:
                 self.zoom_factor3 *= 0.9  # Zoom out
 
             # Make sure the zoom factor is reasonable
-            self.zoom_factor1 = max(0.1, min(self.zoom_factor3, 5.0))  # Limiting zoom range
+            self.zoom_factor3 = max(0.1, min(self.zoom_factor3, 5.0))  # Limiting zoom range
             print(self.zoom_factor3)
             self.canvas3.delete("all")
             self.photo_image3 = self.display_frame(camera=self.vector_cam, width=round(self.frame_width * self.zoom_factor3),
@@ -774,7 +775,8 @@ class DisplayApp:
                 self.graph_data = self.graph_data.iloc[int(offset*self.step_size + self.zoom_pos):,:].reset_index(drop=True)
                 print(self.graph_data)
             else:
-                self.graph_data = self.graph_data.shift(int(-offset*self.step_size + self.zoom_pos))  # We are using + because when we have a positive zoom_pos , the number of added rows is offset*step_size - zoom_pos
+                nan_rows = pd.DataFrame(np.nan, index=range(int(-offset*self.step_size + self.zoom_pos)), columns=self.graph_data.columns)
+                self.graph_data = pd.concat([nan_rows, self.graph_data], ignore_index=True)  # We are using + because when we have a positive zoom_pos , the number of added rows is offset*step_size - zoom_pos
                 print(self.graph_data)
 
             print("modify force data")
@@ -819,22 +821,35 @@ class DisplayApp:
             ### solved
             """
         def _export():
-            self.pop_up(text="Processing video ...")
-            self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start)
-            count = self.save_start
+            self.pop_up(text="Processing video ...\nThis may take a minute\nClose this window to start saving")
+            self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            count = 0
             out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), self.fps,(self.frame_width, self.frame_height))
-
-            while(count<=self.save_end):
-                ret, frame = self.vector_cam.read()
-                if not ret:
+            print(f"cam1 frame: {self.cam.get(cv2.CAP_PROP_FRAME_COUNT)}\ncam2 fram:{self.vector_cam.get(cv2.CAP_PROP_FRAME_COUNT)}")
+            while(self.vector_cam.isOpened()):
+                ret1, frame1 = self.cam.read()
+                ret3, frame3 = self.vector_cam.read()
+                if not ret1 or not ret3:
                     # if this calls when the frame_number is equal to the total frame count then the stream has just ended
                     print(f"Can't read frame at position {count}")
                     break
-
-                out.write(frame)
+                if(count<self.save_start):
+                    print("doing org")
+                    out.write(frame1)
+                elif(count<=self.save_end):
+                    print("doing vector")
+                    out.write(frame3)
+                else:
+                    print("doing org")
+                    out.write(frame1)
                 count+=1
+
             self.pop_up(text=f"Successfully save vector overlay at {file_path}")
             print(f"Successfully save vector overlay at {file_path}")
+            
+            #with open(,"w")
+            
 
         # Creating top level
         self.save_window = tk.Toplevel(self.master)
@@ -849,7 +864,8 @@ class DisplayApp:
 
         # layout
         self.save_view_canvas = Canvas(self.save_window,width=400, height=300, bg="lightgrey")
-        self.save_view_canvas.create_image(0, 0, image=self.photo_image1, anchor=tk.NW, tags="frame_image")
+        self.save_photoImage = self.display_frame(camera=self.vector_cam)
+        self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
         self.save_view_canvas.grid(row=0,column=0,columnspan=3,sticky="nsew")
 
         self.save_scroll_bar = Scale(self.save_window, from_=0, to=self.total_frames, orient="horizontal", label="select start and end", command=_scrollBar)
