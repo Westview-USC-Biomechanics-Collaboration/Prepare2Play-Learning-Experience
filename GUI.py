@@ -849,19 +849,19 @@ class DisplayApp:
             self.pop_up(text=f"Successfully save vector overlay at {file_path}")
             print(f"Successfully save vector overlay at {file_path}")
             name = file_path.split('/')[-1][:-4]
-            with open(f"{name}.txt","w") as fout:
+            with open(f"{file_path[:-4]}.txt","w") as fout:
                 fout.write(f"{name}'s metadata\n")
-                fout.write(f"Video path: {self.video_path}")
-                fout.write(f"Total frame: {self.total_frames}")
-                fout.write(f"FPS: {self.fps}")
-                fout.write(f"Video start frame: {self.video_align}\n")
+                fout.write(f"Video path: {self.video_path}\n")
+                fout.write(f"Total frame: {self.total_frames}\n")
+                fout.write(f"FPS: {self.fps}\n")
+                fout.write(f"Video start frame: {self.video_align}\n\n")
                 
-                fout.write(f"Force data path: {self.force_path}")
-                fout.write(f"Force start frame(with out small adjustments): {self.force_align}")
-                fout.write(f"Force start time: {self.graph_data.iloc[int(self.video_align*self.step_size),0]}\n") # using video align because it's position after alignment
+                fout.write(f"Force data path: {self.force_path}\n")
+                fout.write(f"Force start frame(before align && with out small adjustments): {self.force_align}\n")
+                fout.write(f"Force start time: {self.graph_data.iloc[int(self.video_align*self.step_size),0]}\n\n") # using video align because it's position after alignment
                 
-                fout.write(f"Saving time: {datetime.now()}")
-                fout.write(f"All right reserved by Westview PUSD")
+                fout.write(f"Saving time: {datetime.now()}\n")
+                fout.write(f"All rights reserved by Westview PUSD")
             
 
         # Creating top level
