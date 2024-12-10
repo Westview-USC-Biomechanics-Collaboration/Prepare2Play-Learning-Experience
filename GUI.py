@@ -163,7 +163,6 @@ class DisplayApp:
         # force data
         self.force_path = None
         self.graph_data = None
-        self.force_data = None
         self.rows = None
         self.force_frame = None   # convert rows to frames
         self.step_size = None
@@ -595,16 +594,11 @@ class DisplayApp:
             self.update_video_timeline()
         if self.vector_cam:
             # draw vector overlay canvas
-            if self.loc>=self.video_align:
-                self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc - self.video_align)
-                self.photo_image3 = self.display_frame(camera=self.vector_cam,
-                                                       width=round(self.frame_width * self.zoom_factor3),
-                                                       height=round(self.frame_height * self.zoom_factor3))
-            else:
-                self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-                self.photo_image3 = self.display_frame(camera=self.cam, width=round(self.frame_width * self.zoom_factor1),
-                                                   height=round(self.frame_height * self.zoom_factor1))
-                
+
+            self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
+            self.photo_image3 = self.display_frame(camera=self.vector_cam,
+                                                   width=round(self.frame_width * self.zoom_factor3),
+                                                   height=round(self.frame_height * self.zoom_factor3))
             self.canvas3.create_image(self.offset_x3, self.offset_x3, image=self.photo_image3, anchor="center")
 
         if self.save_view_canvas:
@@ -710,22 +704,19 @@ class DisplayApp:
                  "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "COM px2", "COM py2", "COM pz2"]
         # support both csv and excel
         if file_path.endswith('.xlsx'):
-            self.force_data = pd.read_excel(
+            self.graph_data = pd.read_excel(
                 file_path,
             )
         elif file_path.endswith('.csv'):
-            self.force_data = pd.read_csv(
+            self.graph_data = pd.read_csv(
                 file_path
             )
 
-        self.force_data = self.force_data.iloc[18:,0:len(names)].reset_index(drop=True)
-        self.force_data.columns = names
-        self.force_data = self.force_data.apply(pd.to_numeric, errors='coerce')
+        self.graph_data = self.graph_data.iloc[18:,0:len(names)].reset_index(drop=True)
+        self.graph_data.columns = names
+        self.graph_data = self.graph_data.apply(pd.to_numeric, errors='coerce')
 
-        # make a copy
-        self.graph_data = self.force_data.copy()
-
-        self.rows = self.force_data.shape[0]
+        self.rows = self.graph_data.shape[0]
         try:
             self.step_size = int(600/self.cam.get(cv2.CAP_PROP_FPS)) # rows/frame
         except AttributeError as e:
@@ -756,6 +747,12 @@ class DisplayApp:
         self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
 
     def align(self):
+        """
+        12/9 notes:
+        When using align for multiple time, the timeline update is not working,
+        maybe it's assuming the size of the timeline would not change,
+        but we cut data in code, and that's updated in timeline
+        """
         print("User clicked align button")
         print(self.force_align, self.video_align)
 
@@ -775,12 +772,12 @@ class DisplayApp:
             #check positive or negative offset:
             if(offset>0):
                 self.graph_data = self.graph_data.iloc[int(offset*self.step_size + self.zoom_pos):,:].reset_index(drop=True)
+                print(self.graph_data)
             else:
                 self.graph_data = self.graph_data.shift(int(-offset*self.step_size + self.zoom_pos))  # We are using + because when we have a positive zoom_pos , the number of added rows is offset*step_size - zoom_pos
                 print(self.graph_data)
 
-            self.force_data = self.force_data.iloc[int(self.force_align*self.step_size + self.zoom_pos):,:].reset_index(drop=True)
-            print("cut force data")
+            print("modify force data")
 
             self.zoom_pos = 0
             self.slider.set(0)
@@ -879,8 +876,8 @@ class DisplayApp:
     def vector_overlay(self):
         print("user clicked vector overlay button")
         temp_video = "vector_overlay_temp.mp4"
-        self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.video_align)
-        v = vectoroverlay_GUI.VectorOverlay(data=self.force_data,video=self.cam)
+        self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        v = vectoroverlay_GUI.VectorOverlay(data=self.graph_data,video=self.cam)
         
         if(self.selected_view.get()=="Long View"):
             v.LongVectorOverlay(outputName=temp_video)

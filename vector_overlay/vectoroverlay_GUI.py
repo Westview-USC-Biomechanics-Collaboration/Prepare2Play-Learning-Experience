@@ -304,6 +304,7 @@ class VectorOverlay:
 
 
         out.release()
+        cv2.destroyAllWindows()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
     def TopVectorOverlay(self, outputName):
