@@ -599,7 +599,7 @@ class DisplayApp:
             self.photo_image3 = self.display_frame(camera=self.vector_cam,
                                                    width=round(self.frame_width * self.zoom_factor3),
                                                    height=round(self.frame_height * self.zoom_factor3))
-            self.canvas3.create_image(self.offset_x3, self.offset_x3, image=self.photo_image3, anchor="center")
+            self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
 
         if self.save_view_canvas:
             # self.save_loc = self.save_scroll_bar.get()
