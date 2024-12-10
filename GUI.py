@@ -10,6 +10,7 @@ from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 import shutil
+from datetime import datetime
 # our script
 from Timeline import timeline
 from vector_overlay import vectoroverlay_GUI
@@ -847,8 +848,20 @@ class DisplayApp:
 
             self.pop_up(text=f"Successfully save vector overlay at {file_path}")
             print(f"Successfully save vector overlay at {file_path}")
-            
-            #with open(,"w")
+            name = file_path.split('/')[-1][:-4]
+            with open(f"{name}.txt","w") as fout:
+                fout.write(f"{name}'s metadata\n")
+                fout.write(f"Video path: {self.video_path}")
+                fout.write(f"Total frame: {self.total_frames}")
+                fout.write(f"FPS: {self.fps}")
+                fout.write(f"Video start frame: {self.video_align}\n")
+                
+                fout.write(f"Force data path: {self.force_path}")
+                fout.write(f"Force start frame(with out small adjustments): {self.force_align}")
+                fout.write(f"Force start time: {self.graph_data.iloc[int(self.video_align*self.step_size),0]}\n") # using video align because it's position after alignment
+                
+                fout.write(f"Saving time: {datetime.now()}")
+                fout.write(f"All right reserved by Westview PUSD")
             
 
         # Creating top level
