@@ -882,11 +882,11 @@ class DisplayApp:
         self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.video_align)
         v = vectoroverlay_GUI.VectorOverlay(data=self.force_data,video=self.cam)
         
-        if(self.selected_view=="Long View"):
+        if(self.selected_view.get()=="Long View"):
             v.LongVectorOverlay(outputName=temp_video)
-        elif(self.selected_view=="Short View"):
+        elif(self.selected_view.get()=="Short View"):
             v.ShortVectorOverlay(outputName=temp_video)
-        elif(self.selected_view=="Top View"):
+        elif(self.selected_view.get()=="Top View"):
             v.TopVectorOverlay(outputName=temp_video)
 
         self.vector_cam = cv2.VideoCapture(temp_video)
