@@ -834,8 +834,8 @@ class DisplayApp:
             out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), self.fps,(self.frame_width, self.frame_height+480))
             print(f"cam1 frame: {self.cam.get(cv2.CAP_PROP_FRAME_COUNT)}\ncam2 frame:{self.vector_cam.get(cv2.CAP_PROP_FRAME_COUNT)}")
             def render_matplotlib_to_cv2(cur):
-                fig1,ax1 = plt.subplot(figsize=(300, 300))
-                fig2,ax2 = plt.subplot(figsize=(300, 300))
+                fig1,ax1 = plt.subplots()
+                fig2,ax2 = plt.subplots()
                 time = self.x
                 if(self.selected_view.get()=="Long View"):
                     # force plate 1
