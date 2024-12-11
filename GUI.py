@@ -831,7 +831,7 @@ class DisplayApp:
             self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
             self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
             count = 0
-            out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), self.fps,(self.frame_width, self.frame_height))
+            out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), self.fps,(self.frame_width, self.frame_height+480))
             print(f"cam1 frame: {self.cam.get(cv2.CAP_PROP_FRAME_COUNT)}\ncam2 frame:{self.vector_cam.get(cv2.CAP_PROP_FRAME_COUNT)}")
             def render_matplotlib_to_cv2(cur):
                 fig1,ax1 = plt.subplot(figsize=(300, 300))
@@ -914,15 +914,14 @@ class DisplayApp:
                     export the combined frame, need to test on separate file
                     """
                     combined_frame = cv2.vconcat([frame1,graphs])
-                    out.write(combined_frame)
                 elif(count<=self.save_end):
                     print("doing vector")
                     combined_frame = cv2.vconcat([frame3,graphs])
-                    out.write(combined_frame)
                 else:
                     print("doing ori")
                     combined_frame = cv2.vconcat([frame1, graphs])
-                    out.write(combined_frame)
+                
+                out.write(combined_frame)
                 count+=1
 
             self.pop_up(text=f"Successfully save vector overlay at {file_path}")
