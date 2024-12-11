@@ -11,11 +11,16 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 import shutil
 from datetime import datetime
+from io import BytesIO
 # our script
 from Timeline import timeline
 from vector_overlay import vectoroverlay_GUI
 
-
+"""
+I don't have time to clean up the code,
+too busy adding new features,
+will do if have time...
+"""
 class DisplayApp:
     def __init__(self, master):
         self.master = master
@@ -827,7 +832,72 @@ class DisplayApp:
             self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
             count = 0
             out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), self.fps,(self.frame_width, self.frame_height))
-            print(f"cam1 frame: {self.cam.get(cv2.CAP_PROP_FRAME_COUNT)}\ncam2 fram:{self.vector_cam.get(cv2.CAP_PROP_FRAME_COUNT)}")
+            print(f"cam1 frame: {self.cam.get(cv2.CAP_PROP_FRAME_COUNT)}\ncam2 frame:{self.vector_cam.get(cv2.CAP_PROP_FRAME_COUNT)}")
+            def render_matplotlib_to_cv2(cur):
+                fig1,ax1 = plt.subplot(figsize=(300, 300))
+                fig2,ax2 = plt.subplot(figsize=(300, 300))
+                time = self.x
+                if(self.selected_view.get()=="Long View"):
+                    # force plate 1
+                    y1 = self.graph_data.loc[:,"Fy1"]
+                    y2 = self.graph_data.loc[:,"Fz1"]
+                    # force plate 2
+                    y3 = self.graph_data.loc[:,"Fy2"]
+                    y4 = self.graph_data.loc[:,"Fz2"]
+                elif(self.selected_view.get()=="Short View"):
+                    # force plate 1
+                    y1 = self.graph_data.loc[:,"Fx1"]
+                    y2 = self.graph_data.loc[:,"Fz1"]
+                    # force plate 2
+                    y3 = self.graph_data.loc[:,"Fx2"]
+                    y4 = self.graph_data.loc[:,"Fz2"]
+
+                else: # top view
+                    # force plate 1
+                    y1 = self.graph_data.loc[:,"Fy1"]
+                    y2 = self.graph_data.loc[:,"Fx1"]
+                    # force plate 2
+                    y3 = self.graph_data.loc[:,"Fy2"]
+                    y4 = self.graph_data.loc[:,"Fx2"]
+
+                ax1.set_title(f"{self.selected_view.get()} Force Time Graph")
+                ax1.plot(time,y1,linestyle='-',color='blue',linewidth=0.5)
+                ax1.plot(time,y2,linestyle='-',color='green',linewidth=0.5)
+                ax1.set_xlabel("Time (s.)")
+                ax1.set_ylabel("Forces (N.)")
+
+                line1 = ax1.axvline(x=self.graph_data.iloc[cur,0], color='red', linestyle='--', linewidth=1.5)
+                line1.set_xdata([cur])
+
+
+                ax2.set_title(f"{self.selected_view.get()} Force Time Graph")
+                ax2.plot(time,y3,linestyle='-',color='blue',linewidth=0.5)
+                ax2.plot(time,y4,linestyle='-',color='green',linewidth=0.5)
+                ax2.set_xlabel("Time (s.)")
+                ax2.set_ylabel("Forces (N.)")
+
+                line2 = ax2.axvline(x=self.graph_data.iloc[cur,0], color='red', linestyle='--', linewidth=1.5)
+                line2.set_xdata([cur])
+
+                # Step 2: Save the plot to a BytesIO object
+                buf1 = BytesIO()
+                fig1.savefig(buf1, format='png')
+                buf1.seek(0)  # Go to the beginning of the BytesIO object
+
+                buf2 = BytesIO()
+                fig2.savefig(buf2, format='png')
+                buf2.seek(0)
+
+                # Step 3: Convert the BytesIO object to a NumPy array
+                image1 = np.asarray(bytearray(buf1.read()), dtype=np.uint8)
+                image2 = np.asarray(bytearray(buf2.read()), dtype=np.uint8)
+
+                # Step 4: Decode the byte array to an OpenCV image
+                image1 = cv2.imdecode(image1, cv2.IMREAD_COLOR)
+                image2 = cv2.imdecode(image2, cv2.IMREAD_COLOR)
+
+                return cv2.hconcat([image1, image2])
+
             while(self.vector_cam.isOpened()):
                 ret1, frame1 = self.cam.read()
                 ret3, frame3 = self.vector_cam.read()
@@ -835,15 +905,24 @@ class DisplayApp:
                     # if this calls when the frame_number is equal to the total frame count then the stream has just ended
                     print(f"Can't read frame at position {count}")
                     break
+                graphs = render_matplotlib_to_cv2(count * self.step_size)
                 if(count<self.save_start):
-                    print("doing org")
-                    out.write(frame1)
+                    print("doing ori")
+                    """
+                    12/10 notes
+                    combine graphs horizontally and then combine graphs with video vertically
+                    export the combined frame, need to test on separate file
+                    """
+                    combined_frame = cv2.vconcat([frame1,graphs])
+                    out.write(combined_frame)
                 elif(count<=self.save_end):
                     print("doing vector")
-                    out.write(frame3)
+                    combined_frame = cv2.vconcat([frame3,graphs])
+                    out.write(combined_frame)
                 else:
-                    print("doing org")
-                    out.write(frame1)
+                    print("doing ori")
+                    combined_frame = cv2.vconcat([frame1, graphs])
+                    out.write(combined_frame)
                 count+=1
 
             self.pop_up(text=f"Successfully save vector overlay at {file_path}")
@@ -862,6 +941,8 @@ class DisplayApp:
                 
                 fout.write(f"Saving time: {datetime.now()}\n")
                 fout.write(f"All rights reserved by Westview PUSD")
+
+
             
 
         # Creating top level

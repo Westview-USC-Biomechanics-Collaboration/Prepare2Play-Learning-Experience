@@ -11,3 +11,4 @@
 
 outputs/
 data/
+*.spec
