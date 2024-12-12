@@ -69,7 +69,9 @@ class test:
         image1 = cv2.imdecode(image1, cv2.IMREAD_COLOR)
         image2 = cv2.imdecode(image2, cv2.IMREAD_COLOR)
 
-        graphs = cv2.hconcat([image1, image2])
+        gap = np.full((image1.shape[0], 1920 - image1.shape[1] * 2, 3), 255, dtype=np.uint8)
+
+        graphs = cv2.hconcat([image1, gap, image2])
         # Print the shape of the images
         print(f"Image 1 - Height: {image1.shape[0]}, Width: {image1.shape[1]}")
         print(f"Image 2 - Height: {image2.shape[0]}, Width: {image2.shape[1]}")

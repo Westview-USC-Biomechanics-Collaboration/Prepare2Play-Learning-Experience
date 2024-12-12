@@ -896,7 +896,8 @@ class DisplayApp:
                 image1 = cv2.imdecode(image1, cv2.IMREAD_COLOR)
                 image2 = cv2.imdecode(image2, cv2.IMREAD_COLOR)
 
-                return cv2.hconcat([image1, image2])
+                gap = np.full((image1.shape[0],1920-image1.shape[1]*2,3),255,dtype=np.uint8)
+                return cv2.hconcat([image1,gap, image2])
 
             while(self.vector_cam.isOpened()):
                 ret1, frame1 = self.cam.read()
