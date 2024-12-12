@@ -5,6 +5,7 @@ import cv2
 from PIL import Image, ImageTk
 import pandas as pd
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -827,57 +828,65 @@ class DisplayApp:
             ### solved
             """
         def _export():
+            matplotlib.use('Agg')
             self.pop_up(text="Processing video ...\nThis may take a minute\nClose this window to start saving")
             self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
             self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
             count = 0
             out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), self.fps,(self.frame_width, self.frame_height+480))
             print(f"cam1 frame: {self.cam.get(cv2.CAP_PROP_FRAME_COUNT)}\ncam2 frame:{self.vector_cam.get(cv2.CAP_PROP_FRAME_COUNT)}")
-            def render_matplotlib_to_cv2(cur):
-                fig1,ax1 = plt.subplots()
-                fig2,ax2 = plt.subplots()
-                time = self.x
-                if(self.selected_view.get()=="Long View"):
-                    # force plate 1
-                    y1 = self.graph_data.loc[:,"Fy1"]
-                    y2 = self.graph_data.loc[:,"Fz1"]
-                    # force plate 2
-                    y3 = self.graph_data.loc[:,"Fy2"]
-                    y4 = self.graph_data.loc[:,"Fz2"]
-                elif(self.selected_view.get()=="Short View"):
-                    # force plate 1
-                    y1 = self.graph_data.loc[:,"Fx1"]
-                    y2 = self.graph_data.loc[:,"Fz1"]
-                    # force plate 2
-                    y3 = self.graph_data.loc[:,"Fx2"]
-                    y4 = self.graph_data.loc[:,"Fz2"]
-
-                else: # top view
-                    # force plate 1
-                    y1 = self.graph_data.loc[:,"Fy1"]
-                    y2 = self.graph_data.loc[:,"Fx1"]
-                    # force plate 2
-                    y3 = self.graph_data.loc[:,"Fy2"]
-                    y4 = self.graph_data.loc[:,"Fx2"]
-
+            fig1,ax1 = plt.subplots()
+            fig2,ax2 = plt.subplots()
+            time = self.x
+            label1_1 = None
+            label1_2 = None
+            label2_1 = None
+            label2_2 = None
+            if(self.selected_view.get()=="Long View"):
+                label1_1 = "Fy1"
+                label1_2 = "Fz1"
+                label2_1 = "Fy2"
+                label2_2 = "Fz2"
+            elif(self.selected_view.get()=="Short View"):
+                label1_1 = "Fx1"
+                label1_2 = "Fz1"
+                label2_1 = "Fx2"
+                label2_2 = "Fz2"
+            else: # top view
+                label1_1 = "Fx1"
+                label1_2 = "Fy1"
+                label2_1 = "Fx2"
+                label2_2 = "Fy2"
+            
+            # force plate 1
+            y1 = self.graph_data.loc[:,label1_1]
+            y2 = self.graph_data.loc[:,label1_2]
+            # force plate 2
+            y3 = self.graph_data.loc[:,label2_1]
+            y4 = self.graph_data.loc[:,label2_2]
+            
+            self.graph_data.loc[0:self.step_size*self.save_start,:] = np.nan
+            self.graph_data.loc[self.step_size*self.save_end:,:] = np.nan
+            def render_matplotlib_to_cv2(cur):  
+                ax1.clear()         
                 ax1.set_title(f"{self.selected_view.get()} Force Time Graph")
-                ax1.plot(time,y1,linestyle='-',color='blue',linewidth=0.5)
-                ax1.plot(time,y2,linestyle='-',color='green',linewidth=0.5)
+                ax1.plot(time,y1,linestyle='-',color='blue',linewidth=0.5, label=label1_1)
+                ax1.plot(time,y2,linestyle='-',color='green',linewidth=0.5,label=label1_2)
                 ax1.set_xlabel("Time (s.)")
                 ax1.set_ylabel("Forces (N.)")
 
                 line1 = ax1.axvline(x=self.graph_data.iloc[cur,0], color='red', linestyle='--', linewidth=1.5)
-                line1.set_xdata([cur])
 
 
+                ax2.clear()
                 ax2.set_title(f"{self.selected_view.get()} Force Time Graph")
-                ax2.plot(time,y3,linestyle='-',color='blue',linewidth=0.5)
-                ax2.plot(time,y4,linestyle='-',color='green',linewidth=0.5)
+                ax2.plot(time,y3,linestyle='-',color='blue',linewidth=0.5, label=label2_1)
+                ax2.plot(time,y4,linestyle='-',color='green',linewidth=0.5, label=label2_2)
                 ax2.set_xlabel("Time (s.)")
                 ax2.set_ylabel("Forces (N.)")
 
                 line2 = ax2.axvline(x=self.graph_data.iloc[cur,0], color='red', linestyle='--', linewidth=1.5)
-                line2.set_xdata([cur])
+
 
                 # Step 2: Save the plot to a BytesIO object
                 buf1 = BytesIO()
@@ -896,7 +905,8 @@ class DisplayApp:
                 image1 = cv2.imdecode(image1, cv2.IMREAD_COLOR)
                 image2 = cv2.imdecode(image2, cv2.IMREAD_COLOR)
 
-                gap = np.full((image1.shape[0],1920-image1.shape[1]*2,3),255,dtype=np.uint8)
+                gap = np.full((int(image1.shape[0]),int(1920-image1.shape[1]*2),3),255,dtype=np.uint8)
+
                 return cv2.hconcat([image1,gap, image2])
 
             while(self.vector_cam.isOpened()):
@@ -921,9 +931,17 @@ class DisplayApp:
                 else:
                     print("doing ori")
                     combined_frame = cv2.vconcat([frame1, graphs])
-                
+
+                cv2.imshow('Matplotlib Plot', cv2.resize(combined_frame,(960,780)))
+                if cv2.waitKey(5) & 0xFF == ord("q"):
+                    cv2.destroyAllWindows()
+                    break
                 out.write(combined_frame)
                 count+=1
+
+            plt.close(fig1)
+            plt.close(fig2)
+            out.release()
 
             self.pop_up(text=f"Successfully save vector overlay at {file_path}")
             print(f"Successfully save vector overlay at {file_path}")
@@ -941,6 +959,8 @@ class DisplayApp:
                 
                 fout.write(f"Saving time: {datetime.now()}\n")
                 fout.write(f"All rights reserved by Westview PUSD")
+
+            self.master.destroy()
 
 
             
@@ -975,8 +995,18 @@ class DisplayApp:
         self.save_end_button = tk.Button(self.save_window,text="label end",command=lambda:_label(1))
         self.save_end_button.grid(row=3,column=2,sticky="nsew",padx=10,pady=10)
 
+        
+        self.cushion_entry = tk.Entry(self.save_window)
+        self.cushion_entry.grid(row=4,column=1,padx=10,pady=10,sticky="w")
+        self.cushion_label = tk.Label(self.save_window, text = "set cushion time(s) :")
+        self.cushion_label.grid(row=4,column=0,padx=10,pady=10)
+        
+
         self.save_confirm_button = tk.Button(self.save_window,text="export video",command=_export)
-        self.save_confirm_button.grid(row=4,column=0,columnspan=3,sticky="nsew",padx=10,pady=10)
+        self.save_confirm_button.grid(row=5,column=0,columnspan=3,sticky="nsew",padx=10,pady=10)
+
+        
+
 
         self.save_window.lift()
 
@@ -1059,6 +1089,8 @@ class DisplayApp:
 
         def make_changes():
             try:
+                self.slider.set(0)
+                self.loc = 0
                 self.plot_force_data()
             except AttributeError as e:
                 print("Missing force data !!!")
