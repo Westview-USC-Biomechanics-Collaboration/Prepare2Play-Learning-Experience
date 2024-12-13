@@ -830,11 +830,23 @@ class DisplayApp:
         def _export():
             matplotlib.use('Agg')
             self.pop_up(text="Processing video ...\nThis may take a minute\nClose this window to start saving")
-            self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            count = 0
+            
+            try:
+                cushion_frames = int(self.cushion_entry.get() *self.fps)
+                print(cushion_frames)
+            except ValueError as e:
+                self.pop_up(text="Invalid cushion time, please put numbers")
+                print("invalid input!!\n")
+                print(e)
+                return
+            
+            self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
+            self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
+            count = self.save_start - cushion_frames
             out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), self.fps,(self.frame_width, self.frame_height+480))
             print(f"cam1 frame: {self.cam.get(cv2.CAP_PROP_FRAME_COUNT)}\ncam2 frame:{self.vector_cam.get(cv2.CAP_PROP_FRAME_COUNT)}")
+            
+            # creating matplot graph
             fig1,ax1 = plt.subplots()
             fig2,ax2 = plt.subplots()
             time = self.x
@@ -864,7 +876,7 @@ class DisplayApp:
             # force plate 2
             y3 = self.graph_data.loc[:,label2_1]
             y4 = self.graph_data.loc[:,label2_2]
-            
+        
             self.graph_data.loc[0:self.step_size*self.save_start,:] = np.nan
             self.graph_data.loc[self.step_size*self.save_end:,:] = np.nan
             def render_matplotlib_to_cv2(cur):  
@@ -909,7 +921,8 @@ class DisplayApp:
 
                 return cv2.hconcat([image1,gap, image2])
 
-            while(self.vector_cam.isOpened()):
+            # Saving frame with graph
+            while(self.vector_cam.isOpened() and count<= self.save_end+cushion_frames):
                 ret1, frame1 = self.cam.read()
                 ret3, frame3 = self.vector_cam.read()
                 if not ret1 or not ret3:
