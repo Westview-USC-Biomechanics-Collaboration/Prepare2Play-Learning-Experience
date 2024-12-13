@@ -882,8 +882,9 @@ class DisplayApp:
             def render_matplotlib_to_cv2(cur):  
                 ax1.clear()         
                 ax1.set_title(f"{self.selected_view.get()} Force Time Graph")
-                ax1.plot(time,y1,linestyle='-',color='blue',linewidth=0.5, label=label1_1)
-                ax1.plot(time,y2,linestyle='-',color='green',linewidth=0.5,label=label1_2)
+                ax1.plot(time,y1,linestyle='-',color='purple',linewidth=0.5, label=label1_1)
+                ax1.plot(time,y2,linestyle='-',color='orange',linewidth=0.5,label=label1_2)
+                ax1.legend()
                 ax1.set_xlabel("Time (s.)")
                 ax1.set_ylabel("Forces (N.)")
 
@@ -892,8 +893,9 @@ class DisplayApp:
 
                 ax2.clear()
                 ax2.set_title(f"{self.selected_view.get()} Force Time Graph")
-                ax2.plot(time,y3,linestyle='-',color='blue',linewidth=0.5, label=label2_1)
-                ax2.plot(time,y4,linestyle='-',color='green',linewidth=0.5, label=label2_2)
+                ax2.plot(time,y3,linestyle='-',color='purple',linewidth=0.5, label=label2_1)
+                ax2.plot(time,y4,linestyle='-',color='orange',linewidth=0.5, label=label2_2)
+                ax2.legend()
                 ax2.set_xlabel("Time (s.)")
                 ax2.set_ylabel("Forces (N.)")
 
