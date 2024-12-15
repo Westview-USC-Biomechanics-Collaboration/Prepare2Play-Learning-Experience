@@ -1,10 +1,16 @@
 import cv2
-from PIL import Image
-
-
+import ctypes
 # Function to select points
 def select_points(cap, num_points=8):
-    # Open the video file
+
+    # Load the user32 library for GetDpiForSystem (Windows 10+)
+    user32 = ctypes.windll.user32
+    user32.GetDpiForSystem.restype = ctypes.c_uint
+
+    # Get the system DPI
+    dpi = round(user32.GetDpiForSystem()/96.0,1)
+    dpi = 1.5
+    print(f"#Assuming 1.0 is 96 dpi\nCurrent system dpi is {dpi}")
 
     # Check if video opened successfully
     if not cap.isOpened():
@@ -12,11 +18,11 @@ def select_points(cap, num_points=8):
         return
 
     # Read the first frame
-
     ret, frame = cap.read()
     height, _, _ = frame.shape
 
-     #frame = frame[height // 2:, :, :]
+    # resize base on dpi
+    frame = cv2.resize(frame,(int(1920/dpi),int(1080/dpi)))
 
     # Check if frame is read correctly
     if not ret:
@@ -30,7 +36,7 @@ def select_points(cap, num_points=8):
     def click_event(event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
 
-            points.append([x,y])
+            points.append([int(x*dpi),int(y*dpi)])
 
             cv2.circle(frame, (x, y), 5, (0, 0, 255), -1)
             cv2.imshow('Frame', frame)
@@ -46,8 +52,6 @@ def select_points(cap, num_points=8):
     while len(points) < num_points:
         cv2.waitKey(1)
 
-    # Release the video capture
-
     # Print the selected points
     print("Selected Points: ", points)
 
@@ -60,5 +64,6 @@ def select_points(cap, num_points=8):
 
     return points
 
-# Example usage
-# select_points('D:/Users/draar/OneDrive/Documents/GitHub/Prepare2Play-Learning-Experience/data/gis_lr_CC_vid03.mp4', True)
+if __name__ == "__main__":
+    cap = cv2.VideoCapture("C:\\Users\\16199\Desktop\data\spu\Trimmed_Front_nishk 01 right.mp4")
+    select_points(cap, 8)

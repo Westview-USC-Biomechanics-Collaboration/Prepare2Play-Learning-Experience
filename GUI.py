@@ -171,6 +171,7 @@ class DisplayApp:
         # force data
         self.force_path = None
         self.graph_data = None
+        self.force_start = None # This variable store the time which user choose to align
         self.rows = None
         self.force_frame = None   # convert rows to frames
         self.step_size = None
@@ -788,6 +789,9 @@ class DisplayApp:
 
             print("modify force data")
 
+            # store some output meta data
+            self.force_start = self.graph_data.iloc[int(self.video_align*self.step_size),0]
+
             self.zoom_pos = 0
             self.slider.set(0)
             self.loc = 0
@@ -828,11 +832,12 @@ class DisplayApp:
             ### solved
             """
         def _export():
-            matplotlib.use('Agg')
+            #matplotlib.use('Agg')
             self.pop_up(text="Processing video ...\nThis may take a minute\nClose this window to start saving")
             
             try:
-                cushion_frames = int(self.cushion_entry.get() *self.fps)
+                print(f"\nentry: {self.cushion_entry.get()}\nfps: {self.fps}")
+                cushion_frames = int(self.cushion_entry.get()) * (self.fps)
                 print(cushion_frames)
             except ValueError as e:
                 self.pop_up(text="Invalid cushion time, please put numbers")
@@ -850,10 +855,12 @@ class DisplayApp:
             fig1,ax1 = plt.subplots()
             fig2,ax2 = plt.subplots()
             time = self.x
+
             label1_1 = None
             label1_2 = None
             label2_1 = None
             label2_2 = None
+
             if(self.selected_view.get()=="Long View"):
                 label1_1 = "Fy1"
                 label1_2 = "Fz1"
@@ -879,28 +886,31 @@ class DisplayApp:
         
             self.graph_data.loc[0:self.step_size*self.save_start,:] = np.nan
             self.graph_data.loc[self.step_size*self.save_end:,:] = np.nan
-            def render_matplotlib_to_cv2(cur):  
-                ax1.clear()         
-                ax1.set_title(f"{self.selected_view.get()} Force Time Graph")
-                ax1.plot(time,y1,linestyle='-',color='purple',linewidth=0.5, label=label1_1)
-                ax1.plot(time,y2,linestyle='-',color='orange',linewidth=0.5,label=label1_2)
-                ax1.legend()
-                ax1.set_xlabel("Time (s.)")
-                ax1.set_ylabel("Forces (N.)")
 
-                line1 = ax1.axvline(x=self.graph_data.iloc[cur,0], color='red', linestyle='--', linewidth=1.5)
+            ax1.clear()
+            ax1.set_title(f"{self.selected_view.get()} Force Time Graph")
+            ax1.plot(time, y1, linestyle='-', color='#008080', linewidth=0.5, label=label1_1)
+            ax1.plot(time, y2, linestyle='-', color='#D34D4D', linewidth=0.5, label=label1_2)
+            ax1.legend()
+            ax1.set_xlabel("Time (s.)")
+            ax1.set_ylabel("Forces (N.)")
 
+            line1 = ax1.axvline(x=self.graph_data.iloc[int(count), 0], color='red', linestyle='--', linewidth=1.5)
 
-                ax2.clear()
-                ax2.set_title(f"{self.selected_view.get()} Force Time Graph")
-                ax2.plot(time,y3,linestyle='-',color='purple',linewidth=0.5, label=label2_1)
-                ax2.plot(time,y4,linestyle='-',color='orange',linewidth=0.5, label=label2_2)
-                ax2.legend()
-                ax2.set_xlabel("Time (s.)")
-                ax2.set_ylabel("Forces (N.)")
+            ax2.clear()
+            ax2.set_title(f"{self.selected_view.get()} Force Time Graph")
+            ax2.plot(time, y3, linestyle='-', color='#008080', linewidth=0.5, label=label2_1)
+            ax2.plot(time, y4, linestyle='-', color='#D34D4D', linewidth=0.5, label=label2_2)
+            ax2.legend()
+            ax2.set_xlabel("Time (s.)")
+            ax2.set_ylabel("Forces (N.)")
 
-                line2 = ax2.axvline(x=self.graph_data.iloc[cur,0], color='red', linestyle='--', linewidth=1.5)
-
+            line2 = ax2.axvline(x=self.graph_data.iloc[int(count), 0], color='red', linestyle='--', linewidth=1.5)
+            def render_matplotlib_to_cv2(cur):
+                # cur is the row
+                LOCtime = self.graph_data.iloc[int(cur),0]
+                line1.set_xdata([LOCtime])
+                line2.set_xdata([LOCtime])
 
                 # Step 2: Save the plot to a BytesIO object
                 buf1 = BytesIO()
@@ -931,7 +941,7 @@ class DisplayApp:
                     # if this calls when the frame_number is equal to the total frame count then the stream has just ended
                     print(f"Can't read frame at position {count}")
                     break
-                graphs = render_matplotlib_to_cv2(count * self.step_size)
+                graphs = render_matplotlib_to_cv2(int(count * self.step_size))  # pass in current row
                 if(count<self.save_start):
                     print("doing ori")
                     """
@@ -957,7 +967,7 @@ class DisplayApp:
             plt.close(fig1)
             plt.close(fig2)
             out.release()
-
+            cv2.destroyAllWindows()
             self.pop_up(text=f"Successfully save vector overlay at {file_path}")
             print(f"Successfully save vector overlay at {file_path}")
             name = file_path.split('/')[-1][:-4]
@@ -970,8 +980,11 @@ class DisplayApp:
                 
                 fout.write(f"Force data path: {self.force_path}\n")
                 fout.write(f"Force start frame(before align && with out small adjustments): {self.force_align}\n")
-                fout.write(f"Force start time: {self.graph_data.iloc[int(self.video_align*self.step_size),0]}\n\n") # using video align because it's position after alignment
-                
+                fout.write(f"Force start time: {self.force_start}\n\n") # using video align because it's position after alignment
+
+                fout.write(f"Cushion time: {self.cushion_entry.get()}\n")
+                fout.write(f"Cushion frame: {cushion_frames}\n")  # num of frames before interval of interest and num of frame after if applicable
+
                 fout.write(f"Saving time: {datetime.now()}\n")
                 fout.write(f"All rights reserved by Westview PUSD")
 

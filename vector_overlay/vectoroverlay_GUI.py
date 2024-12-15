@@ -249,9 +249,9 @@ class VectorOverlay:
         end_point_1 = (int(start_point_1[0] + xf1), int(start_point_1[1] - yf1))
         end_point_2 = (int(start_point_2[0] + xf2), int(start_point_2[1] - yf2))
 
-        cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
+        cv.arrowedLine(frame, start_point_1, end_point_1, (0, 85, 204), 4)
 
-        cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
+        cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 4)
 
     def LongVectorOverlay(self, outputName):
         self.normalizeForces(self.fy1, self.fy2, self.fz1, self.fz2)

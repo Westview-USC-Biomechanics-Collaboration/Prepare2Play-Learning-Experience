@@ -46,8 +46,8 @@ class test:
 
         # Plot for second figure
         ax2.set_title(f"{self.selected_view} Force Time Graph")
-        ax2.plot(time, y3, linestyle='-', color='blue', linewidth=0.5, label='Fy2')
-        ax2.plot(time, y4, linestyle='-', color='green', linewidth=0.5, label='Fx2')
+        ax2.plot(time, y3, linestyle='-', color='#D34D4D', linewidth=0.5, label='Fy2')
+        ax2.plot(time, y4, linestyle='-', color='#008080', linewidth=0.5, label='Fx2')
         ax2.set_xlabel("Time (s.)")
         ax2.set_ylabel("Forces (N.)")
         ax2.legend()
