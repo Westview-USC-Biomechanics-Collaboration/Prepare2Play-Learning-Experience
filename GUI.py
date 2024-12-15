@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
-import shutil
 from datetime import datetime
 from io import BytesIO
+
 # our script
 from Timeline import timeline
 from vector_overlay import vectoroverlay_GUI
@@ -185,11 +185,8 @@ class DisplayApp:
 
         # Graphing options
         self.plate = tk.StringVar(value="Force Plate 1")
-        self.force = tk.StringVar(value="Fz")
+        self.option = tk.StringVar(value="Fz")
 
-        # Zoom Window graphing attributes
-        self.zoom_window = None  
-        self.canvas_zoom = None
         self.zoom_pos = 0 # force data offset -step size<zoom_pos<+step sized
 
         # video
@@ -211,12 +208,6 @@ class DisplayApp:
         self.offset_x3 = 200
         self.offset_y3 = 150
 
-        # video zoom window
-        self.expand_video = None   # holds a tk button
-        self.video_window = None # top level window
-        self.big_video = None # canvas object
-        self.window_photoImage =None # photoimage place holder
-
         # timeline
         self.timeline1 = None
         self.timeline2 = None
@@ -235,7 +226,7 @@ class DisplayApp:
         self.StartLabel = None             # Start label
         self.save_end_button = None        # Label End Button
         self.EndLabel = None               # End Label
-        self.save_confrim_button = None    # Final Saving Button
+        self.save_confirm_button = None    # Final Saving Button
         self.save_start = None             # Start frame
         self.save_end = None               # End frame
 
@@ -399,8 +390,7 @@ class DisplayApp:
         self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
         self.photo_image1 = self.display_frame(camera=self.cam,width=self.frame_width,height=self.frame_height)
         self.canvasID_1 = self.canvas1.create_image(200, 150, image=self.photo_image1, anchor="center")
-        self.expand_video = tk.Button(self.canvas1, text="Expand", command=self._expand_video)
-        self.canvas1.create_window(300, 50, window=self.expand_video)
+
 
     def display_frame(self,camera,width=400, height=300):
         """
@@ -436,11 +426,11 @@ class DisplayApp:
         plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
         x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos), 0])
         y_value = float(
-            self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos), f"{self.force.get()}{plate_number}"])
+            self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos), f"{self.option.get()}{plate_number}"])
 
         # Set x and y
         self.x = self.graph_data.iloc[:, 0]
-        self.y = self.graph_data.loc[:, f"{self.force.get()}{plate_number}"]
+        self.y = self.graph_data.loc[:, f"{self.option.get()}{plate_number}"]
 
         # Plot data
         self.ax.plot(self.x, self.y, linestyle='-', color='blue', linewidth=0.5)
@@ -454,7 +444,7 @@ class DisplayApp:
                                                  linewidth=1)
         # Add a label with the force type inside the plot (top-left corner)
         self.text_label = self.ax.text(
-            0.05, 0.95, f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}",
+            0.05, 0.95, f"{self.plate.get()}\n{self.option.get()}: {y_value:.2f}",
             transform=self.ax.transAxes, fontsize=12, color='black', verticalalignment='top',
             horizontalalignment='left', bbox=dict(facecolor='white', edgecolor='none', alpha=0.5)
         )
@@ -462,7 +452,7 @@ class DisplayApp:
         # Update line and text
         self.zoom_baseline.set_xdata([x_position])
         self.line.set_xdata([x_position])
-        self.text_label.set_text(f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}")
+        self.text_label.set_text(f"{self.plate.get()}\n{self.option.get()}: {y_value:.2f}")
 
         # Embed the Matplotlib figure in the Tkinter canvas
         self.figure_canvas = FigureCanvasTkAgg(self.fig, self.canvas2)
@@ -478,59 +468,11 @@ class DisplayApp:
         toolbar = NavigationToolbar2Tk(self.figure_canvas, toolbar_frame)
         toolbar.update()
 
-        # Expand button
-        self.expanded_graph = tk.Button(self.canvas2, text="Expand", command=self._expand_graph)
-        self.canvas2.create_window(350, 50, window=self.expanded_graph)
-
         forward = tk.Button(self.canvas2, text="forward", command=self._forwardButton)
         self.canvas2.create_window(350, 270, window=forward)
 
         backward = tk.Button(self.canvas2, text="backward", command=self._backwardButton)
         self.canvas2.create_window(30, 270, window=backward)
-
-
-
-    def _expand_graph(self):
-        # Create a new window for the expanded graph
-        self.zoom_window = tk.Toplevel(self.master)   # the zoom_window is the main/mast canvas for that small window
-        self.zoom_window.title("Expanded Graph")
-
-        # Create a new Matplotlib figure for the zoomed-in data
-        self.figzoom, self.axzoom = plt.subplots(figsize=(6, 4))
-
-        # Adjust the data range for the zoomed-in view 
-        current_row = int(self.loc*self.step_size) # current row
-        plate_number = "1" if self.plate.get() == "Force Plate 1" else "2" # plate number
-        zoom_x = self.graph_data.iloc[current_row-self.step_size:current_row+self.step_size,0]  
-        zoom_y = self.graph_data.loc[current_row-self.step_size:current_row+self.step_size-1,f"{self.force.get()}{plate_number}"] 
-
-        # debug
-        #print(zoom_x,zoom_y)
-
-
-        self.axzoom.plot(zoom_x, zoom_y,linestyle='-', color='blue', linewidth = 0.5)
-        self.axzoom.set_title("Zoomed-in View")
-        self.axzoom.set_xlabel("Time")
-        self.axzoom.set_ylabel(f"{self.force.get()}")
-        self.zoom_textLabel = self.axzoom.text(0.05, 0.95, f"{self.plate.get()}\n{self.force.get()}: {(self.graph_data.loc[current_row+self.zoom_pos,f'{self.force.get()}{plate_number}']):.2f}", transform=self.ax.transAxes,
-                     fontsize=12, color='black', verticalalignment='top', horizontalalignment='left',
-                     bbox=dict(facecolor='white', edgecolor='none', alpha=0.5))
-        self.zoom_line = self.axzoom.axvline(x=self.graph_data.iloc[current_row+self.zoom_pos,0], color='red', linestyle='--', linewidth=1.5)
-        self.zoom_baseline = self.axzoom.axvline(x=self.graph_data.iloc[current_row,0], color='grey', linestyle='--', linewidth=1)
-        # Embed the new plot into the new window
-        self.canvas_zoom = FigureCanvasTkAgg(self.figzoom, self.zoom_window)
-        self.canvas_zoom.draw()
-        self.canvas_zoom.get_tk_widget().pack()
-
-        left_button = tk.Button(self.zoom_window, text="backward", command=self._backwardButton)
-        left_button.pack(side="left",padx=20)
-
-        right_button = tk.Button(self.zoom_window, text="forward", command=self._forwardButton)
-        right_button.pack(side="right",padx=20)
-
-        self.zoom_window.attributes("-topmost", True)
-        self.zoom_window.grab_set()
-        self.master.wait_window(self.zoom_window)  # block main window action
 
     """
     The two call function can be written as one with a parameter.
@@ -541,9 +483,9 @@ class DisplayApp:
 
         # also update the original graph
         x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos),0])
-        y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.force.get()}{plate_number}"])
+        y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.option.get()}{plate_number}"])
         self.line.set_xdata([x_position])
-        self.text_label.set_text(f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}")
+        self.text_label.set_text(f"{self.plate.get()}\n{self.option.get()}: {y_value:.2f}")
         self.figure_canvas.draw()
 
         print(self.zoom_pos)
@@ -552,31 +494,15 @@ class DisplayApp:
         self.zoom_pos += 1
 
         x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos),0])
-        y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.force.get()}{plate_number}"])
+        y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.option.get()}{plate_number}"])
         self.line.set_xdata([x_position])
-        self.text_label.set_text(f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}")
+        self.text_label.set_text(f"{self.plate.get()}\n{self.option.get()}: {y_value:.2f}")
         self.figure_canvas.draw()
 
         print(self.zoom_pos)
 
 
-    def _expand_video(self):
-        print("user clicked expand video")
-        self.video_window = tk.Toplevel(self.master)
-        self.video_window.title("Big video")
-        self.big_video = Canvas(self.video_window,width=640, height=480, bg="lightgrey")
-        self.big_video.pack(fill="both", expand=True)
 
-        ret, frame = self.cam.read()  # the `frame` object is now the frame we want
-
-        if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
-            frame = Image.fromarray(frame).resize((640, 480), resample=Image.BICUBIC)  # Resize the frame to 400 * 300
-            self.window_photoImage = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
-            self.big_video.create_image(0, 0, image=self.window_photoImage, anchor=tk.NW)
-
-        self.video_window.attributes("-topmost", True)
-        #self.video_window.grab_set()
 
 
 
@@ -626,10 +552,10 @@ class DisplayApp:
             try:
                 plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
                 x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos),0])
-                y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.force.get()}{plate_number}"])
+                y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.option.get()}{plate_number}"])
                 self.zoom_baseline.set_xdata([self.graph_data.iloc[self.loc*self.step_size,0]])
                 self.line.set_xdata([x_position])
-                self.text_label.set_text(f"{self.plate.get()}\n{self.force.get()}: {y_value:.2f}")
+                self.text_label.set_text(f"{self.plate.get()}\n{self.option.get()}: {y_value:.2f}")
                 self.figure_canvas.draw()
 
             except IndexError as e:
@@ -1033,13 +959,8 @@ class DisplayApp:
         self.save_confirm_button = tk.Button(self.save_window,text="export video",command=_export)
         self.save_confirm_button.grid(row=5,column=0,columnspan=3,sticky="nsew",padx=10,pady=10)
 
-        
-
-
+        # lift the save window to the front
         self.save_window.lift()
-
-        # shutil.copy("vector_overlay_temp.mp4",file_path)
-
 
     def vector_overlay(self):
         print("user clicked vector overlay button")
@@ -1085,7 +1006,7 @@ class DisplayApp:
 
         # Variables to store selected radio button values
         self.plate = tk.StringVar(value="Force Plate 1")
-        self.force = tk.StringVar(value="Fx")
+        self.option = tk.StringVar(value="Fx")
 
         # First row: Force Plate Selection
         frame1 = tk.Frame(popup)
@@ -1106,19 +1027,26 @@ class DisplayApp:
 
         tk.Label(frame2, text="Select Force").pack()
 
-        fx_radio = tk.Radiobutton(frame2, text="Fx", variable=self.force, value="Fx")
+        fx_radio = tk.Radiobutton(frame2, text="Fx", variable=self.option, value="Fx")
         fx_radio.pack(side=tk.LEFT, padx=5)
 
-        fy_radio = tk.Radiobutton(frame2, text="Fy", variable=self.force, value="Fy")
+        fy_radio = tk.Radiobutton(frame2, text="Fy", variable=self.option, value="Fy")
         fy_radio.pack(side=tk.LEFT, padx=5)
 
-        fz_radio = tk.Radiobutton(frame2, text="Fz", variable=self.force, value="Fz")
+        fz_radio = tk.Radiobutton(frame2, text="Fz", variable=self.option, value="Fz")
         fz_radio.pack(side=tk.LEFT, padx=5)
+        
+        px_radio = tk.Radiobutton(frame2, text="Ax", variable=self.option, value="Ax")
+        px_radio.pack(side=tk.LEFT, padx=5)
 
+        py_radio = tk.Radiobutton(frame2, text="Ay", variable=self.option, value="Ay")
+        py_radio.pack(side=tk.LEFT, padx=5)
         def make_changes():
             try:
-                self.slider.set(0)
-                self.loc = 0
+                if(self.loc>self.force_frame):
+                    self.slider.set(0)
+                    self.loc = 0
+
                 self.plot_force_data()
             except AttributeError as e:
                 print("Missing force data !!!")
@@ -1127,9 +1055,6 @@ class DisplayApp:
         # Button to confirm and close the popup
         confirm_btn = tk.Button(popup, text="Confirm", command=make_changes)
         confirm_btn.pack(pady=10)
-
-
-
 
 if __name__ == "__main__":
     root = tk.Tk()

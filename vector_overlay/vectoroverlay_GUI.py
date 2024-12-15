@@ -57,7 +57,7 @@ Select corner sequence:
          |_______________________|
 
 """
-def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
+def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords,short = False):
     """
     Maps points from a rectangle to a trapezoid, simulating parallax distortion.
 
@@ -78,21 +78,24 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     (tl_x, tl_y), (tr_x, tr_y), (br_x, br_y), (bl_x, bl_y) = trapezoid_coords
 
     # Calculate the left and right edge positions for the current y
-    left_x = bl_x + (tl_x - bl_x) * (y / rect_height)
-    right_x = br_x + (tr_x - br_x) * (y / rect_height)
+    left_x = bl_x + (tl_x - bl_x) * y
+    right_x = br_x + (tr_x - br_x) * y
 
     # Calculate the width of the trapezoid at the current y
     trapezoid_width = right_x - left_x
 
     # Map x-coordinate
-    new_x = left_x + (x / rect_width) * trapezoid_width
+    new_x = left_x + x * trapezoid_width
 
     # Calculate the top and bottom y positions of the trapezoid
     top_y = (tl_y + tr_y) / 2
     bottom_y = (bl_y + br_y) / 2
 
     # Map y-coordinate
-    new_y = top_y + (y / rect_height) * (bottom_y - top_y)
+    if short:
+        new_y = bottom_y + y * (top_y - bottom_y)
+    else:
+        new_y = top_y + y * (bottom_y - top_y)
 
     return (int(new_x), int(new_y))
 
@@ -239,19 +242,28 @@ class VectorOverlay:
         self.px2 = tuple(px2)
         self.py2 = tuple(py2)
 
-    def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2):
+    def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2,short=False):
+        if short:
+            point_pair1 = rect_to_trapezoid(px1, py1, 1, 1,
+                                            [self.corners[0], self.corners[1], self.corners[2], self.corners[3]],short=True)
 
-        start_point_1 = rect_to_trapezoid(px1, py1, 1, 1,
-                                          [self.corners[0], self.corners[1], self.corners[2], self.corners[3]])
+            point_pair2 = rect_to_trapezoid(px2, py2, 1, 1,
+                                            [self.corners[4], self.corners[5], self.corners[6], self.corners[7]],short=True)
 
-        start_point_2 = rect_to_trapezoid(px2, py2, 1, 1,
-                                          [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
-        end_point_1 = (int(start_point_1[0] + xf1), int(start_point_1[1] - yf1))
-        end_point_2 = (int(start_point_2[0] + xf2), int(start_point_2[1] - yf2))
+        else:
+            point_pair1 = rect_to_trapezoid(px1, py1, 1, 1,
+                                              [self.corners[0], self.corners[1], self.corners[2], self.corners[3]])
 
-        cv.arrowedLine(frame, start_point_1, end_point_1, (0, 85, 204), 4)
+            point_pair2 = rect_to_trapezoid(px2, py2, 1, 1,
+                                              [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
 
-        cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 4)
+
+        end_point_1 = (int(point_pair1[0] + xf1), int(point_pair1[1] - yf1))
+        end_point_2 = (int(point_pair2[0] + xf2), int(point_pair2[1] - yf2))
+
+        cv.arrowedLine(frame, point_pair1, end_point_1, (0, 85, 204), 4)
+
+        cv.arrowedLine(frame, point_pair2, end_point_2, (255, 0, 0), 4)
 
     def LongVectorOverlay(self, outputName):
         self.normalizeForces(self.fy1, self.fy2, self.fz1, self.fz2)
@@ -348,8 +360,8 @@ class VectorOverlay:
             frame_number += 1
             out.write(frame)
 
-
         out.release()
+        cv2.destroyAllWindows()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
     # short view need more test
@@ -386,15 +398,15 @@ class VectorOverlay:
             py1 = 1 - self.py1[int(frame_number)]
             py2 = 1 - self.py2[int(frame_number)]
 
-            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
+            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2,short=True)
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
             frame_number += 1
             out.write(frame)
 
-
         out.release()
+        cv2.destroyAllWindows()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
 if __name__ == "__main__":
