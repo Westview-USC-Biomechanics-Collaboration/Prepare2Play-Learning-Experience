@@ -8,8 +8,10 @@ def select_points(cap, num_points=8):
     user32.GetDpiForSystem.restype = ctypes.c_uint
 
     # Get the system DPI
-    dpi = round(user32.GetDpiForSystem()/96.0,1)
-    dpi = 1.5
+    try:
+        dpi = round(user32.GetDpiForSystem()/96.0,1)
+    except:
+        dpi = 1.5
     print(f"#Assuming 1.0 is 96 dpi\nCurrent system dpi is {dpi}")
 
     # Check if video opened successfully
