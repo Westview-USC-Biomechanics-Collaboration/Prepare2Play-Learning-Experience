@@ -5,14 +5,17 @@ def select_points(cap, num_points=8):
 
     # Load the user32 library for GetDpiForSystem (Windows 10+)
     user32 = ctypes.windll.user32
+    ctypes.windll.user32.SetProcessDPIAware()
     user32.GetDpiForSystem.restype = ctypes.c_uint
 
     # Get the system DPI
     try:
-        dpi = round(user32.GetDpiForSystem()/96.0,1)
+        dpi = round(user32.GetDpiForSystem()/96.0,2)
+
     except:
+        print("using default scale factor dpi=1.50")
         dpi = 1.5
-    print(f"#Assuming 1.0 is 96 dpi\nCurrent system dpi is {dpi}")
+    print(f"#Assuming 1.00 is 96 dpi\nCurrent system dpi is {dpi}")
 
     # Check if video opened successfully
     if not cap.isOpened():
