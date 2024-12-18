@@ -629,6 +629,7 @@ class DisplayApp:
                 # Short view chosen
                 self.selected_view = tk.StringVar(value="Short View") 
                 print("Short View selected")
+
     def upload_force_data(self):
         # Open a file dialog for any file type
         file_path = filedialog.askopenfilename(title="Select Force Data File",filetypes=[("Excel or CSV Files", "*.xlsx *.xls *.csv")])
