@@ -261,7 +261,7 @@ class VectorOverlay:
         end_point_1 = (int(point_pair1[0] + xf1), int(point_pair1[1] - yf1))
         end_point_2 = (int(point_pair2[0] + xf2), int(point_pair2[1] - yf2))
 
-        cv.arrowedLine(frame, point_pair1, end_point_1, (0, 85, 204), 4)
+        cv.arrowedLine(frame, point_pair1, end_point_1, (0, 255,0), 4)
 
         cv.arrowedLine(frame, point_pair2, end_point_2, (255, 0, 0), 4)
 
