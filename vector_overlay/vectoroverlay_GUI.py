@@ -204,7 +204,7 @@ class VectorOverlay:
                 data_x1 = self.data.iloc[start_row, 1] if not pd.isna(self.data.iloc[start_row, 1]) else 0.0
                 data_y1 = self.data.iloc[start_row, 2] if not pd.isna(self.data.iloc[start_row, 2]) else 0.0
                 data_z1 = self.data.iloc[start_row, 3] if not pd.isna(self.data.iloc[start_row, 3]) else 0.0
-                pressure_x1 = (-self.data.iloc[start_row, 5] + 0.3) / 0.6 if not pd.isna(
+                pressure_x1 = (self.data.iloc[start_row, 5] + 0.3) / 0.6 if not pd.isna(
                     self.data.iloc[start_row, 5]) else 0.0
                 pressure_y1 = (self.data.iloc[start_row, 6] + 0.45) / 0.9 if not pd.isna(
                     self.data.iloc[start_row, 6]) else 0.0
@@ -308,7 +308,8 @@ class VectorOverlay:
             py2 = self.px2[int(frame_number)]
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
-            cv2.imshow("window", frame)
+            cv2.imshow("window", cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5)))
+)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
             frame_number += 1
@@ -354,7 +355,7 @@ class VectorOverlay:
             py2 = self.px2[int(frame_number)]
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
-            cv2.imshow("window", frame)
+            cv2.imshow("window", cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5))))
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
             frame_number += 1
@@ -399,7 +400,7 @@ class VectorOverlay:
             py2 = 1 - self.py2[int(frame_number)]
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2,short=True)
-            cv2.imshow("window", frame)
+            cv2.imshow("window", cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5))))
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
             frame_number += 1
