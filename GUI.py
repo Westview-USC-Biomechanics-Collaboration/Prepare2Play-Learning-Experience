@@ -631,7 +631,7 @@ class DisplayApp:
                 print("Short View selected")
     def upload_force_data(self):
         # Open a file dialog for any file type
-        file_path = filedialog.askopenfilename(title="Select Force Data File",filetypes=[("Excel or CSV Files", "*.xlsx;*.xls,*.csv")])
+        file_path = filedialog.askopenfilename(title="Select Force Data File",filetypes=[("Excel or CSV Files", "*.xlsx *.xls *.csv")])
         self.force_path = file_path
         print(f"Force data uploaded: {file_path}")
 
