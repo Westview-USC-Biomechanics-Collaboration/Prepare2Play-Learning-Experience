@@ -799,10 +799,10 @@ class DisplayApp:
                 label2_1 = "Fx2"
                 label2_2 = "Fz2"
             else: # top view
-                label1_1 = "Fx1"
-                label1_2 = "Fy1"
-                label2_1 = "Fx2"
-                label2_2 = "Fy2"
+                label1_1 = "Fy1"
+                label1_2 = "Fx1"
+                label2_1 = "Fy2"
+                label2_2 = "Fx2"
             
             # force plate 1
             y1 = self.graph_data.loc[:,label1_1]
@@ -810,14 +810,18 @@ class DisplayApp:
             # force plate 2
             y3 = self.graph_data.loc[:,label2_1]
             y4 = self.graph_data.loc[:,label2_2]
-        
+
+            ymax = max(y1.max(),y2.max(),y3.max(),y4.max())
+            ymin = min(y1.min(),y2.min(),y3.min(),y4.min())
+
             self.graph_data.loc[0:self.step_size*self.save_start,:] = np.nan
             self.graph_data.loc[self.step_size*self.save_end:,:] = np.nan
 
             ax1.clear()
-            ax1.set_title(f"{self.selected_view.get()} Force Time Graph")
-            ax1.plot(time, y1, linestyle='-', color='green', linewidth=0.5, label=label1_1)
-            ax1.plot(time, y2, linestyle='-', color='purple', linewidth=0.5, label=label1_2)
+            ax1.set_title(f"Force plate {self.plate.get()} Force Time Graph")
+            ax1.set_ylim(ymin, ymax)
+            ax1.plot(time, y1, linestyle='-', color='purple', linewidth=1.5, label="Force horizontal")
+            ax1.plot(time, y2, linestyle='-', color='green', linewidth=1.5, label="Force vertical")
             ax1.legend()
             ax1.set_xlabel("Time (s.)")
             ax1.set_ylabel("Forces (N.)")
@@ -825,9 +829,10 @@ class DisplayApp:
             line1 = ax1.axvline(x=self.graph_data.iloc[int(count), 0], color='red', linestyle='--', linewidth=1.5)
 
             ax2.clear()
-            ax2.set_title(f"{self.selected_view.get()} Force Time Graph")
-            ax2.plot(time, y3, linestyle='-', color='blue', linewidth=0.5, label=label2_1)
-            ax2.plot(time, y4, linestyle='-', color='orange', linewidth=0.5, label=label2_2)
+            ax2.set_title(f"Force plate {self.plate.get()} Force Time Graph")
+            ax2.set_ylim(ymin, ymax)
+            ax2.plot(time, y3, linestyle='-', color='orange', linewidth=1.5, label="Force horizontal")
+            ax2.plot(time, y4, linestyle='-', color='blue', linewidth=1.5, label="Force vertical")
             ax2.legend()
             ax2.set_xlabel("Time (s.)")
             ax2.set_ylabel("Forces (N.)")
@@ -856,9 +861,15 @@ class DisplayApp:
                 image1 = cv2.imdecode(image1, cv2.IMREAD_COLOR)
                 image2 = cv2.imdecode(image2, cv2.IMREAD_COLOR)
 
-                gap = np.full((int(image1.shape[0]),int(1920-image1.shape[1]*2),3),255,dtype=np.uint8)
+                total_width = image1.shape[1] + image2.shape[1]
+                if total_width > 1920:
+                    raise ValueError("The combined width of image1 and image2 exceeds 1920 pixels.")
+                
+                gap_width = (1920 - total_width) // 2  # Integer division for the gap width
 
-                return cv2.hconcat([image1,gap, image2])
+                gap = np.full((int(image1.shape[0]),gap_width,3),255,dtype=np.uint8)
+
+                return cv2.hconcat([gap,image1,image2,gap])
 
             # Saving frame with graph
             while(self.vector_cam.isOpened() and count<= self.save_end+cushion_frames):
