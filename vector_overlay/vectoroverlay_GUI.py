@@ -403,12 +403,12 @@ class VectorOverlay:
            # Resize the frame for display
             resized_frame = cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5)))
 
-# Show the resized frame
+            # Show the resized frame
             cv2.imshow("window", resized_frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
             frame_number += 1
-            out.write(cv2.resize(frame))
+            out.write(frame)
 
         out.release()
         cv2.destroyAllWindows()
