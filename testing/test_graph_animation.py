@@ -32,12 +32,14 @@ class test:
         # Force plate 2
         y3 = self.graph_data.loc[:, 'Fy2']
         y4 = self.graph_data.loc[:, 'Fx2']
-
+        ymax = max(y1.max(), y2.max(), y3.max(), y4.max())
+        ymin = min(y1.min(), y2.min(), y3.min(), y4.min())
         # Plot for first figure
         line = ax1.axvline(x=1, color='red', linestyle='--', linewidth=1.5)
         line.set_xdata([1])
 
         ax1.set_title(f"{self.selected_view} Force Time Graph")
+        ax1.set_ylim(ymin, ymax*1.2)
         ax1.plot(time, y1, linestyle='-', color='blue', linewidth=0.5, label='Fy1')
         ax1.plot(time, y2, linestyle='-', color='green', linewidth=0.5, label='Fx1')
         ax1.set_xlabel("Time (s.)")
@@ -46,6 +48,7 @@ class test:
 
         # Plot for second figure
         ax2.set_title(f"{self.selected_view} Force Time Graph")
+        ax2.set_ylim(ymin, ymax*1.2)
         ax2.plot(time, y3, linestyle='-', color='#D34D4D', linewidth=0.5, label='Fy2')
         ax2.plot(time, y4, linestyle='-', color='#008080', linewidth=0.5, label='Fx2')
         ax2.set_xlabel("Time (s.)")

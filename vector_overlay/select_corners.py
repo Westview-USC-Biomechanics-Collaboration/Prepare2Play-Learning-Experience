@@ -1,21 +1,44 @@
 import cv2
 import ctypes
 
-# Function to select points
-def select_points(cap, num_points=8, zoom_size=100, zoom_factor=2):
+# Globals for cursor position
+cursor_x, cursor_y = 0, 0
 
-    # Load the user32 library for GetDpiForSystem (Windows 10+)
+# Function to zoom in on a region and draw a blue cross
+def get_zoomed_region(image, x, y, zoom_size=50, zoom_factor=2):
+    h, w = image.shape[:2]
+    x1, y1 = max(0, x - zoom_size), max(0, y - zoom_size)
+    x2, y2 = min(w, x + zoom_size), min(h, y + zoom_size)
+
+    # Extract the region
+    region = image[y1:y2, x1:x2]
+    zoomed_region = cv2.resize(region, None, fx=zoom_factor, fy=zoom_factor, interpolation=cv2.INTER_LINEAR)
+
+    # Draw a blue cross in the center of the zoomed region
+    zh, zw = zoomed_region.shape[:2]
+    center_x, center_y = zw // 2, zh // 2
+    color = (255, 0, 0)  # Blue color in BGR
+
+    # Horizontal line
+    cv2.line(zoomed_region, (center_x - 10, center_y), (center_x + 10, center_y), color, 2)
+    # Vertical line
+    cv2.line(zoomed_region, (center_x, center_y - 10), (center_x, center_y + 10), color, 2)
+
+    return zoomed_region
+
+def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
+    # Load user32 library for DPI scaling (Windows 10+)
     user32 = ctypes.windll.user32
     ctypes.windll.user32.SetProcessDPIAware()
     user32.GetDpiForSystem.restype = ctypes.c_uint
 
-    # Get the system DPI
+    # Get system DPI
     try:
         dpi = round(user32.GetDpiForSystem() / 96.0, 2)
     except:
-        print("using default scale factor dpi=1.50")
+        print("Using default scale factor dpi=1.50")
         dpi = 1.5
-    print(f"#Assuming 1.00 is 96 dpi\nCurrent system dpi is {dpi}")
+    print(f"# Assuming 1.00 is 96 dpi\nCurrent system dpi is {dpi}")
 
     # Check if video opened successfully
     if not cap.isOpened():
@@ -24,62 +47,57 @@ def select_points(cap, num_points=8, zoom_size=100, zoom_factor=2):
 
     # Read the first frame
     ret, frame = cap.read()
-    height, width, _ = frame.shape
-
-    # Resize based on DPI
-    frame = cv2.resize(frame, (int(width / dpi), int(height / dpi)))
-
-    # Check if frame is read correctly
     if not ret:
         print("Error: Could not read the frame.")
         return
 
+    # Resize based on DPI
+    height, width, _ = frame.shape
+    frame = cv2.resize(frame, (int(width / dpi), int(height / dpi)))
+
     # List to store the points
     points = []
 
-    # Function to capture click events and show zoomed-in window
-    def click_event(event, x, y, flags, param):
+    # Click event to select points
+    def mouse_callback(event, x, y, flags, param):
+        global cursor_x, cursor_y
         if event == cv2.EVENT_LBUTTONDOWN:
+            # Capture clicked points
             points.append([int(x * dpi), int(y * dpi)])
             cv2.circle(frame, (x, y), 5, (0, 0, 255), -1)
-            cv2.imshow('Frame', frame)
+            cv2.imshow('Main Window', frame)
 
             if len(points) == num_points:
-                cv2.destroyWindow('Frame')
-
+                cv2.destroyWindow('Main Window')
+                cv2.destroyWindow('Zoom Window')
         if event == cv2.EVENT_MOUSEMOVE:
-            # Get the region around the cursor
-            x_start = max(0, int(x - zoom_size / 2))
-            y_start = max(0, int(y - zoom_size / 2))
-            x_end = min(frame.shape[1], int(x + zoom_size / 2))
-            y_end = min(frame.shape[0], int(y + zoom_size / 2))
+            # Update cursor position
+            cursor_x, cursor_y = x, y
 
-            # Extract the ROI (Region Of Interest)
-            roi = frame[y_start:y_end, x_start:x_end]
+    # Set mouse callbacks
+    cv2.namedWindow('Main Window', cv2.WINDOW_NORMAL)
+    cv2.setMouseCallback('Main Window', mouse_callback)
 
-            # Zoom into the ROI
-            zoomed_in = cv2.resize(roi, (zoom_size * zoom_factor, zoom_size * zoom_factor))
+    cv2.namedWindow('Zoom Window', cv2.WINDOW_NORMAL)
+    cv2.setWindowProperty('Zoom Window', cv2.WND_PROP_TOPMOST, 1)  # Keep on top
 
-            # Display the zoomed-in window next to the cursor
-            zoomed_window_name = 'Zoom Window'
-            zoomed_x = x + 20
-            zoomed_y = y + 20
+    global cursor_x, cursor_y
+    cursor_x, cursor_y = 0, 0
 
-            # Create a copy of the frame to not interfere with the original window
-            zoom_frame = frame.copy()
-            cv2.imshow(zoomed_window_name, zoomed_in)
-            cv2.moveWindow(zoomed_window_name, zoomed_x, zoomed_y)
-
-    # Display the frame and set the click event handler
-    cv2.imshow('Frame', frame)
-    cv2.setMouseCallback('Frame', click_event)
-
-    # Wait until all points are selected or window is closed
     while len(points) < num_points:
-        cv2.waitKey(1)
+        # Show the main window
+        cv2.imshow('Main Window', frame)
 
-    # Print the selected points
-    print("Selected Points: ", points)
+        # Get the zoomed-in region using the helper function
+        zoomed = get_zoomed_region(frame, cursor_x, cursor_y)
+
+        # Display the zoomed-in view
+        cv2.imshow('Zoom Window', zoomed)
+        cv2.moveWindow('Zoom Window', cursor_x + 200, cursor_y - 100)
+
+        print(cursor_x,cursor_y)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
     # Save the points to a file
     with open('selected_points.txt', 'w') as f:
@@ -87,10 +105,8 @@ def select_points(cap, num_points=8, zoom_size=100, zoom_factor=2):
             f.write(f'{point[0]},{point[1]}\n')
 
     print("Points saved to selected_points.txt")
-
     return points
 
 if __name__ == "__main__":
-    #cap = cv2.VideoCapture("C:\\Users\\16199\\Desktop\\data\\spu\\Trimmed_Front_nishk 01 right.mp4")
-    cap = cv2.VideoCapture("\\\\dohome2.pusd.dom\\Home2$\\Student2\\1914840\\Chrome Downloads\\longboard_lr_NS_video01.new2.MOV")
-    select_points(cap, 8)
+    cap = cv2.VideoCapture("C:\\Users\\16199\\Desktop\\data\\spu\\Trimmed_Front_nishk 01 right.mp4")
+    select_points(cap, num_points=8)

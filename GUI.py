@@ -783,11 +783,6 @@ class DisplayApp:
             fig2,ax2 = plt.subplots()
             time = self.x
 
-            label1_1 = None
-            label1_2 = None
-            label2_1 = None
-            label2_2 = None
-
             if(self.selected_view.get()=="Long View"):
                 label1_1 = "Fy1"
                 label1_2 = "Fz1"
@@ -819,7 +814,7 @@ class DisplayApp:
 
             ax1.clear()
             ax1.set_title(f"Force plate {self.plate.get()} Force Time Graph")
-            ax1.set_ylim(ymin, ymax)
+            ax1.set_ylim(ymin, ymax*1.2)
             ax1.plot(time, y1, linestyle='-', color='purple', linewidth=1.5, label="Force horizontal")
             ax1.plot(time, y2, linestyle='-', color='green', linewidth=1.5, label="Force vertical")
             ax1.legend()
@@ -830,7 +825,7 @@ class DisplayApp:
 
             ax2.clear()
             ax2.set_title(f"Force plate {self.plate.get()} Force Time Graph")
-            ax2.set_ylim(ymin, ymax)
+            ax2.set_ylim(ymin, ymax*1.2)
             ax2.plot(time, y3, linestyle='-', color='orange', linewidth=1.5, label="Force horizontal")
             ax2.plot(time, y4, linestyle='-', color='blue', linewidth=1.5, label="Force vertical")
             ax2.legend()
