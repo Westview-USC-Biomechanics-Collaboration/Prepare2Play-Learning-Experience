@@ -40,12 +40,12 @@ class DisplayApp:
             "Step 7: click `vector overlay` button\n"
             "Step 8: click `save` button and set the output name"
         )
-        self._pop_up(text=direction)
-        self.selected_view = tk.StringVar(value="Long View") 
+        self._pop_up(text=direction,follow=True)
+        self.selected_view = tk.StringVar(value="Long View")
         self.master.title("Multi-Window Display App")
         self.master.geometry("1320x1080")
         self.master.lift()
-        
+
 
         # Bind the resize event of the master window
         self.master.bind('<Configure>', self.center_canvas)
@@ -118,17 +118,17 @@ class DisplayApp:
         self.slider.grid(row=2, column=1, pady=10, sticky='ew')
 
         self.adjustR = tk.Frame(self.main_canvas,bg = "lightgray")
-        self.step_forward = tk.Button(self.adjustR, text="+1frame",command=lambda: self._stepF(1))
+        self.step_forward = tk.Button(self.adjustR, text="+1frame",command=lambda: self.stepF(1))
         self.step_forward.grid(row=0,column=0,padx=20)
-        self.rotateR = tk.Button(self.adjustR, text="Rotate clockwise",command=lambda: self._rotateCam(1))
+        self.rotateR = tk.Button(self.adjustR, text="Rotate clockwise",command=lambda: self.rotateCam(1))
         self.rotateR.grid(row=0,column=1,padx=20)
         self.adjustR.grid(row=2, column=2, pady=10, sticky='ew')
 
 
         self.adjustL = tk.Frame(self.main_canvas,bg="lightgray")
-        self.step_backward = tk.Button(self.adjustL, text="-1frame", command=lambda: self._stepF(-1))
+        self.step_backward = tk.Button(self.adjustL, text="-1frame", command=lambda: self.stepF(-1))
         self.step_backward.grid(row=0,column=1,padx=20)
-        self.rotateL = tk.Button(self.adjustL, text="Rotate counterclockwise",command=lambda: self._rotateCam(-1))
+        self.rotateL = tk.Button(self.adjustL, text="Rotate counterclockwise",command=lambda: self.rotateCam(-1))
         self.rotateL.grid(row=0,column=0,padx=20)
         self.adjustL.grid(row=2, column=0, padx=20, pady=10, sticky='ew')
 
@@ -246,16 +246,6 @@ class DisplayApp:
     def center_canvas(self, event=None):
         self.main_canvas.place(x=0, y=0,anchor="center")
 
-    def get_current_frame(self):
-        print(self.slider.get())
-        return int(self.slider.get()) # return current frame, 1st return 1
-    def _stepF(self, dirc):
-        if(dirc>0):
-            self.loc+=1
-        else:
-            self.loc-=1
-        self.slider.set(self.loc)
-
     def _on_zoom(self,event,canvas):
         if (canvas == 1):
             if event.delta > 0:
@@ -316,7 +306,7 @@ class DisplayApp:
                 self.canvas3.delete("all")
                 self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
 
-    def _pop_up(self, text):
+    def _pop_up(self, text, follow=False):
         # Create a new top-level window (popup)
         popup = tk.Toplevel(self.master)
         popup.title("Popup Window")
@@ -351,11 +341,11 @@ class DisplayApp:
         # Ensure the popup stays above the main window
         popup.lift()  # Bring the popup to the front
 
-        # Make the popup modal (blocks interaction with the main window)
-        popup.grab_set()
-
-        # Wait for the popup to be destroyed before returning to the main window
-        self.master.wait_window(popup)
+        if(not follow):
+            # Make the popup modal (blocks interaction with the main window)
+            popup.grab_set()
+            # Wait for the popup to be destroyed before returning to the main window
+            self.master.wait_window(popup)
 
     def _update_force_timeline(self):
         # Assuming self.timeline1.draw_rect() returns an image
@@ -415,32 +405,6 @@ class DisplayApp:
             frame = Image.fromarray(frame).resize((width, height), resample=Image.BICUBIC) # Resize the frame to 400 * 300
             photoImage = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
             return photoImage
-
-    def _rotateCam(self,dir):
-        """
-        rotate original camera
-        """
-        self.rot += 90*dir
-        name = self.video_path.split("/")[-1][:-4]
-        self.loc = 0
-        if not self.cam.isOpened():
-            print("Error: Could not open camera.")
-            return
-        self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        out = cv2.VideoWriter(f"{name}_rotated{self.rot}.mp4", cv2.VideoWriter_fourcc(*'mp4v'), self.fps,
-                              (self.frame_height,self.frame_width))
-        while True:
-            print(f"{self.cam.get(cv2.CAP_PROP_FRAME_COUNT)}/{self.cam.get(cv2.CAP_PROP_POS_FRAMES)}")
-            ret, frame = self.cam.read()
-            if not ret:
-                break
-            rotated_frame = cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE) if dir>0 else cv2.rotate(frame,cv2.ROTATE_90_COUNTERCLOCKWISE)
-            out.write(rotated_frame)
-        self.cam.release()
-        out.release()
-        self.cam = None
-        self._openVideo(f"{name}_rotated{self.rot}.mp4")
-        print("finish rotating")
 
     def on_click(self, event):
         if event.inaxes:  # Check if the click occurred inside the plot area
@@ -502,38 +466,20 @@ class DisplayApp:
         toolbar = NavigationToolbar2Tk(self.figure_canvas, toolbar_frame)
         toolbar.update()
 
-        forward = tk.Button(self.canvas2, text="forward", command=self._forwardButton)
+        forward = tk.Button(self.canvas2, text="forward", command=lambda: self._plot_move_Button(1))
         self.canvas2.create_window(350, 270, window=forward)
 
-        backward = tk.Button(self.canvas2, text="backward", command=self._backwardButton)
+        backward = tk.Button(self.canvas2, text="backward", command=lambda: self._plot_move_Button(-1))
         self.canvas2.create_window(30, 270, window=backward)
 
-    """
-    The two call function can be written as one with a parameter.
-    """
-    def _backwardButton(self):
-        plate_number = "1" if self.plate.get() == "Force Plate 1" else "2" # plate number
-        self.zoom_pos -=1
-
-        # also update the original graph
-        x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos),0])
-        y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.option.get()}{plate_number}"])
+    def _plot_move_Button(self, dir):
+        plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"  # plate number
+        self.zoom_pos += dir
+        x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos), 0])
+        y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos), f"{self.option.get()}{plate_number}"])
         self.line.set_xdata([x_position])
         self.text_label.set_text(f"{self.plate.get()}\n{self.option.get()}: {y_value:.2f}")
         self.figure_canvas.draw()
-
-        print(self.zoom_pos)
-    def _forwardButton(self):
-        plate_number = "1" if self.plate.get() == "Force Plate 1" else "2" # plate number
-        self.zoom_pos += 1
-
-        x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos),0])
-        y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.option.get()}{plate_number}"])
-        self.line.set_xdata([x_position])
-        self.text_label.set_text(f"{self.plate.get()}\n{self.option.get()}: {y_value:.2f}")
-        self.figure_canvas.draw()
-
-        print(self.zoom_pos)
 
     def _upload_video_with_view(self, popup_window):
         """
@@ -542,25 +488,25 @@ class DisplayApp:
         """
         # Get the selected view
         selected_view = self.selected_view.get()
-        print(f"Selected View: {selected_view}") 
+        print(f"Selected View: {selected_view}")
 
         # Close the popup window
-        popup_window.destroy()  
+        popup_window.destroy()
 
         # Proceed with video upload based on the selected view
         #self.video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
         if self.video_path:
             # Handle different views here
-            if selected_view == "Long View":                
-                self.selected_view = tk.StringVar(value="Long View") 
+            if selected_view == "Long View":
+                self.selected_view = tk.StringVar(value="Long View")
                 print("Long View selected")
             elif selected_view == "Top View":
                 # Top View chosen
-                self.selected_view = tk.StringVar(value="Top View") 
+                self.selected_view = tk.StringVar(value="Top View")
                 print("Top View selected")
             elif selected_view == "Short View":
                 # Short view chosen
-                self.selected_view = tk.StringVar(value="Short View") 
+                self.selected_view = tk.StringVar(value="Short View")
                 print("Short View selected")
 
     """
@@ -568,10 +514,14 @@ class DisplayApp:
     
     # methods below are buttons and slider that user can interact with
     """
+
+    """
+    Slider
+    """
     def update_slider_value(self, value):
 
         # Update the label with the current slider value
-        self.loc = self.get_current_frame()
+        self.loc = self.slider.get()
         self.slider_value_label.config(text=f"Slider Value: {value}")
 
         # Things that need to be updated when the slider value changes
@@ -595,7 +545,7 @@ class DisplayApp:
 
         if self.save_view_canvas:
             # self.save_loc = self.save_scroll_bar.get()
-            print(f"You just moved scroll bar to {self.loc}") 
+            print(f"You just moved scroll bar to {self.loc}")
             self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
             self.save_photoImage = self._display_frame(camera=self.cam)
             self.save_view_canvas.delete("frame_image")
@@ -621,6 +571,16 @@ class DisplayApp:
             # update force timeline
             self._update_force_timeline()
 
+    """
+    Buttons
+    """
+    def stepF(self, dirc):
+        if(dirc>0):
+            self.loc+=1
+        else:
+            self.loc-=1
+        self.slider.set(self.loc)
+
     def upload_video(self):
         # Open a file dialog for video files
         view_popup = tk.Toplevel(self.master)
@@ -641,7 +601,7 @@ class DisplayApp:
         self.video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
         if self.video_path:
 
-             
+
             print(f"Video uploaded: {self.video_path}")
             # display video
             self._openVideo(self.video_path)
@@ -733,6 +693,32 @@ class DisplayApp:
         self.timeline_image1 = ImageTk.PhotoImage(newforceTimeline)  # create image object that canvas object accept
         self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
 
+    def rotateCam(self,dir):
+        """
+        rotate original camera
+        """
+        self.rot += 90*dir
+        name = self.video_path.split("/")[-1][:-4]
+        self.loc = 0
+        if not self.cam.isOpened():
+            print("Error: Could not open camera.")
+            return
+        self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        out = cv2.VideoWriter(f"{name}_rotated{self.rot}.mp4", cv2.VideoWriter_fourcc(*'mp4v'), self.fps,
+                              (self.frame_height,self.frame_width))
+        while True:
+            print(f"{self.cam.get(cv2.CAP_PROP_FRAME_COUNT)}/{self.cam.get(cv2.CAP_PROP_POS_FRAMES)}")
+            ret, frame = self.cam.read()
+            if not ret:
+                break
+            rotated_frame = cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE) if dir>0 else cv2.rotate(frame,cv2.ROTATE_90_COUNTERCLOCKWISE)
+            out.write(rotated_frame)
+        self.cam.release()
+        out.release()
+        self.cam = None
+        self._openVideo(f"{name}_rotated{self.rot}.mp4")
+        print("finish rotating")
+
     def align(self):
         """
         12/9 notes:
@@ -798,12 +784,12 @@ class DisplayApp:
 
         def _scrollBar(value):
             self.save_loc = self.save_scroll_bar.get()
-            print(f"You just moved scroll bar to {self.save_loc}") 
+            print(f"You just moved scroll bar to {self.save_loc}")
             self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_loc)
             self.save_photoImage = self._display_frame(camera=self.vector_cam)
             self.save_view_canvas.delete("frame_image")
             self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
-            
+
             """
             I notice that when I alter the scroll bar in main window, and then move the scroll bar in toplevel window, the image update
             Possibly because scroll bar in main can also change self.cam. therefore the solution is to link the two together.
@@ -811,8 +797,8 @@ class DisplayApp:
             """
         def _export():
             #matplotlib.use('Agg')
-            self._pop_up(text="Processing video ...\nThis may take a minute\nClose this window to start saving")
-            
+            self._pop_up(text="Processing video ...\nThis may take a few minutes\n",follow=True)
+
             try:
                 print(f"\nentry: {self.cushion_entry.get()}\nfps: {self.fps}")
                 cushion_frames = int(self.cushion_entry.get()) * (self.fps)
@@ -822,13 +808,13 @@ class DisplayApp:
                 print("invalid input!!\n")
                 print(e)
                 return
-            
+
             self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
             self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
             count = self.save_start - cushion_frames
             out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), self.fps,(self.frame_width, self.frame_height+480))
             print(f"cam1 frame: {self.cam.get(cv2.CAP_PROP_FRAME_COUNT)}\ncam2 frame:{self.vector_cam.get(cv2.CAP_PROP_FRAME_COUNT)}")
-            
+
             # creating matplot graph
             fig1,ax1 = plt.subplots()
             fig2,ax2 = plt.subplots()
@@ -849,7 +835,7 @@ class DisplayApp:
                 label1_2 = "Fx1"
                 label2_1 = "Fy2"
                 label2_2 = "Fx2"
-            
+
             # force plate 1
             y1 = self.graph_data.loc[:,label1_1]
             y2 = self.graph_data.loc[:,label1_2]
@@ -910,7 +896,7 @@ class DisplayApp:
                 total_width = image1.shape[1] + image2.shape[1]
                 if total_width > 1920:
                     raise ValueError("The combined width of image1 and image2 exceeds 1920 pixels.")
-                
+
                 gap_width = (1920 - total_width) // 2  # Integer division for the gap width
 
                 gap = np.full((int(image1.shape[0]),gap_width,3),255,dtype=np.uint8)
