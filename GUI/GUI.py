@@ -199,6 +199,7 @@ class DisplayApp:
         self.zoom_pos = 0 # force data offset -step size<zoom_pos<+step sized
 
         # video
+        self.rot = 0
         self.video_path = None
         self.cam = None
         self.total_frames = None
@@ -419,32 +420,32 @@ class DisplayApp:
         """
         rotate original camera
         """
+        self.rot += 90*dir
+        name = self.video_path.split("/")[-1][:-4]
+        self.loc = 0
         if not self.cam.isOpened():
             print("Error: Could not open camera.")
             return
         self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        out = cv2.VideoWriter("rotatedvideo.mp4", cv2.VideoWriter_fourcc(*'mp4v'), self.fps,
+        out = cv2.VideoWriter(f"{name}_rotated{self.rot}.mp4", cv2.VideoWriter_fourcc(*'mp4v'), self.fps,
                               (self.frame_height,self.frame_width))
         while True:
             print(f"{self.cam.get(cv2.CAP_PROP_FRAME_COUNT)}/{self.cam.get(cv2.CAP_PROP_POS_FRAMES)}")
             ret, frame = self.cam.read()
             if not ret:
                 break
-            rotated_frame = cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE) if dir>0 else cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE)
+            rotated_frame = cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE) if dir>0 else cv2.rotate(frame,cv2.ROTATE_90_COUNTERCLOCKWISE)
             out.write(rotated_frame)
         self.cam.release()
         out.release()
         self.cam = None
-        self._openVideo("rotatedvideo.mp4")
+        self._openVideo(f"{name}_rotated{self.rot}.mp4")
         print("finish rotating")
 
-
-
+    def on_click(self, event):
+        if event.inaxes:  # Check if the click occurred inside the plot area
+            print(f"Clicked at: x={event.xdata}, y={event.ydata}")
     def _plot_force_data(self):
-        def on_click(self, event):
-            if event.inaxes:  # Check if the click occurred inside the plot area
-                print(f"Clicked at: x={event.xdata}, y={event.ydata}")
-
         # Clear previous figure on canvas2
         for widget in self.canvas2.winfo_children():
             widget.destroy()
@@ -659,17 +660,32 @@ class DisplayApp:
 
             # set step size
             self.step_size = int(600 / self.cam.get(cv2.CAP_PROP_FPS))
-            
-    
 
     def upload_force_data(self):
+        def rename_duplicates(lst):
+            counts = {}
+            new_list = []
+
+            for item in lst:
+                if isinstance(item, str) and item != 'abs time (s)':  # Process only strings, skip 'abs time (s)'
+                    if item in counts:
+                        counts[item] += 1
+                        new_list.append(f"{item}{counts[item]}")
+                    else:
+                        counts[item] = 1
+                        new_list.append(f"{item}{counts[item]}")
+                else:
+                    new_list.append(item)  # Leave non-strings or 'abs time (s)' as is
+
+            return new_list
         # Open a file dialog for any file type
         file_path = filedialog.askopenfilename(title="Select Force Data File",filetypes=[("Excel or CSV Files", "*.xlsx *.xls *.csv")])
         self.force_path = file_path
         print(f"Force data uploaded: {file_path}")
-
+        """
         names = ["abs time (s)", "Fx1", "Fy1", "Fz1", "|Ft1|", "Ax1", "Ay1", "COM px1", "COM py1", "COM pz1",
                  "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "COM px2", "COM py2", "COM pz2"]
+        """
         # support both csv and excel
         if file_path.endswith('.xlsx'):
             self.graph_data = pd.read_excel(
@@ -679,6 +695,9 @@ class DisplayApp:
             self.graph_data = pd.read_csv(
                 file_path
             )
+
+        names = rename_duplicates(list(self.graph_data.iloc[16,:]))
+        print(names)
 
         self.graph_data = self.graph_data.iloc[18:,0:len(names)].reset_index(drop=True)
         self.graph_data.columns = names

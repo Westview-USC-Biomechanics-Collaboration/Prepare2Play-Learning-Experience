@@ -212,7 +212,7 @@ class VectorOverlay:
                 data_x2 = self.data.iloc[start_row, 10] if not pd.isna(self.data.iloc[start_row, 10]) else 0.0
                 data_y2 = self.data.iloc[start_row, 11] if not pd.isna(self.data.iloc[start_row, 11]) else 0.0
                 data_z2 = self.data.iloc[start_row, 12] if not pd.isna(self.data.iloc[start_row, 12]) else 0.0
-                pressure_x2 = (-self.data.iloc[start_row, 14] + 0.3) / 0.6 if not pd.isna(
+                pressure_x2 = (self.data.iloc[start_row, 14] + 0.3) / 0.6 if not pd.isna(
                     self.data.iloc[start_row, 14]) else 0.0
                 pressure_y2 = (self.data.iloc[start_row, 15] + 0.45) / 0.9 if not pd.isna(
                     self.data.iloc[start_row, 15]) else 0.0
@@ -389,15 +389,27 @@ class VectorOverlay:
                 # if this calls when the frame_number is equal to the total frame count then the stream has just ended
                 print(f"Can't read frame at position {frame_number}")
                 break
-            # This only shows the force on force plate 2, you can adjust this part so that it shows the force on force plate 1
-            fx1 = -self.fx1[int(frame_number)]
-            fx2 = -self.fx2[int(frame_number)]
-            fy1 = self.fz1[int(frame_number)]
-            fy2 = self.fz2[int(frame_number)]
-            px1 = self.px1[int(frame_number)]
-            px2 = self.px2[int(frame_number)]
-            py1 = 1 - self.py1[int(frame_number)]
-            py2 = 1 - self.py2[int(frame_number)]
+            if(self.corners[0][1]<self.corners[4][1]):
+                print("force plate 2 in front")
+                # This only shows the force on force plate 2, you can adjust this part so that it shows the force on force plate 1
+                fx1 = -self.fx1[int(frame_number)]
+                fx2 = -self.fx2[int(frame_number)]
+                fy1 = self.fz1[int(frame_number)]
+                fy2 = self.fz2[int(frame_number)]
+                px1 = self.px1[int(frame_number)]
+                px2 = self.px2[int(frame_number)]
+                py1 = 1 - self.py1[int(frame_number)]
+                py2 = 1 - self.py2[int(frame_number)]
+            else:
+                print("force plate 1 in front")
+                fx1 = self.fx1[int(frame_number)]
+                fx2 = self.fx2[int(frame_number)]
+                fy1 = self.fz1[int(frame_number)]
+                fy2 = self.fz2[int(frame_number)]
+                px1 = 1 - self.px1[int(frame_number)]
+                px2 = 1 - self.px2[int(frame_number)]
+                py1 = 1 - self.py1[int(frame_number)]
+                py2 = 1 - self.py2[int(frame_number)]
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2,short=True)
            # Resize the frame for display
