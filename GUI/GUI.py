@@ -40,7 +40,7 @@ class DisplayApp:
             "Step 7: click `vector overlay` button\n"
             "Step 8: click `save` button and set the output name"
         )
-        self.pop_up(text=direction)
+        self._pop_up(text=direction)
         self.selected_view = tk.StringVar(value="Long View") 
         self.master.title("Multi-Window Display App")
         self.master.geometry("1320x1080")
@@ -117,11 +117,20 @@ class DisplayApp:
         self.slider = Scale(self.main_canvas, from_=0, to=100, orient="horizontal", label="pick frame", command=self.update_slider_value)
         self.slider.grid(row=2, column=1, pady=10, sticky='ew')
 
-        self.step_forward = tk.Button(self.main_canvas, text="+1frame",command=lambda: self._stepF(1))
-        self.step_forward.grid(row=2, column=2, padx=20, pady=10, sticky='w')
+        self.adjustR = tk.Frame(self.main_canvas,bg = "lightgray")
+        self.step_forward = tk.Button(self.adjustR, text="+1frame",command=lambda: self._stepF(1))
+        self.step_forward.grid(row=0,column=0,padx=20)
+        self.rotateR = tk.Button(self.adjustR, text="Rotate clockwise",command=lambda: self._rotateCam(1))
+        self.rotateR.grid(row=0,column=1,padx=20)
+        self.adjustR.grid(row=2, column=2, pady=10, sticky='ew')
 
-        self.step_backward = tk.Button(self.main_canvas, text="-1frame", command=lambda: self._stepF(-1))
-        self.step_backward.grid(row=2, column=0, padx=20, pady=10, sticky='e')
+
+        self.adjustL = tk.Frame(self.main_canvas,bg="lightgray")
+        self.step_backward = tk.Button(self.adjustL, text="-1frame", command=lambda: self._stepF(-1))
+        self.step_backward.grid(row=0,column=1,padx=20)
+        self.rotateL = tk.Button(self.adjustL, text="Rotate counterclockwise",command=lambda: self._rotateCam(-1))
+        self.rotateL.grid(row=0,column=0,padx=20)
+        self.adjustL.grid(row=2, column=0, padx=20, pady=10, sticky='ew')
 
         # Row 3: Label to display slider value
         self.slider_value_label = Label(self.main_canvas, text="Slider Value: 0")
@@ -257,7 +266,7 @@ class DisplayApp:
             self.zoom_factor1 = max(0.1, min(self.zoom_factor1, 5.0))  # Limiting zoom range
             print(self.zoom_factor1)
             self.canvas1.delete("all")
-            self.photo_image1 = self.display_frame(camera=self.cam, width=round(self.frame_width * self.zoom_factor1),
+            self.photo_image1 = self._display_frame(camera=self.cam, width=round(self.frame_width * self.zoom_factor1),
                                                    height=round(self.frame_height * self.zoom_factor1))
             self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
 
@@ -271,7 +280,7 @@ class DisplayApp:
             self.zoom_factor3 = max(0.1, min(self.zoom_factor3, 5.0))  # Limiting zoom range
             print(self.zoom_factor3)
             self.canvas3.delete("all")
-            self.photo_image3 = self.display_frame(camera=self.vector_cam, width=round(self.frame_width * self.zoom_factor3),
+            self.photo_image3 = self._display_frame(camera=self.vector_cam, width=round(self.frame_width * self.zoom_factor3),
                                                    height=round(self.frame_height * self.zoom_factor3))
             self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
 
@@ -306,7 +315,7 @@ class DisplayApp:
                 self.canvas3.delete("all")
                 self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
 
-    def pop_up(self, text):
+    def _pop_up(self, text):
         # Create a new top-level window (popup)
         popup = tk.Toplevel(self.master)
         popup.title("Popup Window")
@@ -347,7 +356,7 @@ class DisplayApp:
         # Wait for the popup to be destroyed before returning to the main window
         self.master.wait_window(popup)
 
-    def update_force_timeline(self):
+    def _update_force_timeline(self):
         # Assuming self.timeline1.draw_rect() returns an image
         forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc / self.slider['to']))
 
@@ -364,7 +373,7 @@ class DisplayApp:
         # Create the image on the canvas, anchoring it at the top-left (0, 0)
         self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
 
-    def update_video_timeline(self):
+    def _update_video_timeline(self):
         # Assuming self.video_timeline is the canvas and self.timeline2.draw_rect() returns an image
         videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc / self.total_frames))
 
@@ -380,7 +389,7 @@ class DisplayApp:
         # Create the image on the canvas, anchoring it at the top-left (0, 0)
         self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
-    def openVideo(self, video_path):
+    def _openVideo(self, video_path):
         self.cam = cv2.VideoCapture(video_path)
         self.fps = int(self.cam.get(cv2.CAP_PROP_FPS))
         self.frame_height = int(self.cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -388,11 +397,10 @@ class DisplayApp:
         self.total_frames = int(self.cam.get(cv2.CAP_PROP_FRAME_COUNT))
         self.slider.config(to=self.total_frames)   # ---> reconfigure slider value. The max value is the total number of frame in the video
         self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-        self.photo_image1 = self.display_frame(camera=self.cam,width=self.frame_width,height=self.frame_height)
+        self.photo_image1 = self._display_frame(camera=self.cam,width=self.frame_width,height=self.frame_height)
         self.canvasID_1 = self.canvas1.create_image(200, 150, image=self.photo_image1, anchor="center")
 
-
-    def display_frame(self,camera,width=400, height=300):
+    def _display_frame(self,camera,width=400, height=300):
         """
         This internal function only convert fram to object tkinter accept,
         you need to set the camera frame outside this function
@@ -407,10 +415,35 @@ class DisplayApp:
             photoImage = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
             return photoImage
 
-    def on_click(self, event):
-        if event.inaxes:  # Check if the click occurred inside the plot area
-            print(f"Clicked at: x={event.xdata}, y={event.ydata}")
-    def plot_force_data(self):
+    def _rotateCam(self,dir):
+        """
+        rotate original camera
+        """
+        if not self.cam.isOpened():
+            print("Error: Could not open camera.")
+            return
+        self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        out = cv2.VideoWriter("rotatedvideo.mp4", cv2.VideoWriter_fourcc(*'mp4v'), self.fps,
+                              (self.frame_height,self.frame_width))
+        while True:
+            print(f"{self.cam.get(cv2.CAP_PROP_FRAME_COUNT)}/{self.cam.get(cv2.CAP_PROP_POS_FRAMES)}")
+            ret, frame = self.cam.read()
+            if not ret:
+                break
+            rotated_frame = cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE) if dir>0 else cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE)
+            out.write(rotated_frame)
+        self.cam.release()
+        out.release()
+        self.cam = None
+        self._openVideo("rotatedvideo.mp4")
+        print("finish rotating")
+
+
+
+    def _plot_force_data(self):
+        def on_click(self, event):
+            if event.inaxes:  # Check if the click occurred inside the plot area
+                print(f"Clicked at: x={event.xdata}, y={event.ydata}")
 
         # Clear previous figure on canvas2
         for widget in self.canvas2.winfo_children():
@@ -501,10 +534,33 @@ class DisplayApp:
 
         print(self.zoom_pos)
 
+    def _upload_video_with_view(self, popup_window):
+        """
+        This internal function is called when user clicked 'upload video'
+        It gives a pop up window and ask for views and store the answer in self.selected_view
+        """
+        # Get the selected view
+        selected_view = self.selected_view.get()
+        print(f"Selected View: {selected_view}") 
 
+        # Close the popup window
+        popup_window.destroy()  
 
-
-
+        # Proceed with video upload based on the selected view
+        #self.video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
+        if self.video_path:
+            # Handle different views here
+            if selected_view == "Long View":                
+                self.selected_view = tk.StringVar(value="Long View") 
+                print("Long View selected")
+            elif selected_view == "Top View":
+                # Top View chosen
+                self.selected_view = tk.StringVar(value="Top View") 
+                print("Top View selected")
+            elif selected_view == "Short View":
+                # Short view chosen
+                self.selected_view = tk.StringVar(value="Short View") 
+                print("Short View selected")
 
     """
     # methods above are internal functions    
@@ -522,16 +578,16 @@ class DisplayApp:
         if self.cam:
             # draw video canvas
             self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-            self.photo_image1 = self.display_frame(camera=self.cam, width=round(self.frame_width * self.zoom_factor1),
+            self.photo_image1 = self._display_frame(camera=self.cam, width=round(self.frame_width * self.zoom_factor1),
                                                    height=round(self.frame_height * self.zoom_factor1))
             self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
             # update video timeline
-            self.update_video_timeline()
+            self._update_video_timeline()
         if self.vector_cam:
             # draw vector overlay canvas
 
             self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-            self.photo_image3 = self.display_frame(camera=self.vector_cam,
+            self.photo_image3 = self._display_frame(camera=self.vector_cam,
                                                    width=round(self.frame_width * self.zoom_factor3),
                                                    height=round(self.frame_height * self.zoom_factor3))
             self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
@@ -540,7 +596,7 @@ class DisplayApp:
             # self.save_loc = self.save_scroll_bar.get()
             print(f"You just moved scroll bar to {self.loc}") 
             self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-            self.save_photoImage = self.display_frame(camera=self.cam)
+            self.save_photoImage = self._display_frame(camera=self.cam)
             self.save_view_canvas.delete("frame_image")
             self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
 
@@ -562,7 +618,7 @@ class DisplayApp:
                 print("force data out of range")
 
             # update force timeline
-            self.update_force_timeline()
+            self._update_force_timeline()
 
     def upload_video(self):
         # Open a file dialog for video files
@@ -587,7 +643,7 @@ class DisplayApp:
              
             print(f"Video uploaded: {self.video_path}")
             # display video
-            self.openVideo(self.video_path)
+            self._openVideo(self.video_path)
 
             # Initialize video timeline
             self.timeline2 = timeline(0,1)
@@ -604,31 +660,7 @@ class DisplayApp:
             # set step size
             self.step_size = int(600 / self.cam.get(cv2.CAP_PROP_FPS))
             
-    def _upload_video_with_view(self, popup_window):
-        # Get the selected view
-        selected_view = self.selected_view.get()
-        print(f"Selected View: {selected_view}") 
-
-        # Close the popup window
-        popup_window.destroy()  
-
-        # Proceed with video upload based on the selected view
-        #self.video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
-        if self.video_path:
-            print(f"Video uploaded: {self.video_path}")
-            self.openVideo(self.video_path)  # Use the current openVideo 
-            # Handle different views here
-            if selected_view == "Long View":                
-                self.selected_view = tk.StringVar(value="Long View") 
-                print("Long View selected")
-            elif selected_view == "Top View":
-                # Top View chosen
-                self.selected_view = tk.StringVar(value="Top View") 
-                print("Top View selected")
-            elif selected_view == "Short View":
-                # Short view chosen
-                self.selected_view = tk.StringVar(value="Short View") 
-                print("Short View selected")
+    
 
     def upload_force_data(self):
         # Open a file dialog for any file type
@@ -657,12 +689,12 @@ class DisplayApp:
             self.step_size = int(600/self.cam.get(cv2.CAP_PROP_FPS)) # rows/frame
         except AttributeError as e:
             print("Video file missing!!!\nProceeding assuming step size is 20 rows/frame")
-            self.pop_up("Video file missing!!!\n\nProceeding assuming step size is 20 rows/frame\n\n"
+            self._pop_up("Video file missing!!!\n\nProceeding assuming step size is 20 rows/frame\n\n"
                         "Please reload the force data after uploading the video")
             self.step_size = 20
         self.force_frame = int(self.rows/self.step_size)  # represent num of frames force data can cover
 
-        self.plot_force_data()
+        self._plot_force_data()
 
         # Initialize force timeline
         print(f"force frame: {self.force_frame}")
@@ -722,9 +754,9 @@ class DisplayApp:
             self.zoom_pos = 0
             self.slider.set(0)
             self.loc = 0
-            self.plot_force_data()
+            self._plot_force_data()
         except TypeError as e:
-            self.pop_up("Missing label!!!")
+            self._pop_up("Missing label!!!")
             print("missing label")
 
     def save(self):
@@ -749,7 +781,7 @@ class DisplayApp:
             self.save_loc = self.save_scroll_bar.get()
             print(f"You just moved scroll bar to {self.save_loc}") 
             self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_loc)
-            self.save_photoImage = self.display_frame(camera=self.vector_cam)
+            self.save_photoImage = self._display_frame(camera=self.vector_cam)
             self.save_view_canvas.delete("frame_image")
             self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
             
@@ -760,14 +792,14 @@ class DisplayApp:
             """
         def _export():
             #matplotlib.use('Agg')
-            self.pop_up(text="Processing video ...\nThis may take a minute\nClose this window to start saving")
+            self._pop_up(text="Processing video ...\nThis may take a minute\nClose this window to start saving")
             
             try:
                 print(f"\nentry: {self.cushion_entry.get()}\nfps: {self.fps}")
                 cushion_frames = int(self.cushion_entry.get()) * (self.fps)
                 print(cushion_frames)
             except ValueError as e:
-                self.pop_up(text="Invalid cushion time, please put numbers")
+                self._pop_up(text="Invalid cushion time, please put numbers")
                 print("invalid input!!\n")
                 print(e)
                 return
@@ -901,7 +933,7 @@ class DisplayApp:
             plt.close(fig2)
             out.release()
             cv2.destroyAllWindows()
-            self.pop_up(text=f"Successfully save vector overlay at {file_path}")
+            self._pop_up(text=f"Successfully save vector overlay at {file_path}")
             print(f"Successfully save vector overlay at {file_path}")
             name = file_path.split('/')[-1][:-4]
             with open(f"{file_path[:-4]}.txt","w") as fout:
@@ -939,7 +971,7 @@ class DisplayApp:
 
         # layout
         self.save_view_canvas = Canvas(self.save_window,width=400, height=300, bg="lightgrey")
-        self.save_photoImage = self.display_frame(camera=self.vector_cam)
+        self.save_photoImage = self._display_frame(camera=self.vector_cam)
         self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
         self.save_view_canvas.grid(row=0,column=0,columnspan=3,sticky="nsew")
 
@@ -990,20 +1022,20 @@ class DisplayApp:
         """
         if self.loc>=self.video_align:
             self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc - self.video_align)
-            self.photo_image3 = self.display_frame(camera=self.vector_cam)
+            self.photo_image3 = self._display_frame(camera=self.vector_cam)
         else:
             self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-            self.photo_image3 = self.display_frame(camera=self.cam)
+            self.photo_image3 = self._display_frame(camera=self.cam)
 
     def label_force(self):  # ---> executed when user click label force
         self.force_align = self.loc
         self.timeline1.update_label(self.loc/self.slider['to'])
-        self.update_force_timeline()
+        self._update_force_timeline()
 
     def label_video(self):  # ---> executed when user click label video
         self.video_align = self.loc
         self.timeline2.update_label(self.loc/self.slider['to'])
-        self.update_video_timeline()
+        self._update_video_timeline()
 
     def graph(self):
         # Create a new popup window
@@ -1054,7 +1086,7 @@ class DisplayApp:
                     self.slider.set(0)
                     self.loc = 0
 
-                self.plot_force_data()
+                self._plot_force_data()
             except AttributeError as e:
                 print("Missing force data !!!")
             popup.destroy()
