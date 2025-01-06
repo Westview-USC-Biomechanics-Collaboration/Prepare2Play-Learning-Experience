@@ -201,21 +201,21 @@ class VectorOverlay:
                 pressure_y2 = 0.0
             else:
                 # Normal data extraction if start_row is within bounds
-                data_x1 = self.data.iloc[start_row, 1] if not pd.isna(self.data.iloc[start_row, 1]) else 0.0
-                data_y1 = self.data.iloc[start_row, 2] if not pd.isna(self.data.iloc[start_row, 2]) else 0.0
-                data_z1 = self.data.iloc[start_row, 3] if not pd.isna(self.data.iloc[start_row, 3]) else 0.0
-                pressure_x1 = (self.data.iloc[start_row, 5] + 0.3) / 0.6 if not pd.isna(
-                    self.data.iloc[start_row, 5]) else 0.0
-                pressure_y1 = (self.data.iloc[start_row, 6] + 0.45) / 0.9 if not pd.isna(
-                    self.data.iloc[start_row, 6]) else 0.0
+                data_x1 = self.data.loc[start_row, "Fx1"] if not pd.isna(self.data.loc[start_row, "Fx1"]) else 0.0
+                data_y1 = self.data.loc[start_row, "Fy1"] if not pd.isna(self.data.loc[start_row, "Fy1"]) else 0.0
+                data_z1 = self.data.loc[start_row, "Fz1"] if not pd.isna(self.data.loc[start_row, "Fz1"]) else 0.0
+                pressure_x1 = (self.data.loc[start_row, "Ax1"] + 0.3) / 0.6 if not pd.isna(
+                    self.data.loc[start_row, "Ax1"]) else 0.0
+                pressure_y1 = (self.data.loc[start_row, "Ay1"] + 0.45) / 0.9 if not pd.isna(
+                    self.data.loc[start_row, "Ay1"]) else 0.0
 
-                data_x2 = self.data.iloc[start_row, 10] if not pd.isna(self.data.iloc[start_row, 10]) else 0.0
-                data_y2 = self.data.iloc[start_row, 11] if not pd.isna(self.data.iloc[start_row, 11]) else 0.0
-                data_z2 = self.data.iloc[start_row, 12] if not pd.isna(self.data.iloc[start_row, 12]) else 0.0
-                pressure_x2 = (self.data.iloc[start_row, 14] + 0.3) / 0.6 if not pd.isna(
-                    self.data.iloc[start_row, 14]) else 0.0
-                pressure_y2 = (self.data.iloc[start_row, 15] + 0.45) / 0.9 if not pd.isna(
-                    self.data.iloc[start_row, 15]) else 0.0
+                data_x2 = self.data.loc[start_row, "Fx2"] if not pd.isna(self.data.loc[start_row, "Fx2"]) else 0.0
+                data_y2 = self.data.loc[start_row, "Fy2"] if not pd.isna(self.data.loc[start_row, "Fy2"]) else 0.0
+                data_z2 = self.data.loc[start_row, "Fz2"] if not pd.isna(self.data.loc[start_row, "Fz2"]) else 0.0
+                pressure_x2 = (self.data.loc[start_row, "Ax2"] + 0.3) / 0.6 if not pd.isna(
+                    self.data.loc[start_row, "Ax2"]) else 0.0
+                pressure_y2 = (self.data.loc[start_row, "Ay2"] + 0.45) / 0.9 if not pd.isna(
+                    self.data.loc[start_row, "Ay2"]) else 0.0
 
             # Append the data to the lists
             fx1.append(data_x1)

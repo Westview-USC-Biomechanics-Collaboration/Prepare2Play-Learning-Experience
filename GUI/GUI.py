@@ -747,7 +747,7 @@ class DisplayApp:
                 self.graph_data = self.graph_data.iloc[int(offset*self.step_size + self.zoom_pos):,:].reset_index(drop=True)
                 print(self.graph_data)
             else:
-                nan_rows = pd.DataFrame(np.nan, index=range(int(-offset*self.step_size + self.zoom_pos)), columns=self.graph_data.columns)
+                nan_rows = pd.DataFrame(np.nan, index=range(int(-offset*self.step_size - self.zoom_pos)), columns=self.graph_data.columns)
                 self.graph_data = pd.concat([nan_rows, self.graph_data], ignore_index=True)  # We are using + because when we have a positive zoom_pos , the number of added rows is offset*step_size - zoom_pos
                 print(self.graph_data)
 
