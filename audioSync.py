@@ -10,16 +10,9 @@ def cross_correlate(data_long, data_short):
         window = data_long[i : i + len(data_short)]
 
         correlations.append(np.dot(data_short, window))
-    
+
     correlations = np.array(correlations)
     return correlations
-# Used to test cross_correlate method
-# data_long = [0, 1, 3, -1, 2, -3, 5, -2]
-# data_short = [2, -4, 4, -2]
-
-# correlations = cross_correlate(data_long, data_short)
-
-# print(correlations)
 
 def calc_average(array):
     sum = 0.0
@@ -66,17 +59,20 @@ def quick_plot(array, x_label="Index", y_label="Value", title="Array Plot"):
     plt.tight_layout()
     plt.show()
 
-sample_rate_long, data_long = wavfile.read("5_sec_wav.wav")
-sample_rate_short, data_short = wavfile.read("1_sec_wav.wav")
+def runAudioSync(name_long, name_short):
+        sample_rate_long, data_long = wavfile.read(name_long)
+        sample_rate_short, data_short = wavfile.read(name_short)
 
-data_long = data_long.astype(np.float32)
-data_short = data_short.astype(np.float32)
+        data_long = data_long.astype(np.float32)
+        data_short = data_short.astype(np.float32)
 
-data_long, data_short = adjust(sample_rate_long, data_long, sample_rate_short, data_short)
+        data_long, data_short = adjust(sample_rate_long, data_long, sample_rate_short, data_short)
 
-correlations = cross_correlate(data_long, data_short)
+        correlations = cross_correlate(data_long, data_short)
 
-# print(correlations.max())
-quick_plot(correlations, x_label = "Shift", y_label = "Amplitude", title = "Cross Correlation Graph")
-quick_plot(data_long, x_label="Samples", y_label = "Amplitude", title = "Long .wav Graph")
-quick_plot(data_short, x_label="Samples", y_label = "Amplitude", title = "Short .wav Graph")
+        # print(correlations.max())
+        quick_plot(correlations, x_label = "Shift", y_label = "Amplitude", title = "Cross Correlation Graph")
+        quick_plot(data_long, x_label="Samples", y_label = "Amplitude", title = "Long .wav Graph")
+        quick_plot(data_short, x_label="Samples", y_label = "Amplitude", title = "Short .wav Graph")
+
+# runAudioSync("5_sec_wav.wav", "1_sec_wav.wav")
