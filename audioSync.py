@@ -70,9 +70,13 @@ def runAudioSync(name_long, name_short):
 
         correlations = cross_correlate(data_long, data_short)
 
-        # print(correlations.max())
+        # Print out time of max correlation
+        print(np.argmax(correlations) / sample_rate_long, "seconds")
+
         quick_plot(correlations, x_label = "Shift", y_label = "Amplitude", title = "Cross Correlation Graph")
         quick_plot(data_long, x_label="Samples", y_label = "Amplitude", title = "Long .wav Graph")
         quick_plot(data_short, x_label="Samples", y_label = "Amplitude", title = "Short .wav Graph")
+
+        return np.argmax(correlations) / sample_rate_long;
 
 # runAudioSync("5_sec_wav.wav", "1_sec_wav.wav")

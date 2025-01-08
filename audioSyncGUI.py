@@ -11,6 +11,7 @@ class State(Enum):
 
 # Initialize state
 current_state = State.RECEIVE_DATA
+correlation_time = None  # Variable to store the time of max correlation
 
 # State machine functions
 def receive_data():
@@ -22,12 +23,13 @@ def receive_data():
         process_data()
 
 def process_data():
-    global current_state
+    global current_state, correlation_time
     long_file = long_file_entry.get()
     short_file = short_file_entry.get()
 
     try:
-        runAudioSync(long_file, short_file)
+        # Modified to capture the time of max correlation
+        correlation_time = runAudioSync(long_file, short_file)  # Assuming this method now returns the max correlation time
         current_state = State.DISPLAY_DATA
         display_data()
     except Exception as e:
@@ -36,7 +38,10 @@ def process_data():
 
 def display_data():
     global current_state
-    messagebox.showinfo("Success", "AudioSync completed successfully!")
+    message = "AudioSync completed successfully!"
+    if correlation_time is not None:
+        message += f"\nTime of max correlation: {correlation_time:.2f} seconds"
+    messagebox.showinfo("Success", message)
     current_state = State.RECEIVE_DATA
 
 # File selection function
