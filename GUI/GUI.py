@@ -22,6 +22,17 @@ I don't have time to clean up the code,
 too busy adding new features,
 will do if have time...
 """
+
+#@dataclass
+class Video:
+    path: str = None,
+    cam : cv2.VideoCapture = None,
+    total_frames: int = None,
+
+#@dataclass
+class Force:
+    path: str = None,
+    
 class DisplayApp:
     def __init__(self, master):
         self.master = master
