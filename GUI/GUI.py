@@ -17,6 +17,7 @@ from io import BytesIO
 from Timeline import timeline
 from vector_overlay import vectoroverlay_GUI
 
+
 """
 I don't have time to clean up the code,
 too busy adding new features,
@@ -27,11 +28,17 @@ will do if have time...
 class Video:
     path: str = None,
     cam : cv2.VideoCapture = None,
+    vector_cam: cv2.VideoCapture = None,
     total_frames: int = None,
+    frame_width: int = None,
+    frame_height: int = None,
+    fps: int = None,
 
 #@dataclass
 class Force:
     path: str = None,
+    data: pd.array = None,
+    rows: int = None,
     
 class DisplayApp:
     def __init__(self, master):
@@ -189,10 +196,7 @@ class DisplayApp:
         self.photo_image3 = None  # Placeholder for image object for canvas3
 
         # force data
-        self.force_path = None
-        self.graph_data = None
         self.force_start = None # This variable store the time which user choose to align
-        self.rows = None
         self.force_frame = None   # convert rows to frames
         self.step_size = None
 
@@ -210,14 +214,7 @@ class DisplayApp:
         self.zoom_pos = 0 # force data offset -step size<zoom_pos<+step sized
 
         # video
-        self.rot = 0
-        self.video_path = None
-        self.cam = None
-        self.total_frames = None
-        self.vector_cam = None
-        self.fps = None
-        self.frame_width = None
-        self.frame_height = None
+        self.rot = 0 # rotated direction
 
         # video canvas 1
         self.zoom_factor1 =1.0
@@ -268,8 +265,8 @@ class DisplayApp:
             self.zoom_factor1 = max(0.1, min(self.zoom_factor1, 5.0))  # Limiting zoom range
             print(self.zoom_factor1)
             self.canvas1.delete("all")
-            self.photo_image1 = self._display_frame(camera=self.cam, width=round(self.frame_width * self.zoom_factor1),
-                                                   height=round(self.frame_height * self.zoom_factor1))
+            self.photo_image1 = self._display_frame(camera=Video.cam, width=round(Video.frame_width * self.zoom_factor1),
+                                                   height=round(Video.frame_height * self.zoom_factor1))
             self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
 
         elif (canvas == 3):
@@ -282,8 +279,8 @@ class DisplayApp:
             self.zoom_factor3 = max(0.1, min(self.zoom_factor3, 5.0))  # Limiting zoom range
             print(self.zoom_factor3)
             self.canvas3.delete("all")
-            self.photo_image3 = self._display_frame(camera=self.vector_cam, width=round(self.frame_width * self.zoom_factor3),
-                                                   height=round(self.frame_height * self.zoom_factor3))
+            self.photo_image3 = self._display_frame(camera=Video.vector_cam, width=round(Video.frame_width * self.zoom_factor3),
+                                                   height=round(Video.frame_height * self.zoom_factor3))
             self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
 
     def _on_drag(self, event, canvas):
@@ -377,7 +374,7 @@ class DisplayApp:
 
     def _update_video_timeline(self):
         # Assuming self.video_timeline is the canvas and self.timeline2.draw_rect() returns an image
-        videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc / self.total_frames))
+        videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc / Video.total_frames))
 
         # Resize the image to fit the canvas size
         canvas_width = self.video_timeline.winfo_width()  # Get the width of the canvas
@@ -392,21 +389,21 @@ class DisplayApp:
         self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
     def _openVideo(self, video_path):
-        self.cam = cv2.VideoCapture(video_path)
-        self.fps = int(self.cam.get(cv2.CAP_PROP_FPS))
-        self.frame_height = int(self.cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.frame_width = int(self.cam.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.total_frames = int(self.cam.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.slider.config(to=self.total_frames)   # ---> reconfigure slider value. The max value is the total number of frame in the video
-        self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-        self.photo_image1 = self._display_frame(camera=self.cam,width=self.frame_width,height=self.frame_height)
+        Video.cam = cv2.VideoCapture(video_path)
+        Video.fps = int(Video.cam.get(cv2.CAP_PROP_FPS))
+        Video.frame_height = int(Video.cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        Video.frame_width = int(Video.cam.get(cv2.CAP_PROP_FRAME_WIDTH))
+        Video.total_frames = int(Video.cam.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.slider.config(to=Video.total_frames)   # ---> reconfigure slider value. The max value is the total number of frame in the video
+        Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
+        self.photo_image1 = self._display_frame(camera=Video.cam,width=Video.frame_width,height=Video.frame_height)
         self.canvasID_1 = self.canvas1.create_image(200, 150, image=self.photo_image1, anchor="center")
 
     def _display_frame(self,camera,width=400, height=300):
         """
         This internal function only convert fram to object tkinter accept,
         you need to set the camera frame outside this function
-        ex. self.cam.set(...)
+        ex. Video.cam.set(...)
         """
 
         ret, frame = camera.read()  # the `frame` object is now the frame we want
@@ -433,13 +430,13 @@ class DisplayApp:
 
         # Read data based on plate and force
         plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
-        x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos), 0])
+        x_position = float(Force.data.iloc[int(self.loc * self.step_size + self.zoom_pos), 0])
         y_value = float(
-            self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos), f"{self.option.get()}{plate_number}"])
+            Force.data.loc[int(self.loc * self.step_size + self.zoom_pos), f"{self.option.get()}{plate_number}"])
 
         # Set x and y
-        self.x = self.graph_data.iloc[:, 0]
-        self.y = self.graph_data.loc[:, f"{self.option.get()}{plate_number}"]
+        self.x = Force.data.iloc[:, 0]
+        self.y = Force.data.loc[:, f"{self.option.get()}{plate_number}"]
 
         # Plot data
         self.ax.plot(self.x, self.y, linestyle='-', color='blue', linewidth=0.5)
@@ -486,8 +483,8 @@ class DisplayApp:
     def _plot_move_Button(self, dir):
         plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"  # plate number
         self.zoom_pos += dir
-        x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos), 0])
-        y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos), f"{self.option.get()}{plate_number}"])
+        x_position = float(Force.data.iloc[int(self.loc * self.step_size + self.zoom_pos), 0])
+        y_value = float(Force.data.loc[int(self.loc * self.step_size + self.zoom_pos), f"{self.option.get()}{plate_number}"])
         self.line.set_xdata([x_position])
         self.text_label.set_text(f"{self.plate.get()}\n{self.option.get()}: {y_value:.2f}")
         self.figure_canvas.draw()
@@ -506,7 +503,7 @@ class DisplayApp:
 
         # Proceed with video upload based on the selected view
         #self.video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
-        if self.video_path:
+        if Video.path:
             # Handle different views here
             if selected_view == "Long View":
                 self.selected_view = tk.StringVar(value="Long View")
@@ -537,41 +534,41 @@ class DisplayApp:
 
         # Things that need to be updated when the slider value changes
 
-        if self.cam:
+        if Video.cam:
             # draw video canvas
-            self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-            self.photo_image1 = self._display_frame(camera=self.cam, width=round(self.frame_width * self.zoom_factor1),
-                                                   height=round(self.frame_height * self.zoom_factor1))
+            Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
+            self.photo_image1 = self._display_frame(camera=Video.cam, width=round(Video.frame_width * self.zoom_factor1),
+                                                   height=round(Video.frame_height * self.zoom_factor1))
             self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
             # update video timeline
             self._update_video_timeline()
-        if self.vector_cam:
+        if Video.vector_cam:
             # draw vector overlay canvas
 
-            self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-            self.photo_image3 = self._display_frame(camera=self.vector_cam,
-                                                   width=round(self.frame_width * self.zoom_factor3),
-                                                   height=round(self.frame_height * self.zoom_factor3))
+            Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
+            self.photo_image3 = self._display_frame(camera=Video.vector_cam,
+                                                   width=round(Video.frame_width * self.zoom_factor3),
+                                                   height=round(Video.frame_height * self.zoom_factor3))
             self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
 
         if self.save_view_canvas:
             # self.save_loc = self.save_scroll_bar.get()
             print(f"You just moved scroll bar to {self.loc}")
-            self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-            self.save_photoImage = self._display_frame(camera=self.cam)
+            Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
+            self.save_photoImage = self._display_frame(camera=Video.cam)
             self.save_view_canvas.delete("frame_image")
             self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
 
 
-        if self.rows is not None:  # somehow self.force_data is not None doesn't work, using self.rows as compensation
+        if Force.rows is not None:  # somehow self.force_data is not None doesn't work, using Force.rows as compensation
             # draw graph canvas
             # normalized_position = int(value) / (self.slider['to'])
             # x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
             try:
                 plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
-                x_position = float(self.graph_data.iloc[int(self.loc * self.step_size + self.zoom_pos),0])
-                y_value = float(self.graph_data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.option.get()}{plate_number}"])
-                self.zoom_baseline.set_xdata([self.graph_data.iloc[self.loc*self.step_size,0]])
+                x_position = float(Force.data.iloc[int(self.loc * self.step_size + self.zoom_pos),0])
+                y_value = float(Force.data.loc[int(self.loc * self.step_size + self.zoom_pos),f"{self.option.get()}{plate_number}"])
+                self.zoom_baseline.set_xdata([Force.data.iloc[self.loc*self.step_size,0]])
                 self.line.set_xdata([x_position])
                 self.text_label.set_text(f"{self.plate.get()}\n{self.option.get()}: {y_value:.2f}")
                 self.figure_canvas.draw()
@@ -609,13 +606,13 @@ class DisplayApp:
         # Block the main window until the popup is closed
         self.master.wait_window(view_popup)
 
-        self.video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
-        if self.video_path:
+        Video.path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
+        if Video.path:
 
 
-            print(f"Video uploaded: {self.video_path}")
+            print(f"Video uploaded: {Video.path}")
             # display video
-            self._openVideo(self.video_path)
+            self._openVideo(Video.path)
 
             # Initialize video timeline
             self.timeline2 = timeline(0,1)
@@ -630,7 +627,7 @@ class DisplayApp:
             self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
             # set step size
-            self.step_size = int(600 / self.cam.get(cv2.CAP_PROP_FPS))
+            self.step_size = int(600 / Video.cam.get(cv2.CAP_PROP_FPS))
 
     def upload_force_data(self):
         def rename_duplicates(lst):
@@ -651,7 +648,7 @@ class DisplayApp:
             return new_list
         # Open a file dialog for any file type
         file_path = filedialog.askopenfilename(title="Select Force Data File",filetypes=[("Excel or CSV Files", "*.xlsx *.xls *.csv")])
-        self.force_path = file_path
+        Force.path = file_path
         print(f"Force data uploaded: {file_path}")
         """
         names = ["abs time (s)", "Fx1", "Fy1", "Fz1", "|Ft1|", "Ax1", "Ay1", "COM px1", "COM py1", "COM pz1",
@@ -659,30 +656,30 @@ class DisplayApp:
         """
         # support both csv and excel
         if file_path.endswith('.xlsx'):
-            self.graph_data = pd.read_excel(
+            Force.data = pd.read_excel(
                 file_path,
             )
         elif file_path.endswith('.csv'):
-            self.graph_data = pd.read_csv(
+            Force.data = pd.read_csv(
                 file_path
             )
 
-        names = rename_duplicates(list(self.graph_data.iloc[16,:]))
+        names = rename_duplicates(list(Force.data.iloc[16,:]))
         print(names)
 
-        self.graph_data = self.graph_data.iloc[18:,0:len(names)].reset_index(drop=True)
-        self.graph_data.columns = names
-        self.graph_data = self.graph_data.apply(pd.to_numeric, errors='coerce')
+        Force.data = Force.data.iloc[18:,0:len(names)].reset_index(drop=True)
+        Force.data.columns = names
+        Force.data = Force.data.apply(pd.to_numeric, errors='coerce')
 
-        self.rows = self.graph_data.shape[0]
+        Force.rows = Force.data.shape[0]
         try:
-            self.step_size = int(600/self.cam.get(cv2.CAP_PROP_FPS)) # rows/frame
+            self.step_size = int(600/Video.cam.get(cv2.CAP_PROP_FPS)) # rows/frame
         except AttributeError as e:
             print("Video file missing!!!\nProceeding assuming step size is 20 rows/frame")
             self._pop_up("Video file missing!!!\n\nProceeding assuming step size is 20 rows/frame\n\n"
                         "Please reload the force data after uploading the video")
             self.step_size = 20
-        self.force_frame = int(self.rows/self.step_size)  # represent num of frames force data can cover
+        self.force_frame = int(Force.rows/self.step_size)  # represent num of frames force data can cover
 
         self._plot_force_data()
 
@@ -709,24 +706,24 @@ class DisplayApp:
         rotate original camera
         """
         self.rot += 90*dir
-        name = self.video_path.split("/")[-1][:-4]
+        name = Video.path.split("/")[-1][:-4]
         self.loc = 0
-        if not self.cam.isOpened():
+        if not Video.cam.isOpened():
             print("Error: Could not open camera.")
             return
-        self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        out = cv2.VideoWriter(f"{name}_rotated{self.rot}.mp4", cv2.VideoWriter_fourcc(*'mp4v'), self.fps,
-                              (self.frame_height,self.frame_width))
+        Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        out = cv2.VideoWriter(f"{name}_rotated{self.rot}.mp4", cv2.VideoWriter_fourcc(*'mp4v'), Video.fps,
+                              (Video.frame_height,Video.frame_width))
         while True:
-            print(f"{self.cam.get(cv2.CAP_PROP_FRAME_COUNT)}/{self.cam.get(cv2.CAP_PROP_POS_FRAMES)}")
-            ret, frame = self.cam.read()
+            print(f"{Video.cam.get(cv2.CAP_PROP_FRAME_COUNT)}/{Video.cam.get(cv2.CAP_PROP_POS_FRAMES)}")
+            ret, frame = Video.cam.read()
             if not ret:
                 break
             rotated_frame = cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE) if dir>0 else cv2.rotate(frame,cv2.ROTATE_90_COUNTERCLOCKWISE)
             out.write(rotated_frame)
-        self.cam.release()
+        Video.cam.release()
         out.release()
-        self.cam = None
+        Video.cam = None
         self._openVideo(f"{name}_rotated{self.rot}.mp4")
         print("finish rotating")
 
@@ -755,17 +752,17 @@ class DisplayApp:
             print(offset)
             #check positive or negative offset:
             if(offset>0):
-                self.graph_data = self.graph_data.iloc[int(offset*self.step_size + self.zoom_pos):,:].reset_index(drop=True)
-                print(self.graph_data)
+                Force.data = Force.data.iloc[int(offset*self.step_size + self.zoom_pos):,:].reset_index(drop=True)
+                print(Force.data)
             else:
-                nan_rows = pd.DataFrame(np.nan, index=range(int(-offset*self.step_size - self.zoom_pos)), columns=self.graph_data.columns)
-                self.graph_data = pd.concat([nan_rows, self.graph_data], ignore_index=True)  # We are using + because when we have a positive zoom_pos , the number of added rows is offset*step_size - zoom_pos
-                print(self.graph_data)
+                nan_rows = pd.DataFrame(np.nan, index=range(int(-offset*self.step_size - self.zoom_pos)), columns=Force.data.columns)
+                Force.data = pd.concat([nan_rows, Force.data], ignore_index=True)  # We are using + because when we have a positive zoom_pos , the number of added rows is offset*step_size - zoom_pos
+                print(Force.data)
 
             print("modify force data")
 
             # store some output meta data
-            self.force_start = self.graph_data.iloc[int(self.video_align*self.step_size),0]
+            self.force_start = Force.data.iloc[int(self.video_align*self.step_size),0]
 
             self.zoom_pos = 0
             self.slider.set(0)
@@ -796,14 +793,14 @@ class DisplayApp:
         def _scrollBar(value):
             self.save_loc = self.save_scroll_bar.get()
             print(f"You just moved scroll bar to {self.save_loc}")
-            self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_loc)
-            self.save_photoImage = self._display_frame(camera=self.vector_cam)
+            Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_loc)
+            self.save_photoImage = self._display_frame(camera=Video.vector_cam)
             self.save_view_canvas.delete("frame_image")
             self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
 
             """
             I notice that when I alter the scroll bar in main window, and then move the scroll bar in toplevel window, the image update
-            Possibly because scroll bar in main can also change self.cam. therefore the solution is to link the two together.
+            Possibly because scroll bar in main can also change Video.cam. therefore the solution is to link the two together.
             ### solved
             """
         def _export():
@@ -811,8 +808,8 @@ class DisplayApp:
             self._pop_up(text="Processing video ...\nThis may take a few minutes\n",follow=True)
 
             try:
-                print(f"\nentry: {self.cushion_entry.get()}\nfps: {self.fps}")
-                cushion_frames = int(self.cushion_entry.get()) * (self.fps)
+                print(f"\nentry: {self.cushion_entry.get()}\nfps: {Video.fps}")
+                cushion_frames = int(self.cushion_entry.get()) * (Video.fps)
                 print(cushion_frames)
             except ValueError as e:
                 self._pop_up(text="Invalid cushion time, please put numbers")
@@ -820,11 +817,11 @@ class DisplayApp:
                 print(e)
                 return
 
-            self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
-            self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
+            Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
+            Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
             count = self.save_start - cushion_frames
-            out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), self.fps,(self.frame_width, self.frame_height+480))
-            print(f"cam1 frame: {self.cam.get(cv2.CAP_PROP_FRAME_COUNT)}\ncam2 frame:{self.vector_cam.get(cv2.CAP_PROP_FRAME_COUNT)}")
+            out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), Video.fps,(Video.frame_width, Video.frame_height+480))
+            print(f"cam1 frame: {Video.cam.get(cv2.CAP_PROP_FRAME_COUNT)}\ncam2 frame:{Video.vector_cam.get(cv2.CAP_PROP_FRAME_COUNT)}")
 
             # creating matplot graph
             fig1,ax1 = plt.subplots()
@@ -848,17 +845,17 @@ class DisplayApp:
                 label2_2 = "Fx2"
 
             # force plate 1
-            y1 = self.graph_data.loc[:,label1_1]
-            y2 = self.graph_data.loc[:,label1_2]
+            y1 = Force.data.loc[:,label1_1]
+            y2 = Force.data.loc[:,label1_2]
             # force plate 2
-            y3 = self.graph_data.loc[:,label2_1]
-            y4 = self.graph_data.loc[:,label2_2]
+            y3 = Force.data.loc[:,label2_1]
+            y4 = Force.data.loc[:,label2_2]
 
             ymax = max(y1.max(),y2.max(),y3.max(),y4.max())
             ymin = min(y1.min(),y2.min(),y3.min(),y4.min())
 
-            self.graph_data.loc[0:self.step_size*self.save_start,:] = np.nan
-            self.graph_data.loc[self.step_size*self.save_end:,:] = np.nan
+            Force.data.loc[0:self.step_size*self.save_start,:] = np.nan
+            Force.data.loc[self.step_size*self.save_end:,:] = np.nan
 
             ax1.clear()
             ax1.set_title(f"Force plate {self.plate.get()} Force Time Graph")
@@ -869,7 +866,7 @@ class DisplayApp:
             ax1.set_xlabel("Time (s.)")
             ax1.set_ylabel("Forces (N.)")
 
-            line1 = ax1.axvline(x=self.graph_data.iloc[int(count), 0], color='red', linestyle='--', linewidth=1.5)
+            line1 = ax1.axvline(x=Force.data.iloc[int(count), 0], color='red', linestyle='--', linewidth=1.5)
 
             ax2.clear()
             ax2.set_title(f"Force plate {self.plate.get()} Force Time Graph")
@@ -880,10 +877,10 @@ class DisplayApp:
             ax2.set_xlabel("Time (s.)")
             ax2.set_ylabel("Forces (N.)")
 
-            line2 = ax2.axvline(x=self.graph_data.iloc[int(count), 0], color='red', linestyle='--', linewidth=1.5)
+            line2 = ax2.axvline(x=Force.data.iloc[int(count), 0], color='red', linestyle='--', linewidth=1.5)
             def render_matplotlib_to_cv2(cur):
                 # cur is the row
-                LOCtime = self.graph_data.iloc[int(cur),0]
+                LOCtime = Force.data.iloc[int(cur),0]
                 line1.set_xdata([LOCtime])
                 line2.set_xdata([LOCtime])
 
@@ -915,9 +912,9 @@ class DisplayApp:
                 return cv2.hconcat([gap,image1,image2,gap])
 
             # Saving frame with graph
-            while(self.vector_cam.isOpened() and count<= self.save_end+cushion_frames):
-                ret1, frame1 = self.cam.read()
-                ret3, frame3 = self.vector_cam.read()
+            while(Video.vector_cam.isOpened() and count<= self.save_end+cushion_frames):
+                ret1, frame1 = Video.cam.read()
+                ret3, frame3 = Video.vector_cam.read()
                 if not ret1 or not ret3:
                     # if this calls when the frame_number is equal to the total frame count then the stream has just ended
                     print(f"Can't read frame at position {count}")
@@ -954,12 +951,12 @@ class DisplayApp:
             name = file_path.split('/')[-1][:-4]
             with open(f"{file_path[:-4]}.txt","w") as fout:
                 fout.write(f"{name}'s metadata\n")
-                fout.write(f"Video path: {self.video_path}\n")
-                fout.write(f"Total frame: {self.total_frames}\n")
-                fout.write(f"FPS: {self.fps}\n")
+                fout.write(f"Video path: {Video.path}\n")
+                fout.write(f"Total frame: {Video.total_frames}\n")
+                fout.write(f"FPS: {Video.fps}\n")
                 fout.write(f"Video start frame: {self.video_align}\n\n")
                 
-                fout.write(f"Force data path: {self.force_path}\n")
+                fout.write(f"Force data path: {Force.path}\n")
                 fout.write(f"Force start frame(before align && with out small adjustments): {self.force_align}\n")
                 fout.write(f"Force start time: {self.force_start}\n\n") # using video align because it's position after alignment
 
@@ -987,11 +984,11 @@ class DisplayApp:
 
         # layout
         self.save_view_canvas = Canvas(self.save_window,width=400, height=300, bg="lightgrey")
-        self.save_photoImage = self._display_frame(camera=self.vector_cam)
+        self.save_photoImage = self._display_frame(camera=Video.vector_cam)
         self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
         self.save_view_canvas.grid(row=0,column=0,columnspan=3,sticky="nsew")
 
-        self.save_scroll_bar = Scale(self.save_window, from_=0, to=self.total_frames, orient="horizontal", label="select start and end", command=_scrollBar)
+        self.save_scroll_bar = Scale(self.save_window, from_=0, to=Video.total_frames, orient="horizontal", label="select start and end", command=_scrollBar)
         self.save_scroll_bar.grid(row=1,column=0,columnspan=3,sticky="nsew",pady=10)
 
         self.StartLabel = Label(self.save_window,text=f"start frame: {self.save_start}")
@@ -1020,8 +1017,8 @@ class DisplayApp:
     def vector_overlay(self):
         print("user clicked vector overlay button")
         temp_video = "vector_overlay_temp.mp4"
-        self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        v = vectoroverlay_GUI.VectorOverlay(data=self.graph_data,video=self.cam)
+        Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        v = vectoroverlay_GUI.VectorOverlay(data=Force.data,video=Video.cam)
         
         if(self.selected_view.get()=="Long View"):
             v.LongVectorOverlay(outputName=temp_video)
@@ -1030,18 +1027,18 @@ class DisplayApp:
         elif(self.selected_view.get()=="Top View"):
             v.TopVectorOverlay(outputName=temp_video)
 
-        self.vector_cam = cv2.VideoCapture(temp_video)
-        self.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        Video.vector_cam = cv2.VideoCapture(temp_video)
+        Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
         """
         display 
         """
         if self.loc>=self.video_align:
-            self.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc - self.video_align)
-            self.photo_image3 = self._display_frame(camera=self.vector_cam)
+            Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc - self.video_align)
+            self.photo_image3 = self._display_frame(camera=Video.vector_cam)
         else:
-            self.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-            self.photo_image3 = self._display_frame(camera=self.cam)
+            Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
+            self.photo_image3 = self._display_frame(camera=Video.cam)
 
     def label_force(self):  # ---> executed when user click label force
         self.force_align = self.loc
