@@ -542,9 +542,9 @@ class DisplayApp:
             self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
             # update video timeline
             self._update_video_timeline()
-        if Video.vector_cam:
+        if type(Video.vector_cam) is not tuple:
+            print(Video.vector_cam)
             # draw vector overlay canvas
-
             Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
             self.photo_image3 = self._display_frame(camera=Video.vector_cam,
                                                    width=round(Video.frame_width * self.zoom_factor3),
@@ -627,7 +627,14 @@ class DisplayApp:
             self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
             # set step size
-            self.step_size = int(600 / Video.cam.get(cv2.CAP_PROP_FPS))
+            self.step_size = int(600 / Video.cam.get(cv2.CAP_PROP_FPS))  # this assume iphone takes less frame than camera
+            self.step_size = 10  # assuming iphone has the same amount of frames but just replay slower.
+
+            # print information
+            print(f"step size: {self.step_size}")
+            print(f"fps: {Video.fps}")
+            print(f"total frames: {Video.total_frames}")
+
 
     def upload_force_data(self):
         def rename_duplicates(lst):
@@ -672,13 +679,15 @@ class DisplayApp:
         Force.data = Force.data.apply(pd.to_numeric, errors='coerce')
 
         Force.rows = Force.data.shape[0]
-        try:
-            self.step_size = int(600/Video.cam.get(cv2.CAP_PROP_FPS)) # rows/frame
-        except AttributeError as e:
-            print("Video file missing!!!\nProceeding assuming step size is 20 rows/frame")
-            self._pop_up("Video file missing!!!\n\nProceeding assuming step size is 20 rows/frame\n\n"
+
+        if(self.step_size is None):
+            print("Video file missing!!!\nProceeding assuming step size is 10 rows/frame")
+            self._pop_up("Video file missing!!!\n\nProceeding assuming step size is 10 rows/frame\n\n"
                         "Please reload the force data after uploading the video")
-            self.step_size = 20
+            self.step_size = 10
+
+        print(f"num of rows: {Force.rows}")
+        print(f"step size: {self.step_size}")
         self.force_frame = int(Force.rows/self.step_size)  # represent num of frames force data can cover
 
         self._plot_force_data()
