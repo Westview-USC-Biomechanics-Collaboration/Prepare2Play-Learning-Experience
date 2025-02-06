@@ -654,7 +654,7 @@ class DisplayApp:
 
             return new_list
         # Open a file dialog for any file type
-        file_path = filedialog.askopenfilename(title="Select Force Data File",filetypes=[("Excel or CSV Files", "*.xlsx *.xls *.csv")])
+        file_path = filedialog.askopenfilename(title="Select Force Data File",filetypes=[("Excel or CSV Files", "*.xlsx *.xls *.csv *.txt")])
         Force.path = file_path
         print(f"Force data uploaded: {file_path}")
         """
@@ -671,13 +671,12 @@ class DisplayApp:
                 file_path
             )
 
-        names = rename_duplicates(list(Force.data.iloc[16,:]))
+        names = rename_duplicates(list(Force.data.iloc[16, :]))
         print(names)
+        Force.data = Force.data.iloc[18:, 0:len(names)].reset_index(drop=True)
 
-        Force.data = Force.data.iloc[18:,0:len(names)].reset_index(drop=True)
         Force.data.columns = names
         Force.data = Force.data.apply(pd.to_numeric, errors='coerce')
-
         Force.rows = Force.data.shape[0]
 
         if(self.step_size is None):
@@ -803,7 +802,10 @@ class DisplayApp:
             self.save_loc = self.save_scroll_bar.get()
             print(f"You just moved scroll bar to {self.save_loc}")
             Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_loc)
-            self.save_photoImage = self._display_frame(camera=Video.vector_cam)
+            if Video.frame_width>Video.frame_height:
+                self.save_photoImage = self._display_frame(camera=Video.vector_cam,width=480,height=360)
+            else:
+                self.save_photoImage = self._display_frame(camera=Video.vector_cam,width=360,height=480)
             self.save_view_canvas.delete("frame_image")
             self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
 
@@ -829,7 +831,7 @@ class DisplayApp:
             Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
             Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
             count = self.save_start - cushion_frames
-            out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), Video.fps,(Video.frame_width, Video.frame_height+480))
+
             print(f"cam1 frame: {Video.cam.get(cv2.CAP_PROP_FRAME_COUNT)}\ncam2 frame:{Video.vector_cam.get(cv2.CAP_PROP_FRAME_COUNT)}")
 
             # creating matplot graph
@@ -910,15 +912,39 @@ class DisplayApp:
                 image1 = cv2.imdecode(image1, cv2.IMREAD_COLOR)
                 image2 = cv2.imdecode(image2, cv2.IMREAD_COLOR)
 
+                print(f"Image dimension: {image1.shape[0],image1.shape[1]}")
+
                 total_width = image1.shape[1] + image2.shape[1]
+                total_height = image1.shape[0] + image2.shape[0]
                 if total_width > 1920:
                     raise ValueError("The combined width of image1 and image2 exceeds 1920 pixels.")
 
-                gap_width = (1920 - total_width) // 2  # Integer division for the gap width
+                if Video.frame_width > Video.frame_height:
+                    gap_width = (1920 - total_width) // 2  # Ensure integer division
+                    gap = np.full((image1.shape[0], gap_width, 3), 255,
+                                  dtype=np.uint8)  # Correct shape for horizontal concat
 
-                gap = np.full((int(image1.shape[0]),gap_width,3),255,dtype=np.uint8)
+                    return cv2.hconcat([gap, image1, image2, gap])
 
-                return cv2.hconcat([gap,image1,image2,gap])
+                else:  # Vertical concatenation
+                    gap_height = (Video.frame_height - total_height) // 2
+
+                    # ✅ Correct shape: (gap_height, image1.shape[1], 3)
+                    gap = np.full((gap_height, image1.shape[1], 3), 255, dtype=np.uint8)
+
+                    # Ensure all images have the same width before vconcat
+                    if image1.shape[1] != image2.shape[1]:
+                        target_width = min(image1.shape[1], image2.shape[1])  # Resize to smallest width
+                        image1 = cv2.resize(image1, (target_width, image1.shape[0]))
+                        image2 = cv2.resize(image2, (target_width, image2.shape[0]))
+                        gap = cv2.resize(gap, (target_width, gap.shape[0]))
+
+                    return cv2.vconcat([gap, image1, image2, gap])  # Now correctly formatted
+
+            if Video.frame_width > Video.frame_height:
+                out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), Video.fps,(Video.frame_width, Video.frame_height+480))
+            else:
+                out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), Video.fps,(Video.frame_width+640, Video.frame_height))
 
             # Saving frame with graph
             while(Video.vector_cam.isOpened() and count<= self.save_end+cushion_frames):
@@ -936,13 +962,24 @@ class DisplayApp:
                     combine graphs horizontally and then combine graphs with video vertically
                     export the combined frame, need to test on separate file
                     """
-                    combined_frame = cv2.vconcat([frame1,graphs])
+                    if(Video.frame_width > Video.frame_height):
+                        combined_frame = cv2.vconcat([frame1,graphs])
+                    else:
+                        combined_frame = cv2.hconcat([frame1,graphs])
+
                 elif(count<=self.save_end):
                     print("doing vector")
-                    combined_frame = cv2.vconcat([frame3,graphs])
+                    if (Video.frame_width > Video.frame_height):
+                        combined_frame = cv2.vconcat([frame3,graphs])
+                    else:
+                        combined_frame = cv2.hconcat([frame1, graphs])
+
                 else:
                     print("doing ori")
-                    combined_frame = cv2.vconcat([frame1, graphs])
+                    if (Video.frame_width > Video.frame_height):
+                        combined_frame = cv2.vconcat([frame1, graphs])
+                    else:
+                        combined_frame = cv2.hconcat([frame1, graphs])
 
                 cv2.imshow('Matplotlib Plot', cv2.resize(combined_frame,(960,780)))
                 if cv2.waitKey(5) & 0xFF == ord("q"):
@@ -993,7 +1030,10 @@ class DisplayApp:
 
         # layout
         self.save_view_canvas = Canvas(self.save_window,width=400, height=300, bg="lightgrey")
-        self.save_photoImage = self._display_frame(camera=Video.vector_cam)
+        if(Video.frame_width>Video.frame_height):
+            self.save_photoImage = self._display_frame(camera=Video.vector_cam,width=480,height=360)
+        else:
+            self.save_photoImage = self._display_frame(camera=Video.vector_cam,width=360,height=480)
         self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
         self.save_view_canvas.grid(row=0,column=0,columnspan=3,sticky="nsew")
 

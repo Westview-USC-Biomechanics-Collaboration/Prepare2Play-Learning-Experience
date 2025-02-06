@@ -350,9 +350,9 @@ class VectorOverlay:
             fy2 = -self.fx2[int(frame_number)]
 
             px1 = self.py1[int(frame_number)]
-            py1 = self.px1[int(frame_number)]
+            py1 = 1-self.px1[int(frame_number)]  # I don't know why, but the real px is not the same as I assumed
             px2 = self.py2[int(frame_number)]
-            py2 = self.px2[int(frame_number)]
+            py2 = 1-self.px2[int(frame_number)]
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
             cv2.imshow("window", cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5))))

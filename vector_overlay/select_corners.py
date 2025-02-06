@@ -95,7 +95,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
         cv2.imshow('Zoom Window', zoomed)
         cv2.moveWindow('Zoom Window', cursor_x + 200, cursor_y - 100)
 
-        print(cursor_x,cursor_y)
+        #print(cursor_x,cursor_y)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
@@ -108,5 +108,5 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     return points
 
 if __name__ == "__main__":
-    cap = cv2.VideoCapture("C:\\Users\\16199\\Desktop\\data\\spu\\Trimmed_Front_nishk 01 right.mp4")
+    cap = cv2.VideoCapture(r"C:\Users\16199\Downloads\test0721.mp4")
     select_points(cap, num_points=8)
