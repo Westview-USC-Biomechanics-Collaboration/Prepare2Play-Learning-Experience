@@ -13,9 +13,14 @@ import os
 from datetime import datetime
 from io import BytesIO
 
+import sys
+sys.path.append(r'C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\vector_overlay')
+import vectoroverlay_GUI
+
+
 # our script
 from Timeline import timeline
-from vector_overlay import vectoroverlay_GUI
+
 
 
 """
