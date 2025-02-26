@@ -2,7 +2,7 @@
 import cv2
 import cv2 as cv
 import pandas as pd
-from select_corners import select_points
+from vector_overlay.select_corners import select_points
 import numpy as np
 import os
 

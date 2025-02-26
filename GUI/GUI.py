@@ -15,11 +15,11 @@ from io import BytesIO
 
 import sys
 sys.path.append(r'C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\vector_overlay')
-import vectoroverlay_GUI
+from vector_overlay.vectoroverlay_GUI import VectorOverlay
 
 
 # our script
-from Timeline import timeline
+from GUI.Timeline import timeline
 
 
 
@@ -1072,7 +1072,7 @@ class DisplayApp:
         print("user clicked vector overlay button")
         temp_video = "vector_overlay_temp.mp4"
         Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        v = vectoroverlay_GUI.VectorOverlay(data=Force.data,video=Video.cam)
+        v = VectorOverlay(data=Force.data,video=Video.cam)
         
         if(self.selected_view.get()=="Long View"):
             v.LongVectorOverlay(outputName=temp_video)
