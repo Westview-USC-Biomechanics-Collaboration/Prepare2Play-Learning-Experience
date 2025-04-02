@@ -2,16 +2,17 @@ import cv2
 import numpy as np
 
 # Load video
-cap = cv2.VideoCapture('tennis_ball_video.mp4')
+cap = cv2.VideoCapture('/home/chaser/Downloads/tss_rl_JG_vid02.mov')
 
 # Initialize variables
 lowest_y = float('-inf')
 lowest_frame = -1
 frame_index = 0
 
-# Define color range for tennis ball (adjust based on lighting conditions)
-lower_bound = np.array([20, 100, 100])  # Lower bound of yellow in HSV
-upper_bound = np.array([30, 255, 255])  # Upper bound of yellow in HSV
+# Define color range for darker green tennis ball (adjust based on lighting conditions)
+lower_bound = np.array([25, 130, 50])  # Darker green lower bound in HSV   V:(50:140)
+upper_bound = np.array([80, 240, 140])  # Upper bound in HSV (limit brightness)
+
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -44,6 +45,7 @@ while cap.isOpened():
     
     # Display the frame
     cv2.imshow('Tennis Ball Tracking', frame)
+    cv2.imshow('Mask',mask)
     
     # Press 'q' to exit
     if cv2.waitKey(30) & 0xFF == ord('q'):
