@@ -12,22 +12,11 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 from datetime import datetime
 from io import BytesIO
-
 import sys
-sys.path.append(r'C:\Users\16199\Documents\GitHub\Prepare2Play-Learning-Experience-3\vector_overlay')
-from vector_overlay.vectoroverlay_GUI import VectorOverlay
-
 
 # our script
+from vector_overlay.vectoroverlay_GUI import VectorOverlay
 from GUI.Timeline import timeline
-
-
-
-"""
-I don't have time to clean up the code,
-too busy adding new features,
-will do if have time...
-"""
 
 #@dataclass
 class Video:
