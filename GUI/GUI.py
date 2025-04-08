@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends._backend_tk import NavigationToolbar2Tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
+import math
+import threading
 from datetime import datetime
 from io import BytesIO
 import sys
@@ -17,6 +19,7 @@ import sys
 # our script
 from vector_overlay.vectoroverlay_GUI import VectorOverlay
 from GUI.Timeline import timeline
+from Util.ballDropDetect import ballDropDetect, forceSpikeDetect
 
 #@dataclass
 class Video:
@@ -191,7 +194,7 @@ class DisplayApp:
 
         # force data
         self.force_start = None # This variable store the time which user choose to align
-        self.force_frame = None   # convert rows to frames
+        self.force_frame = None   # convert rows to frames || unit: rows/frame
         self.step_size = None
 
         # Graph
@@ -583,6 +586,7 @@ class DisplayApp:
             self.loc-=1
         self.slider.set(self.loc)
 
+
     def upload_video(self):
         # Open a file dialog for video files
         view_popup = tk.Toplevel(self.master)
@@ -608,6 +612,9 @@ class DisplayApp:
             # display video
             self._openVideo(Video.path)
 
+            # auto detect
+            auto_index = ballDropDetect(Video.cam)
+
             # Initialize video timeline
             self.timeline2 = timeline(0,1)
             videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc))
@@ -624,10 +631,17 @@ class DisplayApp:
             self.step_size = int(600 / Video.cam.get(cv2.CAP_PROP_FPS))  # this assume iphone takes less frame than camera
             self.step_size = 10  # assuming iphone has the same amount of frames but just replay slower.
 
+            # label the auto deteciton
+            print(f"[DEBUG] index for collision is: {auto_index}")
+            self.loc = auto_index
+            self.label_video()
+
             # print information
             print(f"step size: {self.step_size}")
             print(f"fps: {Video.fps}")
             print(f"total frames: {Video.total_frames}")
+
+
 
 
     def upload_force_data(self):
@@ -702,6 +716,18 @@ class DisplayApp:
         newforceTimeline = forceTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
         self.timeline_image1 = ImageTk.PhotoImage(newforceTimeline)  # create image object that canvas object accept
         self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
+
+        # auto spike deteciton for force plate 2
+        targetRow = forceSpikeDetect(Force.data)
+        print(f"[DEBUG] target row: {targetRow}")
+        targetFrame = math.floor(targetRow/self.step_size)
+        print(f"[DEBUG] target frame: {targetFrame}")
+
+        # update timeline
+        self.loc = targetFrame
+        self.label_force()
+
+
 
     def rotateCam(self,dir):
         """
