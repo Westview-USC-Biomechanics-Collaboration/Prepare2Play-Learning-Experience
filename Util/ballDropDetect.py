@@ -9,7 +9,7 @@ return:
 import cv2
 import numpy as np
 import time
-
+import pandas as pd
 
 
 def ballDropDetect(cap:cv2.VideoCapture):
@@ -69,7 +69,18 @@ def ballDropDetect(cap:cv2.VideoCapture):
         # print result
         print(f"The ball reaches its lowest position at frame index: {highest_position_entry['index']}")
 
-    return index
+    return highest_position_entry['index']
+
+def forceSpikeDetect(df:pd.DataFrame):
+    init_force = df.loc[0,"Fz2"]
+    target_row = -1
+    for index, f in enumerate(df.loc[:,"Fz2"]):
+        if((f-init_force)>30):
+            target_row = index
+            break
+
+    return target_row
+
 
 if __name__ == "__main__":
     capture = cv2.VideoCapture('/home/chaser/Downloads/tss_rl_JG_vid02.mov')
