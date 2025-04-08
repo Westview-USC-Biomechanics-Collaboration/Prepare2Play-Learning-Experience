@@ -57,7 +57,7 @@ Select corner sequence:
          |_______________________|
 
 """
-def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
+def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords,short = False):
     """
     Maps points from a rectangle to a trapezoid, simulating parallax distortion.
 
@@ -78,21 +78,24 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords):
     (tl_x, tl_y), (tr_x, tr_y), (br_x, br_y), (bl_x, bl_y) = trapezoid_coords
 
     # Calculate the left and right edge positions for the current y
-    left_x = bl_x + (tl_x - bl_x) * (y / rect_height)
-    right_x = br_x + (tr_x - br_x) * (y / rect_height)
+    left_x = bl_x + (tl_x - bl_x) * y
+    right_x = br_x + (tr_x - br_x) * y
 
     # Calculate the width of the trapezoid at the current y
     trapezoid_width = right_x - left_x
 
     # Map x-coordinate
-    new_x = left_x + (x / rect_width) * trapezoid_width
+    new_x = left_x + x * trapezoid_width
 
     # Calculate the top and bottom y positions of the trapezoid
     top_y = (tl_y + tr_y) / 2
     bottom_y = (bl_y + br_y) / 2
 
     # Map y-coordinate
-    new_y = top_y + (y / rect_height) * (bottom_y - top_y)
+    if short:
+        new_y = bottom_y + y * (top_y - bottom_y)
+    else:
+        new_y = top_y + y * (bottom_y - top_y)
 
     return (int(new_x), int(new_y))
 
@@ -164,7 +167,7 @@ class VectorOverlay:
 
     def readData(self):
         frame_count = self.frame_count
-        step_size = (600/self.fps)
+        step_size = 10 # should be 10
         current_row = 0
         fx1 = []
         fy1 = []
@@ -198,21 +201,21 @@ class VectorOverlay:
                 pressure_y2 = 0.0
             else:
                 # Normal data extraction if start_row is within bounds
-                data_x1 = self.data.iloc[start_row, 1] if not pd.isna(self.data.iloc[start_row, 1]) else 0.0
-                data_y1 = self.data.iloc[start_row, 2] if not pd.isna(self.data.iloc[start_row, 2]) else 0.0
-                data_z1 = self.data.iloc[start_row, 3] if not pd.isna(self.data.iloc[start_row, 3]) else 0.0
-                pressure_x1 = (-self.data.iloc[start_row, 5] + 0.3) / 0.6 if not pd.isna(
-                    self.data.iloc[start_row, 5]) else 0.0
-                pressure_y1 = (self.data.iloc[start_row, 6] + 0.45) / 0.9 if not pd.isna(
-                    self.data.iloc[start_row, 6]) else 0.0
+                data_x1 = self.data.loc[start_row, "Fx1"] if not pd.isna(self.data.loc[start_row, "Fx1"]) else 0.0
+                data_y1 = self.data.loc[start_row, "Fy1"] if not pd.isna(self.data.loc[start_row, "Fy1"]) else 0.0
+                data_z1 = self.data.loc[start_row, "Fz1"] if not pd.isna(self.data.loc[start_row, "Fz1"]) else 0.0
+                pressure_x1 = (self.data.loc[start_row, "Ax1"] + 0.3) / 0.6 if not pd.isna(
+                    self.data.loc[start_row, "Ax1"]) else 0.0
+                pressure_y1 = (self.data.loc[start_row, "Ay1"] + 0.45) / 0.9 if not pd.isna(
+                    self.data.loc[start_row, "Ay1"]) else 0.0
 
-                data_x2 = self.data.iloc[start_row, 10] if not pd.isna(self.data.iloc[start_row, 10]) else 0.0
-                data_y2 = self.data.iloc[start_row, 11] if not pd.isna(self.data.iloc[start_row, 11]) else 0.0
-                data_z2 = self.data.iloc[start_row, 12] if not pd.isna(self.data.iloc[start_row, 12]) else 0.0
-                pressure_x2 = (-self.data.iloc[start_row, 14] + 0.3) / 0.6 if not pd.isna(
-                    self.data.iloc[start_row, 14]) else 0.0
-                pressure_y2 = (self.data.iloc[start_row, 15] + 0.45) / 0.9 if not pd.isna(
-                    self.data.iloc[start_row, 15]) else 0.0
+                data_x2 = self.data.loc[start_row, "Fx2"] if not pd.isna(self.data.loc[start_row, "Fx2"]) else 0.0
+                data_y2 = self.data.loc[start_row, "Fy2"] if not pd.isna(self.data.loc[start_row, "Fy2"]) else 0.0
+                data_z2 = self.data.loc[start_row, "Fz2"] if not pd.isna(self.data.loc[start_row, "Fz2"]) else 0.0
+                pressure_x2 = (self.data.loc[start_row, "Ax2"] + 0.3) / 0.6 if not pd.isna(
+                    self.data.loc[start_row, "Ax2"]) else 0.0
+                pressure_y2 = (self.data.loc[start_row, "Ay2"] + 0.45) / 0.9 if not pd.isna(
+                    self.data.loc[start_row, "Ay2"]) else 0.0
 
             # Append the data to the lists
             fx1.append(data_x1)
@@ -239,19 +242,28 @@ class VectorOverlay:
         self.px2 = tuple(px2)
         self.py2 = tuple(py2)
 
-    def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2):
+    def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2,short=False):
+        if short:
+            point_pair1 = rect_to_trapezoid(px1, py1, 1, 1,
+                                            [self.corners[0], self.corners[1], self.corners[2], self.corners[3]],short=True)
 
-        start_point_1 = rect_to_trapezoid(px1, py1, 1, 1,
-                                          [self.corners[0], self.corners[1], self.corners[2], self.corners[3]])
+            point_pair2 = rect_to_trapezoid(px2, py2, 1, 1,
+                                            [self.corners[4], self.corners[5], self.corners[6], self.corners[7]],short=True)
 
-        start_point_2 = rect_to_trapezoid(px2, py2, 1, 1,
-                                          [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
-        end_point_1 = (int(start_point_1[0] + xf1), int(start_point_1[1] - yf1))
-        end_point_2 = (int(start_point_2[0] + xf2), int(start_point_2[1] - yf2))
+        else:
+            point_pair1 = rect_to_trapezoid(px1, py1, 1, 1,
+                                              [self.corners[0], self.corners[1], self.corners[2], self.corners[3]])
 
-        cv.arrowedLine(frame, start_point_1, end_point_1, (0, 255, 0), 2)
+            point_pair2 = rect_to_trapezoid(px2, py2, 1, 1,
+                                              [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
 
-        cv.arrowedLine(frame, start_point_2, end_point_2, (255, 0, 0), 2)
+
+        end_point_1 = (int(point_pair1[0] + xf1), int(point_pair1[1] - yf1))
+        end_point_2 = (int(point_pair2[0] + xf2), int(point_pair2[1] - yf2))
+
+        cv.arrowedLine(frame, point_pair1, end_point_1, (0, 255,0), 4)
+
+        cv.arrowedLine(frame, point_pair2, end_point_2, (255, 0, 0), 4)
 
     def LongVectorOverlay(self, outputName):
         self.normalizeForces(self.fy1, self.fy2, self.fz1, self.fz2)
@@ -296,7 +308,8 @@ class VectorOverlay:
             py2 = self.px2[int(frame_number)]
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
-            cv2.imshow("window", frame)
+            cv2.imshow("window", cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5)))
+)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
             frame_number += 1
@@ -304,6 +317,7 @@ class VectorOverlay:
 
 
         out.release()
+        cv2.destroyAllWindows()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
     def TopVectorOverlay(self, outputName):
@@ -336,19 +350,19 @@ class VectorOverlay:
             fy2 = -self.fx2[int(frame_number)]
 
             px1 = self.py1[int(frame_number)]
-            py1 = self.px1[int(frame_number)]
+            py1 = 1-self.px1[int(frame_number)]  # I don't know why, but the real px is not the same as I assumed
             px2 = self.py2[int(frame_number)]
-            py2 = self.px2[int(frame_number)]
+            py2 = 1-self.px2[int(frame_number)]
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
-            cv2.imshow("window", frame)
+            cv2.imshow("window", cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5))))
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
             frame_number += 1
             out.write(frame)
 
-
         out.release()
+        cv2.destroyAllWindows()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
     # short view need more test
@@ -375,25 +389,41 @@ class VectorOverlay:
                 # if this calls when the frame_number is equal to the total frame count then the stream has just ended
                 print(f"Can't read frame at position {frame_number}")
                 break
-            # This only shows the force on force plate 2, you can adjust this part so that it shows the force on force plate 1
-            fx1 = -self.fx1[int(frame_number)]
-            fx2 = -self.fx2[int(frame_number)]
-            fy1 = self.fz1[int(frame_number)]
-            fy2 = self.fz2[int(frame_number)]
-            px1 = self.px1[int(frame_number)]
-            px2 = self.px2[int(frame_number)]
-            py1 = 1 - self.py1[int(frame_number)]
-            py2 = 1 - self.py2[int(frame_number)]
+            if(self.corners[0][1]<self.corners[4][1]):
+                print("force plate 2 in front")
+                # This only shows the force on force plate 2, you can adjust this part so that it shows the force on force plate 1
+                fx1 = -self.fx1[int(frame_number)]
+                fx2 = -self.fx2[int(frame_number)]
+                fy1 = self.fz1[int(frame_number)]
+                fy2 = self.fz2[int(frame_number)]
+                px1 = self.px1[int(frame_number)]
+                px2 = self.px2[int(frame_number)]
+                py1 = 1 - self.py1[int(frame_number)]
+                py2 = 1 - self.py2[int(frame_number)]
+            else:
+                print("force plate 1 in front")
+                fx1 = self.fx1[int(frame_number)]
+                fx2 = self.fx2[int(frame_number)]
+                fy1 = self.fz1[int(frame_number)]
+                fy2 = self.fz2[int(frame_number)]
+                px1 = 1 - self.px1[int(frame_number)]
+                px2 = 1 - self.px2[int(frame_number)]
+                py1 = 1 - self.py1[int(frame_number)]
+                py2 = 1 - self.py2[int(frame_number)]
 
-            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
-            cv2.imshow("window", frame)
+            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2,short=True)
+           # Resize the frame for display
+            resized_frame = cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5)))
+
+            # Show the resized frame
+            cv2.imshow("window", resized_frame)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
             frame_number += 1
             out.write(frame)
 
-
         out.release()
+        cv2.destroyAllWindows()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
 if __name__ == "__main__":
