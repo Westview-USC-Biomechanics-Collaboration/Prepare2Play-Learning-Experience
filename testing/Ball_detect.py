@@ -5,7 +5,8 @@ import time
 startTime = time.time()
 
 # Load video
-cap = cv2.VideoCapture('/home/chaser/Downloads/tss_rl_JG_vid02.mov')
+cap = cv2.VideoCapture('/home/chaser/Downloads/jpj_12_TN_long_vid01.mov')
+print("[DEBUG] successfully read video")
 
 # Initialize variables
 frame_index = 0
@@ -52,13 +53,13 @@ while cap.isOpened():
             # Draw rectangle around the ball
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
     
-    # # Display the frame
-    # cv2.imshow('Tennis Ball Tracking', cv2.resize(frame, None, fx=0.5, fy=0.5))
-    # cv2.imshow('Mask', cv2.resize(mask, None, fx=0.5, fy=0.5))
+    # Display the frame
+    cv2.imshow('Tennis Ball Tracking', cv2.resize(frame, None, fx=0.5, fy=0.5))
+    cv2.imshow('Mask', cv2.resize(mask, None, fx=0.5, fy=0.5))
 
-    # # Press 'q' to exit
-    # if cv2.waitKey(30) & 0xFF == ord('q'):
-    #     break
+    # Press 'q' to exit
+    if cv2.waitKey(30) & 0xFF == ord('q'):
+        break
     
     frame_index += 1
 

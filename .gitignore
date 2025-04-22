@@ -8,6 +8,7 @@
 *.mp4
 *.exe
 *.venv
+*.json
 
 outputs/
 venv/

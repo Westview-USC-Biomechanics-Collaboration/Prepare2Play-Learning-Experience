@@ -61,10 +61,6 @@ class DisplayApp:
         self.master.geometry("1320x1080")
         self.master.lift()
 
-
-        # Bind the resize event of the master window
-        self.master.bind('<Configure>', self.center_canvas)
-
         # Determine the correct path based on whether the app is running as an exe or not
         if getattr(sys, 'frozen', False):
             # If running from the packaged executable
@@ -96,97 +92,89 @@ class DisplayApp:
         # Adjust the canvas size to fit the image
         self.background.config(width=bg_image.width(), height=bg_image.height())
 
-        # Create a main canvas for content, centered within the background canvas
-        self.main_canvas = Canvas(self.background, width=800, height=600, bg="lightgrey")
-        self.main_canvas.place(relx=0.5, rely=0.5, anchor="center")
-
         # Row 0: Create three canvases for display
-        self.canvas1 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
-        self.canvas1.grid(row=0, column=0, padx=20, pady=20)
+        self.canvas1 = Canvas(self.master, width=400, height=300, bg="lightgrey")
         self.canvasID_1 = None
         # Bind mouse events for zoom and drag
         self.canvas1.bind("<ButtonPress-1>", lambda event:self._on_drag(event,canvas=1))
         self.canvas1.bind("<B1-Motion>", lambda event:self._on_drag(event,canvas=1))
         self.canvas1.bind("<ButtonRelease-1>", lambda event:self._on_drag(event,canvas=1))
         self.canvas1.bind("<MouseWheel>", lambda event:self._on_zoom(event,canvas=1))
+        self.canvas1.bind("<Button-4>", lambda event:self._on_zoom_linux(event, canvas=1))  # Linux scroll up
+        self.canvas1.bind("<Button-5>", lambda event:self._on_zoom_linux(event, canvas=1))  # Linux scroll down
 
-        self.canvas2 = Canvas(self.main_canvas, width=400, height=300, bg="lightgrey")
-        self.canvas2.grid(row=0, column=1, padx=20, pady=20)
 
-        self.canvas3 = Canvas(self.main_canvas, width=400, height=300,bg="lightgrey")
+        self.canvas2 = Canvas(self.master, width=400, height=300, bg="lightgrey")
+        self.canvas3 = Canvas(self.master, width=400, height=300,bg="lightgrey")
         self.canvas3.bind("<ButtonPress-1>", lambda event:self._on_drag(event,canvas=3))
         self.canvas3.bind("<B1-Motion>", lambda event:self._on_drag(event,canvas=3))
         self.canvas3.bind("<ButtonRelease-1>", lambda event:self._on_drag(event,canvas=3))
         self.canvas3.bind("<MouseWheel>", lambda event:self._on_zoom(event,canvas=3))
-        # self.canvas3.create_bitmap(100,100,bitmap="error") # just good to know that there is a bitmap thing
-        self.canvas3.grid(row=0, column=2, padx=20, pady=20)
-
+        self.canvas3.bind("<Button-4>", lambda event:self._on_zoom_linux(event, canvas=3))
+        self.canvas3.bind("<Button-5>", lambda event:self._on_zoom_linux(event, canvas=3))
+        
+        self.background.create_window(200, 150, window=self.canvas1)  # Place canvas on the background
+        self.background.create_window(650,150,window=self.canvas2)
+        self.background.create_window(1100,150,window=self.canvas3)
+        
         # Row 1: Buttons for alignment and graph options
-        self.align_button = tk.Button(self.main_canvas, text="Align", command=self.align)
-        self.align_button.grid(row=1, column=0, padx=20, pady=10, sticky='ew')
-
-        self.graph_option = tk.Button(self.main_canvas, text="Graphing Options", command=self.graph)
-        self.graph_option.grid(row=1, column=2, padx=20, pady=10, sticky='ew')
-
+        self.align_button = tk.Button(self.master, text="Align", command=self.align)
+        self.graph_option = tk.Button(self.master, text="Graphing Options", command=self.graph)
+        
+        self.background.create_window(200,350,window=self.align_button)
+        self.background.create_window(650,330,window=self.graph_option)
         # Row 2: Slider to adjust values
-        self.slider = Scale(self.main_canvas, from_=0, to=100, orient="horizontal", label="pick frame", command=self.update_slider_value)
-        self.slider.grid(row=2, column=1, pady=10, sticky='ew')
+        self.slider = Scale(self.master, from_=0, to=100, orient="horizontal", label="pick frame", command=self.update_slider_value)
 
-        self.adjustR = tk.Frame(self.main_canvas,bg = "lightgray")
-        self.step_forward = tk.Button(self.adjustR, text="+1frame",command=lambda: self.stepF(1))
-        self.step_forward.grid(row=0,column=0,padx=20)
-        self.rotateR = tk.Button(self.adjustR, text="Rotate clockwise",command=lambda: self.rotateCam(1))
-        self.rotateR.grid(row=0,column=1,padx=20)
-        self.adjustR.grid(row=2, column=2, pady=10, sticky='ew')
+        self.step_forward = tk.Button(self.master, text="+1frame",command=lambda: self.stepF(1))
+        self.rotateR = tk.Button(self.master, text="Rotate clockwise",command=lambda: self.rotateCam(1))
 
+        self.step_backward = tk.Button(self.master, text="-1frame", command=lambda: self.stepF(-1))
+        self.rotateL = tk.Button(self.master, text="Rotate counterclockwise",command=lambda: self.rotateCam(-1))
 
-        self.adjustL = tk.Frame(self.main_canvas,bg="lightgray")
-        self.step_backward = tk.Button(self.adjustL, text="-1frame", command=lambda: self.stepF(-1))
-        self.step_backward.grid(row=0,column=1,padx=20)
-        self.rotateL = tk.Button(self.adjustL, text="Rotate counterclockwise",command=lambda: self.rotateCam(-1))
-        self.rotateL.grid(row=0,column=0,padx=20)
-        self.adjustL.grid(row=2, column=0, padx=20, pady=10, sticky='ew')
+        self.background.create_window(700,450,window=self.slider,width=900)
+        self.background.create_window(150,450,window=self.step_backward)
+        self.background.create_window(1250,450,window=self.step_forward)
+        self.background.create_window(70,280,window=self.rotateR)
+        self.background.create_window(250,280,window=self.rotateL)
 
-        # Row 3: Label to display slider value
-        self.slider_value_label = Label(self.main_canvas, text="Slider Value: 0")
-        self.slider_value_label.grid(row=3, column=0, columnspan=3, padx=20, pady=10, sticky='ew')
 
         # Row 4: Upload buttons for video and force data
-        self.upload_video_button = tk.Button(self.main_canvas, text="Upload Video", command=self.upload_video)
-        self.upload_video_button.grid(row=4, column=0, padx=20, pady=10, sticky='ew')
+        self.upload_video_button = tk.Button(self.master, text="Upload Video", command=self.upload_video)
 
-        self.upload_force_button = tk.Button(self.main_canvas, text="Upload Force File", command=self.upload_force_data)
-        self.upload_force_button.grid(row=4, column=1, padx=20, pady=10, sticky='ew')
+        self.upload_force_button = tk.Button(self.master, text="Upload Force File", command=self.upload_force_data)
 
-        self.show_vector_overlay = tk.Button(self.main_canvas, text="Vector Overlay", command=self.vector_overlay)
-        self.show_vector_overlay.grid(row=4, column=2, padx=20, pady=10, sticky='ew')
+        self.show_vector_overlay = tk.Button(self.master, text="Vector Overlay", command=self.vector_overlay)
+
+        self.background.create_window(100,500,window=self.upload_video_button)
+        self.background.create_window(300,500,window=self.upload_force_button)
+        self.background.create_window(500,500,window=self.show_vector_overlay)
 
         # Row 5: Label buttons for video and force labeling
-        self.video_button = tk.Button(self.main_canvas, text="Label Video", command=self.label_video)
-        self.video_button.grid(row=5, column=0, padx=20, pady=10, sticky='ew')
+        self.video_button = tk.Button(self.master, text="Label Video", command=self.label_video)
 
-        self.force_button = tk.Button(self.main_canvas, text="Label Force", command=self.label_force)
-        self.force_button.grid(row=5, column=1, padx=20, pady=10, sticky='ew')
+        self.force_button = tk.Button(self.master, text="Label Force", command=self.label_force)
 
-        self.save_button = tk.Button(self.main_canvas, text="Save", command=self.save)
-        self.save_button.grid(row=5, column=2, padx=20, pady=10, sticky='ew')
+        self.save_button = tk.Button(self.master, text="Save", command=self.save)
+
+        self.background.create_window(100,600,window=self.video_button)
+        self.background.create_window(300,600,window=self.force_button)
+        self.background.create_window(500,600,window=self.save_button)
 
         # Row 6: Force timeline label
-        self.force_timeline_label = Label(self.main_canvas, text="Force Timeline (unit = frame)")
-        self.force_timeline_label.grid(row=6, column=0, columnspan=3, padx=20, pady=10, sticky='ew')
+        self.force_timeline_label = Label(self.master, text="Force Timeline (unit = frame)")
+        self.background.create_window(300,650,window=self.force_timeline_label)
 
         # Row 7: Force timeline canvas
-        self.force_timeline = Canvas(self.main_canvas, width=1080, height=75, bg="lightblue")
-        self.force_timeline.grid(row=7, column=0, columnspan=3, padx=20, pady=10, sticky='ew')
-
+        self.force_timeline = Canvas(self.master, width=1080, height=75, bg="lightblue")
+        self.background.create_window(700,700,window=self.force_timeline)
+        
         # Row 8: Video timeline label
-        self.video_timeline_label = Label(self.main_canvas, text="Video Timeline (unit = frame)")
-        self.video_timeline_label.grid(row=8, column=0, columnspan=3, padx=20, pady=10, sticky='ew')
-
+        self.video_timeline_label = Label(self.master, text="Video Timeline (unit = frame)")
+        self.background.create_window(300,750,window=self.video_timeline_label)
         # Row 9: Video timeline canvas
-        self.video_timeline = Canvas(self.main_canvas, width=1080, height=75, bg="lightblue")
-        self.video_timeline.grid(row=9, column=0, columnspan=3, padx=20, pady=10, sticky='ew')
-
+        self.video_timeline = Canvas(self.master, width=1080, height=75, bg="lightblue")
+        self.background.create_window(700,800,window=self.video_timeline)        
         # Placeholders for images
         self.photo_image1 = None  # Placeholder for image object for canvas1
         self.photo_image2 = None  # Placeholder for image object for canvas2
@@ -248,8 +236,6 @@ class DisplayApp:
         # Global frame/location base on slider
         self.loc = 0
 
-    def center_canvas(self, event=None):
-        self.main_canvas.place(x=0, y=0,anchor="center")
 
     def _on_zoom(self,event,canvas):
         if (canvas == 1):
@@ -527,7 +513,6 @@ class DisplayApp:
 
         # Update the label with the current slider value
         self.loc = self.slider.get()
-        self.slider_value_label.config(text=f"Slider Value: {value}")
 
         # Things that need to be updated when the slider value changes
 
@@ -586,28 +571,8 @@ class DisplayApp:
             self.loc-=1
         self.slider.set(self.loc)
 
-
     def upload_video(self):
-        # Open a file dialog for video files
-        view_popup = tk.Toplevel(self.master)
-        view_popup.title("Select View")
-
-        # Create radio buttons for view options
-        tk.Radiobutton(view_popup, text="Long View", variable=self.selected_view, value="Long View").pack(anchor=tk.W)
-        tk.Radiobutton(view_popup, text="Top View", variable=self.selected_view, value="Top View").pack(anchor=tk.W)
-        tk.Radiobutton(view_popup, text="Short View", variable=self.selected_view, value="Short View").pack(anchor=tk.W)
-
-        # Create a button to confirm the selection
-        confirm_button = tk.Button(view_popup, text="Confirm", command=lambda: self._upload_video_with_view(view_popup))
-        confirm_button.pack(pady=10)
-
-        # Block the main window until the popup is closed
-        self.master.wait_window(view_popup)
-
-        Video.path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
-        if Video.path:
-
-
+        def openVideo():
             print(f"Video uploaded: {Video.path}")
             # display video
             self._openVideo(Video.path)
@@ -641,10 +606,35 @@ class DisplayApp:
             print(f"fps: {Video.fps}")
             print(f"total frames: {Video.total_frames}")
 
+        # Open a file dialog for video files
+        view_popup = tk.Toplevel(self.master)
+        view_popup.title("Select View")
 
+        # Create radio buttons for view options
+        tk.Radiobutton(view_popup, text="Long View", variable=self.selected_view, value="Long View").pack(anchor=tk.W)
+        tk.Radiobutton(view_popup, text="Top View", variable=self.selected_view, value="Top View").pack(anchor=tk.W)
+        tk.Radiobutton(view_popup, text="Short View", variable=self.selected_view, value="Short View").pack(anchor=tk.W)
 
+        # Create a button to confirm the selection
+        confirm_button = tk.Button(view_popup, text="Confirm", command=lambda: self._upload_video_with_view(view_popup))
+        confirm_button.pack(pady=10)
+
+        # Block the main window until the popup is closed
+        self.master.wait_window(view_popup)
+
+        Video.path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
+        
+        if Video.path:
+            openVideoThread = threading.Thread(target=openVideo)
+            openVideoThread.daemon = True
+            openVideoThread.start()
 
     def upload_force_data(self):
+        uploadForceThread = threading.Thread(target=self.upload_force_data_thread)
+        uploadForceThread.daemon = True
+        uploadForceThread.start()
+
+    def upload_force_data_thread(self):
         def rename_duplicates(lst):
             counts = {}
             new_list = []
@@ -1121,7 +1111,7 @@ class DisplayApp:
 
     def graph(self):
         # Create a new popup window
-        popup = tk.Toplevel(self.main_canvas)
+        popup = tk.Toplevel(self.master)
         popup.title("Force Plate Selection")
         popup.geometry("300x250")
 
