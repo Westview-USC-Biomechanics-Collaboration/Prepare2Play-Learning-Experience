@@ -251,6 +251,10 @@ class DisplayApp:
 
         # lock for multi threading
         self.lock = threading.Lock()
+        self.openVideoThread = threading.Thread(target=self.openVideo)
+        self.openVideoThread.daemon = True        
+        self.uploadForceThread = threading.Thread(target=self.upload_force_data_thread)
+        self.uploadForceThread.daemon = True        
         # Global frame/location base on slider
         self.loc = 0
 
@@ -536,7 +540,7 @@ class DisplayApp:
 
         # Things that need to be updated when the slider value changes
 
-        if Video.cam:
+        if Video.cam is not None and not self.openVideoThread.is_alive():
             # draw video canvas
             Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
             self.photo_image1 = self._display_frame(camera=Video.cam, width=round(Video.frame_width * self.zoom_factor1),
@@ -544,7 +548,7 @@ class DisplayApp:
             self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
             # update video timeline
             self._update_video_timeline()
-        if type(Video.vector_cam) is not tuple:
+        if type(Video.vector_cam) is not tuple and not self.openVideoThread.is_alive():
             print(Video.vector_cam)
             # draw vector overlay canvas
             Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
@@ -562,7 +566,7 @@ class DisplayApp:
             self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
 
 
-        if Force.rows is not None:  # somehow self.force_data is not None doesn't work, using Force.rows as compensation
+        if Force.rows is not None and not self.uploadForceThread.is_alive():  # somehow self.force_data is not None doesn't work, using Force.rows as compensation
             # draw graph canvas
             # normalized_position = int(value) / (self.slider['to'])
             # x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
@@ -591,41 +595,42 @@ class DisplayApp:
             self.loc-=1
         self.slider.set(self.loc)
 
+    def openVideo(self):
+        print(f"Video uploaded: {Video.path}")
+        # display video
+        self._openVideo(Video.path)
+
+        # auto detect
+        auto_index = ballDropDetect(Video.cam)
+
+        # Initialize video timeline
+        self.timeline2 = timeline(0,1)
+        videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc))
+        # Resize the image to fit the canvas size
+        canvas_width = self.video_timeline.winfo_width()  # Get the width of the canvas
+        canvas_height = self.video_timeline.winfo_height()  # Get the height of the canvas
+
+        # Resize the image to match the canvas size using the new resampling method
+        videoTimeline = videoTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
+        self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)   # create image object that canvas object accept
+        self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
+
+        # set step size
+        self.step_size = int(600 / Video.cam.get(cv2.CAP_PROP_FPS))  # this assume iphone takes less frame than camera
+        self.step_size = 10  # assuming iphone has the same amount of frames but just replay slower.
+
+        # label the auto deteciton
+        print(f"[DEBUG] index for collision is: {auto_index}")
+        with self.lock:
+            self.loc = auto_index
+            self.label_video(pos=auto_index)
+
+        # print information
+        print(f"step size: {self.step_size}")
+        print(f"fps: {Video.fps}")
+        print(f"total frames: {Video.total_frames}")
+
     def upload_video(self):
-        def openVideo():
-            print(f"Video uploaded: {Video.path}")
-            # display video
-            self._openVideo(Video.path)
-
-            # auto detect
-            auto_index = ballDropDetect(Video.cam)
-
-            # Initialize video timeline
-            self.timeline2 = timeline(0,1)
-            videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc))
-            # Resize the image to fit the canvas size
-            canvas_width = self.video_timeline.winfo_width()  # Get the width of the canvas
-            canvas_height = self.video_timeline.winfo_height()  # Get the height of the canvas
-
-            # Resize the image to match the canvas size using the new resampling method
-            videoTimeline = videoTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
-            self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)   # create image object that canvas object accept
-            self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
-
-            # set step size
-            self.step_size = int(600 / Video.cam.get(cv2.CAP_PROP_FPS))  # this assume iphone takes less frame than camera
-            self.step_size = 10  # assuming iphone has the same amount of frames but just replay slower.
-
-            # label the auto deteciton
-            print(f"[DEBUG] index for collision is: {auto_index}")
-            with self.lock:
-                self.loc = auto_index
-                self.label_video(pos=auto_index)
-
-            # print information
-            print(f"step size: {self.step_size}")
-            print(f"fps: {Video.fps}")
-            print(f"total frames: {Video.total_frames}")
 
         # Open a file dialog for video files
         view_popup = tk.Toplevel(self.master)
@@ -646,14 +651,11 @@ class DisplayApp:
         Video.path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
         
         if Video.path:
-            openVideoThread = threading.Thread(target=openVideo)
-            openVideoThread.daemon = True
-            openVideoThread.start()
+            
+            self.openVideoThread.start()
 
     def upload_force_data(self):
-        uploadForceThread = threading.Thread(target=self.upload_force_data_thread)
-        uploadForceThread.daemon = True
-        uploadForceThread.start()
+        self.uploadForceThread.start()
 
     def upload_force_data_thread(self):
         def rename_duplicates(lst):
