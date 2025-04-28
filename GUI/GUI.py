@@ -249,8 +249,11 @@ class DisplayApp:
         self.save_start = None             # Start frame
         self.save_end = None               # End frame
 
+        # lock for multi threading
+        self.lock = threading.Lock()
         # Global frame/location base on slider
         self.loc = 0
+
 
 
     def _on_zoom(self,event,canvas):
@@ -528,7 +531,8 @@ class DisplayApp:
     def update_slider_value(self, value):
 
         # Update the label with the current slider value
-        self.loc = self.slider.get()
+        with self.lock:
+            self.loc = self.slider.get()
 
         # Things that need to be updated when the slider value changes
 
@@ -614,8 +618,9 @@ class DisplayApp:
 
             # label the auto deteciton
             print(f"[DEBUG] index for collision is: {auto_index}")
-            self.loc = auto_index
-            self.label_video()
+            with self.lock:
+                self.loc = auto_index
+                self.label_video(pos=auto_index)
 
             # print information
             print(f"step size: {self.step_size}")
@@ -730,8 +735,8 @@ class DisplayApp:
         print(f"[DEBUG] target frame: {targetFrame}")
 
         # update timeline
-        self.loc = targetFrame
-        self.label_force()
+        with self.lock:
+            self.label_force(pos=targetFrame)
 
 
 
@@ -741,7 +746,9 @@ class DisplayApp:
         """
         self.rot += 90*dir
         name = Video.path.split("/")[-1][:-4]
-        self.loc = 0
+        with self.lock:
+            self.loc = 0
+            
         if not Video.cam.isOpened():
             print("Error: Could not open camera.")
             return
@@ -1115,14 +1122,14 @@ class DisplayApp:
             Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
             self.photo_image3 = self._display_frame(camera=Video.cam)
 
-    def label_force(self):  # ---> executed when user click label force
-        self.force_align = self.loc
-        self.timeline1.update_label(self.loc/self.slider['to'])
+    def label_force(self,pos):  # ---> executed when user click label force
+        self.force_align = pos
+        self.timeline1.update_label(pos/self.slider['to'])
         self._update_force_timeline()
 
-    def label_video(self):  # ---> executed when user click label video
-        self.video_align = self.loc
-        self.timeline2.update_label(self.loc/self.slider['to'])
+    def label_video(self,pos):  # ---> executed when user click label video
+        self.video_align = pos
+        self.timeline2.update_label(pos/self.slider['to'])
         self._update_video_timeline()
 
     def graph(self):
