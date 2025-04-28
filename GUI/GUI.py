@@ -37,6 +37,21 @@ class Force:
     data: pd.array = None,
     rows: int = None,
     
+def layoutHelper(num:int, orientation:str) ->int:
+    """
+    Args: num means the location out of 12
+    Output: the pixel location of the center
+    """
+    width = 1320
+    height =  1080
+
+    if orientation=="vertical":
+        return int(height * num / 12)
+    elif orientation=="horizontal":
+        return int(width * num / 12)
+    else:
+        return None
+
 class DisplayApp:
     def __init__(self, master):
         self.master = master
@@ -92,8 +107,9 @@ class DisplayApp:
         # Adjust the canvas size to fit the image
         self.background.config(width=bg_image.width(), height=bg_image.height())
 
+        canvas_width = 400
         # Row 0: Create three canvases for display
-        self.canvas1 = Canvas(self.master, width=400, height=300, bg="lightgrey")
+        self.canvas1 = Canvas(self.master, width=canvas_width, height=300, bg="lightgrey")
         self.canvasID_1 = None
         # Bind mouse events for zoom and drag
         self.canvas1.bind("<ButtonPress-1>", lambda event:self._on_drag(event,canvas=1))
@@ -104,8 +120,8 @@ class DisplayApp:
         self.canvas1.bind("<Button-5>", lambda event:self._on_zoom_linux(event, canvas=1))  # Linux scroll down
 
 
-        self.canvas2 = Canvas(self.master, width=400, height=300, bg="lightgrey")
-        self.canvas3 = Canvas(self.master, width=400, height=300,bg="lightgrey")
+        self.canvas2 = Canvas(self.master, width=canvas_width, height=300, bg="lightgrey")
+        self.canvas3 = Canvas(self.master, width=canvas_width, height=300,bg="lightgrey")
         self.canvas3.bind("<ButtonPress-1>", lambda event:self._on_drag(event,canvas=3))
         self.canvas3.bind("<B1-Motion>", lambda event:self._on_drag(event,canvas=3))
         self.canvas3.bind("<ButtonRelease-1>", lambda event:self._on_drag(event,canvas=3))
@@ -113,16 +129,16 @@ class DisplayApp:
         self.canvas3.bind("<Button-4>", lambda event:self._on_zoom_linux(event, canvas=3))
         self.canvas3.bind("<Button-5>", lambda event:self._on_zoom_linux(event, canvas=3))
         
-        self.background.create_window(200, 150, window=self.canvas1)  # Place canvas on the background
-        self.background.create_window(650,150,window=self.canvas2)
-        self.background.create_window(1100,150,window=self.canvas3)
+        self.background.create_window(layoutHelper(2,"horizontal"), layoutHelper(2,"vertical"), window=self.canvas1)  # Place canvas on the background
+        self.background.create_window(layoutHelper(6,"horizontal"), layoutHelper(2,"vertical"),window=self.canvas2)
+        self.background.create_window(layoutHelper(10,"horizontal"),layoutHelper(2,"vertical"),window=self.canvas3)
         
         # Row 1: Buttons for alignment and graph options
         self.align_button = tk.Button(self.master, text="Align", command=self.align)
         self.graph_option = tk.Button(self.master, text="Graphing Options", command=self.graph)
         
-        self.background.create_window(200,350,window=self.align_button)
-        self.background.create_window(650,330,window=self.graph_option)
+        self.background.create_window(100,750,window=self.align_button) # you can use width argument
+        self.background.create_window(650,350,window=self.graph_option)
         # Row 2: Slider to adjust values
         self.slider = Scale(self.master, from_=0, to=100, orient="horizontal", label="pick frame", command=self.update_slider_value)
 
@@ -135,8 +151,8 @@ class DisplayApp:
         self.background.create_window(700,450,window=self.slider,width=900)
         self.background.create_window(150,450,window=self.step_backward)
         self.background.create_window(1250,450,window=self.step_forward)
-        self.background.create_window(70,280,window=self.rotateR)
-        self.background.create_window(250,280,window=self.rotateL)
+        self.background.create_window(100,350,window=self.rotateR)
+        self.background.create_window(280,350,window=self.rotateL)
 
 
         # Row 4: Upload buttons for video and force data
@@ -146,9 +162,9 @@ class DisplayApp:
 
         self.show_vector_overlay = tk.Button(self.master, text="Vector Overlay", command=self.vector_overlay)
 
-        self.background.create_window(100,500,window=self.upload_video_button)
-        self.background.create_window(300,500,window=self.upload_force_button)
-        self.background.create_window(500,500,window=self.show_vector_overlay)
+        self.background.create_window(layoutHelper(3,"horizontal"),525,window=self.upload_video_button)
+        self.background.create_window(layoutHelper(6,"horizontal"),525,window=self.upload_force_button)
+        self.background.create_window(layoutHelper(9,"horizontal"),525,window=self.show_vector_overlay)
 
         # Row 5: Label buttons for video and force labeling
         self.video_button = tk.Button(self.master, text="Label Video", command=self.label_video)
@@ -157,9 +173,9 @@ class DisplayApp:
 
         self.save_button = tk.Button(self.master, text="Save", command=self.save)
 
-        self.background.create_window(100,600,window=self.video_button)
-        self.background.create_window(300,600,window=self.force_button)
-        self.background.create_window(500,600,window=self.save_button)
+        self.background.create_window(layoutHelper(3,"horizontal"),575,window=self.video_button)
+        self.background.create_window(layoutHelper(6,"horizontal"),575,window=self.force_button)
+        self.background.create_window(layoutHelper(9,"horizontal"),575,window=self.save_button)
 
         # Row 6: Force timeline label
         self.force_timeline_label = Label(self.master, text="Force Timeline (unit = frame)")
