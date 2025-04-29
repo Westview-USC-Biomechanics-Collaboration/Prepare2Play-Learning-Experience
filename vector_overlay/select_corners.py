@@ -1,5 +1,4 @@
 import cv2
-import ctypes
 
 # Globals for cursor position
 cursor_x, cursor_y = 0, 0
@@ -27,19 +26,6 @@ def get_zoomed_region(image, x, y, zoom_size=50, zoom_factor=2):
     return zoomed_region
 
 def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
-    # Load user32 library for DPI scaling (Windows 10+)
-    user32 = ctypes.windll.user32
-    ctypes.windll.user32.SetProcessDPIAware()
-    user32.GetDpiForSystem.restype = ctypes.c_uint
-
-    # Get system DPI
-    try:
-        dpi = round(user32.GetDpiForSystem() / 96.0, 2)
-    except:
-        print("Using default scale factor dpi=1.50")
-        dpi = 1.5
-    print(f"# Assuming 1.00 is 96 dpi\nCurrent system dpi is {dpi}")
-
     # Check if video opened successfully
     if not cap.isOpened():
         print("Error: Could not open video.")
@@ -51,9 +37,8 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
         print("Error: Could not read the frame.")
         return
 
-    # Resize based on DPI
-    height, width, _ = frame.shape
-    frame = cv2.resize(frame, (int(width / dpi), int(height / dpi)))
+    # Resize the frame by a scale of 0.5
+    frame = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
 
     # List to store the points
     points = []
@@ -63,7 +48,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
         global cursor_x, cursor_y
         if event == cv2.EVENT_LBUTTONDOWN:
             # Capture clicked points
-            points.append([int(x * dpi), int(y * dpi)])
+            points.append([int(x * 2), int(y * 2)])  # Scale back to original size
             cv2.circle(frame, (x, y), 5, (0, 0, 255), -1)
             cv2.imshow('Main Window', frame)
 
@@ -95,7 +80,6 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
         cv2.imshow('Zoom Window', zoomed)
         cv2.moveWindow('Zoom Window', cursor_x + 200, cursor_y - 100)
 
-        #print(cursor_x,cursor_y)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
@@ -108,5 +92,5 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     return points
 
 if __name__ == "__main__":
-    cap = cv2.VideoCapture(r"C:\Users\16199\Downloads\test0721.mp4")
+    cap = cv2.VideoCapture("/home/chaser/Videos/test_video.mp4")
     select_points(cap, num_points=8)
