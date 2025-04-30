@@ -253,11 +253,7 @@ class DisplayApp:
         self.save_end = None               # End frame
 
         # lock for multi threading
-        self.lock = threading.Lock()
-        self.openVideoThread = threading.Thread(target=self.openVideo)
-        self.openVideoThread.daemon = True        
-        self.uploadForceThread = threading.Thread(target=self.upload_force_data_thread)
-        self.uploadForceThread.daemon = True        
+        self.lock = threading.Lock()     
         # Global frame/location base on slider
         self.loc = 0
 
@@ -538,12 +534,11 @@ class DisplayApp:
     def update_slider_value(self, value):
 
         # Update the label with the current slider value
-        with self.lock:
-            self.loc = self.slider.get()
+        self.loc = self.slider.get()
 
         # Things that need to be updated when the slider value changes
 
-        if Video.cam is not None and not self.openVideoThread.is_alive():
+        if Video.cam is not None:
             # draw video canvas
             Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
             self.photo_image1 = self._display_frame(camera=Video.cam, width=round(Video.frame_width * self.zoom_factor1),
@@ -551,7 +546,7 @@ class DisplayApp:
             self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
             # update video timeline
             self._update_video_timeline()
-        if type(Video.vector_cam) is not tuple and not self.openVideoThread.is_alive():
+        if type(Video.vector_cam) is not tuple:
             print(Video.vector_cam)
             # draw vector overlay canvas
             Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
@@ -569,7 +564,7 @@ class DisplayApp:
             self.save_view_canvas.create_image(0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame_image")
 
 
-        if Force.rows is not None and not self.uploadForceThread.is_alive():  # somehow self.force_data is not None doesn't work, using Force.rows as compensation
+        if Force.rows is not None:  # somehow self.force_data is not None doesn't work, using Force.rows as compensation
             # draw graph canvas
             # normalized_position = int(value) / (self.slider['to'])
             # x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
@@ -624,9 +619,8 @@ class DisplayApp:
 
         # label the auto deteciton
         print(f"[DEBUG] index for collision is: {auto_index}")
-        with self.lock:
-            self.loc = auto_index
-            self.label_video(pos=auto_index)
+        self.loc = auto_index
+        self.label_video()
 
         # print information
         print(f"step size: {self.step_size}")
@@ -654,11 +648,12 @@ class DisplayApp:
         Video.path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
         
         if Video.path:
-            
-            self.openVideoThread.start()
+            uploadVideoThread = threading.Thread(target=self.openVideo, daemon=True)
+            uploadVideoThread.start()
 
     def upload_force_data(self):
-        self.uploadForceThread.start()
+        uploadForceThread = threading.Thread(target=self.upload_force_data_thread, daemon=True)
+        uploadForceThread.start()
 
     def upload_force_data_thread(self):
         def rename_duplicates(lst):
@@ -740,8 +735,8 @@ class DisplayApp:
         print(f"[DEBUG] target frame: {targetFrame}")
 
         # update timeline
-        with self.lock:
-            self.label_force(pos=targetFrame)
+        self.loc = targetFrame
+        self.label_force()
 
 
 
@@ -751,8 +746,8 @@ class DisplayApp:
         """
         self.rot += 90*dir
         name = Video.path.split("/")[-1][:-4]
-        with self.lock:
-            self.loc = 0
+
+        self.loc = 0
             
         if not Video.cam.isOpened():
             print("Error: Could not open camera.")
@@ -1127,14 +1122,15 @@ class DisplayApp:
             Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
             self.photo_image3 = self._display_frame(camera=Video.cam)
 
-    def label_force(self,pos):  # ---> executed when user click label force
-        self.force_align = pos
-        self.timeline1.update_label(pos/self.slider['to'])
+    def label_force(self):  # ---> executed when user click label force
+        self.force_align = self.loc
+        self.timeline1.update_label(self.force_align/self.slider['to'])
         self._update_force_timeline()
 
-    def label_video(self,pos):  # ---> executed when user click label video
-        self.video_align = pos
-        self.timeline2.update_label(pos/self.slider['to'])
+    def label_video(self):  # ---> executed when user click label video
+
+        self.video_align = self.loc
+        self.timeline2.update_label(self.video_align/self.slider['to'])
         self._update_video_timeline()
 
     def graph(self):
