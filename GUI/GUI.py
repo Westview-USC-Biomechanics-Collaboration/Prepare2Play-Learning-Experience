@@ -65,7 +65,7 @@ class DisplayApp:
         direction = (
             "This is the prototype syncing app. Please follow the directions given, otherwise it won't work.\n"
             "REQUIREMENT:\n"
-            "a)force is recorded before video recording(force label greater than video label)"
+            "a force is recorded before video recording(force label greater than video label)"
             "\n\n"
             "Step 1: upload video\n"
             "Step 2: upload force data\n"
