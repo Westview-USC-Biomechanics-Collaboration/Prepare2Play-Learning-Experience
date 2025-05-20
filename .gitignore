@@ -9,8 +9,10 @@
 *.exe
 *.venv
 *.json
+*.spec
 
 outputs/
 venv/
 data/
-*.spec
+pycache/
+

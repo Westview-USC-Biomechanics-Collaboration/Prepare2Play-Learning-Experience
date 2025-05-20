@@ -182,7 +182,7 @@ class DisplayApp:
         self.background.create_window(layoutHelper(9,"horizontal"),575,window=self.save_button)
 
         # Row 6: Force timeline label
-        self.force_timeline_label = Label(self.master, text="Force Timeline (unit = frame)")
+        self.force_timeline_label = Label(self.master, text="Force Timeline (label = frame)")
         self.background.create_window(300,650,window=self.force_timeline_label)
 
         # Row 7: Force timeline canvas
@@ -190,11 +190,16 @@ class DisplayApp:
         self.background.create_window(700,700,window=self.force_timeline)
         
         # Row 8: Video timeline label
-        self.video_timeline_label = Label(self.master, text="Video Timeline (unit = frame)")
+        self.video_timeline_label = Label(self.master, text="Video Timeline (label = frame)")
         self.background.create_window(300,750,window=self.video_timeline_label)
         # Row 9: Video timeline canvas
         self.video_timeline = Canvas(self.master, width=1080, height=75, bg="lightblue")
-        self.background.create_window(700,800,window=self.video_timeline)        
+        self.background.create_window(700,800,window=self.video_timeline) 
+
+        # Row 10: COM
+        self.COM_button = tk.Button(self.master, text="COM", command=lambda: print("COM pressed"))
+        self.background.create_window(100,800,window=self.COM_button)
+
         # Placeholders for images
         self.photo_image1 = None  # Placeholder for image object for canvas1
         self.photo_image2 = None  # Placeholder for image object for canvas2
@@ -535,7 +540,16 @@ class DisplayApp:
     """
     Slider
     """
+
     def update_slider_value(self, value):
+        # Update the slider value
+        self.slider.set(value)
+
+        # Schedule the GUI update on the main thread
+        self.master.after(0, lambda: self.__update_slider_value(value))
+
+
+    def __update_slider_value(self, value):
 
         # Update the label with the current slider value
         self.loc = self.slider.get()
@@ -599,36 +613,38 @@ class DisplayApp:
 
     def openVideo(self):
         print(f"Video uploaded: {Video.path}")
-        # display video
         self._openVideo(Video.path)
 
-        # auto detect
-        auto_index = ballDropDetect(Video.cam)
-
-        # Initialize video timeline
-        self.timeline2 = timeline(0,1)
+        # Init timeline and UI elements first to give immediate feedback
+        self.timeline2 = timeline(0, 1)
         videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc))
-        # Resize the image to fit the canvas size
-        canvas_width = self.video_timeline.winfo_width()  # Get the width of the canvas
-        canvas_height = self.video_timeline.winfo_height()  # Get the height of the canvas
-
-        # Resize the image to match the canvas size using the new resampling method
+        canvas_width = self.video_timeline.winfo_width()
+        canvas_height = self.video_timeline.winfo_height()
         videoTimeline = videoTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
-        self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)   # create image object that canvas object accept
+        self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
         self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
-        # set step size
-        self.step_size = int(600 / Video.cam.get(cv2.CAP_PROP_FPS))  # this assume iphone takes less frame than camera
-        self.step_size = 10  # assuming iphone has the same amount of frames but just replay slower.
+        # Step size calculation
+        self.step_size = 10  # constant override
+        if self.timeline1 is not None:
+            self.timeline1.update_start_end(0, self.force_frame / self.slider['to'])
 
-        # update the force timeline if having a different step size
-        # TODO update force timeline
-        # label the auto deteciton
-        print(f"[DEBUG] index for collision is: {auto_index}")
-        self.loc = auto_index
-        self.label_video()
+        # ✅ Offload ballDropDetect to a thread
+        def detect_and_finalize():
+            print("[INFO] Detecting ball drop...")
+            copyCam = Video.cam.copy()
+            copyCam.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            auto_index = ballDropDetect(copyCam)
+            # release memory
+            copyCam.release()
+            del copyCam
+            self.loc = auto_index
+            print(f"[DEBUG] index for collision is: {auto_index}")
+            self.master.after(0, self.label_video)
 
-        # print information
+        threading.Thread(target=detect_and_finalize, daemon=True).start()
+
+        # Print metadata info early
         print(f"step size: {self.step_size}")
         print(f"fps: {Video.fps}")
         print(f"total frames: {Video.total_frames}")
@@ -658,7 +674,12 @@ class DisplayApp:
             uploadVideoThread.start()
 
     def upload_force_data(self):
-        uploadForceThread = threading.Thread(target=self.upload_force_data_thread, daemon=True)
+        def thread_target():
+            self.upload_force_data_thread()  # do the actual loading
+            # Once the thread is done, call _plot_force_data from the main thread
+            self.master.after(0, self._plot_force_data)
+
+        uploadForceThread = threading.Thread(target=thread_target, daemon=True)
         uploadForceThread.start()
 
     def upload_force_data_thread(self):
@@ -690,7 +711,7 @@ class DisplayApp:
         print(f"step size: {self.step_size}")
         self.force_frame = int(Force.rows/self.step_size)  # represent num of frames force data can cover
 
-        self._plot_force_data()
+        # self._plot_force_data()
 
         # Initialize force timeline
         print(f"force frame: {self.force_frame}")
@@ -1027,7 +1048,6 @@ class DisplayApp:
                 fout.write(f"Saving time: {datetime.now()}\n")
                 fout.write(f"All rights reserved by Westview PUSD")
 
-            self.master.destroy()
 
 
             
@@ -1107,12 +1127,14 @@ class DisplayApp:
     def label_force(self):  # ---> executed when user click label force
         self.force_align = self.loc
         self.timeline1.update_label(self.force_align/self.slider['to'])
+        self.force_timeline_label.config(text=f"Force Timeline (label = {self.force_align})")
         self._update_force_timeline()
 
     def label_video(self):  # ---> executed when user click label video
 
         self.video_align = self.loc
         self.timeline2.update_label(self.video_align/self.slider['to'])
+        self.video_timeline_label.config(text=f"Video Timeline (label = {self.video_align})")
         self._update_video_timeline()
 
     def graph(self):
