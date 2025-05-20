@@ -375,6 +375,8 @@ class DisplayApp:
             # Wait for the popup to be destroyed before returning to the main window
             self.master.wait_window(popup)
 
+# ---------------------------------------------------------------
+# modulize stuff after line 379
     def _update_force_timeline(self):
         # Assuming self.timeline1.draw_rect() returns an image
         forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc / self.slider['to']))
