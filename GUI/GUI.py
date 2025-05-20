@@ -22,7 +22,7 @@ if project_root not in sys.path:
 # our script
 from vector_overlay.vectoroverlay_GUI import VectorOverlay
 from GUI.Timeline import timeline
-from vector_overlay.stick_figure_COM import SaveToTxt  # TODO: this import prevent the exe from running, make it oop
+#from vector_overlay.stick_figure_COM import SaveToTxt  # TODO: this import prevent the exe from running, make it oop
 from Util.ballDropDetect import ballDropDetect, forceSpikeDetect
 from Util.fileFormater import FileFormatter
 from Util.COM_helper import COM_helper
