@@ -23,6 +23,7 @@ if project_root not in sys.path:
 from vector_overlay.vectoroverlay_GUI import VectorOverlay
 from GUI.Timeline import timeline
 from Util.ballDropDetect import ballDropDetect, forceSpikeDetect
+from Util.fileFormater import FileFormatter
 
 #@dataclass
 class Video:
@@ -256,6 +257,9 @@ class DisplayApp:
         self.lock = threading.Lock()     
         # Global frame/location base on slider
         self.loc = 0
+
+        # helpers
+        self.fileReader = FileFormatter()
 
 
 
@@ -617,6 +621,8 @@ class DisplayApp:
         self.step_size = int(600 / Video.cam.get(cv2.CAP_PROP_FPS))  # this assume iphone takes less frame than camera
         self.step_size = 10  # assuming iphone has the same amount of frames but just replay slower.
 
+        # update the force timeline if having a different step size
+        # TODO update force timeline
         # label the auto deteciton
         print(f"[DEBUG] index for collision is: {auto_index}")
         self.loc = auto_index
@@ -656,22 +662,6 @@ class DisplayApp:
         uploadForceThread.start()
 
     def upload_force_data_thread(self):
-        def rename_duplicates(lst):
-            counts = {}
-            new_list = []
-
-            for item in lst:
-                if isinstance(item, str) and item != 'abs time (s)':  # Process only strings, skip 'abs time (s)'
-                    if item in counts:
-                        counts[item] += 1
-                        new_list.append(f"{item}{counts[item]}")
-                    else:
-                        counts[item] = 1
-                        new_list.append(f"{item}{counts[item]}")
-                else:
-                    new_list.append(item)  # Leave non-strings or 'abs time (s)' as is
-
-            return new_list
         # Open a file dialog for any file type
         file_path = filedialog.askopenfilename(title="Select Force Data File",filetypes=[("Excel or CSV Files", "*.xlsx *.xls *.csv *.txt")])
         Force.path = file_path
@@ -680,28 +670,20 @@ class DisplayApp:
         names = ["abs time (s)", "Fx1", "Fy1", "Fz1", "|Ft1|", "Ax1", "Ay1", "COM px1", "COM py1", "COM pz1",
                  "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "COM px2", "COM py2", "COM pz2"]
         """
+
+        if file_path.endswith('.txt'):
+            Force.data = self.fileReader.readTxt(file_path)
+ 
         # support both csv and excel
         if file_path.endswith('.xlsx'):
-            Force.data = pd.read_excel(
-                file_path,
-            )
-        elif file_path.endswith('.csv'):
-            Force.data = pd.read_csv(
-                file_path
-            )
+            Force.data = self.fileReader.readExcel(file_path)
+        if file_path.endswith('.csv'):
+            Force.data = self.fileReader.readCsv(file_path)
 
-        names = rename_duplicates(list(Force.data.iloc[16, :]))
-        print(names)
-        Force.data = Force.data.iloc[18:, 0:len(names)].reset_index(drop=True)
-
-        Force.data.columns = names
         Force.data = Force.data.apply(pd.to_numeric, errors='coerce')
         Force.rows = Force.data.shape[0]
 
         if(self.step_size is None):
-            print("Video file missing!!!\nProceeding assuming step size is 10 rows/frame")
-            self._pop_up("Video file missing!!!\n\nProceeding assuming step size is 10 rows/frame\n\n"
-                        "Please reload the force data after uploading the video")
             self.step_size = 10
 
         print(f"num of rows: {Force.rows}")
