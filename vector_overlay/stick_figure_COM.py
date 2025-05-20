@@ -2,7 +2,7 @@ import mediapipe as mp
 import cv2
 import numpy as np
 import pandas as pd
-from Cal_COM import calculateCOM
+from vector_overlay.Cal_COM import calculateCOM
 import csv
 import time
 
