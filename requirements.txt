@@ -3,7 +3,6 @@ numpy~=1.26.1
 matplotlib~=3.8.4
 pillow~=10.3.0
 opencv-python~=4.10.0.84
-pixelmatch~=0.3.0
 mediapipe~=0.10.14
 
 

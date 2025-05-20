@@ -22,8 +22,10 @@ if project_root not in sys.path:
 # our script
 from vector_overlay.vectoroverlay_GUI import VectorOverlay
 from GUI.Timeline import timeline
+from vector_overlay.stick_figure_COM import SaveToTxt
 from Util.ballDropDetect import ballDropDetect, forceSpikeDetect
 from Util.fileFormater import FileFormatter
+from Util.COM_helper import COM_helper
 
 #@dataclass
 class Video:
@@ -197,7 +199,7 @@ class DisplayApp:
         self.background.create_window(700,800,window=self.video_timeline) 
 
         # Row 10: COM
-        self.COM_button = tk.Button(self.master, text="COM", command=lambda: print("COM pressed"))
+        self.COM_button = tk.Button(self.master, text="COM", command=self.startCOM)
         self.background.create_window(100,800,window=self.COM_button)
 
         # Placeholders for images
@@ -265,6 +267,10 @@ class DisplayApp:
 
         # helpers
         self.fileReader = FileFormatter()
+        self.COM_helper = None  # waited to be initialized
+        
+        # flags
+        self.COM_flag = False
 
 
 
@@ -424,6 +430,17 @@ class DisplayApp:
 
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
+            if self.COM_flag:
+                # find x, y coordinates for COM
+                landmarks = self.COM_helper.read_line(self.fileReader.get_path(), self.loc)
+                # draw the COM
+                h, w, _ = frame.shape
+                for i in range(len(landmarks)):
+                    cx, cy = int(landmarks[i].get("x",0) * w), int(landmarks[i].get("y",0) * h)
+                    rgb = (0,255,0)
+                    if "visibility" in landmarks[i]:
+                        rgb = (0,255*landmarks[i].get("visibility",0),0)
+                    cv2.circle(frame, (cx, cy), 5, rgb, -1)
             frame = Image.fromarray(frame).resize((width, height), resample=Image.BICUBIC) # Resize the frame to 400 * 300
             photoImage = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
             return photoImage
@@ -600,6 +617,7 @@ class DisplayApp:
 
             # update force timeline
             self._update_force_timeline()
+
 
     """
     Buttons
@@ -815,6 +833,16 @@ class DisplayApp:
         except TypeError as e:
             self._pop_up("Missing label!!!")
             print("missing label")
+    def startCOM(self):
+        comThread = threading.Thread(target=self.CenterOfMass)
+        comThread.start()
+
+    def CenterOfMass(self):
+        comCam = Video.cam.copy()
+        comCam.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        SaveToTxt(comCam, sex="m", filename = "coord.txt")
+        self.COM_flag = True
+        self.COM_helper = COM_helper("coord.txt")
 
     def save(self):
         print("user clicked save button")

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from Cal_COM import calculateCOM
 import csv
+import time
 
 """""
 This is the skeleton overlay/stick figure
@@ -180,14 +181,13 @@ def pose_landmarks_to_row(pose_landmarks_list):
 
     return row
 
-def SaveToTxt(video_path, sex, filename, confidencelevel=0.85, displayname=False, displaystickfigure=False,
-              displayCOM=False):
+def SaveToTxt(cam:cv2.VideoCapture, sex, filename, confidencelevel=0.85):
 
-
+    starTime = time.time()
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=confidencelevel, model_complexity=2)
 
-    cap = cv2.VideoCapture(video_path)
+    cap = cam
     if not cap.isOpened():
         print("Error: Could not open video.")
         return
@@ -199,7 +199,7 @@ def SaveToTxt(video_path, sex, filename, confidencelevel=0.85, displayname=False
         ret, frame = cap.read()
         if not ret:
             break
-
+        frame = cv2.resize(frame, (0, 0), fx=0.3, fy=0.3)
         # Process the frame to find pose landmarks
         results = pose.process(frame)
         pose_landmarks_list = [results.pose_landmarks] if results.pose_landmarks else []
@@ -261,12 +261,15 @@ def SaveToTxt(video_path, sex, filename, confidencelevel=0.85, displayname=False
         print(f"Saved landmark data to {filename}")
     else:
         print("No landmark data to save.")
-
+    
+    
+    # Calculate and print the time taken
+    print(f"Time taken: {time.time() - starTime:.2f} seconds")
 
 if __name__ == "__main__":
     # Example usage:
     video_path = r"C:\Users\chase\Downloads\ajp_lr_JN_long_vid.05.mov"  # Replace with your input video file path
-
+    cam = cv2.VideoCapture(video_path)
     """
     The function takes in video path, output file name, sex. 
     for "sex" parameter, it has to be either "m" or "f"
@@ -292,4 +295,4 @@ if __name__ == "__main__":
         filename += "_COM.mp4"
     print("ready to go")
     #find_coordinates(video_path, "m", filename="coord.txt", displayname=displayname, displaystickfigure=displaystickfigure, displayCOM=displayCOM)
-    SaveToTxt(video_path, "m", filename="coord.txt", displayname=displayname, displaystickfigure=displaystickfigure, displayCOM=displayCOM)
+    SaveToTxt(cam, "m", filename="coord.txt", displayname=displayname, displaystickfigure=displaystickfigure, displayCOM=displayCOM)
