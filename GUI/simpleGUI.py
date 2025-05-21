@@ -35,6 +35,7 @@ from GUI.callbacks.align import alignCallback
 from GUI.callbacks.graph import graphOptionCallback
 from GUI.callbacks.vector_overlay import vectorOverlayCallback
 from GUI.callbacks.stepF import stepF
+from GUI.callbacks.save import saveCallback
 
 #@dataclass
 class Video:
@@ -89,6 +90,7 @@ class DisplayApp:
         self.initLabels()
         self.initButtons()
         self.initTimeline()
+        self.initSaveWindow()
     
     def initBackground(self):
                 # Determine the correct path based on whether the app is running as an exe or not
@@ -247,6 +249,18 @@ class DisplayApp:
         self.rot = 0 # rotated direction
         self.video_align = None
 
+        # Global frame/location base on slider
+        self.loc = 0
+
+    def initGloablFlags(self):
+        # Global Flags
+        self.force_data_flag = False
+        self.video_data_flag = False
+        self.vector_overlay_flag = False
+        self.COM_flag = False
+
+    def initSaveWindow(self):
+        """Initialize Save window"""
         # saving
         self.save_window = None            # Top level window
         self.save_view_canvas = None       # Canvas
@@ -260,16 +274,6 @@ class DisplayApp:
         self.save_confirm_button = None    # Final Saving Button
         self.save_start = None             # Start frame
         self.save_end = None               # End frame
-
-        # Global frame/location base on slider
-        self.loc = 0
-
-    def initGloablFlags(self):
-        # Global Flags
-        self.force_data_flag = False
-        self.video_data_flag = False
-        self.vector_overlay_flag = False
-        self.COM_flag = False
 
     def _on_zoom(self,event,canvas):
         if (canvas == 1):
@@ -412,7 +416,7 @@ class DisplayApp:
         pass
 
     def save(self):
-        pass
+        saveCallback(self)
 
     def update(self):
         pass
