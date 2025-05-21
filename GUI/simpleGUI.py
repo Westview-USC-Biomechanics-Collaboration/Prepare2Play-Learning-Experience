@@ -26,8 +26,15 @@ from GUI.Timeline import timeline
 from Util.ballDropDetect import ballDropDetect, forceSpikeDetect
 from Util.fileFormater import FileFormatter
 from Util.COM_helper import COM_helper
-
+from Util.frameConverter import FrameConverter
+from Util.layoutHelper import layoutHelper
 from GUI.callbacks.upload_force_data import uploadForceDataCallback
+from GUI.callbacks.update_slider_value import sliderCallback
+from GUI.callbacks.upload_video import uploadVideoCallback
+from GUI.callbacks.align import alignCallback
+from GUI.callbacks.graph import graphOptionCallback
+from GUI.callbacks.vector_overlay import vectorOverlayCallback
+from GUI.callbacks.stepF import stepF
 
 #@dataclass
 class Video:
@@ -44,21 +51,6 @@ class Force:
     path: str = None,
     data: pd.array = None,
     rows: int = None,
-    
-def layoutHelper(num:int, orientation:str) ->int:
-    """
-    Args: num means the location out of 12
-    Output: the pixel location of the center
-    """
-    width = 1320
-    height =  1080
-
-    if orientation=="vertical":
-        return int(height * num / 12)
-    elif orientation=="horizontal":
-        return int(width * num / 12)
-    else:
-        return None
 
 class DisplayApp:
     def __init__(self, master):
@@ -77,15 +69,13 @@ class DisplayApp:
         # Initialize Global Flags
         self.initGloablFlags()
 
-        # lock for multi threading
+        # lock for multi threading TODO this is not used at all
         self.lock = threading.Lock()     
-        
+
         # Helper Objects
         self.fileReader = FileFormatter()
-        self.COM_helper = None  # waited to be initialized
-        
-        
-
+        self.COM_helper = None  # waited to be initialized  
+        self.frameConverter = FrameConverter()   
 
     def initUI(self):
         self.selected_view = tk.StringVar(value="Long View")
@@ -221,6 +211,7 @@ class DisplayApp:
         self.COM_button = tk.Button(self.master, text="COM", command=self.startCOM)
 
         self.background.create_window(100,750,window=self.align_button)
+        self.background.create_window(650,350,window=self.graph_option)
         self.background.create_window(150,450,window=self.step_backward)
         self.background.create_window(1250,450,window=self.step_forward)
         self.background.create_window(100,350,window=self.rotateR)
@@ -246,11 +237,11 @@ class DisplayApp:
     
     def initGlobalVar(self):
         # force data
-        self.force_start = None # This variable store the time in raw force data which user choose to align
-        self.force_frame = None # convert rows to frames || unit: rows/frame
-        self.step_size = None   # TODO this seems to overlap with force_frame
-        self.zoom_pos = 0       # canvas 2: force data offset -step size<zoom_pos<+step size
-        self.force_align = None # Intialize force align value and video align value
+        self.force_start    = None  # This variable store the time in raw force data which user choose to align
+        self.force_frame    = None  # total number of frames could be represented by force data ->calculation: TotalRows/stepsize
+        self.step_size      = 10    # step siize unit: rows/frame
+        self.zoom_pos       = 0     # canvas 2: force data offset -step size<zoom_pos<+step size
+        self.force_align    = None  # Intialize force align value and video align value
 
         # video
         self.rot = 0 # rotated direction
@@ -275,6 +266,9 @@ class DisplayApp:
 
     def initGloablFlags(self):
         # Global Flags
+        self.force_data_flag = False
+        self.video_data_flag = False
+        self.vector_overlay_flag = False
         self.COM_flag = False
 
     def _on_zoom(self,event,canvas):
@@ -288,7 +282,7 @@ class DisplayApp:
             self.zoom_factor1 = max(0.1, min(self.zoom_factor1, 5.0))  # Limiting zoom range
             print(self.zoom_factor1)
             self.canvas1.delete("all")
-            self.photo_image1 = self._display_frame(camera=self.Video.cam, width=round(self.Video.frame_width * self.zoom_factor1),
+            self.photo_image1 = self.frameConverter.cvToPillow(camera=self.Video.cam, width=round(self.Video.frame_width * self.zoom_factor1),
                                                    height=round(self.Video.frame_height * self.zoom_factor1))
             self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
 
@@ -302,7 +296,7 @@ class DisplayApp:
             self.zoom_factor3 = max(0.1, min(self.zoom_factor3, 5.0))  # Limiting zoom range
             print(self.zoom_factor3)
             self.canvas3.delete("all")
-            self.photo_image3 = self._display_frame(camera=self.Video.vector_cam, width=round(self.Video.frame_width * self.zoom_factor3),
+            self.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam, width=round(self.Video.frame_width * self.zoom_factor3),
                                                    height=round(self.Video.frame_height * self.zoom_factor3))
             self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
 
@@ -379,34 +373,40 @@ class DisplayApp:
             self.master.wait_window(popup)
 
     def label_video(self):
-        pass
+        self.video_align = self.loc
+        self.timeline2.update_label(self.video_align/self.slider['to'])
+        self.video_timeline_label.config(text=f"Video Timeline (label = {self.video_align})")
+        self._update_video_timeline()
 
     def label_force(self):
-        pass
+        self.force_align = self.loc
+        self.timeline1.update_label(self.force_align/self.slider['to'])
+        self.force_timeline_label.config(text=f"Force Timeline (label = {self.force_align})")
+        self._update_force_timeline()
 
     def align(self):
-        pass
+        alignCallback(self)
 
     def graph(self):
-        pass
+        graphOptionCallback(self)
     
-    def slider(self):
-        pass
+    def slider(self,value):
+        sliderCallback(self,value)
 
     def stepF(self,num:int):
-        pass
+        stepF(self,num)
 
     def rotateCam(self,num:int):
         pass
 
     def upload_video(self):
-        pass
+        uploadVideoCallback(self)
 
     def upload_force_data(self):
         uploadForceDataCallback(self)
 
     def vector_overlay(self):
-        pass
+        vectorOverlayCallback(self)
 
     def startCOM(self):
         pass
@@ -420,6 +420,7 @@ class DisplayApp:
     def on_click(self, event):
         if event.inaxes:  # Check if the click occurred inside the plot area
             print(f"Clicked at: x={event.xdata}, y={event.ydata}")
+    
     def plot_force_data(self):
         print("[INFO] plotting force data")
         # Clear previous figure on canvas2
@@ -485,6 +486,39 @@ class DisplayApp:
         self.canvas2.create_window(30, 270, window=backward)
 
         print("[INFO] plot finished")
+
+    def _update_force_timeline(self):
+        # Assuming self.timeline1.draw_rect() returns an image
+        forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc / self.slider['to']))
+
+        # Resize the image to fit the canvas size
+        canvas_width = self.force_timeline.winfo_width()  # Get the width of the canvas
+        canvas_height = self.force_timeline.winfo_height()  # Get the height of the canvas
+
+        # Resize the image to match the canvas size using the new resampling method
+        forceTimeline = forceTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
+
+        # Convert the resized image to PhotoImage
+        self.timeline_image1 = ImageTk.PhotoImage(forceTimeline)
+
+        # Create the image on the canvas, anchoring it at the top-left (0, 0)
+        self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
+
+    def _update_video_timeline(self):
+        # Assuming self.video_timeline is the canvas and self.timeline2.draw_rect() returns an image
+        videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc / self.Video.total_frames))
+
+        # Resize the image to fit the canvas size
+        canvas_width = self.video_timeline.winfo_width()  # Get the width of the canvas
+        canvas_height = self.video_timeline.winfo_height()  # Get the height of the canvas
+        # Resize the image to match the canvas size
+        videoTimeline = videoTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
+
+        # Convert the resized image to PhotoImage
+        self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
+
+        # Create the image on the canvas, anchoring it at the top-left (0, 0)
+        self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
 if __name__ == "__main__":
     root = tk.Tk()

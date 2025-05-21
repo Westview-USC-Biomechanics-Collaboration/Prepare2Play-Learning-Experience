@@ -7,12 +7,13 @@ import math
 import pandas as pd
 
 def uploadForceDataCallback(self:tk.Tk,):
-    def thread_target():
+    def threadTarget():
             process(self)  # do the actual loading
             # Once the thread is done, call _plot_force_data from the main thread
             self.master.after(0, self.plot_force_data)
+            self.force_data_flag = True
 
-    uploadForceThread = threading.Thread(target=thread_target, daemon=True)
+    uploadForceThread = threading.Thread(target=threadTarget, daemon=True)
     uploadForceThread.start()
 
 
@@ -27,7 +28,7 @@ def process(self):
     """
     file_path = tk.filedialog.askopenfilename(title="Select Force Data File",filetypes=[("Excel or CSV Files", "*.xlsx *.xls *.csv *.txt")])
     self.Force.path = file_path
-    print(f"Force data uploaded: {file_path}")
+    print(f"[INFO] Force data uploaded: {file_path}")
     
     if file_path.endswith('.txt'):
         self.Force.data = self.fileReader.readTxt(file_path)
@@ -44,14 +45,14 @@ def process(self):
     if(self.step_size is None):
         self.step_size = 10
 
-    print(f"num of rows: {self.Force.rows}")
-    print(f"step size: {self.step_size}")
+    print(f"[DEBUG] num of rows: {self.Force.rows}")
+    print(f"[DEBUG] step size: {self.step_size}")
     self.force_frame = int(self.Force.rows/self.step_size)  # represent num of frames force data can cover
 
     # self._plot_force_data()
 
     # Initialize force timeline
-    print(f"force frame: {self.force_frame}")
+    print(f"[DEBUG] force frame: {self.force_frame}")
     """
     # create a timeline object, defining end as (num of frame in force_data /  max slider value)
     # Slider value should be updated to frame count when user upload the video file,
@@ -74,7 +75,7 @@ def process(self):
     targetFrame = math.floor(targetRow/self.step_size)
     print(f"[DEBUG] target frame: {targetFrame}")
 
-    # # update timeline
-    # self.loc = targetFrame
-    # self.label_force()
+    # update Global variable
+    self.loc = targetFrame
+    self.label_force()
 

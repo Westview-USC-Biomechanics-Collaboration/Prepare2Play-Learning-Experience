@@ -47,12 +47,12 @@ def ballDropDetect(cap: cv2.VideoCapture):
     # Always define `highest_position_entry`, whether or not lowPixel has data
     if lowPixel:
         highest_position_entry = max(lowPixel, key=lambda x: x["position"])
-        print(f"Lowest point detected at frame {highest_position_entry['index']}, pixel y = {highest_position_entry['position']}")
+        print(f"[INFO] Lowest point detected at frame {highest_position_entry['index']}, pixel y = {highest_position_entry['position']}")
     else:
         highest_position_entry = {"index": 0, "position": -1}
-        print("No ball detected.")
+        print("[INFO] No ball detected.")
 
-    print(f"Process time: {time.time() - startTime:.2f} s")
+    print(f"[INFO] Process time: {time.time() - startTime:.2f} s")
 
     return highest_position_entry['index']
 
