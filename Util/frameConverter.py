@@ -12,3 +12,10 @@ class FrameConverter:
             frame = Image.fromarray(frame).resize((width, height), resample=Image.BICUBIC) # Resize the frame to 400 * 300
             photoImage = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
             return photoImage
+        
+    def cvToPillowFromFrame(self, frame:cv2.Mat, width=400, height=300):
+        if frame is not None:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2RGB)
+            frame = Image.fromarray(frame).resize((width, height), resample=Image.BICUBIC)
+            photoImage = ImageTk.PhotoImage(frame)   # ---> update the image object base on current frame.
+            return photoImage

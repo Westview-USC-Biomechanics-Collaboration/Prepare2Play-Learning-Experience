@@ -20,9 +20,11 @@ class COM_helper:
             parsed_line.append({"x":line[index],"y":line[index+1],"visibility":line[index+2]})
             index += 3
         
-        parsed_line.append({"name":"COM","x":line[-2],"y":line[-3]})
+        parsed_line.append({"name":"COM","x":line[-2],"y":line[-1]})
         return parsed_line
     
+    def drawFigure(self, row:int):
+        linedata = self.read_line(self.file_path, row)
 
 if __name__ == "__main__":
     com = COM_helper()

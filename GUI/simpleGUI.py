@@ -414,7 +414,8 @@ class DisplayApp:
         vectorOverlayCallback(self)
 
     def startCOM(self):
-        pass
+        COMCallback(self)
+        self.COM_flag = True
 
     def save(self):
         saveCallback(self)
