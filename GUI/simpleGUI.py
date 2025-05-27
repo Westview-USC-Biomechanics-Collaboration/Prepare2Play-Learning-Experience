@@ -36,6 +36,7 @@ from GUI.callbacks.graph import graphOptionCallback
 from GUI.callbacks.vector_overlay import vectorOverlayCallback
 from GUI.callbacks.stepF import stepF
 from GUI.callbacks.save import saveCallback
+from GUI.callbacks.COM import COMCallback
 
 #@dataclass
 class Video:

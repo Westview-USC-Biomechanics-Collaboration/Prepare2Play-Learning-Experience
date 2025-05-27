@@ -185,13 +185,13 @@ class Processor:
 
         return row
 
-    def SaveToTxt(cam:cv2.VideoCapture, sex, filename, confidencelevel=0.85):
+    def SaveToTxt(self, sex, filename, confidencelevel=0.85):
 
         starTime = time.time()
         mp_pose = mp.solutions.pose
         pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=confidencelevel, model_complexity=2)
 
-        cap = cam
+        cap = self.cam
         if not cap.isOpened():
             print("Error: Could not open video.")
             return
