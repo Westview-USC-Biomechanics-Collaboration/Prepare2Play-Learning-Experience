@@ -22,7 +22,12 @@ def process(self,*value):
         if self.COM_flag:
             _, rawFrame = self.Video.vector_cam.read()
             COMFrame = rawFrame.copy()
-            
+            COMFrame = self.COM_helper.drawFigure(COMFrame, self.loc)
+            self.photo_image3 = self.frameConverter.cvToPillowFromFrame(COMFrame,
+                                                    width=round(self.Video.frame_width * self.zoom_factor3),
+                                                    height=round(self.Video.frame_height * self.zoom_factor3))
+            self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
+
         else:
             self.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam,
                                                     width=round(self.Video.frame_width * self.zoom_factor3),

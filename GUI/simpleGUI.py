@@ -76,7 +76,7 @@ class DisplayApp:
 
         # Helper Objects
         self.fileReader = FileFormatter()
-        self.COM_helper = None  # waited to be initialized  
+        self.COM_helper = COM_helper()  # waited to be initialized  
         self.frameConverter = FrameConverter()   
 
     def initUI(self):

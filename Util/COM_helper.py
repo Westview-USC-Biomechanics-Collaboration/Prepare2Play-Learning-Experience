@@ -23,10 +23,45 @@ class COM_helper:
         parsed_line.append({"name":"COM","x":line[-2],"y":line[-1]})
         return parsed_line
     
-    def drawFigure(self, row:int):
-        linedata = self.read_line(self.file_path, row)
+    def drawFigure(self, frame, row: int):
+        import cv2
+        frame = frame.copy()  # Prevent in-place modification
+        
+        height, width = frame.shape[:2]
+
+        linedata = self.read_line('coord.txt', row)
+        if not linedata:
+            print("[WARN] No data to draw.")
+            return frame
+
+        for point in linedata:
+            # print(f"point: {point}")
+            try:
+                x = int(width * float(point['x']))
+                y = int(height* float(point['y']))
+                if 'name' in point:
+                    cv2.circle(frame, (x, y), 10, (255, 0, 0), -1)
+                else:
+                    cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
+            except (KeyError, ValueError, TypeError) as e:
+                print(f"[ERROR] Skipping invalid point: {point} — {e}")
+        
+        print("[DEBUG] finished drawing")
+        return frame
+
+
 
 if __name__ == "__main__":
+    import cv2
     com = COM_helper()
     line = com.read_line('coord.txt', 1)
-    print(line)
+    # print(line)
+    cam = cv2.VideoCapture(r"C:\Users\chase\Downloads\0519test.mp4")
+    ret, frame = cam.read()
+    if ret:
+        originalFrame = frame.copy()  # Make a copy before any drawing
+        frameWithFigure = com.drawFigure(originalFrame, 5)
+        cv2.imshow("Frame with COM", frameWithFigure)
+        cv2.imshow("Original Frame", frame)  # Show the truly original one
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
