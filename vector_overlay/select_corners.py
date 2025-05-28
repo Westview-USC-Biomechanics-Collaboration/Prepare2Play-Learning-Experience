@@ -1,29 +1,46 @@
+import numpy as np
 import cv2
 
 # Globals for cursor position
 cursor_x, cursor_y = 0, 0
 
 # Function to zoom in on a region and draw a blue cross
-def get_zoomed_region(image, x, y, zoom_size=50, zoom_factor=2):
-    h, w = image.shape[:2]
-    x1, y1 = max(0, x - zoom_size), max(0, y - zoom_size)
-    x2, y2 = min(w, x + zoom_size), min(h, y + zoom_size)
+def get_zoomed_region(frame, x, y, zoom_size=50, zoom_factor=2):
+    h, w = frame.shape[:2]
+    half_size = zoom_size // 2
 
-    # Extract the region
-    region = image[y1:y2, x1:x2]
-    zoomed_region = cv2.resize(region, None, fx=zoom_factor, fy=zoom_factor, interpolation=cv2.INTER_LINEAR)
+    # Coordinates of the ROI in the original frame
+    x1 = max(0, x - half_size)
+    y1 = max(0, y - half_size)
+    x2 = min(w, x + half_size)
+    y2 = min(h, y + half_size)
 
-    # Draw a blue cross in the center of the zoomed region
-    zh, zw = zoomed_region.shape[:2]
+    roi = frame[y1:y2, x1:x2]
+
+    # Create a black image of the zoom_size x zoom_size (original scale)
+    black_canvas = np.zeros((zoom_size, zoom_size, 3), dtype=np.uint8)
+
+    # Compute the placement coordinates on the black canvas
+    roi_h, roi_w = roi.shape[:2]
+    y_offset = (zoom_size - roi_h) // 2
+    x_offset = (zoom_size - roi_w) // 2
+
+    # Place the ROI in the center of the black canvas
+    black_canvas[y_offset:y_offset+roi_h, x_offset:x_offset+roi_w] = roi
+
+    # Resize the canvas to zoom in
+    zoomed = cv2.resize(black_canvas, None, fx=zoom_factor, fy=zoom_factor, interpolation=cv2.INTER_LINEAR)
+
+    # Draw blue crosshair in the center
+    zh, zw = zoomed.shape[:2]
     center_x, center_y = zw // 2, zh // 2
-    color = (255, 0, 0)  # Blue color in BGR
+    color = (255, 0, 0)  # Blue in BGR
+    thickness = 1
 
-    # Horizontal line
-    cv2.line(zoomed_region, (center_x - 10, center_y), (center_x + 10, center_y), color, 2)
-    # Vertical line
-    cv2.line(zoomed_region, (center_x, center_y - 10), (center_x, center_y + 10), color, 2)
+    cv2.line(zoomed, (center_x, 0), (center_x, zh), color, thickness)
+    cv2.line(zoomed, (0, center_y), (zw, center_y), color, thickness)
 
-    return zoomed_region
+    return zoomed
 
 def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     # Check if video opened successfully
