@@ -1,3 +1,4 @@
+import traceback
 import mediapipe as mp
 import cv2
 import numpy as np
@@ -154,40 +155,49 @@ class Processor:
 
         return annotated_image
 
-    def pose_landmarks_to_row(self,pose_landmarks_list):
-        """
-        Convert pose_landmarks_list (a list with either one pose_landmarks object or empty)
-        into a dict representing one data row with x, y coords for each landmark.
-        If no landmarks detected, returns dict with None for each landmark coordinate.
 
-        Output dict keys: landmark_0_x, landmark_0_y, landmark_0_visibility, ..., landmark_32_x, ...
+    def pose_landmarks_to_row(self, pose_landmarks_list):
+        """
+        Convert pose_landmarks_list (list of 33 [x,y,z]) or empty list
+        to dict with keys landmark_i_x, landmark_i_y, landmark_i_visibility.
+        If input is empty or invalid, return row filled with 0.0.
         """
 
-        # Total number of pose landmarks for MediaPipe Pose is 33
         num_landmarks = 33
-
-        # Prepare empty data row with None defaults
         row = {}
+
+        # Initialize with zeros
         for i in range(num_landmarks):
-            row[f"landmark_{i}_x"] = None
-            row[f"landmark_{i}_y"] = None
-            row[f"landmark_{i}_visibility"] = None
+            row[f"landmark_{i}_x"] = 0.0
+            row[f"landmark_{i}_y"] = 0.0
+            row[f"landmark_{i}_visibility"] = 0.0
 
-        if not pose_landmarks_list:
-            return row  # no landmarks detected, return all None
+        # If no landmarks detected, just return zeros row
+        if not pose_landmarks_list or len(pose_landmarks_list) != num_landmarks:
+            return row
 
-        pose_landmarks = pose_landmarks_list[0]  # There is only one in the list
-
-        for i, landmark in enumerate(pose_landmarks.landmark):
-            row[f"landmark_{i}_x"] = landmark.x
-            row[f"landmark_{i}_y"] = landmark.y
-            row[f"landmark_{i}_visibility"] = landmark.visibility
+        # For each landmark, assign values
+        for i, landmark in enumerate(pose_landmarks_list):
+            # landmark is a list or tuple: [x, y, z]
+            if isinstance(landmark, (list, tuple)) and len(landmark) == 3:
+                x, y, z = landmark
+                row[f"landmark_{i}_x"] = float(x)
+                row[f"landmark_{i}_y"] = float(y)
+                # Set visibility 1.0 if any coord is nonzero, else 0.0
+                if x != 0.0 or y != 0.0 or z != 0.0:
+                    row[f"landmark_{i}_visibility"] = 1.0
+                else:
+                    row[f"landmark_{i}_visibility"] = 0.0
+            else:
+                # If bad data, keep zeros
+                pass
 
         return row
 
-    def SaveToTxt(self, sex, filename, confidencelevel=0.85):
 
-        starTime = time.time()
+    def SaveToTxt(self, sex, filename, confidencelevel=0.85, displayCOM=False):
+        startTime = time.time()
+
         mp_pose = mp.solutions.pose
         pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=confidencelevel, model_complexity=2)
 
@@ -199,105 +209,63 @@ class Processor:
         output = []
         frame_index = 0
 
+        pose_landmark_names = {
+            0: "nose", 1: "left_eye_inner", 2: "left_eye", 3: "left_eye_outer",
+            4: "right_eye_inner", 5: "right_eye", 6: "right_eye_outer", 7: "left_ear",
+            8: "right_ear", 9: "mouth_left", 10: "mouth_right", 11: "LSHOULDER",
+            12: "RSHOULDER", 13: "LELBOW", 14: "RELBOW", 15: "LWRIST", 16: "RWRIST",
+            17: "left_pinky", 18: "right_pinky", 19: "left_index", 20: "right_index",
+            21: "left_thumb", 22: "right_thumb", 23: "LHIP", 24: "RHIP", 25: "LKNEE",
+            26: "RKNEE", 27: "LANKLE", 28: "RANKLE", 29: "LHEEL", 30: "RHEEL", 31: "LTOE", 32: "RTOE"
+        }
+
         while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
+            try:
+                print("[DEBUG] [COM] - Processing frame index:", frame_index)
+                ret, frame = cap.read()
+                if not ret:
+                    break
+
+                frame = cv2.resize(frame, (0, 0), fx=0.3, fy=0.3)
+                results = pose.process(frame)
+
+                if results.pose_landmarks:
+                    # Convert landmarks to list of [x, y, z]
+                    pose_landmarks_list = [[lmk.x, lmk.y, lmk.z] for lmk in results.pose_landmarks.landmark]
+                else:
+                    # No pose detected - 33 landmarks all zeros
+                    pose_landmarks_list = [[0.0, 0.0, 0.0]] * 33
+
+                row = self.pose_landmarks_to_row(pose_landmarks_list)
+
+                # Add frame index to row
+                row["frame_index"] = frame_index
+                output.append(row)
+
+                frame_index += 1
+            except Exception as e:
+                print(f"Error processing frame {frame_index}: {e}")
+                print(traceback.format_exc())
                 break
-            frame = cv2.resize(frame, (0, 0), fx=0.3, fy=0.3)
-            # Process the frame to find pose landmarks
-            results = pose.process(frame)
-            pose_landmarks_list = [results.pose_landmarks] if results.pose_landmarks else []
-
-            # Convert landmarks to dict row
-            row = self.pose_landmarks_to_row(pose_landmarks_list)
-            row['frame_index'] = frame_index
-
-            # Optional: Add COM calculation if requested
-            if displayCOM and pose_landmarks_list:
-                # Prepare data for COM calculation
-                pose_landmark_names = {
-                    0: "nose", 1: "left_eye_inner", 2: "left_eye", 3: "left_eye_outer",
-                    4: "right_eye_inner", 5: "right_eye", 6: "right_eye_outer", 7: "left_ear",
-                    8: "right_ear", 9: "mouth_left", 10: "mouth_right", 11: "LSHOULDER",
-                    12: "RSHOULDER", 13: "LELBOW", 14: "RELBOW", 15: "LWRIST", 16: "RWRIST",
-                    17: "left_pinky", 18: "right_pinky", 19: "left_index", 20: "right_index",
-                    21: "left_thumb", 22: "right_thumb", 23: "LHIP", 24: "RHIP", 25: "LKNEE",
-                    26: "RKNEE", 27: "LANKLE", 28: "RANKLE", 29: "LHEEL", 30: "RHEEL", 31: "LTOE", 32: "RTOE"
-                }
-
-                columns_name = []
-                data = []
-                for i in range(len(pose_landmark_names)):
-                    columns_name.append(str(pose_landmark_names[i]) + "_x")
-                    columns_name.append(str(pose_landmark_names[i]) + "_y")
-                    landmark = pose_landmarks_list[0].landmark[i]
-                    # Use None if not visible
-                    if landmark.visibility > 0:
-                        data.append(landmark.x)
-                        data.append(landmark.y)
-                    else:
-                        data.append(None)
-                        data.append(None)
-
-                datain = pd.Series(data, index=columns_name)
-                from Cal_COM import calculateCOM  # Import here or globally if already imported
-                com_x, com_y = calculateCOM(datain, sex)
-                row['COM_x'] = com_x
-                row['COM_y'] = com_y
-            else:
-                row['COM_x'] = None
-                row['COM_y'] = None
-
-            output.append(row)
-            frame_index += 1
 
         cap.release()
-        pose.close()
-        cv2.destroyAllWindows()
 
-        # Write all data to CSV file
-        if len(output) > 0:
-            with open(filename, 'w', newline='') as csvfile:
-                fieldnames = output[0].keys()
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                writer.writeheader()
-                writer.writerows(output)
-            print(f"Saved landmark data to {filename}")
-        else:
-            print("No landmark data to save.")
-        
-        
-        # Calculate and print the time taken
-        print(f"Time taken: {time.time() - starTime:.2f} seconds")
+        # Create DataFrame and save to CSV file
+        df = pd.DataFrame(output)
+        df.to_csv(filename, index=False)
+
+        endTime = time.time()
+        print("Total time taken: ", endTime - startTime)
+
 
 if __name__ == "__main__":
+    video_path = r"C:\Users\chase\Downloads\ajp_lr_JN_long_vid.05.mov"  # Change this to your video file path
+    cap = cv2.VideoCapture(video_path)
+    processor = Processor(cap)
+
     # Example usage:
-    video_path = r"C:\Users\chase\Downloads\ajp_lr_JN_long_vid.05.mov"  # Replace with your input video file path
-    cam = cv2.VideoCapture(video_path)
-    processor = Processor(cam)
-    """
-    The function takes in video path, output file name, sex. 
-    for "sex" parameter, it has to be either "m" or "f"
-    You can decide to display name of joints, stick figure, or center of mass
+    # Draw skeleton with display options:
+    # processor.find_coordinates(sex='male', filename='output.mp4', displayname=True, displaystickfigure=True, displayCOM=True)
 
-    use "\\" if you are in windows
-    use "/" if you are in ios
-
-    Set the display element below
-    """
-
-    displayname = False
-    displaystickfigure =True
-    displayCOM = True
-
-    filename = "outputs\\" + video_path.split("\\")[-1][:-4]
-    # adjust file name
-    if displaystickfigure == True and displayCOM == True:
-        filename += "_COM+Stickfigure.mp4"
-    elif displayCOM == True and displaystickfigure == False:
-        filename += "_COM_only.mp4"
-    else:
-        filename += "_COM.mp4"
-    print("ready to go")
-    #find_coordinates(video_path, "m", filename="coord.txt", displayname=displayname, displaystickfigure=displaystickfigure, displayCOM=displayCOM)
-    processor.SaveToTxt(cam, "m", filename="coord.txt", displayname=displayname, displaystickfigure=displaystickfigure, displayCOM=displayCOM)
+    # Save landmarks to CSV with zeros for no detection
+    processor.SaveToTxt(sex='male', filename='pose_landmarks.csv', confidencelevel=0.85, displayCOM=False)
