@@ -272,7 +272,7 @@ class Processor:
 
 if __name__ == "__main__":
     # Example usage:
-    video_path = r"C:\Users\chase\Downloads\ajp_lr_JN_long_vid.05.mov"  # Replace with your input video file path
+    video_path = r"C:\\Users\\nishk\Downloads\spu_lr_NS_long_vid01.mov"  # Replace with your input video file path
     cam = cv2.VideoCapture(video_path)
     processor = Processor(cam)
     """
@@ -289,15 +289,6 @@ if __name__ == "__main__":
     displayname = False
     displaystickfigure =True
     displayCOM = True
-
-    filename = "outputs\\" + video_path.split("\\")[-1][:-4]
-    # adjust file name
-    if displaystickfigure == True and displayCOM == True:
-        filename += "_COM+Stickfigure.mp4"
-    elif displayCOM == True and displaystickfigure == False:
-        filename += "_COM_only.mp4"
-    else:
-        filename += "_COM.mp4"
     print("ready to go")
     #find_coordinates(video_path, "m", filename="coord.txt", displayname=displayname, displaystickfigure=displaystickfigure, displayCOM=displayCOM)
-    processor.SaveToTxt(cam, "m", filename="coord.txt", displayname=displayname, displaystickfigure=displaystickfigure, displayCOM=displayCOM)
+    processor.SaveToTxt(cam, "m", filename="C:\Users\\nishk\Downloads\spu_lr_NS_long_vid01.mov", displayname=displayname, displaystickfigure=displaystickfigure, displayCOM=displayCOM)
