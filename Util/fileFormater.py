@@ -9,6 +9,9 @@ class FileFormatter:
         """
         self.columns = ["abs time (s)", "Fx1", "Fy1", "Fz1", "|Ft1|", "Ax1", "Ay1", "COM px1", "COM py1", "COM pz1",
                         "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "COM px2", "COM py2", "COM pz2"]
+        
+        self.alternativeColumns = ["abs time (s)", "Fx1", "Fy1", "Fz1", "|Ft1|", "Ax1", "Ay1",
+                        "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2"]
 
     def __columnchecker(self, df: pandas.DataFrame):
         """
@@ -17,8 +20,17 @@ class FileFormatter:
         :return: True if the columns are correct, False otherwise
         """
         if len(df.columns) != len(self.columns):
-            print("The number of columns is not correct")
-            return False
+            if len(df.columns) == len(self.alternativeColumns):
+                print("[WARN] The configuration for export column is not consistent")
+                for i in range(len(self.alternativeColumns)):
+                    if df.columns[i] != self.alternativeColumns[i]:
+                        print(f"The column {i} is not correct")
+                        return False
+            else:
+                print("[ERROR] The number of columns is not correct")
+                return False
+                
+            
         for i in range(len(self.columns)):
             if df.columns[i] != self.columns[i]:
                 print(f"The column {i} is not correct")
@@ -56,10 +68,11 @@ class FileFormatter:
         :return: pandas dataframe
         """
         df = pandas.read_excel(filePath, skiprows=18)
-        if len(df.columns) != len(self.columns):
+        if self.__columnchecker(df):
             print("The number of columns is not correct")
             raise ValueError("The number of columns is not correct")
-        df.columns = self.columns
+        
+        df.columns = self.columns if len(df.columns)==len(self.columns) else self.alternativeColumns
 
         return df
     

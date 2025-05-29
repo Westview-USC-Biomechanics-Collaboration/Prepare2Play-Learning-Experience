@@ -174,6 +174,8 @@ def saveCallback(self):
         while(self.Video.vector_cam.isOpened() and count<= self.save_end+cushion_frames):
             ret1, frame1 = self.Video.cam.read()
             ret3, frame3 = self.Video.vector_cam.read()
+            if self.COM_intVar.get()==1:
+                frame3 = self.COM_helper.drawFigure(frame3, count)
             if not ret1 or not ret3:
                 # if this calls when the frame_number is equal to the total frame count then the stream has just ended
                 print(f"Can't read frame at position {count}")
@@ -272,16 +274,17 @@ def saveCallback(self):
     self.EndLabel.grid(row=2,column=2,sticky="nsew",padx=10,pady=10)
     self.save_end_button = tk.Button(self.save_window,text="label end",command=lambda:_label(1))
     self.save_end_button.grid(row=3,column=2,sticky="nsew",padx=10,pady=10)
-
     
     self.cushion_entry = tk.Entry(self.save_window)
     self.cushion_entry.grid(row=4,column=1,padx=10,pady=10,sticky="w")
     self.cushion_label = tk.Label(self.save_window, text = "set cushion time(s) :")
     self.cushion_label.grid(row=4,column=0,padx=10,pady=10)
     
+    self.COM_checkbox = tk.Checkbutton(self.save_window, text="active COM", variable=self.COM_intVar)
+    self.COM_checkbox.grid(row=5,column=0,columnspan=3,sticky="nsew",padx=10,pady=10)
 
     self.save_confirm_button = tk.Button(self.save_window,text="export video",command=_export)
-    self.save_confirm_button.grid(row=5,column=0,columnspan=3,sticky="nsew",padx=10,pady=10)
+    self.save_confirm_button.grid(row=6,column=0,columnspan=3,sticky="nsew",padx=10,pady=10)
 
     # lift the save window to the front
     self.save_window.lift()

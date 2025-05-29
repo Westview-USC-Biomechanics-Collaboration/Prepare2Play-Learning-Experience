@@ -1,6 +1,7 @@
 import tkinter as tk
 import threading
 import cv2
+import traceback
 
 def sliderCallback(self, *value):
     process(self,value)
@@ -18,23 +19,27 @@ def process(self,*value):
             # update video timeline
             self._update_video_timeline()
 
-        if self.vector_overlay_flag:
-            self.Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-            if self.COM_flag:
-                _, rawFrame = self.Video.vector_cam.read()
-                COMFrame = rawFrame.copy()
-                COMFrame = self.COM_helper.drawFigure(COMFrame, self.loc)
-                self.photo_image3 = self.frameConverter.cvToPillowFromFrame(COMFrame,
-                                                        width=round(self.Video.frame_width * self.zoom_factor3),
-                                                        height=round(self.Video.frame_height * self.zoom_factor3))
-                self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
+        try:
+            if self.vector_overlay_flag:
+                self.Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
+                if self.COM_flag:
+                    _, rawFrame = self.Video.vector_cam.read()
+                    COMFrame = rawFrame.copy()
+                    COMFrame = self.COM_helper.drawFigure(COMFrame, self.loc)
+                    self.photo_image3 = self.frameConverter.cvToPillowFromFrame(COMFrame,
+                                                            width=round(self.Video.frame_width * self.zoom_factor3),
+                                                            height=round(self.Video.frame_height * self.zoom_factor3))
+                    self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
 
-            else:
-                self.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam,
-                                                        width=round(self.Video.frame_width * self.zoom_factor3),
-                                                        height=round(self.Video.frame_height * self.zoom_factor3))
-                self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
-
+                else:
+                    self.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam,
+                                                            width=round(self.Video.frame_width * self.zoom_factor3),
+                                                            height=round(self.Video.frame_height * self.zoom_factor3))
+                    self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
+        except IndexError as e:
+            print("[ERROR] index out of range, check pose_landmarks.csv file to varify rows")
+            traceback.print_exc()
+            
         if self.save_view_canvas:
             # self.save_loc = self.save_scroll_bar.get()
             print(f"You just moved scroll bar to {self.loc}")
@@ -64,6 +69,7 @@ def process(self,*value):
             self._update_force_timeline()
     except Exception as e:
         print(f"Error in sliderCallback: {e}")
+        traceback.print_exc()
         # Optionally, you can log the error or handle it in a way that doesn't crash the application
         # For example, you could show a message box or write to a log file
         # tk.messagebox.showerror("Error", f"An error occurred: {e}")

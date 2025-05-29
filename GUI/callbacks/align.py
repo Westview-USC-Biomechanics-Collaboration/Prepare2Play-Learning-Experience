@@ -1,6 +1,6 @@
 import tkinter as tk
 import pandas as pd
-import numpy
+import numpy as np
 
 def alignCallback(self):
     print("[INFO] aligning...")

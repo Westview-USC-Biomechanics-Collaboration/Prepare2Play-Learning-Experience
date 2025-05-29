@@ -219,9 +219,10 @@ class Processor:
             26: "RKNEE", 27: "LANKLE", 28: "RANKLE", 29: "LHEEL", 30: "RHEEL", 31: "LTOE", 32: "RTOE"
         }
 
+        print("[INFO] Start processing COM")
         while cap.isOpened():
             try:
-                print("[DEBUG] [COM] - Processing frame index:", frame_index)
+                # print("[DEBUG] [COM] - Processing frame index:", frame_index)
                 ret, frame = cap.read()
                 if not ret:
                     break

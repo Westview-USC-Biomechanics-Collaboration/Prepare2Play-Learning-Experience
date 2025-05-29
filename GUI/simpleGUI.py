@@ -275,6 +275,8 @@ class DisplayApp:
         self.save_confirm_button = None    # Final Saving Button
         self.save_start = None             # Start frame
         self.save_end = None               # End frame
+        self.COM_intVar = tk.IntVar()
+        self.COM_checkbox = None           # check box for COM
 
     def _on_zoom(self,event,canvas):
         if (canvas == 1):
