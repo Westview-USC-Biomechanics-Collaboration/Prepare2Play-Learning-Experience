@@ -7,7 +7,7 @@ def COMCallback(self):
     processor = Processor(self.Video.cam)
     def threadTarget():
         print("[INFO] Starting COM processing in a separate thread...")
-        processor.SaveToTxt(sex="m", filename="test0721.mp4", confidencelevel=0.85)
+        processor.SaveToTxt(sex="m", filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
         print("[INFO] COM processing finished.")
         self.COM_flag = True
     

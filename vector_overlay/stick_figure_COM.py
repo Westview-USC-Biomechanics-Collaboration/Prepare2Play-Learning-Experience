@@ -240,6 +240,16 @@ class Processor:
 
                 # Add frame index to row
                 row["frame_index"] = frame_index
+                if displayCOM:
+                    # Calculate COM and add to row
+                    datain = pd.Series([row[f"landmark_{i}_x"] for i in range(33)] +
+                                      [row[f"landmark_{i}_y"] for i in range(33)],
+                                      index=[f"{pose_landmark_names[i]}_x" for i in range(33)] +
+                                            [f"{pose_landmark_names[i]}_y" for i in range(33)])
+                    dataout = calculateCOM(datain,sex)
+                    row["COM_x"] = dataout[0]
+                    row["COM_y"] = dataout[1]
+
                 output.append(row)
 
                 frame_index += 1
@@ -248,7 +258,6 @@ class Processor:
                 print(traceback.format_exc())
                 break
 
-        cap.release()
 
         # Create DataFrame and save to CSV file
         df = pd.DataFrame(output)
@@ -268,4 +277,4 @@ if __name__ == "__main__":
     # processor.find_coordinates(sex='male', filename='output.mp4', displayname=True, displaystickfigure=True, displayCOM=True)
 
     # Save landmarks to CSV with zeros for no detection
-    processor.SaveToTxt(sex='male', filename='pose_landmarks.csv', confidencelevel=0.85, displayCOM=False)
+    processor.SaveToTxt(sex='male', filename='pose_landmarks.csv', confidencelevel=0.85, displayCOM=True)
