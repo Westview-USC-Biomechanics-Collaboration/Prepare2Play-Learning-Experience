@@ -221,6 +221,7 @@ class Processor:
 
         print("[INFO] Start processing COM")
         while cap.isOpened():
+            print("[DEBUG] [COM] - Frame index:", frame_index)
             try:
                 # print("[DEBUG] [COM] - Processing frame index:", frame_index)
                 ret, frame = cap.read()
@@ -265,7 +266,7 @@ class Processor:
         df.to_csv(filename, index=False)
 
         endTime = time.time()
-        print("Total time taken: ", endTime - startTime)
+        print("[INFO] COM Total time taken: ", endTime - startTime)
 
 
 if __name__ == "__main__":

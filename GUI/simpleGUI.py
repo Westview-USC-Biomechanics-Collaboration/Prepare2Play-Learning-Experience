@@ -417,7 +417,6 @@ class DisplayApp:
 
     def startCOM(self):
         COMCallback(self)
-        self.COM_flag = True
 
     def save(self):
         saveCallback(self)
