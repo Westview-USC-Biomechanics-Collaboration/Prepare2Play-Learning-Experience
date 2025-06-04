@@ -40,7 +40,7 @@ class COM_helper:
                 x = int(width * float(point['x']))
                 y = int(height* float(point['y']))
                 if 'name' in point:
-                    cv2.circle(frame, (x, y), 10, (255, 0, 0), -1)
+                    cv2.circle(frame, (x, y), 10, (0, 0, 255), -1)
                 else:
                     cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
             except (KeyError, ValueError, TypeError) as e:
