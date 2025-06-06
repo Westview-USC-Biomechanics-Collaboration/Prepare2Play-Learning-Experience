@@ -100,4 +100,6 @@ def process(self):
             self.master.after(0, self.label_video)
             self.video_data_flag = True
 
-        threading.Thread(target=detect_and_finalize, daemon=True).start()
+        #threading.Thread(target=detect_and_finalize, daemon=True).start()
+        self.master.after(0, self.label_video)
+        self.video_data_flag = True
