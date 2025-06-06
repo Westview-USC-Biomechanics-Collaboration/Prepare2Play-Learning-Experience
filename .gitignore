@@ -5,6 +5,7 @@
 *.png
 *.jpeg
 *.txt
+*.csv
 *.mp4
 *.exe
 *.venv
