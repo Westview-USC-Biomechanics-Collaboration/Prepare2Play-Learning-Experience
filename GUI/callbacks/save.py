@@ -114,6 +114,7 @@ def saveCallback(self):
 
         line2 = ax2.axvline(x=self.Force.data.iloc[int(count), 0], color='red', linestyle='--', linewidth=1.5)
         def render_matplotlib_to_cv2(cur):
+            cur = np.clip(cur, 9, self.Force.data.rows-1)  # 0609 update: make sure value is in range
             # cur is the row
             LOCtime = self.Force.data.iloc[int(cur),0]
             line1.set_xdata([LOCtime])
@@ -245,7 +246,7 @@ def saveCallback(self):
     # Creating top level
     self.save_window = tk.Toplevel(self.master)
     self.save_window.title("Save Window")
-    self.save_window.geometry("400x560")
+    self.save_window.geometry("400x800")
 
     # Freeze the main window
     # self.save_window.grab_set()
