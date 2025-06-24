@@ -17,8 +17,8 @@ def ballDropDetect(cap:cv2.VideoCapture):
     startTime = time.time()
 
     # Define color range for darker green tennis ball (adjust based on lighting conditions)
-    lower_bound = np.array([25, 130, 50])  # Darker green lower bound in HSV
-    upper_bound = np.array([80, 240, 140])  # Upper bound in HSV (limit brightness)
+    lower_bound = np.array([18, 100, 150])
+    upper_bound = np.array([32, 255, 255])
     MIN_AREA_THRESHOLD = 500  
 
     # Initialize variables
@@ -83,6 +83,6 @@ def forceSpikeDetect(df:pd.DataFrame):
 
 
 if __name__ == "__main__":
-    capture = cv2.VideoCapture('/home/chaser/Downloads/tss_rl_JG_vid02.mov')
+    capture = cv2.VideoCapture('testing\spk_JH_12_long_vid02 - Copy.MOV')
     index = ballDropDetect(capture)
     print("program finished")
