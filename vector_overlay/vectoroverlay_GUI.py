@@ -103,6 +103,20 @@ class VectorOverlay:
 
     def __init__(self, data, video):
         # data is a pandas dataframe, orientation is either "top" "long" "short"
+
+        data.rename(columns={
+        "Fx": "Fx1",
+        "Fy": "Fy1",
+        "Fz": "Fz1",
+        "Ax": "Ax1",
+        "Ay": "Ay1",
+        "Fx.1": "Fx2",
+        "Fy.1": "Fy2",
+        "Fz.1": "Fz2",
+        "Ax.1": "Ax2",
+        "Ay.1": "Ay2"
+    }, inplace=True)
+        
         self.data = data
         self.video = video
 

@@ -714,6 +714,7 @@ class DisplayApp:
         names = ["abs time (s)", "Fx1", "Fy1", "Fz1", "|Ft1|", "Ax1", "Ay1", "COM px1", "COM py1", "COM pz1",
                  "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "COM px2", "COM py2", "COM pz2"]
         """
+        
 
         if file_path.endswith('.txt'):
             self.Force.data = self.fileReader.readTxt(file_path)
