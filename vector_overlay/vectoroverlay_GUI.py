@@ -103,24 +103,20 @@ class VectorOverlay:
 
     def __init__(self, data, video):
         # data is a pandas dataframe, orientation is either "top" "long" "short"
+        rename_dict = {
+            "Fx": "Fx1", "Fy": "Fy1", "Fz": "Fz1", "|Ft|": "Ft1", "Ax": "Ax1", "Ay": "Ay1",
+            "Fx.1": "Fx2", "Fy.1": "Fy2", "Fz.1": "Fz2", "|Ft|.1": "Ft2", "Ax.1": "Ax2", "Ay.1": "Ay2",
+            # Optional: Add third plate
+            "Fx.2": "Fx3", "Fy.2": "Fy3", "Fz.2": "Fz3", "|Ft|.2": "Ft3", "Ax.2": "Ax3", "Ay.2": "Ay3"
+        }
 
-        data.rename(columns={
-        "Fx": "Fx1",
-        "Fy": "Fy1",
-        "Fz": "Fz1",
-        "Ax": "Ax1",
-        "Ay": "Ay1",
-        "Fx.1": "Fx2",
-        "Fy.1": "Fy2",
-        "Fz.1": "Fz2",
-        "Ax.1": "Ax2",
-        "Ay.1": "Ay2"
-    }, inplace=True)
-        
+        for key in rename_dict:
+            if key in data.columns:
+                data.rename(columns={key: rename_dict[key]}, inplace=True)
+         
+
         self.data = data
         self.video = video
-
-
 
         self.frame_width = None
         self.frame_height = None
@@ -141,7 +137,7 @@ class VectorOverlay:
 
         self.corners = []
 
-        # initializing
+            # initialize video frame properties and read data arrays
         self.setFrameData()
         self.check_corner(cap=self.video)
         self.readData()
