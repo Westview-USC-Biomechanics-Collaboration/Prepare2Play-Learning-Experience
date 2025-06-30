@@ -236,60 +236,72 @@ class VectorOverlay:
         cv.arrowedLine(frame, point_pair1, end_point_1, (0, 255, 0), 4)  # Green for plate 1
         cv.arrowedLine(frame, point_pair2, end_point_2, (255, 0, 0), 4)  # Blue for plate 2
 
-    def LongVectorOverlay(self, outputName=None, show_preview=True):
-        """Long view vector overlay with optimized processing"""
+    def LongVectorOverlay(self, outputName=None, show_preview=True, lag=0):
+        """Long view vector overlay with lag-based video/data alignment (video starts earlier if lag < 0)"""
+        print("Lag parameter:", lag)
+        # If lag is in frames, convert to seconds (if user passes a large int)
+        lag_seconds = lag / self.fps
+        print(f"Applying lag of {lag_seconds} seconds to force data synchronization...")
         self.normalizeForces(self.fy1, self.fy2, self.fz1, self.fz2)
 
         if self.frame_width is None or self.frame_height is None:
             print("Error: Frame data not set.")
             return
 
-        # Handle None or empty output name
         if not outputName:
             outputName = "long_view_overlay_output.mp4"
             print(f"No output name provided, using default: {outputName}")
 
         # Reset video to beginning
         self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        
-        out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
-                           (self.frame_width, self.frame_height))
-
         frame_number = 0
-        
         print("Starting long view overlay processing...")
-        
-        while self.video.isOpened() and frame_number < len(self.fx1):
+
+        # If lag is positive, skip video frames (video starts later)
+        # If lag is negative, skip force data samples (video starts earlier)
+        frames_to_skip = int(abs(lag_seconds) * self.fps)
+        force_idx_offset = 0
+        if lag_seconds > 0:
+            print(f"Skipping {frames_to_skip} video frames to align video with force data.")
+            for _ in range(frames_to_skip):
+                self.video.read()
+        elif lag_seconds < 0:
+            print(f"Skipping {frames_to_skip} force data samples to start video earlier.")
+            force_idx_offset = frames_to_skip
+
+        out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
+                            (self.frame_width, self.frame_height))
+
+        # Only process the frames that have corresponding force data
+        while self.video.isOpened() and frame_number + force_idx_offset < len(self.fx1):
             ret, frame = self.video.read()
             if not ret:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            # Map forces to view coordinates
-            fx1 = -self.fy1[frame_number]  # -Fy maps to x in long view
-            fx2 = -self.fy2[frame_number]
-            fy1 = self.fz1[frame_number]   # Fz maps to y in long view
-            fy2 = self.fz2[frame_number]
+            force_idx = frame_number + force_idx_offset
 
-            # Map pressure positions
-            px1 = self.py1[frame_number]
-            py1 = self.px1[frame_number]
-            px2 = self.py2[frame_number]
-            py2 = self.px2[frame_number]
+            fx1 = -self.fy1[force_idx]
+            fx2 = -self.fy2[force_idx]
+            fy1 = self.fz1[force_idx]
+            fy2 = self.fz2[force_idx]
+            px1 = self.py1[force_idx]
+            py1 = self.px1[force_idx]
+            px2 = self.py2[force_idx]
+            py2 = self.px2[force_idx]
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
-            
+
             if show_preview:
                 cv2.imshow("Long View", cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5))))
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
-            
+
             frame_number += 1
             out.write(frame)
 
-            # Progress indicator
             if frame_number % 30 == 0:
-                print(f"Processed {frame_number}/{len(self.fx1)} frames")
+                print(f"Processed {frame_number}/{len(self.fx1) - force_idx_offset} frames")
 
         out.release()
         if show_preview:
