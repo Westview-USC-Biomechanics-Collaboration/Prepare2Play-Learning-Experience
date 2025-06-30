@@ -5,6 +5,7 @@ import pandas as pd
 import os
 from pathlib import Path
 from datetime import datetime
+import threading
 
 # ---- Enhanced Vector Overlay GUI ----
 class VectorOverlayApp:
@@ -277,7 +278,18 @@ Press 'q' during preview to quit early."""
             self.root.update()
 
             
-            self.run_direct_integration(progress_window, output_path)
+            def overlay_task():
+                try:
+                    self.run_direct_integration(progress_window, output_path)
+                except Exception as e:
+                    try:
+                        progress_window.destroy()
+                    except:
+                        pass
+                    messagebox.showerror("Error", f"An error occurred:\n{str(e)}")
+
+            # Start the overlay in a background thread
+            threading.Thread(target=overlay_task, daemon=True).start()
 
         except Exception as e:
             try:
