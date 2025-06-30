@@ -142,6 +142,18 @@ class VectorOverlay:
         self.check_corner(cap=self.video)
         self.readData()
 
+       
+
+
+      
+
+        # print("Fx1 sample:", self.fx1[:10])
+        # print("Fy1 sample:", self.fy1[:10])
+        # print("Fz1 sample:", self.fz1[:10])
+        # print("Fx2 sample:", self.fx2[:10])
+        # print("Fy2 sample:", self.fy2[:10])
+        # print("Fz2 sample:", self.fz2[:10])
+
     def check_corner(self, cap):
         self.corners = select_points(cap=cap)
 
@@ -437,7 +449,9 @@ class VectorOverlay:
         print(f"Finished processing video; Total Frames: {frame_number}")
 
 if __name__ == "__main__":
-    df = pd.read_excel("C:\\Users\\16199\Desktop\data\Chase\\bcp_lr_CC_for02_Raw_Data.xlsx",skiprows=19)
-    cap = cv2.VideoCapture("C:\\Users\\16199\Desktop\data\Chase\\bcp_lr_CC_vid02.mp4")
-    v = VectorOverlay(df,cap)
-    v.LongVectorOverlay(outputName="C:\\Users\\16199\Desktop\data\Chase\\testoutput.mp4")
+    # print("Yo")
+    # df = pd.read_excel("C:\\Users\\16199\Desktop\data\Chase\\bcp_lr_CC_for02_Raw_Data.xlsx",skiprows=19)
+    # cap = cv2.VideoCapture("C:\\Users\\16199\Desktop\data\Chase\\bcp_lr_CC_vid02.mp4")
+    # v = VectorOverlay(df,cap)
+    # v.LongVectorOverlay(outputName="C:\\Users\\16199\Desktop\data\Chase\\testoutput.mp4")
+    print("")

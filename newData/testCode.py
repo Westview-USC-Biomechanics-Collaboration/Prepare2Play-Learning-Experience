@@ -8,7 +8,7 @@ from scipy import signal
 startTime = time.time()
 
 # --- Paths and filenames ---
-parent_path = r"C:\Users\gulbd\OneDrive\Documents\GitHub\Prepare2Play-Learning-Experience\newData"
+parent_path = r"C:\Users\berke\OneDrive\Desktop\USCBiomechanicsProject\Prepare2Play-Learning-Experience\newData"
 video_file = "tennisball_test_long_vid03.MOV"
 video_path = os.path.join(parent_path, video_file)
 

@@ -47,7 +47,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     if not cap.isOpened():
         print("Error: Could not open video.")
         return
-
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
     # Read the first frame
     ret, frame = cap.read()
     if not ret:

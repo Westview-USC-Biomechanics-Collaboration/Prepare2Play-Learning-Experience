@@ -4,6 +4,7 @@ import cv2
 import pandas as pd
 import os
 from pathlib import Path
+from datetime import datetime
 
 # ---- Enhanced Vector Overlay GUI ----
 class VectorOverlayApp:
@@ -196,6 +197,17 @@ Press 'q' during preview to quit early."""
         if file_path:
             self.output_path.set(file_path)
 
+    def get_auto_output_path(self, video_path, output_folder="processedVideo", extension=".mp4"):
+        output_dir = Path(output_folder)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        print(f"Created or confirmed folder: {output_dir.resolve()}")
+        
+        base_name = Path(video_path).stem
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_filename = f"{base_name}_processed_{timestamp}{extension}"
+        print(f"Output video path:!")
+        return output_dir / output_filename
+
     def load_data_file(self, file_path):
         """Load data from CSV or Excel file with proper format detection"""
         try:
@@ -239,10 +251,13 @@ Press 'q' during preview to quit early."""
                 "Please select both video and data files.")
             return
 
-        if self.output_mode.get() == "Save Video" and not self.output_path.get():
-            messagebox.showerror("Missing Output Path", 
-                "Please select an output path for the video.")
-            return
+        # If Save Video mode, use auto output path instead of user selection
+        if self.output_mode.get() == "Save Video":
+            output_path = self.get_auto_output_path(self.video_path)
+            # Update the GUI label so user can see where it is saving
+            self.output_path.set(str(output_path))
+        else:
+            output_path = None
 
         try:
             # Show progress
@@ -261,20 +276,10 @@ Press 'q' during preview to quit early."""
             
             self.root.update()
 
-            # Method 1: Try using wrapper (safer)
-            try:
-                # Try to use the wrapper first
-                success = self.run_with_wrapper(progress_window)
-                if success:
-                    return
-            except Exception as e:
-                print(f"Wrapper method failed: {e}")
-
-            # Method 2: Direct integration (fallback)
-            self.run_direct_integration(progress_window)
+            
+            self.run_direct_integration(progress_window, output_path)
 
         except Exception as e:
-            # Close progress window if it exists
             try:
                 progress_window.destroy()
             except:
@@ -282,79 +287,8 @@ Press 'q' during preview to quit early."""
             
             messagebox.showerror("Error", f"An error occurred:\n{str(e)}")
 
-    def run_with_wrapper(self, progress_window):
-        """Try to run using the wrapper approach"""
-        try:
-            # Import wrapper
-            import sys
-            sys.path.append(r"C:\Users\gulbd\OneDrive\Documents\GitHub\Prepare2Play-Learning-Experience")
-            
-            # Create a simple wrapper inline if the external one isn't available
-            class SimpleWrapper:
-                def __init__(self, data_path, video_path):
-                    self.data_path = data_path
-                    self.video_path = video_path
-                
-                def run(self, view_mode, output_path):
-                    # Load data
-                    df = self.load_data_file(self.data_path)
-                    cap = cv2.VideoCapture(self.video_path)
-                    
-                    # Import VectorOverlay
-                    from vector_overlay.vectoroverlay_GUI import VectorOverlay
-                    
-                    # Create and run overlay
-                    overlay = VectorOverlay(df, cap)
-                    
-                    view_mode = view_mode.lower()
-                    if view_mode == "long":
-                        overlay.LongVectorOverlay(outputName=output_path)
-                    elif view_mode == "top":
-                        overlay.TopVectorOverlay(outputName=output_path)
-                    elif view_mode == "short":
-                        overlay.ShortVectorOverlay(outputName=output_path)
-                    
-                    return True
-                
-                def load_data_file(self, file_path):
-                    file_ext = Path(file_path).suffix.lower()
-                    if file_ext == '.csv':
-                        return pd.read_csv(file_path)
-                    elif file_ext in ['.xlsx', '.xls']:
-                        try:
-                            return pd.read_excel(file_path, skiprows=19)
-                        except:
-                            return pd.read_excel(file_path)
-            
-            # Use wrapper
-            wrapper = SimpleWrapper(self.data_path, self.video_path)
-            output_path = self.output_path.get() if self.output_mode.get() == "Save Video" else None
-            
-            progress_window.destroy()
-            
-            # Show corner selection instructions
-            messagebox.showinfo("Corner Selection", 
-                "You'll now select force plate corners.\n\n"
-                "Click 8 corners in order:\n"
-                "• Plate 1: top-left → top-right → bottom-right → bottom-left\n"
-                "• Plate 2: top-left → top-right → bottom-right → bottom-left\n\n"
-                "Press any key when done selecting.")
-            
-            wrapper.run(self.view_option.get(), output_path)
-            
-            # Success message
-            if output_path:
-                messagebox.showinfo("Success", f"Video saved successfully!\n{output_path}")
-            else:
-                messagebox.showinfo("Complete", "Live preview finished!")
-            
-            return True
-            
-        except Exception as e:
-            print(f"Wrapper approach failed: {e}")
-            return False
 
-    def run_direct_integration(self, progress_window):
+    def run_direct_integration(self, progress_window, output_path=None):
         """Direct integration approach (fallback)"""
         # Load data
         df = self.load_data_file(self.data_path)
@@ -367,7 +301,7 @@ Press 'q' during preview to quit early."""
         try:
             # Import your VectorOverlay class
             import sys
-            sys.path.append(r"C:\Users\gulbd\OneDrive\Documents\GitHub\Prepare2Play-Learning-Experience")
+            sys.path.append(r"C:\Users\berke\OneDrive\Desktop\USCBiomechanicsProject\Prepare2Play-Learning-Experience")
             from vector_overlay.vectoroverlay_GUI import VectorOverlay
         except ImportError as e:
             raise Exception(f"VectorOverlay module not found: {str(e)}")
@@ -378,8 +312,8 @@ Press 'q' during preview to quit early."""
         progress_window.destroy()
 
         # Determine output path
-        output_path = self.output_path.get() if self.output_mode.get() == "Save Video" else None
-
+        # output_path is passed in here
+        
         # Run the appropriate overlay method
         view_mode = self.view_option.get().lower()
         
@@ -392,11 +326,11 @@ Press 'q' during preview to quit early."""
             "Press any key when done selecting all 8 points.")
         
         if view_mode == "long":
-            overlay.LongVectorOverlay(outputName=output_path)
+            overlay.LongVectorOverlay(outputName=str(output_path) if output_path else None)
         elif view_mode == "top":
-            overlay.TopVectorOverlay(outputName=output_path)
+            overlay.TopVectorOverlay(outputName=str(output_path) if output_path else None)
         elif view_mode == "short":
-            overlay.ShortVectorOverlay(outputName=output_path)
+            overlay.ShortVectorOverlay(outputName=str(output_path) if output_path else None)
         else:
             raise ValueError("Invalid view mode selected")
 
@@ -405,7 +339,6 @@ Press 'q' during preview to quit early."""
             messagebox.showinfo("Success", f"Video saved successfully!\n{output_path}")
         else:
             messagebox.showinfo("Complete", "Live preview finished!")
-
 
 def main():
     """Main function to run the application"""
