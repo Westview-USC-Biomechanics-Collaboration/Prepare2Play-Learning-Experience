@@ -338,7 +338,7 @@ Press 'q' during preview to quit early."""
             "Press any key when done selecting all 8 points.")
         
         if view_mode == "long":
-            overlay.LongVectorOverlay(outputName=str(output_path) if output_path else None, show_preview=True, lag = 71)
+            overlay.LongVectorOverlay(outputName=str(output_path) if output_path else None, show_preview=True, lag = 65)
         elif view_mode == "top":
             overlay.TopVectorOverlay(outputName=str(output_path) if output_path else None)
         elif view_mode == "short":
