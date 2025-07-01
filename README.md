@@ -2,7 +2,7 @@
 
 ## 🔄 Current Status
 
-- **Main Active Branch**: [`main`]([https://github.com/your-org/your-repo/tree/dev](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/tree/chase-GUI))  
+- **Main Active Branch**: [`main`](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/tree/chase-GUI)  
   _This is the most up-to-date working branch with the latest features and updates._
 
 ---
@@ -20,7 +20,7 @@
 
 | Branch | Description |
 |--------|-------------|
-| [`GUI for LED Syncing`]([https://github.com/your-org/your-repo/tree/dev](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/tree/testingLED)) | (Deren) Takes in raw .csv file, syncs using LED, outputs vector overlay. Currently only working for top view   |
+| [`GUI for LED Syncing`](https://github.com/your-org/your-repo/tree/dev](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/tree/testingLED)) | (Deren) Takes in raw .csv file, syncs using LED, outputs vector overlay. Currently only working for top view   |
 
 ---
 
