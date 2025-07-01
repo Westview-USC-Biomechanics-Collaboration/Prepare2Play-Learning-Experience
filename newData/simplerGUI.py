@@ -1,3 +1,23 @@
+"""
+Vector Overlay GUI Application
+
+This application provides a GUI for using force plate data to create vector overlays on videos.
+
+Features:
+- Select video and force data files (CSV file)
+- Choose view mode (Long, Top, Short)
+- Live preview or save processed video with vector overlays
+- Adjustable lag (based of ledSyncing) for synchronizing video and force data
+- Runs overlay processing in a background thread to keep the GUI responsive
+- User-friendly file selection and progress feedback
+
+Usage:
+- Run this script to launch the GUI
+- Select video and force data files
+- Select corner of the force plates in the video
+- Follow on-screen instructions for corner selection and processing
+"""
+
 import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
 import cv2
@@ -7,11 +27,10 @@ from pathlib import Path
 from datetime import datetime
 import threading
 
-# ---- Enhanced Vector Overlay GUI ----
 class VectorOverlayApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("🎯 Vector Overlay Generator")
+        self.root.title("Vector Overlay Generator")
         self.root.geometry("600x400")
         self.root.configure(bg="#f0f0f0")
 
@@ -25,8 +44,8 @@ class VectorOverlayApp:
         self.output_path = tk.StringVar()
         
         # Status variables
-        self.video_status = tk.StringVar(value="❌ No video selected")
-        self.data_status = tk.StringVar(value="❌ No data file selected")
+        self.video_status = tk.StringVar(value="No video selected")
+        self.data_status = tk.StringVar(value="No data file selected")
         
         self.create_widgets()
         self.center_window()
@@ -43,7 +62,7 @@ class VectorOverlayApp:
         title_frame = tk.Frame(self.root, bg="#f0f0f0")
         title_frame.pack(pady=10)
         
-        tk.Label(title_frame, text="🎯 Force Plate Vector Overlay", 
+        tk.Label(title_frame, text="USC Biomechanics Vector Overlay", 
                 font=("Arial", 16, "bold"), bg="#f0f0f0").pack()
         
         # Main content frame
@@ -136,9 +155,9 @@ class VectorOverlayApp:
 • Data: .csv, .xlsx, .xls
 
 View Modes:
-• Long: Side view with Fy/Fz forces
-• Top: Overhead view with Fx/Fy forces  
-• Short: Front view (experimental)
+• Long: Working
+• Top: In progress
+• Short: In Progress
 
 Press 'q' during preview to quit early."""
         
@@ -166,7 +185,7 @@ Press 'q' during preview to quit early."""
         if file_path:
             self.video_path = file_path
             filename = Path(file_path).name
-            self.video_status.set(f"✅ {filename}")
+            self.video_status.set(f"{filename}")
 
     def browse_data(self):
         """Browse for data file (CSV or Excel)"""
@@ -311,7 +330,7 @@ Press 'q' during preview to quit early."""
 
         # Import and create VectorOverlay 
         try:
-            # Import your VectorOverlay class
+            # Import VectorOverlay class
             import sys
             sys.path.append(r"C:\Users\berke\OneDrive\Desktop\USCBiomechanicsProject\Prepare2Play-Learning-Experience")
             from vector_overlay.vectoroverlay_GUI import VectorOverlay
@@ -338,11 +357,11 @@ Press 'q' during preview to quit early."""
             "Press any key when done selecting all 8 points.")
         
         if view_mode == "long":
-            overlay.LongVectorOverlay(outputName=str(output_path) if output_path else None, show_preview=True, lag = 65)
+            overlay.LongVectorOverlay(outputName=str(output_path) if output_path else None, show_preview=True, lag = 71)
         elif view_mode == "top":
-            overlay.TopVectorOverlay(outputName=str(output_path) if output_path else None)
+            overlay.TopVectorOverlay(outputName=str(output_path) if output_path else None, lag = 71)
         elif view_mode == "short":
-            overlay.ShortVectorOverlay(outputName=str(output_path) if output_path else None)
+            overlay.ShortVectorOverlay(outputName=str(output_path) if output_path else None, lag = 71)
         else:
             raise ValueError("Invalid view mode selected")
 

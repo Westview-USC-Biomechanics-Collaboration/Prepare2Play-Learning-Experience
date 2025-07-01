@@ -7,12 +7,13 @@ from scipy import signal
 
 startTime = time.time()
 
-# --- Paths and filenames ---
+# Declaring path and video file
 parent_path = r"C:\Users\berke\OneDrive\Desktop\USCBiomechanicsProject\Prepare2Play-Learning-Experience\newData"
 video_file = "walk_test_vid01.MOV"
 video_path = os.path.join(parent_path, video_file)
 
-# --- Create LED template ---
+# --- Template for LED detection ---
+# Template is a rectangle with a cross in the middle
 template = np.zeros((35, 61), dtype=np.uint8)
 template[0:5, :] = 255
 template[30:35, :] = 255
@@ -20,8 +21,8 @@ template[:, 0:5] = 255
 template[:, 56:61] = 255
 template[12:23, 22:39] = 255
 
-template_center_offset_x = 30
-template_center_offset_y = 17
+template_center_offset_x = 30 # Offset from the top-left corner of the template to the LED center
+template_center_offset_y = 17 # Offset from the top-left corner of the template to the LED center
 delta = 3  # Area around LED center for signal averaging
 
 # --- Open video ---
@@ -48,9 +49,9 @@ while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         break
-
-    if frame_counter % 100 == 0:
-        print(f"Processing frame {frame_counter}...")
+    #Printing frame every 100 frames 
+    #if frame_counter % 100 == 0:
+        #print(f"Processing frame {frame_counter}...")
 
     b, g, r = frame[:, :, 0], frame[:, :, 1], frame[:, :, 2]
     

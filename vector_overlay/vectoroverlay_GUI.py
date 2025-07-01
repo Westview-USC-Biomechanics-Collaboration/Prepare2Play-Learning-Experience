@@ -247,7 +247,7 @@ class VectorOverlay:
         if self.frame_width is None or self.frame_height is None:
             print("Error: Frame data not set.")
             return
-
+        # Handle None or empty output name
         if not outputName:
             outputName = "long_view_overlay_output.mp4"
             print(f"No output name provided, using default: {outputName}")
