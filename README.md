@@ -10,6 +10,7 @@
 ## ✅ Outstanding Tasks
 
 - [ ] Implement correct vector overly for side and top view
+- [ ] Auto detections for force plate corners (assuming they are always in the same location)
 - [ ] Implement direct processing from LED syncing to GUI
 - [ ] Modularize Vector Overlay Code
 
