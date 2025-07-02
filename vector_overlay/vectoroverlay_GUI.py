@@ -240,8 +240,8 @@ class VectorOverlay:
         """Long view vector overlay with lag-based video/data alignment (video starts earlier if lag < 0)"""
         print("Lag parameter:", lag)
         # If lag is in frames, convert to seconds (if user passes a large int)
-        lag_seconds = lag / self.fps
-        print(f"Applying lag of {lag_seconds} seconds to force data synchronization...")
+        
+        print(f"Applying lag of {lag / self.fps} seconds to force data synchronization...")
         self.normalizeForces(self.fy1, self.fy2, self.fz1, self.fz2)
 
         if self.frame_width is None or self.frame_height is None:
@@ -259,15 +259,18 @@ class VectorOverlay:
 
         # If lag is positive, skip video frames (video starts later)
         # If lag is negative, skip force data samples (video starts earlier)
-        frames_to_skip = int(abs(lag_seconds) * self.fps)
+
+        skipFrames = int(abs(lag))
+
         force_idx_offset = 0
-        if lag_seconds > 0:
-            print(f"Skipping {frames_to_skip} video frames to align video with force data.")
-            for _ in range(frames_to_skip):
+
+        if lag > 0:
+            print(f"Skipping {skipFrames} video frames to align video with force data.")
+            for _ in range(skipFrames):
                 self.video.read()
-        elif lag_seconds < 0:
-            print(f"Skipping {frames_to_skip} force data samples to start video earlier.")
-            force_idx_offset = frames_to_skip
+        elif lag < 0:
+            print(f"Skipping {skipFrames} force data samples to start video earlier.")
+            force_idx_offset = skipFrames
 
         out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
                             (self.frame_width, self.frame_height))

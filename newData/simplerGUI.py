@@ -349,15 +349,15 @@ Press 'q' during preview to quit early."""
         view_mode = self.view_option.get().lower()
         
         # Show instructions for corner selection
-        messagebox.showinfo("Corner Selection", 
-            "Next, you'll select the force plate corners on the video.\n\n"
-            "Click on the 8 corners in this order:\n"
-            "Plate 1: top-left, top-right, bottom-right, bottom-left\n"
-            "Plate 2: top-left, top-right, bottom-right, bottom-left\n\n"
-            "Press any key when done selecting all 8 points.")
+        #messagebox.showinfo("Corner Selection", 
+        ##    "Next, you'll select the force plate corners on the video.\n\n"
+        ##    "Click on the 8 corners in this order:\n"
+         #   "Plate 1: top-left, top-right, bottom-right, bottom-left\n"
+        #    "Plate 2: top-left, top-right, bottom-right, bottom-left\n\n"
+         #   "Press any key when done selecting all 8 points.")
         
         if view_mode == "long":
-            overlay.LongVectorOverlay(outputName=str(output_path) if output_path else None, show_preview=True, lag = 71)
+            overlay.LongVectorOverlay(outputName=str(output_path) if output_path else None, show_preview=True, lag= 71)
         elif view_mode == "top":
             overlay.TopVectorOverlay(outputName=str(output_path) if output_path else None, lag = 71)
         elif view_mode == "short":
@@ -376,6 +376,7 @@ def main():
     root = tk.Tk()
     app = VectorOverlayApp(root)
     
+
     # Handle window closing
     def on_closing():
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
@@ -385,6 +386,13 @@ def main():
     root.protocol("WM_DELETE_WINDOW", on_closing)
     root.mainloop()
 
+# --- Add this to VectorOverlayApp class ---
+# In VectorOverlayApp.__init__, add:
+# self.lagValue = 0
+
+# In run_direct_integration, replace lag = lagValue with:
+# lag = getattr(self, 'lagValue', 0)
+# and use lag in overlay.LongVectorOverlay(..., lag=lag)
 
 if __name__ == "__main__":
-    main()
+    main()  

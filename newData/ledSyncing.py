@@ -109,3 +109,19 @@ df_result_filename = force_file.replace('.txt', '_Results.csv')
 df_result.to_csv(os.path.join(parent_path, df_result_filename), index=False)
 
 print(f"Done. Columns in force data: {df_force.columns.tolist()}")
+
+lagFile = os.path.join(parent_path, '_Results.csv')
+
+lagValue = df_result['Video Frame for t_zero force'].values[0]
+
+lagValue = int(abs(lagValue))
+
+#Call main function from simplerGUI.py
+#from simplerGUI import main
+#def run_simpler_gui():
+#    main()
+#if __name__ == "__main__":
+#    run_simpler_gui()
+    
+   
+
