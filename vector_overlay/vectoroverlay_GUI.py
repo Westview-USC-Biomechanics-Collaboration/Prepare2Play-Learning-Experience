@@ -41,7 +41,7 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords, short=Fal
 
 class VectorOverlay:
 
-    def __init__(self, data, video, time_offset=0.0, force_fps=None):
+    def __init__(self, data, video, force_fps=None):
         """
         Initialize VectorOverlay with improved synchronization options.
         
@@ -64,7 +64,7 @@ class VectorOverlay:
 
         self.data = data
         self.video = video
-        self.time_offset = time_offset
+        
         self.force_fps = force_fps
 
         # Video properties
@@ -140,17 +140,28 @@ class VectorOverlay:
         # Calculate force data sampling rate
         if self.force_fps is None:
             # Assume force data covers the same time period as video
-            self.force_fps = force_samples / video_duration
+            timestamps = self.data["abs time (s)"].values
+            if len(timestamps) >= 2:
+                total_time = timestamps[-1] - timestamps[0]
+                if total_time > 0:
+                    self.force_fps = (len(timestamps) - 1) / total_time
+                    print(f"Calculated force_fps: {self.force_fps:.2f} Hz")
+                else:
+                    print("Warning: Time difference between first and last force samples is zero.")
+                    self.force_fps = 1000  # Fallback default
+            else:
+                print("Warning: Not enough timestamp data to calculate force_fps.")
+                self.force_fps = 1000  # Fallback default
         
         print(f"Force data: {force_samples} samples at {self.force_fps:.2f} Hz")
         print(f"Video: {video_frames} frames at {self.fps} fps ({video_duration:.2f}s)")
         
         # Calculate samples per frame with offset
         samples_per_frame = self.force_fps / self.fps
-        offset_samples = int(self.time_offset * self.force_fps)
+        #offset_samples = int(self.time_offset * self.force_fps)
         
         print(f"Samples per frame: {samples_per_frame:.3f}")
-        print(f"Time offset: {self.time_offset}s ({offset_samples} samples)")
+        print(f"Time offset:  ( samples)")
 
         # Initialize arrays
         fx1, fy1, fz1, px1, py1 = [], [], [], [], []
@@ -158,7 +169,7 @@ class VectorOverlay:
 
         for frame_idx in range(video_frames):
             # Calculate corresponding data index with offset
-            data_idx = int(frame_idx * samples_per_frame) + offset_samples
+            data_idx = int(frame_idx * samples_per_frame) 
             
             # Ensure index is within bounds
             if 0 <= data_idx < len(self.data):
@@ -260,7 +271,7 @@ class VectorOverlay:
         # If lag is positive, skip video frames (video starts later)
         # If lag is negative, skip force data samples (video starts earlier)
 
-        skipFrames = int(abs(lag))
+        skipFrames = lag * 1   # Convert lag to frames
 
         force_idx_offset = 0
 
