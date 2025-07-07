@@ -40,15 +40,14 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords, short=Fal
     return (int(new_x), int(new_y))
 
 class VectorOverlay:
-
-    def __init__(self, data, video, force_fps=None):
+    def __init__(self, data, video, time_offset=0.0, force_fps=None):
         """
         Initialize VectorOverlay with improved synchronization options.
         
         Args:
             data: pandas DataFrame with force data
             video: cv2.VideoCapture object
-            time_offset: Time offset in seconds to sync data with video (positive = data leads video)
+            time_offset: Time offset in seconds to sync data with video (positive if data starts after video)
             force_fps: Force data sampling rate (if None, will be calculated)
         """
         # Rename columns for consistency
@@ -64,7 +63,7 @@ class VectorOverlay:
 
         self.data = data
         self.video = video
-        
+        self.time_offset = time_offset  # Added to handle synchronization offset
         self.force_fps = force_fps
 
         # Video properties
@@ -132,15 +131,13 @@ class VectorOverlay:
         self.fz2 = tuple(f * scale_factor for f in self.fz2)
 
     def readData(self):
-        """Improved data reading with better synchronization"""
-        force_samples = len(self.data)
+        """Improved data reading with timestamp-based synchronization"""
+        timestamps = self.data["abs time (s)"].values
         video_frames = self.frame_count
         video_duration = video_frames / self.fps
         
-        # Calculate force data sampling rate
+        # Calculate force data sampling rate if not provided
         if self.force_fps is None:
-            # Assume force data covers the same time period as video
-            timestamps = self.data["abs time (s)"].values
             if len(timestamps) >= 2:
                 total_time = timestamps[-1] - timestamps[0]
                 if total_time > 0:
@@ -153,53 +150,42 @@ class VectorOverlay:
                 print("Warning: Not enough timestamp data to calculate force_fps.")
                 self.force_fps = 1000  # Fallback default
         
-        print(f"Force data: {force_samples} samples at {self.force_fps:.2f} Hz")
+        print(f"Force data: {len(self.data)} samples at {self.force_fps:.2f} Hz")
         print(f"Video: {video_frames} frames at {self.fps} fps ({video_duration:.2f}s)")
         
-        # Calculate samples per frame with offset
-        samples_per_frame = self.force_fps / self.fps
-        #offset_samples = int(self.time_offset * self.force_fps)
-        
-        print(f"Samples per frame: {samples_per_frame:.3f}")
-        print(f"Time offset:  ( samples)")
-
         # Initialize arrays
         fx1, fy1, fz1, px1, py1 = [], [], [], [], []
         fx2, fy2, fz2, px2, py2 = [], [], [], [], []
 
         for frame_idx in range(video_frames):
-            # Calculate corresponding data index with offset
-            data_idx = int(frame_idx * samples_per_frame) 
+            # Calculate the exact time of the video frame, adjusted by time_offset
+            frame_time = (frame_idx / self.fps) + self.time_offset
+            
+            # Find the force data sample with the closest timestamp
+            data_idx = np.argmin(np.abs(timestamps - frame_time))
             
             # Ensure index is within bounds
             if 0 <= data_idx < len(self.data):
                 row = self.data.iloc[data_idx]
-                
-                # Extract data with better error handling
-                data_x1 = row.get("Fx1", 0.0) if not pd.isna(row.get("Fx1")) else 0.0
-                data_y1 = row.get("Fy1", 0.0) if not pd.isna(row.get("Fy1")) else 0.0
-                data_z1 = row.get("Fz1", 0.0) if not pd.isna(row.get("Fz1")) else 0.0
-                
-                # Normalize pressure coordinates (0-1 range)
-                ax1 = row.get("Ax1", 0.0) if not pd.isna(row.get("Ax1")) else 0.0
-                ay1 = row.get("Ay1", 0.0) if not pd.isna(row.get("Ay1")) else 0.0
-                pressure_x1 = np.clip((ax1 + 0.3) / 0.6, 0, 1)
-                pressure_y1 = np.clip((ay1 + 0.45) / 0.9, 0, 1)
-
-                data_x2 = row.get("Fx2", 0.0) if not pd.isna(row.get("Fx2")) else 0.0
-                data_y2 = row.get("Fy2", 0.0) if not pd.isna(row.get("Fy2")) else 0.0
-                data_z2 = row.get("Fz2", 0.0) if not pd.isna(row.get("Fz2")) else 0.0
-                
-                ax2 = row.get("Ax2", 0.0) if not pd.isna(row.get("Ax2")) else 0.0
-                ay2 = row.get("Ay2", 0.0) if not pd.isna(row.get("Ay2")) else 0.0
-                pressure_x2 = np.clip((ax2 + 0.3) / 0.6, 0, 1)
-                pressure_y2 = np.clip((ay2 + 0.45) / 0.9, 0, 1)
             else:
-                # Default values for out-of-bounds indices
-                data_x1 = data_y1 = data_z1 = 0.0
-                pressure_x1 = pressure_y1 = 0.5  # Center position
-                data_x2 = data_y2 = data_z2 = 0.0
-                pressure_x2 = pressure_y2 = 0.5
+                row = pd.Series({col: 0.0 for col in self.data.columns})
+            
+            # Extract data with error handling
+            data_x1 = row.get("Fx1", 0.0) if not pd.isna(row.get("Fx1")) else 0.0
+            data_y1 = row.get("Fy1", 0.0) if not pd.isna(row.get("Fy1")) else 0.0
+            data_z1 = row.get("Fz1", 0.0) if not pd.isna(row.get("Fz1")) else 0.0
+            ax1 = row.get("Ax1", 0.0) if not pd.isna(row.get("Ax1")) else 0.0
+            ay1 = row.get("Ay1", 0.0) if not pd.isna(row.get("Ay1")) else 0.0
+            pressure_x1 = np.clip((ax1 + 0.3) / 0.6, 0, 1)
+            pressure_y1 = np.clip((ay1 + 0.45) / 0.9, 0, 1)
+
+            data_x2 = row.get("Fx2", 0.0) if not pd.isna(row.get("Fx2")) else 0.0
+            data_y2 = row.get("Fy2", 0.0) if not pd.isna(row.get("Fy2")) else 0.0
+            data_z2 = row.get("Fz2", 0.0) if not pd.isna(row.get("Fz2")) else 0.0
+            ax2 = row.get("Ax2", 0.0) if not pd.isna(row.get("Ax2")) else 0.0
+            ay2 = row.get("Ay2", 0.0) if not pd.isna(row.get("Ay2")) else 0.0
+            pressure_x2 = np.clip((ax2 + 0.3) / 0.6, 0, 1)
+            pressure_y2 = np.clip((ay2 + 0.45) / 0.9, 0, 1)
 
             # Append to arrays
             fx1.append(data_x1)
@@ -248,52 +234,40 @@ class VectorOverlay:
         cv.arrowedLine(frame, point_pair2, end_point_2, (255, 0, 0), 4)  # Blue for plate 2
 
     def LongVectorOverlay(self, outputName=None, show_preview=True, lag=0):
-        """Long view vector overlay with lag-based video/data alignment (video starts earlier if lag < 0)"""
+        """Long view vector overlay with lag-based video/data alignment"""
         print("Lag parameter:", lag)
-        # If lag is in frames, convert to seconds (if user passes a large int)
-        
         print(f"Applying lag of {lag / self.fps} seconds to force data synchronization...")
         self.normalizeForces(self.fy1, self.fy2, self.fz1, self.fz2)
 
         if self.frame_width is None or self.frame_height is None:
             print("Error: Frame data not set.")
             return
-        # Handle None or empty output name
+
         if not outputName:
             outputName = "long_view_overlay_output.mp4"
             print(f"No output name provided, using default: {outputName}")
 
-        # Reset video to beginning
         self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        frame_number = 0
-        print("Starting long view overlay processing...")
 
-        # If lag is positive, skip video frames (video starts later)
-        # If lag is negative, skip force data samples (video starts earlier)
-
-        skipFrames = lag * 1   # Convert lag to frames
-
-        force_idx_offset = 0
-
-        if lag > 0:
-            print(f"Skipping {skipFrames} video frames to align video with force data.")
+        if lag != 0:
+            skipFrames = abs(lag)
+            print(f"Skipping {skipFrames} video frames to align video with force data (lag={lag}).")
             for _ in range(skipFrames):
                 self.video.read()
-        elif lag < 0:
-            print(f"Skipping {skipFrames} force data samples to start video earlier.")
-            force_idx_offset = skipFrames
+
+        frame_number = 0
+        print("Starting long view overlay processing...")
 
         out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
                             (self.frame_width, self.frame_height))
 
-        # Only process the frames that have corresponding force data
-        while self.video.isOpened() and frame_number + force_idx_offset < len(self.fx1):
+        while self.video.isOpened() and frame_number < len(self.fx1):
             ret, frame = self.video.read()
             if not ret:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            force_idx = frame_number + force_idx_offset
+            force_idx = frame_number
 
             fx1 = -self.fy1[force_idx]
             fx2 = -self.fy2[force_idx]
@@ -315,7 +289,7 @@ class VectorOverlay:
             out.write(frame)
 
             if frame_number % 30 == 0:
-                print(f"Processed {frame_number}/{len(self.fx1) - force_idx_offset} frames")
+                print(f"Processed {frame_number}/{len(self.fx1)} frames")
 
         out.release()
         if show_preview:
@@ -330,12 +304,10 @@ class VectorOverlay:
             print("Error: Frame data not set.")
             return
 
-        # Handle None or empty output name
         if not outputName:
             outputName = "top_view_overlay_output.mp4"
             print(f"No output name provided, using default: {outputName}")
 
-        # Reset video to beginning
         self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
         
         out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
@@ -351,15 +323,13 @@ class VectorOverlay:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            # Map forces to view coordinates
-            fx1 = -self.fy1[frame_number]  # -Fy maps to x in top view
+            fx1 = -self.fy1[frame_number]
             fx2 = -self.fy2[frame_number]
-            fy1 = -self.fx1[frame_number]  # -Fx maps to y in top view
+            fy1 = -self.fx1[frame_number]
             fy2 = -self.fx2[frame_number]
 
-            # Map pressure positions
             px1 = self.py1[frame_number]
-            py1 = 1 - self.px1[frame_number]  # Invert y-coordinate
+            py1 = 1 - self.px1[frame_number]
             px2 = self.py2[frame_number]
             py2 = 1 - self.px2[frame_number]
 
@@ -373,7 +343,6 @@ class VectorOverlay:
             frame_number += 1
             out.write(frame)
 
-            # Progress indicator
             if frame_number % 30 == 0:
                 print(f"Processed {frame_number}/{len(self.fx1)} frames")
 
@@ -390,12 +359,10 @@ class VectorOverlay:
             print("Error: Frame data not set.")
             return
 
-        # Handle None or empty output name
         if not outputName:
             outputName = "short_view_overlay_output.mp4"
             print(f"No output name provided, using default: {outputName}")
 
-        # Reset video to beginning
         self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
         
         out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
@@ -405,7 +372,6 @@ class VectorOverlay:
         
         print("Starting short view overlay processing...")
         
-        # Determine which plate is in front (only print once)
         plate2_in_front = self.corners[0][1] < self.corners[4][1]
         print(f"Force plate {'2' if plate2_in_front else '1'} is in front")
 
@@ -416,7 +382,6 @@ class VectorOverlay:
                 break
 
             if plate2_in_front:
-                # Plate 2 in front
                 fx1 = -self.fx1[frame_number]
                 fx2 = -self.fx2[frame_number]
                 fy1 = self.fz1[frame_number]
@@ -426,7 +391,6 @@ class VectorOverlay:
                 py1 = 1 - self.py1[frame_number]
                 py2 = 1 - self.py2[frame_number]
             else:
-                # Plate 1 in front
                 fx1 = self.fx1[frame_number]
                 fx2 = self.fx2[frame_number]
                 fy1 = self.fz1[frame_number]
@@ -446,7 +410,6 @@ class VectorOverlay:
             frame_number += 1
             out.write(frame)
 
-            # Progress indicator
             if frame_number % 30 == 0:
                 print(f"Processed {frame_number}/{len(self.fx1)} frames")
 
@@ -462,7 +425,6 @@ if __name__ == "__main__":
     # cap = cv2.VideoCapture("your_video.mp4")
     # 
     # # Try different time offsets to find the best sync
-    # # Positive offset = data leads video, Negative = data lags video
-    # v = VectorOverlay(df, cap, time_offset=-0.1, force_fps=1000)  # Adjust as needed
+    # v = VectorOverlay(df, cap, time_offset=-0.1, force_fps=1000)
     # v.LongVectorOverlay("output.mp4", show_preview=True)
     print("Vector overlay module loaded. Use with appropriate data and video files.")

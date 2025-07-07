@@ -357,7 +357,9 @@ Press 'q' during preview to quit early."""
          #   "Press any key when done selecting all 8 points.")
         
         if view_mode == "long":
-            overlay.LongVectorOverlay(outputName=str(output_path) if output_path else None, show_preview=True, lag= -71)
+            # Use frame-accurate skipping for lag in LongVectorOverlay
+            lag = -71  # Or get from user input if needed
+            overlay.LongVectorOverlay(outputName=str(output_path) if output_path else None, show_preview=True, lag=lag)
         elif view_mode == "top":
             overlay.TopVectorOverlay(outputName=str(output_path) if output_path else None, lag = -71)
         elif view_mode == "short":
@@ -395,4 +397,4 @@ def main():
 # and use lag in overlay.LongVectorOverlay(..., lag=lag)
 
 if __name__ == "__main__":
-    main()  
+    main()
