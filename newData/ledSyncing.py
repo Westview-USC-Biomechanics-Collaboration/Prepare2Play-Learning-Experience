@@ -9,7 +9,7 @@ startTime = time.time()
 
 # Declaring path and video file
 parent_path = r"C:\Users\berke\OneDrive\Desktop\USCBiomechanicsProject\Prepare2Play-Learning-Experience\newData"
-video_file = "walk_test_vid01.MOV"
+video_file = "tennisball_test_long_vid02.MOV"
 video_path = os.path.join(parent_path, video_file)
 
 # --- Template for LED detection ---
@@ -77,7 +77,7 @@ df_filename = video_file.replace('.mov', '_Analysis_Front.csv').replace('.MOV', 
 df.to_csv(os.path.join(parent_path, df_filename), index=False)
 
 # --- Load and process force plate data ---
-force_file = "walktest1.txt"
+force_file = "tennisball_test_for02.txt"
 force_path = os.path.join(parent_path, force_file)
 df_force = pd.read_csv(force_path, header=17, delimiter='\t').drop(0)
 df_force['RedSignal'] = np.sign(df_force['Fz.2'].astype('float64'))
