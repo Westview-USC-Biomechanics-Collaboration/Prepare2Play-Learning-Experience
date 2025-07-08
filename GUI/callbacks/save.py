@@ -114,7 +114,7 @@ def saveCallback(self):
 
         line2 = ax2.axvline(x=self.Force.data.iloc[int(count), 0], color='red', linestyle='--', linewidth=1.5)
         def render_matplotlib_to_cv2(cur):
-            cur = np.clip(cur, 9, self.Force.data.rows-1)  # 0609 update: make sure value is in range
+            cur = np.clip(cur, 9, self.Force.data.shape[0]-1)  # 0609 update: make sure value is in range
             # cur is the row
             LOCtime = self.Force.data.iloc[int(cur),0]
             line1.set_xdata([LOCtime])
