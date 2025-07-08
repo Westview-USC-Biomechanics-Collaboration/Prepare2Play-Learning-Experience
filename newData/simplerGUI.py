@@ -361,7 +361,7 @@ Press 'q' during preview to quit early."""
             lag = 71  # Or get from user input if needed
             overlay.LongVectorOverlay(outputName=str(output_path) if output_path else None, show_preview=True, lag=lag)
         elif view_mode == "top":
-            overlay.TopVectorOverlay(outputName=str(output_path) if output_path else None, lag=lag)
+            overlay.TopVectorOverlay(outputName=str(output_path) if output_path else None, lag = lag)
         elif view_mode == "short":
             overlay.ShortVectorOverlay(outputName=str(output_path) if output_path else None, lag = lag)
         else:
