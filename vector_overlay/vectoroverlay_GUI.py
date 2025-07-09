@@ -144,7 +144,7 @@ class VectorOverlay:
         print(f"Video: {video_frames} frames at {self.fps} fps ({video_duration:.2f}s)")
         
         # Calculate samples per frame with offset
-        samples_per_frame = self.force_fps / self.fps
+        samples_per_frame = 10  # Default to 10 samples per frame for 2400 Hz data
         
         print(f"Samples per frame: {samples_per_frame:.3f}")
         #print(f"Time offset: {self.time_offset}s ({offset_samples} samples)")
