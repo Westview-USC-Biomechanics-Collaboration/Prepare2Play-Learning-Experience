@@ -145,6 +145,9 @@ class VectorOverlay:
         
         # Calculate samples per frame with offset
         samples_per_frame = 10  # Default to 10 samples per frame for 2400 Hz data
+
+         
+        print(f"# of total samples: {len(self.data)}")
         
         print(f"Samples per frame: {samples_per_frame:.3f}")
         #print(f"Time offset: {self.time_offset}s ({offset_samples} samples)")
@@ -154,12 +157,14 @@ class VectorOverlay:
         fx2, fy2, fz2, px2, py2 = [], [], [], [], []
 
         # Extract timestamps from DataFrame
-        timestamps = self.data.index.values / self.force_fps
+        timestamps = self.data.index.values / (self.force_fps * 1)
 
         for frame_idx in range(video_frames):
             # Calculate corresponding data index with offset
-            frame_time = frame_idx / self.fps
-            data_idx = np.argmin(np.abs(timestamps - frame_time))
+            frame_time = frame_idx / (self.fps) 
+            # Use stepsize to sample force data for each frame
+            stepsize = int(force_samples / video_frames) if video_frames > 0 else 1
+            data_idx = frame_idx * stepsize
             
             # Ensure index is within bounds
             if 0 <= data_idx < len(self.data):

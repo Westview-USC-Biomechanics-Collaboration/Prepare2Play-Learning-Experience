@@ -358,7 +358,7 @@ Press 'q' during preview to quit early."""
         
         if view_mode == "long":
             # Use frame-accurate skipping for lag in LongVectorOverlay
-            lag = 71 # Or get from user input if needed
+            lag = -71 # Or get from user input if needed
             overlay.LongVectorOverlay(outputName=str(output_path) if output_path else None, show_preview=True, lag=lag)
         elif view_mode == "top":
             overlay.TopVectorOverlay(outputName=str(output_path) if output_path else None, lag = lag)
