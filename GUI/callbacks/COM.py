@@ -10,7 +10,7 @@ def COMCallback(self):
         print("[INFO] Starting COM processing in a separate thread...")
         copyCam = cv2.VideoCapture(self.Video.path)
         copyCam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        processor = Processor(copyCam)
+        processor = Processor(self.Video.path)
         processor.SaveToTxt(sex="m", filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
         copyCam.release()
         del copyCam

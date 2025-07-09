@@ -22,6 +22,7 @@ def find_coordinates(sex, video_path, filename, confidencelevel=0.85, displaynam
         pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=confidencelevel, model_complexity=2)
 
         cap = cv2.VideoCapture(video_path)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
         if not cap.isOpened():
             print("Error: Could not open video.")
             return
@@ -193,32 +194,32 @@ def pose_landmarks_to_row(pose_landmarks_list):
 
     return row
 
-def pose_worker(conn, frame, confidencelevel):
-    import mediapipe as mp
-    mp_pose = mp.solutions.pose
-    with mp_pose.Pose(static_image_mode=False, min_detection_confidence=confidencelevel, model_complexity=2) as pose:
-        result = pose.process(frame)
-        if result.pose_landmarks:
-            landmark_data = [[lmk.x, lmk.y, lmk.z] for lmk in result.pose_landmarks.landmark]
-        else:
-            landmark_data = [[0.0, 0.0, 0.0]] * 33
-        conn.send(landmark_data)
-    conn.close()
+# def pose_worker(conn, frame, confidencelevel):
+#     import mediapipe as mp
+#     mp_pose = mp.solutions.pose
+#     with mp_pose.Pose(static_image_mode=False, min_detection_confidence=confidencelevel, model_complexity=2) as pose:
+#         result = pose.process(frame)
+#         if result.pose_landmarks:
+#             landmark_data = [[lmk.x, lmk.y, lmk.z] for lmk in result.pose_landmarks.landmark]
+#         else:
+#             landmark_data = [[0.0, 0.0, 0.0]] * 33
+#         conn.send(landmark_data)
+#     conn.close()
 
-def run_pose_with_timeout(frame, confidencelevel, timeout=5):
-    parent_conn, child_conn = Pipe()
-    p = Process(target=pose_worker, args=(child_conn, frame, confidencelevel))
-    p.start()
+# def run_pose_with_timeout(frame, confidencelevel, timeout=5):
+#     parent_conn, child_conn = Pipe()
+#     p = Process(target=pose_worker, args=(child_conn, frame, confidencelevel))
+#     p.start()
 
-    if parent_conn.poll(timeout):  # Wait for data or timeout
-        data = parent_conn.recv()
-        p.join()
-        return data
-    else:
-        print("[TIMEOUT] pose.process(frame) took too long. Terminating...")
-        p.terminate()
-        p.join()
-        return None
+#     if parent_conn.poll(timeout):  # Wait for data or timeout
+#         data = parent_conn.recv()
+#         p.join()
+#         return data
+#     else:
+#         print("[TIMEOUT] pose.process(frame) took too long. Terminating...")
+#         p.terminate()
+#         p.join()
+#         return None
 
 def process_frame(q: processing.Queue, results_queue: processing.Queue, sex, confidencelevel, displayCOM):
     import mediapipe as mp
@@ -309,6 +310,7 @@ def process_frame(q: processing.Queue, results_queue: processing.Queue, sex, con
 def frame_reader(frame_queue: processing.Queue, video_path):
     print(f"[READER] Attempting to open video: '{video_path}'") # <-- ADD THIS LINE
     cap = cv2.VideoCapture(video_path)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
     if not cap.isOpened():
         print("Error: Could not open video.")
         return
@@ -340,7 +342,7 @@ class Processor:
         frame_queue = Queue()  
         result_queue = Queue()
 
-        reader_thread = threading.Thread(target=frame_reader, args=(frame_queue, r"C:\Users\Arnav\Downloads\ajp_lr_JN_long_VO_05.mov"))
+        reader_thread = threading.Thread(target=frame_reader, args=(frame_queue, self.video_path))
         reader_thread.start()
 
         # Start worker processes
@@ -403,17 +405,17 @@ class Processor:
 
 
 
-if __name__ == "__main__":
-    video_path = r"C:\Users\Arnav\Downloads\ajp_lr_JN_long_VO_05.mov"  # Change this to your video file path
-    #cap = cv2.VideoCapture(video_path)
-    print(f"DEBUG IN MAIN: Type of video_path before Processor: {type(video_path)}") # Add this
-    print(f"DEBUG IN MAIN: Value of video_path before Processor: '{video_path}'") # Add this
+# if __name__ == "__main__":
+#     video_path = r"C:\Users\Student\Downloads\spu_lr_NS_long_vid01.mov"  # Change this to your video file path
+#     #cap = cv2.VideoCapture(video_path)
+#     print(f"DEBUG IN MAIN: Type of video_path before Processor: {type(video_path)}") # Add this
+#     print(f"DEBUG IN MAIN: Value of video_path before Processor: '{video_path}'") # Add this
 
-    processor = Processor(video_path)
+#     processor = Processor(video_path)
 
-    # Example usage:
-    # Draw skeleton with display options:
-    # processor.find_coordinates(sex='male', video_path, filename='output.mp4', displayname=True, displaystickfigure=True, displayCOM=True)
+#     # Example usage:
+#     # Draw skeleton with display options:
+#     # processor.find_coordinates(sex='male', video_path, filename='output.mp4', displayname=True, displaystickfigure=True, displayCOM=True)
 
-    # Save landmarks to CSV with zeros for no detection
-    processor.SaveToTxt(sex='male', filename='pose_landmarks.csv', confidencelevel=0.85, displayCOM=True)
+#     # Save landmarks to CSV with zeros for no detection
+#     processor.SaveToTxt(sex='male', filename='pose_landmarks.csv', confidencelevel=0.85, displayCOM=True)
