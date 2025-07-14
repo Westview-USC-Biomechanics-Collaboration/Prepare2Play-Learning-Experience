@@ -37,39 +37,20 @@ from GUI.callbacks.vector_overlay import vectorOverlayCallback
 from GUI.callbacks.stepF import stepF
 from GUI.callbacks.save import saveCallback
 from GUI.callbacks.COM import COMCallback
-
-#@dataclass
-class Video:
-    path: str = None,
-    cam : cv2.VideoCapture = None,
-    vector_cam: cv2.VideoCapture = None,
-    total_frames: int = None,
-    frame_width: int = None,
-    frame_height: int = None,
-    fps: int = None,
-
-#@dataclass
-class Force:
-    path: str = None,
-    data: pd.array = None,
-    rows: int = None,
+from GUI.models.video_state import VideoState
+from GUI.models.force_state import ForceState
+from GUI.models.state_manager import StateManager
 
 class DisplayApp:
     def __init__(self, master):
         self.master = master
 
-        # Initialize data class
-        self.Video = Video()
-        self.Force = Force()
+        self.Video = VideoState()
+        self.Force = ForceState()
+        self.state = StateManager()
 
         # Initialize UI
         self.initUI()
-
-        # Initialize Global Variables
-        self.initGlobalVar()
-
-        # Initialize Global Flags
-        self.initGloablFlags()
 
         # lock for multi threading TODO this is not used at all
         self.lock = threading.Lock()     
@@ -138,7 +119,6 @@ class DisplayApp:
         self.canvas1.bind("<Button-4>", lambda event:self._on_zoom_linux(event, canvas=1))  # Linux scroll up
         self.canvas1.bind("<Button-5>", lambda event:self._on_zoom_linux(event, canvas=1))  # Linux scroll down
 
-
         self.canvas2 = tk.Canvas(self.master, width=canvas_width, height=300, bg="lightgrey")
         self.canvas2_forward = tk.Button(self.canvas2, text="forward", command=lambda: self._plot_move_Button(1))
         self.canvas2_backward = tk.Button(self.canvas2, text="backward", command=lambda: self._plot_move_Button(-1))
@@ -203,8 +183,8 @@ class DisplayApp:
         self.graph_option = tk.Button(self.master, text="Graphing Options", command=self.graph)
         self.step_forward = tk.Button(self.master, text="+1frame",command=lambda: self.stepF(1))
         self.step_backward = tk.Button(self.master, text="-1frame", command=lambda: self.stepF(-1))
-        self.rotateR = tk.Button(self.master, text="Rotate clockwise",command=lambda: self.rotateCam(1))
-        self.rotateL = tk.Button(self.master, text="Rotate counterclockwise",command=lambda: self.rotateCam(-1))
+        self.state.rotateR = tk.Button(self.master, text="Rotate clockwise",command=lambda: self.state.rotateCam(1))
+        self.state.rotateL = tk.Button(self.master, text="Rotate counterclockwise",command=lambda: self.state.rotateCam(-1))
         self.upload_video_button = tk.Button(self.master, text="Upload Video", command=self.upload_video)
         self.show_vector_overlay = tk.Button(self.master, text="Vector Overlay", command=self.vector_overlay)
         self.upload_force_button = tk.Button(self.master, text="Upload Force File", command=self.upload_force_data)
@@ -217,8 +197,8 @@ class DisplayApp:
         self.background.create_window(650,350,window=self.graph_option)
         self.background.create_window(150,450,window=self.step_backward)
         self.background.create_window(1250,450,window=self.step_forward)
-        self.background.create_window(100,350,window=self.rotateR)
-        self.background.create_window(280,350,window=self.rotateL)
+        self.background.create_window(100,350,window=self.state.rotateR)
+        self.background.create_window(280,350,window=self.state.rotateL)
         self.background.create_window(layoutHelper(3,"horizontal"),525,window=self.upload_video_button)
         self.background.create_window(layoutHelper(6,"horizontal"),525,window=self.upload_force_button)
         self.background.create_window(layoutHelper(9,"horizontal"),525,window=self.show_vector_overlay)
@@ -238,28 +218,6 @@ class DisplayApp:
         self.slider = Scale(self.master, from_=0, to=100, orient="horizontal", label="pick frame", command=self.slider)
         self.background.create_window(700,450,window=self.slider,width=900)
     
-    def initGlobalVar(self):
-        # force data
-        self.force_start    = None  # This variable store the time in raw force data which user choose to align
-        self.force_frame    = None  # total number of frames could be represented by force data ->calculation: TotalRows/stepsize
-        self.step_size      = 10    # step siize unit: rows/frame
-        self.zoom_pos       = 0     # canvas 2: force data offset -step size<zoom_pos<+step size
-        self.force_align    = None  # Intialize force align value and video align value
-
-        # video
-        self.rot = 0 # rotated direction
-        self.video_align = None
-
-        # Global frame/location base on slider
-        self.loc = 0
-
-    def initGloablFlags(self):
-        # Global Flags
-        self.force_data_flag = False
-        self.video_data_flag = False
-        self.vector_overlay_flag = False
-        self.COM_flag = False
-
     def initSaveWindow(self):
         """Initialize Save window"""
         # saving
@@ -380,15 +338,15 @@ class DisplayApp:
             self.master.wait_window(popup)
 
     def label_video(self):
-        self.video_align = self.loc
-        self.timeline2.update_label(self.video_align/self.slider['to'])
-        self.video_timeline_label.config(text=f"Video Timeline (label = {self.video_align})")
+        self.state.video_align = self.state.loc
+        self.timeline2.update_label(self.state.video_align/self.slider['to'])
+        self.video_timeline_label.config(text=f"Video Timeline (label = {self.state.video_align})")
         self._update_video_timeline()
 
     def label_force(self):
-        self.force_align = self.loc
-        self.timeline1.update_label(self.force_align/self.slider['to'])
-        self.force_timeline_label.config(text=f"Force Timeline (label = {self.force_align})")
+        self.state.force_align = self.state.loc
+        self.timeline1.update_label(self.state.force_align/self.slider['to'])
+        self.force_timeline_label.config(text=f"Force Timeline (label = {self.state.force_align})")
         self._update_force_timeline()
 
     def align(self):
@@ -442,9 +400,9 @@ class DisplayApp:
 
         # Read data based on plate and force
         plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
-        x_position = float(self.Force.data.iloc[int(self.loc * self.step_size + self.zoom_pos), 0])
+        x_position = float(self.Force.data.iloc[int(self.state.loc * self.state.step_size + self.state.zoom_pos), 0])
         y_value = float(
-            self.Force.data.loc[int(self.loc * self.step_size + self.zoom_pos), f"{self.option.get()}{plate_number}"])
+            self.Force.data.loc[int(self.state.loc * self.state.step_size + self.state.zoom_pos), f"{self.option.get()}{plate_number}"])
 
         # Set x and y
         self.x = self.Force.data.iloc[:, 0]
@@ -496,7 +454,7 @@ class DisplayApp:
 
     def _update_force_timeline(self):
         # Assuming self.timeline1.draw_rect() returns an image
-        forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc / self.slider['to']))
+        forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.state.loc / self.slider['to']))
 
         # Resize the image to fit the canvas size
         canvas_width = self.force_timeline.winfo_width()  # Get the width of the canvas
@@ -513,7 +471,7 @@ class DisplayApp:
 
     def _update_video_timeline(self):
         # Assuming self.video_timeline is the canvas and self.timeline2.draw_rect() returns an image
-        videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc / self.Video.total_frames))
+        videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.state.loc / self.Video.total_frames))
 
         # Resize the image to fit the canvas size
         canvas_width = self.video_timeline.winfo_width()  # Get the width of the canvas

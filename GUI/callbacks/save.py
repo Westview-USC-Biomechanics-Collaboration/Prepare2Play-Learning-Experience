@@ -89,8 +89,8 @@ def saveCallback(self):
         ymax = max(y1.max(),y2.max(),y3.max(),y4.max())
         ymin = min(y1.min(),y2.min(),y3.min(),y4.min())
 
-        self.Force.data.loc[0:self.step_size*self.save_start,:] = np.nan
-        self.Force.data.loc[self.step_size*self.save_end:,:] = np.nan
+        self.Force.data.loc[0:self.state.step_size*self.save_start,:] = np.nan
+        self.Force.data.loc[self.state.step_size*self.save_end:,:] = np.nan
 
         ax1.clear()
         ax1.set_title(f"Force plate 1 Force Time Graph")
@@ -114,7 +114,7 @@ def saveCallback(self):
 
         line2 = ax2.axvline(x=self.Force.data.iloc[int(count), 0], color='red', linestyle='--', linewidth=1.5)
         def render_matplotlib_to_cv2(cur):
-            cur = np.clip(cur, 9, self.Force.data.rows-1)  # 0609 update: make sure value is in range
+            cur = np.clip(cur, 9, self.Force.data.shape[0]-1)  # 0609 update: make sure value is in range
             # cur is the row
             LOCtime = self.Force.data.iloc[int(cur),0]
             line1.set_xdata([LOCtime])
@@ -181,7 +181,7 @@ def saveCallback(self):
                 # if this calls when the frame_number is equal to the total frame count then the stream has just ended
                 print(f"Can't read frame at position {count}")
                 break
-            graphs = render_matplotlib_to_cv2(int(count * self.step_size))  # pass in current row
+            graphs = render_matplotlib_to_cv2(int(count * self.state.step_size))  # pass in current row
             if(count<self.save_start):
                 print("doing ori")
                 """
@@ -227,11 +227,11 @@ def saveCallback(self):
             fout.write(f"Video path: {self.Video.path}\n")
             fout.write(f"Total frame: {self.Video.total_frames}\n")
             fout.write(f"FPS: {self.Video.fps}\n")
-            fout.write(f"Video start frame: {self.video_align}\n\n")
+            fout.write(f"Video start frame: {self.state.video_align}\n\n")
             
             fout.write(f"Force data path: {self.Force.path}\n")
-            fout.write(f"Force start frame(before align && with out small adjustments): {self.force_align}\n")
-            fout.write(f"Force start time: {self.force_start}\n\n") # using video align because it's position after alignment
+            fout.write(f"Force start frame(before align && with out small adjustments): {self.state.force_align}\n")
+            fout.write(f"Force start time: {self.state.force_start}\n\n") # using video align because it's position after alignment
 
             fout.write(f"Cushion time: {self.cushion_entry.get()}\n")
             fout.write(f"Cushion frame: {cushion_frames}\n")  # num of frames before interval of interest and num of frame after if applicable

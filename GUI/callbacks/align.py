@@ -4,12 +4,12 @@ import numpy as np
 
 def alignCallback(self):
     print("[INFO] aligning...")
-    print(f"[DEBUG] {self.force_align}, { self.video_align}")
+    print(f"[DEBUG] {self.state.force_align}, { self.state.video_align}")
 
     # update the timeline visually
     start, end = self.timeline1.get_start_end()
     try:
-        offset = self.force_align - self.video_align
+        offset = self.state.force_align - self.state.video_align
         newstart = start-offset/self.slider['to']
         newend = end-offset/self.slider['to']
         newlabel = self.timeline1.get_label()-offset/self.slider['to']
@@ -21,19 +21,19 @@ def alignCallback(self):
         print(f"[DEBUG] offset value: {offset}")
         #check positive or negative offset:
         if(offset>0):
-            self.Force.data = self.Force.data.iloc[int(offset*self.step_size + self.zoom_pos):,:].reset_index(drop=True)
+            self.Force.data = self.Force.data.iloc[int(offset*self.state.step_size + self.state.zoom_pos):,:].reset_index(drop=True)
 
         else:
-            nan_rows = pd.DataFrame(np.nan, index=range(int(-offset*self.step_size - self.zoom_pos)), columns=self.Force.data.columns)
+            nan_rows = pd.DataFrame(np.nan, index=range(int(-offset*self.state.step_size - self.state.zoom_pos)), columns=self.Force.data.columns)
             self.Force.data = pd.concat([nan_rows, self.Force.data], ignore_index=True)  # We are using + because when we have a positive zoom_pos , the number of added rows is offset*step_size - zoom_pos
 
 
         # store some output meta data
-        self.force_start = self.Force.data.iloc[int(self.video_align*self.step_size),0]
+        self.state.force_start = self.Force.data.iloc[int(self.state.video_align*self.state.step_size),0]
 
-        self.zoom_pos = 0
+        self.state.zoom_pos = 0
         self.slider.set(0)
-        self.loc = 0
+        self.state.loc = 0
         self.plot_force_data()
     except TypeError as e:
         self._pop_up("Missing label!!!")

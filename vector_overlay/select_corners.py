@@ -101,9 +101,9 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
             break
 
     # Save the points to a file
-    with open('selected_points.txt', 'w') as f:
-        for point in points:
-            f.write(f'{point[0]},{point[1]}\n')
+    # with open('selected_points.txt', 'w') as f:
+    #     for point in points:
+    #         f.write(f'{point[0]},{point[1]}\n')
 
     print("Points saved to selected_points.txt")
     return points
