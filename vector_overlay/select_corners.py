@@ -117,11 +117,10 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     upper_yellow = np.array([35, 255, 255])
 
     # Open the video
-    cap = cv2.VideoCapture("/home/chaser/Videos/test_video.mp4")
     ret, frame = cap.read()
 
     if not ret:
-        print("Error reading video")
+        print("Error reading video during selecting corners")
         exit()
 
     # Convert to HSV
@@ -158,7 +157,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
     # Save coordinates to a file
-    with open("yellow_rectangles_coordinates.txt", "w") as f:
+    with open("selected_points.txt", "w") as f:
         for x, y in coords:
             f.write(f"{x},{y}\n")
 
