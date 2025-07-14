@@ -333,9 +333,11 @@ Press 'q' during preview to quit early."""
 
         # Import and create VectorOverlay 
         try:
-            # Import VectorOverlay class
+            # Import VectorOverlay class using relative path
             import sys
-            sys.path.append(r"C:\Users\Deren\OneDrive\Desktop\USCProject\Prepare2Play-Learning-Experience")
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            parent_dir = os.path.dirname(current_dir)  # If there is issue with this, try using sys.path.append(r"Path to vectoroverlay directory")
+            sys.path.append(parent_dir)
             from vector_overlay.vectoroverlay_GUI import VectorOverlay
         except ImportError as e:
             raise Exception(f"VectorOverlay module not found: {str(e)}")
