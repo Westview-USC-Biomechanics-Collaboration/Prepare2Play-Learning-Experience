@@ -211,7 +211,8 @@ class DisplayApp:
         self.video_button = tk.Button(self.master, text="Label Video", command=self.label_video)
         self.force_button = tk.Button(self.master, text="Label Force", command=self.label_force)
         self.save_button = tk.Button(self.master, text="Save", command=self.save)
-        self.COM_button = tk.Button(self.master, text="COM", command=self.startCOM)
+        self.MaleCOM_button = tk.Button(self.master, text="Male COM", command=self.startMaleCOM)
+        self.FemaleCOM_button = tk.Button(self.master, text="Female COM", command=self.startFemaleCOM)
 
         self.background.create_window(100,750,window=self.align_button)
         self.background.create_window(650,350,window=self.graph_option)
@@ -225,7 +226,8 @@ class DisplayApp:
         self.background.create_window(layoutHelper(3,"horizontal"),575,window=self.video_button)
         self.background.create_window(layoutHelper(6,"horizontal"),575,window=self.force_button)
         self.background.create_window(layoutHelper(9,"horizontal"),575,window=self.save_button)
-        self.background.create_window(100,800,window=self.COM_button)
+        self.background.create_window(100,800,window=self.MaleCOM_button)
+        self.background.create_window(100,850,window=self.FemaleCOM_button)
 
     def initLabels(self):
         self.force_timeline_label = Label(self.master, text="Force Timeline (label = frame)")
@@ -417,6 +419,12 @@ class DisplayApp:
 
     def startCOM(self):
         COMCallback(self)
+
+    def startMaleCOM(self):
+        COMCallback(self, "m")
+    
+    def startFemaleCOM(self):
+        COMCallback(self, "f")
 
     def save(self):
         saveCallback(self)
