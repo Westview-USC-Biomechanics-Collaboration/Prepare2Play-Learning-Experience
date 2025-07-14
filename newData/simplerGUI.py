@@ -47,6 +47,9 @@ class VectorOverlayApp:
         self.video_status = tk.StringVar(value="No video selected")
         self.data_status = tk.StringVar(value="No data file selected")
         
+        # Initialize lag value (will be set by Runner.py)
+        self.lagValue = 0
+        
         self.create_widgets()
         self.center_window()
 
@@ -332,7 +335,7 @@ Press 'q' during preview to quit early."""
         try:
             # Import VectorOverlay class
             import sys
-            sys.path.append(r"C:\Users\berke\OneDrive\Desktop\USCBiomechanicsProject\Prepare2Play-Learning-Experience")
+            sys.path.append(r"C:\Users\Deren\OneDrive\Desktop\USCProject\Prepare2Play-Learning-Experience")
             from vector_overlay.vectoroverlay_GUI import VectorOverlay
         except ImportError as e:
             raise Exception(f"VectorOverlay module not found: {str(e)}")
@@ -348,22 +351,16 @@ Press 'q' during preview to quit early."""
         # Run the appropriate overlay method
         view_mode = self.view_option.get().lower()
         
-        # Show instructions for corner selection
-        #messagebox.showinfo("Corner Selection", 
-        ##    "Next, you'll select the force plate corners on the video.\n\n"
-        ##    "Click on the 8 corners in this order:\n"
-         #   "Plate 1: top-left, top-right, bottom-right, bottom-left\n"
-        #    "Plate 2: top-left, top-right, bottom-right, bottom-left\n\n"
-         #   "Press any key when done selecting all 8 points.")
-        
         if view_mode == "long":
-            # Use frame-accurate skipping for lag in LongVectorOverlay
-            lag = -71 # Or get from user input if needed
+            # Use the lag value from LED syncing
+            lag = self.lagValue
             overlay.LongVectorOverlay(outputName=str(output_path) if output_path else None, show_preview=True, lag=lag)
         elif view_mode == "top":
-            overlay.TopVectorOverlay(outputName=str(output_path) if output_path else None, lag = lag)
+            lag = self.lagValue
+            overlay.TopVectorOverlay(outputName=str(output_path) if output_path else None, lag=lag)
         elif view_mode == "short":
-            overlay.ShortVectorOverlay(outputName=str(output_path) if output_path else None, lag = lag)
+            lag = self.lagValue
+            overlay.ShortVectorOverlay(outputName=str(output_path) if output_path else None, lag=lag)
         else:
             raise ValueError("Invalid view mode selected")
 
