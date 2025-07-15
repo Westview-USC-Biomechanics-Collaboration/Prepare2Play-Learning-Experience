@@ -7,6 +7,37 @@
 
 ---
 
+## File Outline
+
+Prepare2Play/
+│
+├── main.py                      # App entry point — launches DisplayApp
+│
+├── gui/
+│   ├── app.py                   # DisplayApp class: central GUI controller → initializes all the UI
+│   ├── layout/                  # UI builders
+│   │   ├── canvas_manager.py   # Everything canvas related (e.g. inits) + and keyPress logic
+│   │   ├── button_panel.py         
+│   │   ├── timeline_manager.py
+│   │   └── background.py
+│   ├── models/                  # OOP data containers
+│   │   ├── video_state.py
+│   │   ├── force_state.py
+│   │   └── state_manager.py     # Contains flags + app state
+│   ├── callbacks/               # Event handlers (buttons)
+│   │   └── (all your callback files here)
+│
+├── processing/                  # Force/LED sync processing + Rectangle detection (for 8 points)
+│   ├── led_sync.py            # Need to integrate after testing
+│   ├── rect_detect.py         # Need to make and then integrate 
+│
+├── vector_overlay/             # No need to change here
+│   └── (unchanged)
+│
+├── utils/                       # File formatting, conversion helpers
+│   ├── file_io.py
+│   └── frame_converter.py
+
 ## ✅ Outstanding Tasks
 
 - [ ] Implement correct vector overly for side and top view
