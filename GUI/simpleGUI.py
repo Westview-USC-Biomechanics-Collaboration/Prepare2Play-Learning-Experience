@@ -54,7 +54,6 @@ class DisplayApp:
         self.canvasManager = CanvasManager(self)
         self.buttonManager = ButtonManager(self)
         
-
         # Initialize UI
         self.initUI()
 
@@ -154,35 +153,6 @@ class DisplayApp:
         self.background.create_window(layoutHelper(6, "horizontal"), 575, window=self.buttons['label_force'])
         self.background.create_window(layoutHelper(9, "horizontal"), 575, window=self.buttons['save'])
         self.background.create_window(100, 800, window=self.buttons['COM'])
-
-    # def initButtons(self):
-    #     self.align_button = tk.Button(self.master, text="Align", command=self.align)
-    #     self.graph_option = tk.Button(self.master, text="Graphing Options", command=self.graph)
-    #     self.step_forward = tk.Button(self.master, text="+1frame",command=lambda: self.stepF(1))
-    #     self.step_backward = tk.Button(self.master, text="-1frame", command=lambda: self.stepF(-1))
-    #     self.state.rotateR = tk.Button(self.master, text="Rotate clockwise",command=lambda: self.state.rotateCam(1))
-    #     self.state.rotateL = tk.Button(self.master, text="Rotate counterclockwise",command=lambda: self.state.rotateCam(-1))
-    #     self.upload_video_button = tk.Button(self.master, text="Upload Video", command=self.upload_video)
-    #     self.show_vector_overlay = tk.Button(self.master, text="Vector Overlay", command=self.vector_overlay)
-    #     self.upload_force_button = tk.Button(self.master, text="Upload Force File", command=self.upload_force_data)
-    #     self.video_button = tk.Button(self.master, text="Label Video", command=self.label_video)
-    #     self.force_button = tk.Button(self.master, text="Label Force", command=self.label_force)
-    #     self.save_button = tk.Button(self.master, text="Save", command=self.save)
-    #     self.COM_button = tk.Button(self.master, text="COM", command=self.startCOM)
-
-    #     self.background.create_window(100,750,window=self.align_button)
-    #     self.background.create_window(650,350,window=self.graph_option)
-    #     self.background.create_window(150,450,window=self.step_backward)
-    #     self.background.create_window(1250,450,window=self.step_forward)
-    #     self.background.create_window(100,350,window=self.state.rotateR)
-    #     self.background.create_window(280,350,window=self.state.rotateL)
-    #     self.background.create_window(layoutHelper(3,"horizontal"),525,window=self.upload_video_button)
-    #     self.background.create_window(layoutHelper(6,"horizontal"),525,window=self.upload_force_button)
-    #     self.background.create_window(layoutHelper(9,"horizontal"),525,window=self.show_vector_overlay)
-    #     self.background.create_window(layoutHelper(3,"horizontal"),575,window=self.video_button)
-    #     self.background.create_window(layoutHelper(6,"horizontal"),575,window=self.force_button)
-    #     self.background.create_window(layoutHelper(9,"horizontal"),575,window=self.save_button)
-    #     self.background.create_window(100,800,window=self.COM_button)
 
     def initLabels(self):
         self.force_timeline_label = Label(self.master, text="Force Timeline (label = frame)")
