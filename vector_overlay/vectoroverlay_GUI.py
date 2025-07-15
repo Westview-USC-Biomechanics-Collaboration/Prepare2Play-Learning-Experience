@@ -1,6 +1,7 @@
 # Import libraries
 import cv2
 import cv2 as cv
+from matplotlib import lines
 import pandas as pd
 from vector_overlay.select_corners import select_points
 import numpy as np
@@ -44,7 +45,7 @@ class VectorOverlay:
     def __init__(self, data, video, force_fps=None):
         """
         Initialize VectorOverlay with improved synchronization options.
-        
+
         Args:
             data: pandas DataFrame with force data
             video: cv2.VideoCapture object
@@ -104,7 +105,7 @@ class VectorOverlay:
         self.frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
         self.fps = int(cap.get(cv.CAP_PROP_FPS))
         self.frame_count = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
-        
+
         print(f"Frame width: {self.frame_width}, Frame height: {self.frame_height}")
         print(f"Video FPS: {self.fps}, Frame count: {self.frame_count}")
 
@@ -116,7 +117,7 @@ class VectorOverlay:
             max(abs(value) for value in y1 if value != 0),
             max(abs(value) for value in y2 if value != 0)
         )
-        
+
         if max_force > 0:
             scale_factor = min(self.frame_height, self.frame_width) * 0.8 / max_force
         else:
@@ -134,21 +135,30 @@ class VectorOverlay:
         force_samples = len(self.data)
         video_frames = self.frame_count
         video_duration = video_frames / self.fps
-        
+
         # Calculate force data sampling rate
         if self.force_fps is None:
             # Assume force data covers the same time period as video
             self.force_fps = force_samples / video_duration
-        
+
         print(f"Force data: {force_samples} samples at {self.force_fps:.2f} Hz")
         print(f"Video: {video_frames} frames at {self.fps} fps ({video_duration:.2f}s)")
-        
+
         # Calculate samples per frame with offset
+
+        #Alternatively, formula = num of colums (240 * time_elapsed)
+        total_time_elapsed = self.data["abs time (s)"].iloc[-1] * 240
+
+        #Get total # of rows
+
+        #total_rows = len(self.data) #Not working with VSCode reading
+
+
         samples_per_frame = 10  # Default to 10 samples per frame for 2400 Hz data
 
-         
+
         print(f"# of total samples: {len(self.data)}")
-        
+
         print(f"Samples per frame: {samples_per_frame:.3f}")
         #print(f"Time offset: {self.time_offset}s ({offset_samples} samples)")
 
@@ -161,20 +171,20 @@ class VectorOverlay:
 
         for frame_idx in range(video_frames):
             # Calculate corresponding data index with offset
-            frame_time = frame_idx / (self.fps) 
+            frame_time = frame_idx / (self.fps)
             # Use stepsize to sample force data for each frame
             stepsize = int(force_samples / video_frames) if video_frames > 0 else 1
             data_idx = frame_idx * stepsize
-            
+
             # Ensure index is within bounds
             if 0 <= data_idx < len(self.data):
                 row = self.data.iloc[data_idx]
-                
+
                 # Extract data with better error handling
                 data_x1 = row.get("Fx1", 0.0) if not pd.isna(row.get("Fx1")) else 0.0
                 data_y1 = row.get("Fy1", 0.0) if not pd.isna(row.get("Fy1")) else 0.0
                 data_z1 = row.get("Fz1", 0.0) if not pd.isna(row.get("Fz1")) else 0.0
-                
+
                 # Normalize pressure coordinates (0-1 range)
                 ax1 = row.get("Ax1", 0.0) if not pd.isna(row.get("Ax1")) else 0.0
                 ay1 = row.get("Ay1", 0.0) if not pd.isna(row.get("Ay1")) else 0.0
@@ -184,7 +194,7 @@ class VectorOverlay:
                 data_x2 = row.get("Fx2", 0.0) if not pd.isna(row.get("Fx2")) else 0.0
                 data_y2 = row.get("Fy2", 0.0) if not pd.isna(row.get("Fy2")) else 0.0
                 data_z2 = row.get("Fz2", 0.0) if not pd.isna(row.get("Fz2")) else 0.0
-                
+
                 ax2 = row.get("Ax2", 0.0) if not pd.isna(row.get("Ax2")) else 0.0
                 ay2 = row.get("Ay2", 0.0) if not pd.isna(row.get("Ay2")) else 0.0
                 pressure_x2 = np.clip((ax2 + 0.3) / 0.6, 0, 1)
@@ -329,12 +339,12 @@ class VectorOverlay:
 
         # Reset video to beginning
         self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        
+
         out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
                            (self.frame_width, self.frame_height))
 
         frame_number = 0
-        
+
         print("Starting top view overlay processing...")
 
         while self.video.isOpened() and frame_number < len(self.fx1):
@@ -356,12 +366,12 @@ class VectorOverlay:
             py2 = 1 - self.px2[frame_number]
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
-            
+
             if show_preview:
                 cv2.imshow("Top View", cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5))))
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
-            
+
             frame_number += 1
             out.write(frame)
 
@@ -389,14 +399,14 @@ class VectorOverlay:
 
         # Reset video to beginning
         self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        
+
         out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
                            (self.frame_width, self.frame_height))
 
         frame_number = 0
-        
+
         print("Starting short view overlay processing...")
-        
+
         # Determine which plate is in front (only print once)
         plate2_in_front = self.corners[0][1] < self.corners[4][1]
         print(f"Force plate {'2' if plate2_in_front else '1'} is in front")
@@ -429,12 +439,12 @@ class VectorOverlay:
                 py2 = 1 - self.py2[frame_number]
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2, short=True)
-            
+
             if show_preview:
                 cv2.imshow("Short View", cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5))))
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
-            
+
             frame_number += 1
             out.write(frame)
 
@@ -452,7 +462,7 @@ if __name__ == "__main__":
     # Example with time offset to reduce delay
     # df = pd.read_excel("your_data.xlsx", skiprows=19)
     # cap = cv2.VideoCapture("your_video.mp4")
-    # 
+    #
     # # Try different time offsets to find the best sync
     # # Positive offset = data leads video, Negative = data lags video
     # v = VectorOverlay(df, cap, time_offset=-0.1, force_fps=1000)  # Adjust as needed
