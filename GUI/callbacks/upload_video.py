@@ -70,8 +70,8 @@ def process(self):
         self.Video.total_frames = int(self.Video.cam.get(cv2.CAP_PROP_FRAME_COUNT))
         self.slider.config(to=self.Video.total_frames)   # ---> reconfigure slider value. The max value is the total number of frame in the video
         self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc)
-        self.photo_image1 = self.frameConverter.cvToPillow(camera=self.Video.cam,width=self.Video.frame_width,height=self.Video.frame_height)
-        self.canvasID_1 = self.canvas1.create_image(200, 150, image=self.photo_image1, anchor="center")
+        self.canvasManager.photo_image1 = self.frameConverter.cvToPillow(camera=self.Video.cam,width=self.Video.frame_width,height=self.Video.frame_height)
+        self.canvasID_1 = self.canvasManager.canvas1.create_image(200, 150, image=self.canvasManager.photo_image1, anchor="center")
 
         # convert timeline image from cvFrame to pillow image
         self.timeline2 = timeline(0, 1)

@@ -13,9 +13,9 @@ def process(self,*value):
         if self.state.video_loaded:
             # draw video canvas
             self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc)
-            self.photo_image1 = self.frameConverter.cvToPillow(camera=self.Video.cam, width=round(self.Video.frame_width * self.zoom_factor1),
-                                                    height=round(self.Video.frame_height * self.zoom_factor1))
-            self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
+            self.canvasManager.photo_image1 = self.frameConverter.cvToPillow(camera=self.Video.cam, width=round(self.Video.frame_width * self.canvasManager.zoom_factor1),
+                                                    height=round(self.Video.frame_height * self.canvasManager.zoom_factor1), frame_number=self.state.loc)
+            self.canvasManager.canvas1.create_image(self.canvasManager.offset_x1, self.canvasManager.offset_y1, image=self.canvasManager.photo_image1, anchor="center")
             # update video timeline
             self._update_video_timeline()
 
@@ -27,15 +27,15 @@ def process(self,*value):
                     COMFrame = rawFrame.copy()
                     COMFrame = self.COM_helper.drawFigure(COMFrame, self.state.loc)
                     self.photo_image3 = self.frameConverter.cvToPillowFromFrame(COMFrame,
-                                                            width=round(self.Video.frame_width * self.zoom_factor3),
-                                                            height=round(self.Video.frame_height * self.zoom_factor3))
-                    self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
+                                                            width=round(self.Video.frame_width * self.canvasManager.zoom_factor3),
+                                                            height=round(self.Video.frame_height * self.canvasManager.zoom_factor3))
+                    self.canvasManager.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
 
                 else:
                     self.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam,
-                                                            width=round(self.Video.frame_width * self.zoom_factor3),
-                                                            height=round(self.Video.frame_height * self.zoom_factor3))
-                    self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
+                                                            width=round(self.Video.frame_width * self.canvasManager.zoom_factor3),
+                                                            height=round(self.Video.frame_height * self.canvasManager.zoom_factor3))
+                    self.canvasManager.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
         except IndexError as e:
             print("[ERROR] index out of range, check pose_landmarks.csv file to varify rows")
             traceback.print_exc()
