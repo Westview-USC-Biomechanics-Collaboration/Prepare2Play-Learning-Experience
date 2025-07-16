@@ -108,7 +108,7 @@ def get_zoomed_region(frame, x, y, zoom_size=50, zoom_factor=2):
 #     print("Points saved to selected_points.txt")
 #     return points
 
-def select_points(num_points=8, zoom_size=50, zoom_factor=2):
+def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     import cv2
     import numpy as np
 
@@ -117,18 +117,18 @@ def select_points(num_points=8, zoom_size=50, zoom_factor=2):
     upper_yellow = np.array([35, 255, 255])
 
     # Open the video
-    # ret, frame = cap.read()
+    ret, frame = cap.read()
 
     # Load an image instead of a video
-    frame = cv2.imread("vector_overlay\IMG_2518.jpg")
+    # frame = cv2.imread("vector_overlay\IMG_2518.jpg")
     
-    # if not cap.isOpened():
-    #     print("❌ Could not open video file.")
-    #     exit()
+    if not cap.isOpened():
+        print("❌ Could not open video file.")
+        exit()
 
-    # if not ret:
-    #     print("Error reading video during selecting corners")
-    #     exit()
+    if not ret:
+        print("Error reading video during selecting corners")
+        exit()
 
     if frame is None:
         print("Error with rect detection")
@@ -140,69 +140,86 @@ def select_points(num_points=8, zoom_size=50, zoom_factor=2):
     # Create a binary mask where yellow colors are white
     mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
 
-    # Morphological operations to clean up noise
-    kernel = np.ones((3, 3), np.uint8)
-    mask = cv2.dilate(mask, kernel, iterations=1)
+    cv2.namedWindow("original", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("original", 800, 600)  # Set window size
+    cv2.imshow("original", mask)
+
+    # Optional: closing to seal any final small gaps
+    # Horizontal kernel to connect horizontal lines
+    kernel_h = np.ones((1, 200), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_h)
+    kernel_v = np.ones((1, 1), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_v) 
+
+    # ROI crop
+    h, w = mask.shape
+    roi = mask[int(h * 0.60):int(h * 0.90), int(w * 0.22):int(w * 0.65)]
+    offset_x, offset_y = int(w * 0.22), int(h * 0.6)
+
     cv2.namedWindow("kernel observation", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("kernel observation", 800, 600)  # Set window size
-    cv2.imshow("kernel observation", mask)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-    
-    #mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-    #mask = cv2.morphologyEx(mask, cv2.MORPH_DILATE, kernel)
+    cv2.imshow("kernel observation", roi)
 
     # Find all contours in the mask
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # Prepare to save coordinates
     coords = []
 
     # Minimum area to filter out noise
-    min_area = 500  # TO-DO: 
-
+    min_area = 500
+    max_area = 30000
+    
     #save corners
     for contour in contours:
-        area = cv2.contourArea(contour)
-        # Approximate contour to polygon to reduce points
-        epsilon = 0.03 * cv2.arcLength(contour, True)  # 1% of perimeter; adjust for precision
-        approx = cv2.approxPolyDP(contour, epsilon, True)
-        if area > min_area and len(approx) == 4:
-            # x, y, w, h = cv2.boundingRect(contour)
-            # coords.append([x, y])
-            # coords.append([x + w, y])
-            # coords.append([x, y + h])
-            # coords.append([x + w, y + h])
+        contour += [offset_x, offset_y]
+        hull = cv2.convexHull(contour)
+        area = cv2.contourArea(hull)
 
-            # approx is an array of polygon points: [[x1,y1], [x2,y2], ...]
-            # You can save these points as the "corners"
+        # Approximate contour to polygon to reduce points
+        epsilon = 0.01 * cv2.arcLength(hull, True)  # adjust for precision
+        approx = cv2.approxPolyDP(hull, epsilon, True)
+
+        if area > min_area and area < max_area:
+
             corners = approx.reshape(-1, 2)  # shape (num_points, 2)
 
-            for corner in corners:
-                x, y = corner
-                coords.append([x, y])
+            if len(corners) == 4:
+                cv2.drawContours(frame, [approx], -1, (255, 0, 0), 2)  # Blue polygon outline
+                for corner in corners:
+                    x, y = corner
+                    coords.append([x, y])
 
-                # Draw rectangle on the original frame
-                cv2.rectangle(frame, (x, y), (x + 200, y + 100), (0, 255, 0), 2)
+    # find remaining four points in the middle
+    coords.append([(coords[0][0] + coords[1][0])/2 - 10, (coords[0][1] + coords[1][1])/2])
+    coords.append([(coords[0][0] + coords[1][0])/2 + 10, (coords[0][1] + coords[1][1])/2])
+    coords.append([(coords[2][0] + coords[3][0])/2 - 10, (coords[3][1] + coords[2][1])/2])
+    coords.append([(coords[2][0] + coords[3][0])/2 + 10, (coords[3][1] + coords[2][1])/2])
+
+    #rearrange list
+    output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
+    output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[4], coords[6], coords[2], coords[5], coords[0], coords[3], coords[7] 
+
+    for out in output:
+        cv2.circle(frame, (int(out[0]), int(out[1])), 5, (0, 0, 255), -1)  # Red dots for corners
 
     # Save coordinates to a file
     with open("selected_points.txt", "w") as f:
-        for x, y in coords:
+        for x, y in output:
             f.write(f"{x},{y}\n")
 
-    print(f"{len(coords)} yellow rectangles saved to file.")
+    print(f"{len(output)} coordinates saved to file.")
 
     # Show the result
-    # cv2.imshow("Detected Yellow Rectangles", frame)
-    # cv2.imshow("Yellow Mask", mask)
     cv2.namedWindow("Detected Yellow Rectangles", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("Detected Yellow Rectangles", 800, 600)  # Set window size
     cv2.imshow("Detected Yellow Rectangles", frame)
 
     cv2.waitKey(0)  # Wait indefinitely until a key is pressed
     cv2.destroyAllWindows()
-    return coords
+
+    return output
 
 if __name__ == "__main__":
-    # cap = cv2.VideoCapture(r"C:\Users\Student\IMG_2518.jpg")
-    select_points(num_points=8)
+    cap = cv2.VideoCapture(r"vector_overlay\pbd_IT_12.vid03.MOV")
+    select_points(cap, num_points=8)

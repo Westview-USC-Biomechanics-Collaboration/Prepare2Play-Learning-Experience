@@ -219,7 +219,7 @@ class VectorOverlay:
 
     def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2, short=False):
         """Draw force arrows on frame"""
-        if short:
+        if short: 
             point_pair1 = rect_to_trapezoid(px1, py1, 1, 1,
                                            [self.corners[0], self.corners[1], self.corners[2], self.corners[3]], short=True)
             point_pair2 = rect_to_trapezoid(px2, py2, 1, 1,
