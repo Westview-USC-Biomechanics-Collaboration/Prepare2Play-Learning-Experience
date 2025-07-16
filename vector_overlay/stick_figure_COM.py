@@ -194,33 +194,6 @@ def pose_landmarks_to_row(pose_landmarks_list):
 
     return row
 
-# def pose_worker(conn, frame, confidencelevel):
-#     import mediapipe as mp
-#     mp_pose = mp.solutions.pose
-#     with mp_pose.Pose(static_image_mode=False, min_detection_confidence=confidencelevel, model_complexity=2) as pose:
-#         result = pose.process(frame)
-#         if result.pose_landmarks:
-#             landmark_data = [[lmk.x, lmk.y, lmk.z] for lmk in result.pose_landmarks.landmark]
-#         else:
-#             landmark_data = [[0.0, 0.0, 0.0]] * 33
-#         conn.send(landmark_data)
-#     conn.close()
-
-# def run_pose_with_timeout(frame, confidencelevel, timeout=5):
-#     parent_conn, child_conn = Pipe()
-#     p = Process(target=pose_worker, args=(child_conn, frame, confidencelevel))
-#     p.start()
-
-#     if parent_conn.poll(timeout):  # Wait for data or timeout
-#         data = parent_conn.recv()
-#         p.join()
-#         return data
-#     else:
-#         print("[TIMEOUT] pose.process(frame) took too long. Terminating...")
-#         p.terminate()
-#         p.join()
-#         return None
-
 def process_frame(q: processing.Queue, results_queue: processing.Queue, sex, confidencelevel, displayCOM):
     import mediapipe as mp
     import cv2
