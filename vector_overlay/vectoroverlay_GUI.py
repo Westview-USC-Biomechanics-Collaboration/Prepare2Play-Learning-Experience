@@ -154,7 +154,7 @@ class VectorOverlay:
         #total_rows = len(self.data) #Not working with VSCode reading
 
 
-        samples_per_frame = 10  # Default to 10 samples per frame for 2400 Hz data
+        samples_per_frame = 5  # Default to 5 samples per frame for 1200 Hz data
 
 
         print(f"# of total samples: {len(self.data)}")
@@ -173,8 +173,9 @@ class VectorOverlay:
             # Calculate corresponding data index with offset
             frame_time = frame_idx / (self.fps)
             # Use stepsize to sample force data for each frame
-            stepsize = int(force_samples / video_frames) if video_frames > 0 else 1
+            stepsize = max(1, int(force_samples / video_frames)) if video_frames > 0 else 1
             data_idx = frame_idx * stepsize
+            print(f"Data index: {data_idx}")
 
             # Ensure index is within bounds
             if 0 <= data_idx < len(self.data):
@@ -305,6 +306,10 @@ class VectorOverlay:
             py1 = self.px1[force_idx]
             px2 = self.py2[force_idx]
             py2 = self.px2[force_idx]
+
+            # Debugging output for force values
+            print(f"Frame {frame_number}: fx1={fx1}, fy1={fy1}, px1={px1}, py1={py1}")
+
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
 
