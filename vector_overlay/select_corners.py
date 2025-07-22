@@ -144,6 +144,22 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     cv2.resizeWindow("original", 800, 600)  # Set window size
     cv2.imshow("original", mask)
 
+    # Trying to auto create roi
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Optional: filter by area
+    # contours = [c for c in contours if cv2.contourArea(c) > 2000]
+
+    # # Get the bounding box of the largest contour
+    # if contours:
+    #     c = max(contours, key=cv2.contourArea)
+    #     x, y, w, h = cv2.boundingRect(c)
+
+    #     roi = mask[y:y+h, x:x+w]  # Auto-cropped ROI
+    #     offset_x, offset_y = x, y
+
+
+
     # Optional: closing to seal any final small gaps
     # Horizontal kernel to connect horizontal lines
     kernel_h = np.ones((1, 200), np.uint8)
@@ -153,8 +169,8 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
 
     # ROI crop
     h, w = mask.shape
-    roi = mask[int(h * 0.60):int(h * 0.90), int(w * 0.22):int(w * 0.65)]
-    offset_x, offset_y = int(w * 0.22), int(h * 0.6)
+    roi = mask[int(h * 0.40):int(h * 0.95), int(w * 0.01):int(w * 0.85)]
+    offset_x, offset_y = int(w * 0.01), int(h * 0.4)
 
     cv2.namedWindow("kernel observation", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("kernel observation", 800, 600)  # Set window size
@@ -196,7 +212,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     coords.append([(coords[2][0] + coords[3][0])/2 - 10, (coords[3][1] + coords[2][1])/2])
     coords.append([(coords[2][0] + coords[3][0])/2 + 10, (coords[3][1] + coords[2][1])/2])
 
-    #rearrange list
+    # #rearrange list
     output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
     output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[4], coords[6], coords[2], coords[5], coords[0], coords[3], coords[7] 
 
