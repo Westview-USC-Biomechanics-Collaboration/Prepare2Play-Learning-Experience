@@ -154,7 +154,7 @@ class VectorOverlay:
         #total_rows = len(self.data) #Not working with VSCode reading
 
 
-        samples_per_frame = 5  # Default to 5 samples per frame for 1200 Hz data
+        samples_per_frame = 10  # Default to 5 samples per frame for 1200 Hz data, 10 samples per frame for 2400 hz data
 
 
         print(f"# of total samples: {len(self.data)}")

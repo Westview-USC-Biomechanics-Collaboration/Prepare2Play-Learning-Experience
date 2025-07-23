@@ -26,7 +26,7 @@ from simplerGUI import VectorOverlayApp
 
 #lag_value = get_lag_from_results(data_path, force_file)
 
-lag_value = 277  # Placeholder for lag value, replace with actual logic to get lag
+lag_value = 559 # Placeholder for lag value, replace with actual logic to get lag
 root = tk.Tk()
 app = VectorOverlayApp(root)
 app.lagValue = lag_value  # Pass the lag value to the GUI

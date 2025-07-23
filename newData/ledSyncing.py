@@ -16,38 +16,38 @@ startTime = time.time()
 
 ######### Alignment of Force data to Front Video
 
-parent_path = r"C:\Users\Deren\OneDrive\Desktop\USCProject\Prepare2Play-Learning-Experience\newData"
-video_file = "pbd_IT_12.vid04.MOV"
+parent_path = r"C:\Users\berke\OneDrive\Desktop\USCBiomechanicsProject\Prepare2Play-Learning-Experience\newData"
+video_file = "SBS_TN_12_vid01.MOV"
 frame_folder = "Frames"
 video_path = os.path.join(parent_path, video_file)
 
-force_file = "pbd_IT_12.for04.txt"
+force_file = "sbs_TN_12_for01.txt"
 force_path = os.path.join(parent_path, force_file)
 
 # Load video
 cap = cv2.VideoCapture(video_path)
 
-#crop_left, crop_right, crop_top, crop_bottom = 100, 140, 1480, 1560
+crop_left, crop_right, crop_top, crop_bottom = 100, 140, 1480, 1560
 
-# This section can be uncommented to save every frame as an image to a folder
-# frame_counter = 0
-# while cap.isOpened():
-#     ret, frame = cap.read()
-#     if not ret:
-#         break
-#     # if frame_counter > 100:
-#     #     break
+#This section can be uncommented to save every frame as an image to a folder
+frame_counter = 0
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        break
+    if frame_counter > 100:  # Limit to first 100 frames
+        break
 
-#     # Crop subregion
-#     #crop = frame[crop_top:crop_bottom, crop_left:crop_right, :]
+    #Crop subregion
+    crop = frame[crop_top:crop_bottom, crop_left:crop_right, :]
 
-#     # Save frame as image
-#     frameID = '_' + str(frame_counter).zfill(4) + '.png'
-#     frame_name = video_file.replace('.mov', frameID).replace('.MOV', frameID)
-#     frame_path = os.path.join(parent_path, frame_folder, frame_name)
-#     cv2.imwrite(frame_path, frame)
-#     print(frame_name)
-#     frame_counter += 1
+    # Save frame as image
+    frameID = '_' + str(frame_counter).zfill(4) + '.png'
+    frame_name = video_file.replace('.mov', frameID).replace('.MOV', frameID)
+    frame_path = os.path.join(parent_path, frame_folder, frame_name)
+    cv2.imwrite(frame_path, frame)
+    print(frame_name)
+    frame_counter += 1
 
 
 # # Release resources
@@ -169,11 +169,14 @@ df_force['RedSignal'] = np.sign(df_force['Fz.2'].astype('float64') )
 # Create subset using every nth row since DAQ sampling is n times the video frame rate
 # Comment/uncomment the desired subsampling case
 #df_force_subset = df_force.iloc[::10].reset_index() # Force data at 10x video fps (e.g. 2400 & 240)
-df_force_subset = df_force.iloc[::5].reset_index()  # Force data at  5x video fps (e.g. 1200 & 240)
+df_force_subset = df_force.iloc[::10].reset_index()  # Force data at  5x video fps (e.g. 1200 & 240)
 
 
 
 plt.plot(df_force_subset['abs time (s)'], df_force_subset['RedSignal'])
+plt.xlabel('Time (s)')
+plt.ylabel('Red Signal (Force Plate)')
+plt.title('Force Plate Red Signal vs Time')
 plt.show()
 
 
@@ -197,6 +200,9 @@ perfect_corr = np.min([len(signal_force), len(signal_video)])
 relative_score = max_corr / perfect_corr
 
 plt.plot(correlation)
+plt.xlabel('Lag')
+plt.ylabel('Correlation')
+plt.title('Cross-correlation between Video and Force Signals')
 plt.show()
 
 # Save signal alignment files
@@ -210,13 +216,19 @@ df_force_subset.to_csv(os.path.join(parent_path, df_filename))
 
 delay = lag
 
-print(f"Delay: {delay} frames")
+
 
 plt.plot(signal_video)
+plt.xlabel('Frame')
+plt.ylabel('Video Red Signal (Clean)')
+plt.title('Video Red Signal (Clean)')
 plt.xlim(delay, delay+len(signal_force))
 plt.show()
 
 plt.plot(signal_force)
+plt.xlabel('Frame')
+plt.ylabel('Force Red Signal')
+plt.title('Force Red Signal')
 plt.show()
 
 
@@ -279,6 +291,9 @@ for index, row in df_force_subset.iterrows():
 # lag_df.to_csv(os.path.join(parent_path, lag_filename), index=False)
 
 # Done processing video, so release resources
+
+print(f"Delay: {delay} frames")
+
 cap.release()
 out.release()
 
