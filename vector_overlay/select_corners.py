@@ -240,7 +240,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     coords.append([(coords[1][0] + coords[3][0])/2 + 10, (coords[1][1] + coords[3][1])/2])
 
     #rearrange list
-    output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
+    output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
     output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[6], coords[4], coords[0], coords[7], coords[3], coords[2], coords[5] 
 
     for out in output:
