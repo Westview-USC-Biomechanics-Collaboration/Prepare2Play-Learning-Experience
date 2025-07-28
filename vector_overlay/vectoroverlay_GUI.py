@@ -231,7 +231,7 @@ class VectorOverlay:
                                            [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
 
         end_point_1 = (int(point_pair1[0] + xf1), int(point_pair1[1] - yf1))
-        end_point_2 = (int(point_pair2[0] + xf2), int(point_pair2[1] - yf2))
+        end_point_2 = (int(point_pair2[0] + xf2), int(point_pair2[1] - yf2)) 
 
         # Draw arrows with different colors for each plate
         cv.arrowedLine(frame, point_pair1, end_point_1, (0, 255, 0), 4)  # Green for plate 1
