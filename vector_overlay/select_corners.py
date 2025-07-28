@@ -151,6 +151,10 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     kernel_v = np.ones((1, 1), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_v) 
 
+    cv2.namedWindow("filled mask", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("filled mask", 800, 600)  # Set window size
+    cv2.imshow("filled mask", mask)
+
     # ROI crop
     h, w = mask.shape
     roi = mask[int(h * 0.60):int(h * 0.90), int(w * 0.22):int(w * 0.65)]
@@ -191,24 +195,24 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
                     coords.append([x, y])
 
     # find remaining four points in the middle
-    coords.append([(coords[0][0] + coords[1][0])/2 - 10, (coords[0][1] + coords[1][1])/2])
-    coords.append([(coords[0][0] + coords[1][0])/2 + 10, (coords[0][1] + coords[1][1])/2])
-    coords.append([(coords[2][0] + coords[3][0])/2 - 10, (coords[3][1] + coords[2][1])/2])
-    coords.append([(coords[2][0] + coords[3][0])/2 + 10, (coords[3][1] + coords[2][1])/2])
+    # coords.append([(coords[0][0] + coords[1][0])/2 - 10, (coords[0][1] + coords[1][1])/2])
+    # coords.append([(coords[0][0] + coords[1][0])/2 + 10, (coords[0][1] + coords[1][1])/2])
+    # coords.append([(coords[2][0] + coords[3][0])/2 - 10, (coords[3][1] + coords[2][1])/2])
+    # coords.append([(coords[2][0] + coords[3][0])/2 + 10, (coords[3][1] + coords[2][1])/2])
 
-    #rearrange list
-    output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
-    output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[4], coords[6], coords[2], coords[5], coords[0], coords[3], coords[7] 
+    # #rearrange list
+    # output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
+    # output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[4], coords[6], coords[2], coords[5], coords[0], coords[3], coords[7] 
 
-    for out in output:
-        cv2.circle(frame, (int(out[0]), int(out[1])), 5, (0, 0, 255), -1)  # Red dots for corners
+    # for out in output:
+    #     cv2.circle(frame, (int(out[0]), int(out[1])), 5, (0, 0, 255), -1)  # Red dots for corners
 
-    # Save coordinates to a file
-    with open("selected_points.txt", "w") as f:
-        for x, y in output:
-            f.write(f"{x},{y}\n")
+    # # Save coordinates to a file
+    # with open("selected_points.txt", "w") as f:
+    #     for x, y in output:
+    #         f.write(f"{x},{y}\n")
 
-    print(f"{len(output)} coordinates saved to file.")
+    # print(f"{len(output)} coordinates saved to file.")
 
     # Show the result
     cv2.namedWindow("Detected Yellow Rectangles", cv2.WINDOW_NORMAL)
@@ -218,7 +222,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     cv2.waitKey(0)  # Wait indefinitely until a key is pressed
     cv2.destroyAllWindows()
 
-    return output
+    # return output
 
 if __name__ == "__main__":
     cap = cv2.VideoCapture(r"vector_overlay\pbd_IT_12.vid03.MOV")

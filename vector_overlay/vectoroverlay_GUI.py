@@ -290,7 +290,7 @@ class VectorOverlay:
             py1 = self.px1[force_idx]
             px2 = self.py2[force_idx]
             py2 = self.px2[force_idx]
-
+ 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
 
             if show_preview:
