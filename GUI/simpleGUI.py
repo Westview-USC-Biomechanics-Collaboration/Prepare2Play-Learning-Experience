@@ -43,6 +43,8 @@ from GUI.models.force_state import ForceState
 from GUI.models.state_manager import StateManager
 from GUI.layout.canvas_manager import CanvasManager
 from GUI.layout.button_manager import ButtonManager
+from GUI.layout.label_manager import LabelManager
+from GUI.layout.timeline_manager import TimelineManager
 
 class DisplayApp:
     def __init__(self, master):
@@ -53,7 +55,9 @@ class DisplayApp:
         self.state = StateManager()
         self.canvasManager = CanvasManager(self)
         self.buttonManager = ButtonManager(self)
-        
+        self.labelManager = LabelManager(self)
+        self.timelineManager = TimelineManager(self)
+
         # Initialize UI
         self.initUI()
 
@@ -128,15 +132,10 @@ class DisplayApp:
 
     def initTimeline(self):
         # Place holder for Timeline object
-        self.timeline1:timeline = None
-        self.timeline2:timeline = None
+        self.timelineManager.force_canvas, self.timelineManager.video_canvas = self.timelineManager.create_timelines()
+        self.background.create_window(700, 700, window=self.timelineManager.force_canvas)
+        self.background.create_window(700, 800, window=self.timelineManager.video_canvas)
 
-        # Timeline Canvas
-        self.force_timeline = tk.Canvas(self.master, width=1080, height=75, bg="lightblue")
-        self.video_timeline = tk.Canvas(self.master, width=1080, height=75, bg="lightblue")
-        
-        self.background.create_window(700,700,window=self.force_timeline)
-        self.background.create_window(700,800,window=self.video_timeline) 
     
     def initButtonLayout(self):
         self.buttons = self.buttonManager.create_buttons()
@@ -154,12 +153,10 @@ class DisplayApp:
         self.background.create_window(layoutHelper(9, "horizontal"), 575, window=self.buttons['save'])
         self.background.create_window(100, 800, window=self.buttons['COM'])
 
-    def initLabels(self):
-        self.force_timeline_label = Label(self.master, text="Force Timeline (label = frame)")
-        self.video_timeline_label = Label(self.master, text="Video Timeline (label = frame)")
-        
-        self.background.create_window(300,650,window=self.force_timeline_label)
-        self.background.create_window(300,750,window=self.video_timeline_label)
+    def initLabels(self):  
+        self.labels = self.labelManager.create_labels()
+        self.background.create_window(300,650,window=self.labels['force_timeline'])
+        self.background.create_window(300,750,window=self.labels['video_timeline'])
 
     def initSlider(self):
         self.slider = Scale(self.master, from_=0, to=100, orient="horizontal", label="pick frame", command=self.slider)
@@ -312,14 +309,14 @@ class DisplayApp:
 
     def label_video(self):
         self.state.video_align = self.state.loc
-        self.timeline2.update_label(self.state.video_align/self.slider['to'])
-        self.video_timeline_label.config(text=f"Video Timeline (label = {self.state.video_align})")
+        self.timelineManager.timeline2.update_label(self.state.video_align/self.slider['to'])
+        self.labels['video_timeline'].config(text=f"Video Timeline (label = {self.state.video_align})")
         self._update_video_timeline()
 
     def label_force(self):
         self.state.force_align = self.state.loc
-        self.timeline1.update_label(self.state.force_align/self.slider['to'])
-        self.force_timeline_label.config(text=f"Force Timeline (label = {self.state.force_align})")
+        self.timelineManager.timeline1.update_label(self.state.force_align/self.slider['to'])
+        self.labels['force_timeline'].config(text=f"Force Timeline (label = {self.state.force_align})")
         self._update_force_timeline()
 
     def align(self):
@@ -426,12 +423,12 @@ class DisplayApp:
         print("[INFO] plot finished")
 
     def _update_force_timeline(self):
-        # Assuming self.timeline1.draw_rect() returns an image
-        forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.state.loc / self.slider['to']))
+        # Assuming self.timelineManager.timeline1.draw_rect() returns an image
+        forceTimeline = Image.fromarray(self.timelineManager.timeline1.draw_rect(loc=self.state.loc / self.slider['to']))
 
         # Resize the image to fit the canvas size
-        canvas_width = self.force_timeline.winfo_width()  # Get the width of the canvas
-        canvas_height = self.force_timeline.winfo_height()  # Get the height of the canvas
+        canvas_width = self.timelineManager.force_canvas.winfo_width()  # Get the width of the canvas
+        canvas_height = self.timelineManager.force_canvas.winfo_height()  # Get the height of the canvas
 
         # Resize the image to match the canvas size using the new resampling method
         forceTimeline = forceTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
@@ -440,15 +437,15 @@ class DisplayApp:
         self.timeline_image1 = ImageTk.PhotoImage(forceTimeline)
 
         # Create the image on the canvas, anchoring it at the top-left (0, 0)
-        self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
+        self.timelineManager.force_canvas.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
 
     def _update_video_timeline(self):
-        # Assuming self.video_timeline is the canvas and self.timeline2.draw_rect() returns an image
-        videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.state.loc / self.Video.total_frames))
+        # Assuming self.timelineManager.video_canvas is the canvas and self.timelineManager.timeline2.draw_rect() returns an image
+        videoTimeline = Image.fromarray(self.timelineManager.timeline2.draw_rect(loc=self.state.loc / self.Video.total_frames))
 
         # Resize the image to fit the canvas size
-        canvas_width = self.video_timeline.winfo_width()  # Get the width of the canvas
-        canvas_height = self.video_timeline.winfo_height()  # Get the height of the canvas
+        canvas_width = self.timelineManager.video_canvas.winfo_width()  # Get the width of the canvas
+        canvas_height = self.timelineManager.video_canvas.winfo_height()  # Get the height of the canvas
         # Resize the image to match the canvas size
         videoTimeline = videoTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
 
@@ -456,7 +453,7 @@ class DisplayApp:
         self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
 
         # Create the image on the canvas, anchoring it at the top-left (0, 0)
-        self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
+        self.timelineManager.video_canvas.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
 if __name__ == "__main__":
     root = tk.Tk()

@@ -239,10 +239,6 @@ def saveCallback(self):
             fout.write(f"Saving time: {datetime.now()}\n")
             fout.write(f"All rights reserved by Westview PUSD")
 
-
-
-        
-
     # Creating top level
     self.save_window = tk.Toplevel(self.master)
     self.save_window.title("Save Window")

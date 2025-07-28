@@ -74,19 +74,19 @@ def process(self):
         self.canvasID_1 = self.canvasManager.canvas1.create_image(200, 150, image=self.canvasManager.photo_image1, anchor="center")
 
         # convert timeline image from cvFrame to pillow image
-        self.timeline2 = timeline(0, 1)
-        videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.state.loc))
-        canvas_width = self.video_timeline.winfo_width()
-        canvas_height = self.video_timeline.winfo_height()
+        self.timelineManager.timeline2 = timeline(0, 1)
+        videoTimeline = Image.fromarray(self.timelineManager.timeline2.draw_rect(loc=self.state.loc))
+        canvas_width = self.timelineManager.video_canvas.winfo_width()
+        canvas_height = self.timelineManager.video_canvas.winfo_height()
         videoTimeline = videoTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
         self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
-        self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
+        self.timelineManager.video_canvas.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
-        if self.timeline1 is not None:
+        if self.timelineManager.timeline1 is not None:
             # Initialize if not exist
-            self.timeline1.update_start_end(0, self.state.force_frame / self.slider['to'])
+            self.timelineManager.timeline1.update_start_end(0, self.state.force_frame / self.slider['to'])
 
-        # ✅ Offload ballDropDetect to a thread
+        # Offload ballDropDetect to a thread
         def detect_and_finalize():
             print("[INFO] Detecting ball drop...")
             copyCam = cv2.VideoCapture(self.Video.path)

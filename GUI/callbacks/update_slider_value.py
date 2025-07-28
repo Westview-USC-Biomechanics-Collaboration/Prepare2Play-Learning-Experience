@@ -26,16 +26,16 @@ def process(self,*value):
                     _, rawFrame = self.Video.vector_cam.read()
                     COMFrame = rawFrame.copy()
                     COMFrame = self.COM_helper.drawFigure(COMFrame, self.state.loc)
-                    self.photo_image3 = self.frameConverter.cvToPillowFromFrame(COMFrame,
+                    self.canvasManager.photo_image3 = self.frameConverter.cvToPillowFromFrame(COMFrame,
                                                             width=round(self.Video.frame_width * self.canvasManager.zoom_factor3),
                                                             height=round(self.Video.frame_height * self.canvasManager.zoom_factor3))
-                    self.canvasManager.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
+                    self.canvasManager.canvas3.create_image(self.canvasManager.offset_x3, self.canvasManager.offset_y3, image=self.canvasManager.photo_image3, anchor="center")
 
                 else:
-                    self.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam,
+                    self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam,
                                                             width=round(self.Video.frame_width * self.canvasManager.zoom_factor3),
                                                             height=round(self.Video.frame_height * self.canvasManager.zoom_factor3))
-                    self.canvasManager.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
+                    self.canvasManager.canvas3.create_image(self.canvasManager.offset_x3, self.canvasManager.offset_y3, image=self.canvasManager.photo_image3, anchor="center")
         except IndexError as e:
             print("[ERROR] index out of range, check pose_landmarks.csv file to varify rows")
             traceback.print_exc()

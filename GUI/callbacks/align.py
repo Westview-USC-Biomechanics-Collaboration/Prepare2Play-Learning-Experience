@@ -7,15 +7,15 @@ def alignCallback(self):
     print(f"[DEBUG] {self.state.force_align}, { self.state.video_align}")
 
     # update the timeline visually
-    start, end = self.timeline1.get_start_end()
+    start, end = self.timelineManager.timeline1.get_start_end()
     try:
         offset = self.state.force_align - self.state.video_align
         newstart = start-offset/self.slider['to']
         newend = end-offset/self.slider['to']
-        newlabel = self.timeline1.get_label()-offset/self.slider['to']
+        newlabel = self.timelineManager.timeline1.get_label()-offset/self.slider['to']
         print(f"[INFO] new start percentage: {newstart}\nnew end percentage: {newend}")
-        self.timeline1.update_start_end(newstart,newend)
-        self.timeline1.update_label(newlabel)
+        self.timelineManager.timeline1.update_start_end(newstart,newend)
+        self.timelineManager.timeline1.update_label(newlabel)
 
         # debug
         print(f"[DEBUG] offset value: {offset}")
