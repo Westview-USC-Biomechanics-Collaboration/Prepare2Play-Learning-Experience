@@ -9,8 +9,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from ledSyncing import run_led_syncing
 
 data_path = r"C:\Users\berke\OneDrive\Desktop\USCBiomechanicsProject\Prepare2Play-Learning-Experience\newData"
-video_file = "walk_test_vid01.mov"
-force_file = "walktest1.txt"
+video_file = "SDS_TN_12_vid01.MOV"
+force_file = "SDS_TN_12_for01.txt"
 
 run_led_syncing(data_path, video_file, force_file)
 
