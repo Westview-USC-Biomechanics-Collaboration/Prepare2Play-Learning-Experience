@@ -81,7 +81,7 @@ class DisplayApp:
         self.initSlider()
         self.initLabels()
         self.initButtonLayout() 
-        self.initTimeline()
+        self.initTimeline() # init slider must happen before timeline
         self.initSaveWindow()
     
     def initBackground(self):
