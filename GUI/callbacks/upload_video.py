@@ -69,24 +69,24 @@ def process(self):
         self.Video.frame_width = int(self.Video.cam.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.Video.total_frames = int(self.Video.cam.get(cv2.CAP_PROP_FRAME_COUNT))
         self.slider.config(to=self.Video.total_frames)   # ---> reconfigure slider value. The max value is the total number of frame in the video
-        self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-        self.photo_image1 = self.frameConverter.cvToPillow(camera=self.Video.cam,width=self.Video.frame_width,height=self.Video.frame_height)
-        self.canvasID_1 = self.canvas1.create_image(200, 150, image=self.photo_image1, anchor="center")
+        self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc)
+        self.canvasManager.photo_image1 = self.frameConverter.cvToPillow(camera=self.Video.cam,width=self.Video.frame_width,height=self.Video.frame_height)
+        self.canvasID_1 = self.canvasManager.canvas1.create_image(200, 150, image=self.canvasManager.photo_image1, anchor="center")
 
         # convert timeline image from cvFrame to pillow image
-        self.timeline2 = timeline(0, 1)
-        videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc))
-        canvas_width = self.video_timeline.winfo_width()
-        canvas_height = self.video_timeline.winfo_height()
+        self.timelineManager.timeline2 = timeline(0, 1)
+        videoTimeline = Image.fromarray(self.timelineManager.timeline2.draw_rect(loc=self.state.loc))
+        canvas_width = self.timelineManager.video_canvas.winfo_width()
+        canvas_height = self.timelineManager.video_canvas.winfo_height()
         videoTimeline = videoTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
         self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
-        self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
+        self.timelineManager.video_canvas.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
-        if self.timeline1 is not None:
+        if self.timelineManager.timeline1 is not None:
             # Initialize if not exist
-            self.timeline1.update_start_end(0, self.force_frame / self.slider['to'])
+            self.timelineManager.timeline1.update_start_end(0, self.state.force_frame / self.slider['to'])
 
-        # ✅ Offload ballDropDetect to a thread
+        # Offload ballDropDetect to a thread
         def detect_and_finalize():
             print("[INFO] Detecting ball drop...")
             copyCam = cv2.VideoCapture(self.Video.path)
@@ -95,11 +95,11 @@ def process(self):
             # release memory
             copyCam.release()
             del copyCam
-            self.loc = auto_index
+            self.state.loc = auto_index
             print(f"[DEBUG] index for collision is: {auto_index}")
             self.master.after(0, self.label_video)
-            self.video_data_flag = True
+            self.state.video_loaded = True
 
         #threading.Thread(target=detect_and_finalize, daemon=True).start()
         self.master.after(0, self.label_video)
-        self.video_data_flag = True
+        self.state.video_loaded = True

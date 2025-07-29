@@ -6,7 +6,7 @@ from vector_overlay.vectoroverlay_GUI import VectorOverlay
 def vectorOverlayCallback(self):
     def threadTarget():
         process(self)
-        self.vector_overlay_flag = True
+        self.state.vector_overlay_enabled = True
     vectorOverlayThread = threading.Thread(target=threadTarget,daemon=True)
     vectorOverlayThread.start()
 
@@ -28,9 +28,9 @@ def process(self):
     """
     display 
     """
-    if self.loc>=self.video_align:
-        self.Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc - self.video_align)
-        self.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam)
+    if self.state.loc>=self.state.video_align:
+        self.Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc - self.state.video_align)
+        self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam)
     else:
-        self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.loc)
-        self.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.cam)
+        self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc)
+        self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.cam)

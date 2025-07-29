@@ -15,7 +15,7 @@ def COMCallback(self):
         copyCam.release()
         del copyCam
         print("[INFO] COM processing finished.")
-        self.COM_flag = True
+        self.state.com_enabled = True
 
     
     COMThread = threading.Thread(target=threadTarget, daemon=True)

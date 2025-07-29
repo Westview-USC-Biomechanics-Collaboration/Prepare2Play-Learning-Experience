@@ -37,39 +37,29 @@ from GUI.callbacks.vector_overlay import vectorOverlayCallback
 from GUI.callbacks.stepF import stepF
 from GUI.callbacks.save import saveCallback
 from GUI.callbacks.COM import COMCallback
-
-#@dataclass
-class Video:
-    path: str = None,
-    cam : cv2.VideoCapture = None,
-    vector_cam: cv2.VideoCapture = None,
-    total_frames: int = None,
-    frame_width: int = None,
-    frame_height: int = None,
-    fps: int = None,
-
-#@dataclass
-class Force:
-    path: str = None,
-    data: pd.array = None,
-    rows: int = None,
+# NEW IMPORTS from modularizing:
+from GUI.models.video_state import VideoState
+from GUI.models.force_state import ForceState
+from GUI.models.state_manager import StateManager
+from GUI.layout.canvas_manager import CanvasManager
+from GUI.layout.button_manager import ButtonManager
+from GUI.layout.label_manager import LabelManager
+from GUI.layout.timeline_manager import TimelineManager
 
 class DisplayApp:
     def __init__(self, master):
         self.master = master
 
-        # Initialize data class
-        self.Video = Video()
-        self.Force = Force()
+        self.Video = VideoState()
+        self.Force = ForceState()
+        self.state = StateManager()
+        self.canvasManager = CanvasManager(self)
+        self.buttonManager = ButtonManager(self)
+        self.labelManager = LabelManager(self)
+        self.timelineManager = TimelineManager(self)
 
         # Initialize UI
         self.initUI()
-
-        # Initialize Global Variables
-        self.initGlobalVar()
-
-        # Initialize Global Flags
-        self.initGloablFlags()
 
         # lock for multi threading TODO this is not used at all
         self.lock = threading.Lock()     
@@ -86,15 +76,19 @@ class DisplayApp:
         self.master.lift()
 
         self.initBackground()
+        self.master.update_idletasks()
         self.initCanvas()
         self.initSlider()
         self.initLabels()
-        self.initButtons()
+        self.initButtonLayout() 
         self.initTimeline()
         self.initSaveWindow()
     
     def initBackground(self):
-                # Determine the correct path based on whether the app is running as an exe or not
+        self.plate = tk.StringVar(value="Force Plate 1")
+        self.option = tk.StringVar(value="Fz")
+
+        # Determine the correct path based on whether the app is running as an exe or not
         if getattr(sys, 'frozen', False):
             # If running from the packaged executable
             app_path = sys._MEIPASS  # Temporary folder where bundled files are extracted
@@ -124,142 +118,50 @@ class DisplayApp:
 
         # Adjust the canvas size to fit the image
         self.background.config(width=bg_image.width(), height=bg_image.height())
+        self.background.tag_lower("all")
+
 
     def initCanvas(self):
-        canvas_width = 400
-        # Row 0: Create three canvases for display
-        self.canvas1 = Canvas(self.master, width=canvas_width, height=300, bg="lightgrey")
-        self.canvasID_1 = None
-        # Bind mouse events for zoom and drag
-        self.canvas1.bind("<ButtonPress-1>", lambda event:self._on_drag(event,canvas=1))
-        self.canvas1.bind("<B1-Motion>", lambda event:self._on_drag(event,canvas=1))
-        self.canvas1.bind("<ButtonRelease-1>", lambda event:self._on_drag(event,canvas=1))
-        self.canvas1.bind("<MouseWheel>", lambda event:self._on_zoom(event,canvas=1))
-        self.canvas1.bind("<Button-4>", lambda event:self._on_zoom_linux(event, canvas=1))  # Linux scroll up
-        self.canvas1.bind("<Button-5>", lambda event:self._on_zoom_linux(event, canvas=1))  # Linux scroll down
+        self.canvasManager.canvas1, self.canvasManager.canvas2, self.canvasManager.canvas3 = self.canvasManager.init_canvases()
 
+        # Add to background
+        self.background.create_window(layoutHelper(2, "horizontal"), layoutHelper(2, "vertical"), window=self.canvasManager.canvas1)
+        self.background.create_window(layoutHelper(6, "horizontal"), layoutHelper(2, "vertical"), window=self.canvasManager.canvas2)
+        self.background.create_window(layoutHelper(10, "horizontal"), layoutHelper(2, "vertical"), window=self.canvasManager.canvas3)
 
-        self.canvas2 = tk.Canvas(self.master, width=canvas_width, height=300, bg="lightgrey")
-        self.canvas2_forward = tk.Button(self.canvas2, text="forward", command=lambda: self._plot_move_Button(1))
-        self.canvas2_backward = tk.Button(self.canvas2, text="backward", command=lambda: self._plot_move_Button(-1))
-        self.canvas2.create_window(350, 270, window=self.canvas2_forward)
-        self.canvas2.create_window(30, 270, window=self.canvas2_backward)
-
-        self.canvas3 = Canvas(self.master, width=canvas_width, height=300,bg="lightgrey")
-        self.canvas3.bind("<ButtonPress-1>", lambda event:self._on_drag(event,canvas=3))
-        self.canvas3.bind("<B1-Motion>", lambda event:self._on_drag(event,canvas=3))
-        self.canvas3.bind("<ButtonRelease-1>", lambda event:self._on_drag(event,canvas=3))
-        self.canvas3.bind("<MouseWheel>", lambda event:self._on_zoom(event,canvas=3))
-        self.canvas3.bind("<Button-4>", lambda event:self._on_zoom_linux(event, canvas=3))
-        self.canvas3.bind("<Button-5>", lambda event:self._on_zoom_linux(event, canvas=3))
-        
-        self.background.create_window(layoutHelper(2,"horizontal"), layoutHelper(2,"vertical"), window=self.canvas1)  # Place canvas on the background
-        self.background.create_window(layoutHelper(6,"horizontal"), layoutHelper(2,"vertical"),window=self.canvas2)
-        self.background.create_window(layoutHelper(10,"horizontal"),layoutHelper(2,"vertical"),window=self.canvas3)
-
-        # Placeholders for images
-        self.photo_image1 = None  # Placeholder for image object for canvas1
-        self.photo_image2 = None  # Placeholder for image object for canvas2
-        self.photo_image3 = None  # Placeholder for image object for canvas3
-
-        # video -> canvas 1 & 3
-        self.zoom_factor1 =1.0
-        self.zoom_factor3 = 1.0
-        self.placeloc1 = None
-        self.placeloc3 = None
-        self.offset_x1 = 200
-        self.offset_y1 = 150
-        self.offset_x3 = 200
-        self.offset_y3 = 150
-
-        # Graph -> Canvas 2
-        self.x = None # x-axis data
-        self.y = None # y-axis data
-        self.line = None # Initialize the line reference
-        self.zoom_baseline = None
-        self.text_label = None
-        self.fig = None
-        self.ax = None
-        self.figure_canvas = None
-
-        # Graphing options
-        self.plate = tk.StringVar(value="Force Plate 1")
-        self.option = tk.StringVar(value="Fz")
 
     def initTimeline(self):
         # Place holder for Timeline object
-        self.timeline1:timeline = None
-        self.timeline2:timeline = None
+        self.timelineManager.force_canvas, self.timelineManager.video_canvas = self.timelineManager.create_timelines()
+        self.background.create_window(700, 700, window=self.timelineManager.force_canvas)
+        self.background.create_window(700, 800, window=self.timelineManager.video_canvas)
 
-        # Timeline Canvas
-        self.force_timeline = tk.Canvas(self.master, width=1080, height=75, bg="lightblue")
-        self.video_timeline = tk.Canvas(self.master, width=1080, height=75, bg="lightblue")
-        
-        self.background.create_window(700,700,window=self.force_timeline)
-        self.background.create_window(700,800,window=self.video_timeline) 
+    
+    def initButtonLayout(self):
+        self.buttons = self.buttonManager.create_buttons()
+        self.background.create_window(100, 750, window=self.buttons['align'])
+        self.background.create_window(650, 350, window=self.buttons['graph_option'])
+        self.background.create_window(150, 450, window=self.buttons['step_backward'])
+        self.background.create_window(1250, 450, window=self.buttons['step_forward'])
+        self.background.create_window(100, 350, window=self.buttons['rotateR'])
+        self.background.create_window(280, 350, window=self.buttons['rotateL'])
+        self.background.create_window(layoutHelper(3, "horizontal"), 525, window=self.buttons['upload_video'])
+        self.background.create_window(layoutHelper(6, "horizontal"), 525, window=self.buttons['upload_force'])
+        self.background.create_window(layoutHelper(9, "horizontal"), 525, window=self.buttons['vector_overlay'])
+        self.background.create_window(layoutHelper(3, "horizontal"), 575, window=self.buttons['label_video'])
+        self.background.create_window(layoutHelper(6, "horizontal"), 575, window=self.buttons['label_force'])
+        self.background.create_window(layoutHelper(9, "horizontal"), 575, window=self.buttons['save'])
+        self.background.create_window(100, 800, window=self.buttons['COM'])
 
-    def initButtons(self):
-        self.align_button = tk.Button(self.master, text="Align", command=self.align)
-        self.graph_option = tk.Button(self.master, text="Graphing Options", command=self.graph)
-        self.step_forward = tk.Button(self.master, text="+1frame",command=lambda: self.stepF(1))
-        self.step_backward = tk.Button(self.master, text="-1frame", command=lambda: self.stepF(-1))
-        self.rotateR = tk.Button(self.master, text="Rotate clockwise",command=lambda: self.rotateCam(1))
-        self.rotateL = tk.Button(self.master, text="Rotate counterclockwise",command=lambda: self.rotateCam(-1))
-        self.upload_video_button = tk.Button(self.master, text="Upload Video", command=self.upload_video)
-        self.show_vector_overlay = tk.Button(self.master, text="Vector Overlay", command=self.vector_overlay)
-        self.upload_force_button = tk.Button(self.master, text="Upload Force File", command=self.upload_force_data)
-        self.video_button = tk.Button(self.master, text="Label Video", command=self.label_video)
-        self.force_button = tk.Button(self.master, text="Label Force", command=self.label_force)
-        self.save_button = tk.Button(self.master, text="Save", command=self.save)
-        self.COM_button = tk.Button(self.master, text="COM", command=self.startCOM)
-
-        self.background.create_window(100,750,window=self.align_button)
-        self.background.create_window(650,350,window=self.graph_option)
-        self.background.create_window(150,450,window=self.step_backward)
-        self.background.create_window(1250,450,window=self.step_forward)
-        self.background.create_window(100,350,window=self.rotateR)
-        self.background.create_window(280,350,window=self.rotateL)
-        self.background.create_window(layoutHelper(3,"horizontal"),525,window=self.upload_video_button)
-        self.background.create_window(layoutHelper(6,"horizontal"),525,window=self.upload_force_button)
-        self.background.create_window(layoutHelper(9,"horizontal"),525,window=self.show_vector_overlay)
-        self.background.create_window(layoutHelper(3,"horizontal"),575,window=self.video_button)
-        self.background.create_window(layoutHelper(6,"horizontal"),575,window=self.force_button)
-        self.background.create_window(layoutHelper(9,"horizontal"),575,window=self.save_button)
-        self.background.create_window(100,800,window=self.COM_button)
-
-    def initLabels(self):
-        self.force_timeline_label = Label(self.master, text="Force Timeline (label = frame)")
-        self.video_timeline_label = Label(self.master, text="Video Timeline (label = frame)")
-        
-        self.background.create_window(300,650,window=self.force_timeline_label)
-        self.background.create_window(300,750,window=self.video_timeline_label)
+    def initLabels(self):  
+        self.labels = self.labelManager.create_labels()
+        self.background.create_window(300,650,window=self.labels['force_timeline'])
+        self.background.create_window(300,750,window=self.labels['video_timeline'])
 
     def initSlider(self):
         self.slider = Scale(self.master, from_=0, to=100, orient="horizontal", label="pick frame", command=self.slider)
         self.background.create_window(700,450,window=self.slider,width=900)
     
-    def initGlobalVar(self):
-        # force data
-        self.force_start    = None  # This variable store the time in raw force data which user choose to align
-        self.force_frame    = None  # total number of frames could be represented by force data ->calculation: TotalRows/stepsize
-        self.step_size      = 10    # step siize unit: rows/frame
-        self.zoom_pos       = 0     # canvas 2: force data offset -step size<zoom_pos<+step size
-        self.force_align    = None  # Intialize force align value and video align value
-
-        # video
-        self.rot = 0 # rotated direction
-        self.video_align = None
-
-        # Global frame/location base on slider
-        self.loc = 0
-
-    def initGloablFlags(self):
-        # Global Flags
-        self.force_data_flag = False
-        self.video_data_flag = False
-        self.vector_overlay_flag = False
-        self.COM_flag = False
-
     def initSaveWindow(self):
         """Initialize Save window"""
         # saving
@@ -281,62 +183,88 @@ class DisplayApp:
     def _on_zoom(self,event,canvas):
         if (canvas == 1):
             if event.delta > 0:
-                self.zoom_factor1 *= 1.1  # Zoom in
+                self.canvasManager.zoom_factor1 *= 1.1  # Zoom in
             else:
-                self.zoom_factor1 *= 0.9  # Zoom out
+                self.canvasManager.zoom_factor1 *= 0.9  # Zoom out
 
             # Make sure the zoom factor is reasonable
-            self.zoom_factor1 = max(0.1, min(self.zoom_factor1, 5.0))  # Limiting zoom range
-            print(self.zoom_factor1)
-            self.canvas1.delete("all")
-            self.photo_image1 = self.frameConverter.cvToPillow(camera=self.Video.cam, width=round(self.Video.frame_width * self.zoom_factor1),
-                                                   height=round(self.Video.frame_height * self.zoom_factor1))
-            self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
+            self.canvasManager.zoom_factor1 = max(0.1, min(self.canvasManager.zoom_factor1, 5.0))  # Limiting zoom range
+            print(self.canvasManager.zoom_factor1)
+            self.canvasManager.canvas1.delete("all")
+            self.canvasManager.photo_image1 = self.frameConverter.cvToPillow(camera=self.Video.cam, width=round(self.Video.frame_width * self.canvasManager.zoom_factor1),
+                                                   height=round(self.Video.frame_height * self.canvasManager.zoom_factor1), frame_number=self.state.loc)
+            self.canvasManager.canvas1.create_image(self.canvasManager.offset_x1, self.canvasManager.offset_y1, image=self.canvasManager.photo_image1, anchor="center")
 
         elif (canvas == 3):
             if event.delta > 0:
-                self.zoom_factor3 *= 1.1  # Zoom in
+                self.canvasManagerzoom_factor3 *= 1.1  # Zoom in
             else:
-                self.zoom_factor3 *= 0.9  # Zoom out
+                self.canvasManager.zoom_factor3 *= 0.9  # Zoom out
 
             # Make sure the zoom factor is reasonable
-            self.zoom_factor3 = max(0.1, min(self.zoom_factor3, 5.0))  # Limiting zoom range
+            self.canvasManager.zoom_factor3 = max(0.1, min(self.canvasManager.zoom_factor3, 5.0))  # Limiting zoom range
             print(self.zoom_factor3)
-            self.canvas3.delete("all")
-            self.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam, width=round(self.Video.frame_width * self.zoom_factor3),
-                                                   height=round(self.Video.frame_height * self.zoom_factor3))
-            self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
+            self.canvasManager.canvas3.delete("all")
+            self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam, width=round(self.Video.frame_width * self.canvasManager.zoom_factor3),
+                                                   height=round(self.Video.frame_height * self.canvasManager.zoom_factor3))
+            self.canvasManager.canvas3.create_image(self.canvasManager.offset_x3, self.canvasManager.offset_y3, image=self.canvasManager.photo_image3, anchor="center")
 
     def _on_drag(self, event, canvas):
-        if(event.type=="4"):
-            if(canvas==1):
-                self.placeloc1 = [event.x,event.y]
-            elif(canvas==3):
-                self.placeloc3 = [event.x,event.y]
-        if(event.type=="6"):
-            if(canvas==1):
-                self.offset_x1 += event.x - self.placeloc1[0]
-                self.offset_y1 += event.y - self.placeloc1[1]
-                self.placeloc1[0] = event.x
-                self.placeloc1[1] = event.y
-                self.canvas1.delete("all")
-                self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
-            elif(canvas==3):
-                print(event.x,event.y)
-                self.offset_x3 += event.x - self.placeloc3[0]
-                self.offset_y3 += event.y - self.placeloc3[1]
-                self.placeloc3[0] = event.x
-                self.placeloc3[1] = event.y
-                self.canvas3.delete("all")
-                self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
+        if event.type == "4":  # ButtonPress
+            if canvas == 1:
+                self.canvasManager.placeloc1 = [event.x, event.y]
+            elif canvas == 3:
+                self.canvasManager.placeloc3 = [event.x, event.y]
 
-        if(event.type=="5"):
-            if(canvas==1):
-                self.canvas1.delete("all")
-                self.canvas1.create_image(self.offset_x1, self.offset_y1, image=self.photo_image1, anchor="center")
-            elif(canvas==3):
-                self.canvas3.delete("all")
-                self.canvas3.create_image(self.offset_x3, self.offset_y3, image=self.photo_image3, anchor="center")
+        elif event.type == "6":  # B1-Motion (Dragging)
+            if canvas == 1:
+                dx = event.x - self.canvasManager.placeloc1[0]
+                dy = event.y - self.canvasManager.placeloc1[1]
+                self.canvasManager.offset_x1 += dx
+                self.canvasManager.offset_y1 += dy
+                self.canvasManager.placeloc1 = [event.x, event.y]
+
+                self.canvasManager.canvas1.delete("all")
+                self.canvasManager.canvas1.create_image(
+                    self.canvasManager.offset_x1,
+                    self.canvasManager.offset_y1,
+                    image=self.canvasManager.photo_image1,
+                    anchor="center"
+                )
+
+            elif canvas == 3:
+                dx = event.x - self.canvasManager.placeloc3[0]
+                dy = event.y - self.canvasManager.placeloc3[1]
+                self.canvasManager.offset_x3 += dx
+                self.canvasManager.offset_y3 += dy
+                self.canvasManager.placeloc3 = [event.x, event.y]
+
+                self.canvasManager.canvas3.delete("all")
+                self.canvasManager.canvas3.create_image(
+                    self.canvasManager.offset_x3,
+                    self.canvasManager.offset_y3,
+                    image=self.canvasManager.photo_image3,
+                    anchor="center"
+                )
+
+        elif event.type == "5":  # ButtonRelease
+            if canvas == 1:
+                self.canvasManager.canvas1.delete("all")
+                self.canvasManager.canvas1.create_image(
+                    self.canvasManager.offset_x1,
+                    self.canvasManager.offset_y1,
+                    image=self.canvasManager.photo_image1,
+                    anchor="center"
+                )
+
+            elif canvas == 3:
+                self.canvasManager.canvas3.delete("all")
+                self.canvasManager.canvas3.create_image(
+                    self.canvasManager.offset_x3,
+                    self.canvasManager.offset_y3,
+                    image=self.canvasManager.photo_image3,
+                    anchor="center"
+                )
 
     def _pop_up(self, text, follow=False):
         # Create a new top-level window (popup)
@@ -380,15 +308,15 @@ class DisplayApp:
             self.master.wait_window(popup)
 
     def label_video(self):
-        self.video_align = self.loc
-        self.timeline2.update_label(self.video_align/self.slider['to'])
-        self.video_timeline_label.config(text=f"Video Timeline (label = {self.video_align})")
+        self.state.video_align = self.state.loc
+        self.timelineManager.timeline2.update_label(self.state.video_align/self.slider['to'])
+        self.labels['video_timeline'].config(text=f"Video Timeline (label = {self.state.video_align})")
         self._update_video_timeline()
 
     def label_force(self):
-        self.force_align = self.loc
-        self.timeline1.update_label(self.force_align/self.slider['to'])
-        self.force_timeline_label.config(text=f"Force Timeline (label = {self.force_align})")
+        self.state.force_align = self.state.loc
+        self.timelineManager.timeline1.update_label(self.state.force_align/self.slider['to'])
+        self.labels['force_timeline'].config(text=f"Force Timeline (label = {self.state.force_align})")
         self._update_force_timeline()
 
     def align(self):
@@ -431,20 +359,20 @@ class DisplayApp:
     def plot_force_data(self):
         print("[INFO] plotting force data")
         # Clear previous figure on canvas2
-        for widget in self.canvas2.winfo_children():
+        for widget in self.canvasManager.canvas2.winfo_children():
             widget.destroy()
 
-        canvas_width = self.canvas2.winfo_width()
-        canvas_height = self.canvas2.winfo_height()
+        canvas_width = self.canvasManager.canvas2.winfo_width()
+        canvas_height = self.canvasManager.canvas2.winfo_height()
 
         # Create a new figure and plot
         self.fig, self.ax = plt.subplots(figsize=(canvas_width / 100, canvas_height / 100), dpi=100)
 
         # Read data based on plate and force
         plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
-        x_position = float(self.Force.data.iloc[int(self.loc * self.step_size + self.zoom_pos), 0])
+        x_position = float(self.Force.data.iloc[int(self.state.loc * self.state.step_size + self.state.zoom_pos), 0])
         y_value = float(
-            self.Force.data.loc[int(self.loc * self.step_size + self.zoom_pos), f"{self.option.get()}{plate_number}"])
+            self.Force.data.loc[int(self.state.loc * self.state.step_size + self.state.zoom_pos), f"{self.option.get()}{plate_number}"])
 
         # Set x and y
         self.x = self.Force.data.iloc[:, 0]
@@ -473,7 +401,7 @@ class DisplayApp:
         self.text_label.set_text(f"{self.plate.get()}\n{self.option.get()}: {y_value:.2f}")
 
         # Embed the Matplotlib figure in the Tkinter canvas
-        self.figure_canvas = FigureCanvasTkAgg(self.fig, self.canvas2)
+        self.figure_canvas = FigureCanvasTkAgg(self.fig, self.canvasManager.canvas2)
         self.figure_canvas.draw()
         self.figure_canvas.get_tk_widget().place(x=0, y=0, width=canvas_width, height=canvas_height)
 
@@ -481,26 +409,26 @@ class DisplayApp:
         self.figure_canvas.mpl_connect("button_press_event", self.on_click)  # Example: Connect a click event
 
         # Optional: Add an interactive toolbar
-        toolbar_frame = tk.Frame(self.canvas2)
+        toolbar_frame = tk.Frame(self.canvasManager.canvas2)
         toolbar_frame.place(x=0, y=canvas_height - 30, width=canvas_width, height=30)
         toolbar = NavigationToolbar2Tk(self.figure_canvas, toolbar_frame)
         toolbar.update()
 
-        forward = tk.Button(self.canvas2, text="forward", command=lambda: self._plot_move_Button(1))
-        self.canvas2.create_window(350, 270, window=forward)
+        forward = tk.Button(self.canvasManager.canvas2, text="forward", command=lambda: self._plot_move_Button(1))
+        self.canvasManager.canvas2.create_window(350, 270, window=forward)
 
-        backward = tk.Button(self.canvas2, text="backward", command=lambda: self._plot_move_Button(-1))
-        self.canvas2.create_window(30, 270, window=backward)
+        backward = tk.Button(self.canvasManager.canvas2, text="backward", command=lambda: self._plot_move_Button(-1))
+        self.canvasManager.canvas2.create_window(30, 270, window=backward)
 
         print("[INFO] plot finished")
 
     def _update_force_timeline(self):
-        # Assuming self.timeline1.draw_rect() returns an image
-        forceTimeline = Image.fromarray(self.timeline1.draw_rect(loc=self.loc / self.slider['to']))
+        # Assuming self.timelineManager.timeline1.draw_rect() returns an image
+        forceTimeline = Image.fromarray(self.timelineManager.timeline1.draw_rect(loc=self.state.loc / self.slider['to']))
 
         # Resize the image to fit the canvas size
-        canvas_width = self.force_timeline.winfo_width()  # Get the width of the canvas
-        canvas_height = self.force_timeline.winfo_height()  # Get the height of the canvas
+        canvas_width = self.timelineManager.force_canvas.winfo_width()  # Get the width of the canvas
+        canvas_height = self.timelineManager.force_canvas.winfo_height()  # Get the height of the canvas
 
         # Resize the image to match the canvas size using the new resampling method
         forceTimeline = forceTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
@@ -509,15 +437,15 @@ class DisplayApp:
         self.timeline_image1 = ImageTk.PhotoImage(forceTimeline)
 
         # Create the image on the canvas, anchoring it at the top-left (0, 0)
-        self.force_timeline.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
+        self.timelineManager.force_canvas.create_image(0, 0, image=self.timeline_image1, anchor=tk.NW)
 
     def _update_video_timeline(self):
-        # Assuming self.video_timeline is the canvas and self.timeline2.draw_rect() returns an image
-        videoTimeline = Image.fromarray(self.timeline2.draw_rect(loc=self.loc / self.Video.total_frames))
+        # Assuming self.timelineManager.video_canvas is the canvas and self.timelineManager.timeline2.draw_rect() returns an image
+        videoTimeline = Image.fromarray(self.timelineManager.timeline2.draw_rect(loc=self.state.loc / self.Video.total_frames))
 
         # Resize the image to fit the canvas size
-        canvas_width = self.video_timeline.winfo_width()  # Get the width of the canvas
-        canvas_height = self.video_timeline.winfo_height()  # Get the height of the canvas
+        canvas_width = self.timelineManager.video_canvas.winfo_width()  # Get the width of the canvas
+        canvas_height = self.timelineManager.video_canvas.winfo_height()  # Get the height of the canvas
         # Resize the image to match the canvas size
         videoTimeline = videoTimeline.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
 
@@ -525,7 +453,7 @@ class DisplayApp:
         self.timeline_image2 = ImageTk.PhotoImage(videoTimeline)
 
         # Create the image on the canvas, anchoring it at the top-left (0, 0)
-        self.video_timeline.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
+        self.timelineManager.video_canvas.create_image(0, 0, image=self.timeline_image2, anchor=tk.NW)
 
 if __name__ == "__main__":
     root = tk.Tk()

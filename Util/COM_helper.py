@@ -49,8 +49,6 @@ class COM_helper:
         print("[DEBUG] finished drawing")
         return frame
 
-
-
 if __name__ == "__main__":
     import cv2
     com = COM_helper()

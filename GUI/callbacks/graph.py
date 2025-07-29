@@ -45,9 +45,9 @@ def graphOptionCallback(self):
         py_radio.pack(side=tk.LEFT, padx=5)
         def make_changes():
             try:
-                if(self.loc>self.force_frame):
+                if(self.state.loc>self.state.force_frame):
                     self.slider.set(0)
-                    self.loc = 0
+                    self.state.loc = 0
 
                 self.plot_force_data()
             except AttributeError as e:
