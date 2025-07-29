@@ -1,32 +1,33 @@
 #1 Starts by taking in .txt file and video fil and calling the ledSyncing.py script
 import pandas as pd
-import os
+import os 
 import sys
 import tkinter as tk
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-data_path = r"C:\Users\Deren\OneDrive\Desktop\USCProject\Prepare2Play-Learning-Experience\newData"
-video_file = "pbd_IT_12.vid04.MOV"
-force_file = "pbd_IT_12.vid04_Alignment_Force.csv"
+from ledSyncing import run_led_syncing
 
-#run_led_syncing(data_path, video_file, force_file)
+data_path = r"C:\Users\berke\OneDrive\Desktop\USCBiomechanicsProject\Prepare2Play-Learning-Experience\newData"
+video_file = "walk_test_vid01.mov"
+force_file = "walktest1.txt"
+
+run_led_syncing(data_path, video_file, force_file)
 
 
 #2 Gather lag from video_file_Results.csv and print it
 
-# def get_lag_from_results(parent_path, force_file):
-#     df_result = pd.read_csv(os.path.join(parent_path, force_file.replace('.txt', '_Results.csv')))
-#     lag_value = df_result['Video Frame for t_zero force'].values[0]
-#     return int(lag_value)
+def get_lag_from_results(parent_path, force_file):
+    df_result = pd.read_csv(os.path.join(parent_path, force_file.replace('.txt', '_Results.csv')))
+    lag_value = df_result['Video Frame for t_zero force'].values[0]
+    return int(lag_value)
 
 #3 Pass lag value into simplerGUI.py
 
 from simplerGUI import VectorOverlayApp
 
-#lag_value = get_lag_from_results(data_path, force_file)
+lag_value = get_lag_from_results(data_path, force_file)
 
-lag_value = 559 # Placeholder for lag value, replace with actual logic to get lag
 root = tk.Tk()
 app = VectorOverlayApp(root)
 app.lagValue = lag_value  # Pass the lag value to the GUI
