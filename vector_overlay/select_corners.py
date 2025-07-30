@@ -203,8 +203,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     coords = []
 
     # Minimum area to filter out noise
-    min_area = 2000
-    max_area = 30000
+    min_area = 200
     
     #save corners
     for contour in contours:
@@ -216,7 +215,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
         epsilon = 0.01 * cv2.arcLength(hull, True)  # adjust for precision
         approx = cv2.approxPolyDP(hull, epsilon, True)
 
-        if area > min_area and area < max_area:
+        if area > min_area:
 
             corners = approx.reshape(-1, 2)  # shape (num_points, 2)
 
@@ -243,15 +242,15 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
     output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[6], coords[4], coords[0], coords[7], coords[3], coords[2], coords[5] 
 
-    # for out in output:
-    #     cv2.circle(frame, (int(out[0]), int(out[1])), 5, (0, 0, 255), -1)  # Red dots for corners
+    for out in output:
+        cv2.circle(frame, (int(out[0]), int(out[1])), 5, (0, 0, 255), -1)  # Red dots for corners
 
     # # Save coordinates to a file
     with open("selected_points.txt", "w") as f:
         for x, y in output:
             f.write(f"{x},{y}\n")
-            
-    # print(f"{len(output)} coordinates saved to file.")
+
+    print(f"{len(output)} coordinates saved to file.")
 
     # Show the result
     cv2.namedWindow("Detected Yellow Rectangles", cv2.WINDOW_NORMAL)
@@ -261,7 +260,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     cv2.waitKey(0)  # Wait indefinitely until a key is pressed
     cv2.destroyAllWindows()
 
-    # return output
+    return output
 
 if __name__ == "__main__":
     cap = cv2.VideoCapture(r"vector_overlay\pbd_IT_12.vid03.MOV")
