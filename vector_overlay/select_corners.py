@@ -112,6 +112,9 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     import cv2
     import numpy as np
 
+    #TO DO: Cover the force plate with another color tape, and use two masks to detect both rectangles to get more accurate points
+    #TO DO: Add short view input
+
     # Define yellow color range in HSV
     lower_yellow = np.array([20, 100, 100])
     upper_yellow = np.array([35, 255, 255])
