@@ -74,7 +74,8 @@ def run_led_syncing(parent_path, video_file, force_file):
 
     # --- Load and process force plate data ---
     force_path = os.path.join(parent_path, force_file)
-    df_force = pd.read_csv(force_path, header=17, delimiter='\t').drop(0)
+    df_force = pd.read_csv(force_path, header=17, delimiter='\t', encoding='latin1').drop(0)
+
     df_force['RedSignal'] = np.sign(df_force['Fz.2'].astype('float64'))
 
     # Downsample force to match video rate (10x slower)
@@ -108,6 +109,7 @@ def run_led_syncing(parent_path, video_file, force_file):
     lagFile = os.path.join(parent_path, '_Results.csv')
     lagValue = df_result['Video Frame for t_zero force'].values[0]
     lagValue = int(abs(lagValue))
+    return lagValue
 
 # Allow the script to be run directly if needed
 if __name__ == "__main__":

@@ -139,7 +139,7 @@ class DisplayApp:
     
     def initButtonLayout(self):
         self.buttons = self.buttonManager.create_buttons()
-        self.background.create_window(100, 750, window=self.buttons['align'])
+        # self.background.create_window(100, 750, window=self.buttons['align'])
         self.background.create_window(650, 350, window=self.buttons['graph_option'])
         self.background.create_window(150, 450, window=self.buttons['step_backward'])
         self.background.create_window(1250, 450, window=self.buttons['step_forward'])
@@ -319,8 +319,8 @@ class DisplayApp:
         self.labels['force_timeline'].config(text=f"Force Timeline (label = {self.state.force_align})")
         self._update_force_timeline()
 
-    def align(self):
-        alignCallback(self)
+    # def align(self):
+    #     alignCallback(self)
 
     def graph(self):
         graphOptionCallback(self)

@@ -123,7 +123,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     # frame = cv2.imread("vector_overlay\IMG_2518.jpg")
     
     if not cap.isOpened():
-        print("❌ Could not open video file.")
+        print("Could not open video file.")
         exit()
 
     if not ret:

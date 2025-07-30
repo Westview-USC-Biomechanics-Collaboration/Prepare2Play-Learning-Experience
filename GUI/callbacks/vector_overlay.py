@@ -30,7 +30,7 @@ def process(self):
     """
     if self.state.loc>=self.state.video_align:
         self.Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc - self.state.video_align)
-        self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam)
+        self.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam)
     else:
         self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc)
-        self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.cam)
+        self.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.cam)
