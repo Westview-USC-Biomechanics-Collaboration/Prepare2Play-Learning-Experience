@@ -112,9 +112,22 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     import cv2
     import numpy as np
 
+    #TO DO: Cover the force plate with another color tape, and use two masks to detect both rectangles to get more accurate points
+    #TO DO: Add short view input
+    #TO DO: Can remove the middle tape, and use the biggest rectangle and use those dimensions to calculate middle line 
+    # and see which area is the left force plate and which area is the right force plate
+
     # Define yellow color range in HSV
     lower_yellow = np.array([20, 100, 100])
     upper_yellow = np.array([35, 255, 255])
+
+    # Lower range for red
+    lower_red1 = np.array([0, 120, 70])    
+    upper_red1 = np.array([10, 255, 255])
+
+    # Upper range for red
+    lower_red2 = np.array([170, 120, 70])  
+    upper_red2 = np.array([180, 255, 255])
 
     # Open the video
     ret, frame = cap.read()
@@ -138,22 +151,36 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     # Create a binary mask where yellow colors are white
-    mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+    yellow_mask = cv2.inRange(hsv, lower_red1, upper_red2)
 
-    cv2.namedWindow("original", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("original", 800, 600)  # Set window size
-    cv2.imshow("original", mask)
+    #Create a binary mask where red colors are white
+    red_mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+
+    cv2.namedWindow("yellow_original", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("yellow_original", 800, 600)  # Set window size
+    cv2.imshow("yellow_original", yellow_mask)
+
+    cv2.namedWindow("red_original", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("red_original", 800, 600)  # Set window size
+    cv2.imshow("red_original", red_mask)
 
     # Optional: closing to seal any final small gaps
     # Horizontal kernel to connect horizontal lines
     kernel_h = np.ones((1, 200), np.uint8)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_h)
+    yellow_mask = cv2.morphologyEx(yellow_mask, cv2.MORPH_CLOSE, kernel_h)
     kernel_v = np.ones((1, 1), np.uint8)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_v) 
+    yellow_mask = cv2.morphologyEx(yellow_mask, cv2.MORPH_CLOSE, kernel_v)
 
-    cv2.namedWindow("one", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("one", 800, 600)  # Set window size
-    cv2.imshow("one", mask)
+    red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, kernel_h)
+    red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, kernel_v)  
+
+    cv2.namedWindow("yellow_edited", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("yellow_edited", 800, 600)  # Set window size
+    cv2.imshow("yellow_edited", yellow_mask)
+
+    cv2.namedWindow("red_edited", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("red_edited", 800, 600)  # Set window size
+    cv2.imshow("red_edited", red_mask)
     
     # ROI crop
     # h, w = mask.shape
@@ -161,20 +188,22 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     # offset_x, offset_y = int(w * 0.01), int(h * 0.4)
 
     # Trying to auto create roi
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    yellow_contours, _ = cv2.findContours(yellow_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    red_contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # Optional: filter by area
-    contours = [c for c in contours if cv2.contourArea(c) > 2000]
+    y_contours = [c for c in yellow_contours if cv2.contourArea(c) > 2000]
+    r_contours = [c for c in red_contours if cv2.contourArea(c) > 2000]
 
     # Get the bounding box of the largest contour
-    if contours:
-        c = max(contours, key=cv2.contourArea)
+    if y_contours:
+        c = max(y_contours, key=cv2.contourArea)
         x, y, w, h = cv2.boundingRect(c)
         cx, cy = x + w // 2, y + h // 2  # Center of the original box
 
         # Scale factors
-        scale_x = 1  
-        scale_y = 1  
+        scale_x = 1.2  
+        scale_y = 1.2  
 
         # New width and height
         new_w = int(w * scale_x)
@@ -185,19 +214,48 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
         y1 = max(0, cy - new_h // 2)
 
         # New bottom-right corner
-        x2 = min(mask.shape[1], cx + new_w // 2)
-        y2 = min(mask.shape[0], cy + new_h // 2)
+        x2 = min(yellow_mask.shape[1], cx + new_w // 2)
+        y2 = min(yellow_mask.shape[0], cy + new_h // 2)
 
         # Extract scaled ROI
-        roi = mask[y1:y2, x1:x2]
-        offset_x, offset_y = x1, y1  # for mapping back later
+        yellow_roi = yellow_mask[y1:y2, x1:x2]
+        yellow_offset_x, yellow_offset_y = x1, y1  # for mapping back later
+    if r_contours:
+        c = max(r_contours, key=cv2.contourArea)
+        x, y, w, h = cv2.boundingRect(c)
+        cx, cy = x + w // 2, y + h // 2  # Center of the original box
 
-    cv2.namedWindow("kernel observation", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("kernel observation", 800, 600)  # Set window size
-    cv2.imshow("kernel observation", roi)
+        # Scale factors
+        scale_x = 1.2  
+        scale_y = 1.2  
+
+        # New width and height
+        new_w = int(w * scale_x)
+        new_h = int(h * scale_y)
+
+        # New top-left corner
+        x1 = max(0, cx - new_w // 2)
+        y1 = max(0, cy - new_h // 2)
+
+        # New bottom-right corner
+        x2 = min(yellow_mask.shape[1], cx + new_w // 2)
+        y2 = min(yellow_mask.shape[0], cy + new_h // 2)
+
+        # Extract scaled ROI
+        red_roi = red_mask[y1:y2, x1:x2]
+        red_offset_x, red_offset_y = x1, y1  # for mapping back later
+
+    cv2.namedWindow("y_kernel observation", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("y_kernel observation", 800, 600)  # Set window size
+    cv2.imshow("y_kernel observation", yellow_roi)
+
+    cv2.namedWindow("r_kernel observation", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("r_kernel observation", 800, 600)  # Set window size
+    cv2.imshow("r_kernel observation", red_roi)
 
     # Find all contours in the mask
-    contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    y_contours, _ = cv2.findContours(yellow_roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    r_contours, _ = cv2.findContours(red_roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # Prepare to save coordinates
     coords = []
@@ -206,8 +264,26 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     min_area = 200
     
     #save corners
-    for contour in contours:
-        contour += [offset_x, offset_y]
+    for contour in y_contours:
+        contour += [yellow_offset_x, yellow_offset_y]
+        hull = cv2.convexHull(contour)
+        area = cv2.contourArea(hull)
+
+        # Approximate contour to polygon to reduce points
+        epsilon = 0.01 * cv2.arcLength(hull, True)  # adjust for precision
+        approx = cv2.approxPolyDP(hull, epsilon, True)
+
+        if area > min_area:
+
+            corners = approx.reshape(-1, 2)  # shape (num_points, 2)
+
+            if len(corners) == 4:
+                cv2.drawContours(frame, [approx], -1, (255, 0, 0), 2)  # Blue polygon outline
+                for corner in corners:
+                    x, y = corner
+                    coords.append([x, y])
+    for contour in r_contours:
+        contour += [red_offset_x, red_offset_y]
         hull = cv2.convexHull(contour)
         area = cv2.contourArea(hull)
 
@@ -225,42 +301,42 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
                     x, y = corner
                     coords.append([x, y])
     
-    coords_one = sorted(coords, key=lambda x: x[0])[0:2]
-    coords_two = sorted(coords, key=lambda x: x[0])[2:]
-    coords_one = sorted(coords_one, key=lambda x: x[1])
-    coords_two = sorted(coords_two, key=lambda x: x[1])
-    coords = coords_one + coords_two
+    # coords_one = sorted(coords, key=lambda x: x[0])[0:2]
+    # coords_two = sorted(coords, key=lambda x: x[0])[2:]
+    # coords_one = sorted(coords_one, key=lambda x: x[1])
+    # coords_two = sorted(coords_two, key=lambda x: x[1])
+    # coords = coords_one + coords_two
     print(coords)
 
-    # find remaining four points in the middle
-    coords.append([(coords[0][0] + coords[2][0])/2 - 10, (coords[0][1] + coords[2][1])/2])
-    coords.append([(coords[0][0] + coords[2][0])/2 + 10, (coords[0][1] + coords[2][1])/2])
-    coords.append([(coords[1][0] + coords[3][0])/2 - 10, (coords[1][1] + coords[3][1])/2])
-    coords.append([(coords[1][0] + coords[3][0])/2 + 10, (coords[1][1] + coords[3][1])/2])
+    # # find remaining four points in the middle
+    # coords.append([(coords[0][0] + coords[2][0])/2 - 10, (coords[0][1] + coords[2][1])/2])
+    # coords.append([(coords[0][0] + coords[2][0])/2 + 10, (coords[0][1] + coords[2][1])/2])
+    # coords.append([(coords[1][0] + coords[3][0])/2 - 10, (coords[1][1] + coords[3][1])/2])
+    # coords.append([(coords[1][0] + coords[3][0])/2 + 10, (coords[1][1] + coords[3][1])/2])
 
-    #rearrange list
-    output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
-    output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[6], coords[4], coords[0], coords[7], coords[3], coords[2], coords[5] 
+    # #rearrange list
+    # output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
+    # output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[6], coords[4], coords[0], coords[7], coords[3], coords[2], coords[5] 
 
-    for out in output:
+    for out in coords:
         cv2.circle(frame, (int(out[0]), int(out[1])), 5, (0, 0, 255), -1)  # Red dots for corners
 
-    # # Save coordinates to a file
-    with open("selected_points.txt", "w") as f:
-        for x, y in output:
-            f.write(f"{x},{y}\n")
+    # # # Save coordinates to a file
+    # with open("selected_points.txt", "w") as f:
+    #     for x, y in output:
+    #         f.write(f"{x},{y}\n")
 
-    print(f"{len(output)} coordinates saved to file.")
+    # print(f"{len(output)} coordinates saved to file.")
 
     # Show the result
-    cv2.namedWindow("Detected Yellow Rectangles", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("Detected Yellow Rectangles", 800, 600)  # Set window size
-    cv2.imshow("Detected Yellow Rectangles", frame)
+    cv2.namedWindow("Detected Rectangles", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("Detected Rectangles", 800, 600)  # Set window size
+    cv2.imshow("Detected Rectangles", frame)
 
     cv2.waitKey(0)  # Wait indefinitely until a key is pressed
     cv2.destroyAllWindows()
 
-    return output
+    # return output
 
 if __name__ == "__main__":
     cap = cv2.VideoCapture(r"vector_overlay\pbd_IT_12.vid03.MOV")
