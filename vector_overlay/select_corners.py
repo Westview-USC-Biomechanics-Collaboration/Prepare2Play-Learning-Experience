@@ -108,11 +108,116 @@ def get_zoomed_region(frame, x, y, zoom_size=50, zoom_factor=2):
 #     print("Points saved to selected_points.txt")
 #     return points
 
+def get_hsv(event, x, y, frame, flags, param):
+    clicked_hsvs = []
+    if event == cv2.EVENT_LBUTTONDOWN:
+        # Get BGR value at click
+        pixel_bgr = frame[y, x]
+        # Convert this pixel to HSV
+        pixel_hsv = cv2.cvtColor(np.uint8([[pixel_bgr]]), cv2.COLOR_BGR2HSV)[0][0]
+        clicked_hsvs.append(pixel_hsv)
+        h, s, v = pixel_hsv
+        print(f"Clicked at ({x}, {y}) → HSV: H={h}, S={s}, V={v}")
+
+        # Show preview of clicked color
+        preview = np.zeros((100, 100, 3), np.uint8)
+        preview[:] = pixel_bgr
+        cv2.imshow("Selected Color", preview)
+
+    cv2.namedWindow('Calibration')
+    cv2.setMouseCallback('Calibration', get_hsv)
+
+    print("Click on the target color a few times, press ESC when done.")
+
+    while True:
+        cv2.imshow('Calibration', frame)
+        key = cv2.waitKey(1) & 0xFF
+        if key == 27:  # ESC to finish
+            break
+
+    cv2.destroyAllWindows()
+
+    # Once finished, calculate HSV bounds
+    if clicked_hsvs:
+        clicked_hsvs = np.array(clicked_hsvs)
+        lower = np.min(clicked_hsvs, axis=0)
+        upper = np.max(clicked_hsvs, axis=0)
+
+        # Add a margin for tolerance
+        margin = np.array([10, 40, 40])
+        lower = np.clip(lower - margin, [0,0,0], [179,255,255])
+        upper = np.clip(upper + margin, [0,0,0], [179,255,255])
+
+        print(f"\nFinal HSV Range:")
+        print(f"Lower: {lower}")
+        print(f"Upper: {upper}")
+    else:
+        print("⚠️ No points were clicked.")
+
+def find_best_rect(contours, min_area=2000):
+    best_rect = None
+    best_score = -1  # higher is better
+
+    for contour in contours:
+        # if cv2.contourArea(contour) < min_area:
+        #     continue
+
+        # hull = cv2.convexHull(contour)
+        # peri = cv2.arcLength(hull, True)
+        # approx = cv2.approxPolyDP(hull, 0.02 * peri, True)
+
+        # # Only consider quadrilaterals
+        # if len(approx) == 4 and cv2.isContourConvex(approx):
+        #     pts = approx.reshape(4, 2)
+
+        #     # --- Angle check ---
+        #     angles = []
+        #     for i in range(4):
+        #         p0, p1, p2 = pts[i], pts[(i - 1) % 4], pts[(i + 1) % 4]
+        #         v1, v2 = p1 - p0, p2 - p0
+        #         cosine = np.dot(v1, v2) / (np.linalg.norm(v1)*np.linalg.norm(v2) + 1e-10)
+        #         angle = np.degrees(np.arccos(cosine))
+        #         angles.append(angle)
+
+        #     # Score based on how close angles are to 90°
+        #     angle_score = -sum(abs(a - 90) for a in angles)
+
+        #     # --- Aspect ratio check ---
+        #     w = np.linalg.norm(pts[0] - pts[1])
+        #     h = np.linalg.norm(pts[1] - pts[2])
+        #     aspect_ratio = w / (h + 1e-10)
+        #     ar_score = -abs(aspect_ratio - 1.0)  # prefer square-ish, adjust if needed
+
+        #     # Combine into one score
+        #     total_score = angle_score + cv2.contourArea(approx)
+
+        #     if total_score > best_score:
+        #         best_score = total_score
+        #         best_rect = pts
+        hull = cv2.convexHull(contour)
+        area = cv2.contourArea(hull)
+
+        # Approximate contour to polygon to reduce points
+        epsilon = 0.01 * cv2.arcLength(hull, True)  # adjust for precision
+        approx = cv2.approxPolyDP(hull, epsilon, True)
+
+        if area > min_area:
+
+            corners = approx.reshape(-1, 2)  # shape (num_points, 2)
+
+            if len(corners) == 4:
+                total_score = cv2.contourArea(approx)
+        if total_score > best_score:
+            best_score = total_score
+            best_rect = contour
+
+    return best_rect
+                
+
 def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     import cv2
     import numpy as np
 
-    #TO DO: Cover the force plate with another color tape, and use two masks to detect both rectangles to get more accurate points
     #TO DO: Add short view input
     #TO DO: Can remove the middle tape, and use the biggest rectangle and use those dimensions to calculate middle line 
     # and see which area is the left force plate and which area is the right force plate
@@ -120,6 +225,14 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     # Define yellow color range in HSV
     lower_yellow = np.array([20, 100, 100])
     upper_yellow = np.array([35, 255, 255])
+
+    # #These are the detected yellow ranges
+    # lower_yellow = np.array([14, 140, 118]) 
+    # upper_yellow = np.array([40, 255, 255])
+
+    # #These are the detected red ranges
+    # lower_red1 = np.array([0, 88, 92]) 
+    # upper_red2 = np.array([179, 223, 255])
 
     # Lower range for red
     lower_red1 = np.array([0, 120, 70])    
@@ -131,9 +244,6 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
 
     # Open the video
     ret, frame = cap.read()
-
-    # Load an image instead of a video
-    # frame = cv2.imread("vector_overlay\IMG_2518.jpg")
     
     if not cap.isOpened():
         print("❌ Could not open video file.")
@@ -151,10 +261,14 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     # Create a binary mask where yellow colors are white
-    yellow_mask = cv2.inRange(hsv, lower_red1, upper_red2)
+    yellow_mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
 
     #Create a binary mask where red colors are white
-    red_mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+    #red_mask = cv2.inRange(hsv, lower_red1, upper_red1)
+
+    mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
+    mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
+    red_mask = cv2.bitwise_or(mask1, mask2)
 
     cv2.namedWindow("yellow_original", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("yellow_original", 800, 600)  # Set window size
@@ -164,11 +278,23 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     cv2.resizeWindow("red_original", 800, 600)  # Set window size
     cv2.imshow("red_original", red_mask)
 
+    kernel = np.ones((2,2), np.uint8)
+    yellow_mask = cv2.morphologyEx(yellow_mask, cv2.MORPH_OPEN, kernel)
+    red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_OPEN, kernel)
+
+    cv2.namedWindow("yellow_opened", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("yellow_opened", 800, 600)  # Set window size
+    cv2.imshow("yellow_opened", yellow_mask)
+
+    cv2.namedWindow("red_opened", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("red_opened", 800, 600)  # Set window size
+    cv2.imshow("red_opened", red_mask)
+
     # Optional: closing to seal any final small gaps
     # Horizontal kernel to connect horizontal lines
     kernel_h = np.ones((1, 200), np.uint8)
     yellow_mask = cv2.morphologyEx(yellow_mask, cv2.MORPH_CLOSE, kernel_h)
-    kernel_v = np.ones((1, 1), np.uint8)
+    kernel_v = np.ones((100, 1), np.uint8)
     yellow_mask = cv2.morphologyEx(yellow_mask, cv2.MORPH_CLOSE, kernel_v)
 
     red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, kernel_h)
@@ -181,23 +307,21 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     cv2.namedWindow("red_edited", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("red_edited", 800, 600)  # Set window size
     cv2.imshow("red_edited", red_mask)
-    
-    # ROI crop
-    # h, w = mask.shape
-    # roi = mask[int(h * 0.40):int(h * 0.85), int(w * 0.01):int(w * 0.85)]
-    # offset_x, offset_y = int(w * 0.01), int(h * 0.4)
 
     # Trying to auto create roi
     yellow_contours, _ = cv2.findContours(yellow_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     red_contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Optional: filter by area
+    # # Optional: filter by area
     y_contours = [c for c in yellow_contours if cv2.contourArea(c) > 2000]
     r_contours = [c for c in red_contours if cv2.contourArea(c) > 2000]
+    # # y_contours = find_best_rect(yellow_contours)
+    # # r_contours = find_best_rect(red_contours)
 
-    # Get the bounding box of the largest contour
+    # # Get the bounding box of the largest contour
     if y_contours:
-        c = max(y_contours, key=cv2.contourArea)
+        #c = max(y_contours, key=cv2.contourArea)
+        c = find_best_rect(y_contours)
         x, y, w, h = cv2.boundingRect(c)
         cx, cy = x + w // 2, y + h // 2  # Center of the original box
 
@@ -221,7 +345,9 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
         yellow_roi = yellow_mask[y1:y2, x1:x2]
         yellow_offset_x, yellow_offset_y = x1, y1  # for mapping back later
     if r_contours:
-        c = max(r_contours, key=cv2.contourArea)
+        # c = max(r_contours, key=cv2.contourArea)
+        c = find_best_rect(r_contours)
+        
         x, y, w, h = cv2.boundingRect(c)
         cx, cy = x + w // 2, y + h // 2  # Center of the original box
 
@@ -238,8 +364,8 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
         y1 = max(0, cy - new_h // 2)
 
         # New bottom-right corner
-        x2 = min(yellow_mask.shape[1], cx + new_w // 2)
-        y2 = min(yellow_mask.shape[0], cy + new_h // 2)
+        x2 = min(red_mask.shape[1], cx + new_w // 2)
+        y2 = min(red_mask.shape[0], cy + new_h // 2)
 
         # Extract scaled ROI
         red_roi = red_mask[y1:y2, x1:x2]
@@ -253,17 +379,19 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     cv2.resizeWindow("r_kernel observation", 800, 600)  # Set window size
     cv2.imshow("r_kernel observation", red_roi)
 
-    # Find all contours in the mask
+    # # Find all contours in the mask
     y_contours, _ = cv2.findContours(yellow_roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     r_contours, _ = cv2.findContours(red_roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # Prepare to save coordinates
-    coords = []
+    yellow_coords =[]
+    red_coords = []
 
-    # Minimum area to filter out noise
+    # # Minimum area to filter out noise
     min_area = 200
+    # # max_area = 3600
     
-    #save corners
+    # #save corners
     for contour in y_contours:
         contour += [yellow_offset_x, yellow_offset_y]
         hull = cv2.convexHull(contour)
@@ -281,7 +409,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
                 cv2.drawContours(frame, [approx], -1, (255, 0, 0), 2)  # Blue polygon outline
                 for corner in corners:
                     x, y = corner
-                    coords.append([x, y])
+                    yellow_coords.append([x, y])
     for contour in r_contours:
         contour += [red_offset_x, red_offset_y]
         hull = cv2.convexHull(contour)
@@ -296,17 +424,17 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
             corners = approx.reshape(-1, 2)  # shape (num_points, 2)
 
             if len(corners) == 4:
-                cv2.drawContours(frame, [approx], -1, (255, 0, 0), 2)  # Blue polygon outline
+                cv2.drawContours(frame, [approx], -1, (0, 255, 0), 2) # Green polygon outline
                 for corner in corners:
                     x, y = corner
-                    coords.append([x, y])
+                    red_coords.append([x, y])
     
     # coords_one = sorted(coords, key=lambda x: x[0])[0:2]
     # coords_two = sorted(coords, key=lambda x: x[0])[2:]
     # coords_one = sorted(coords_one, key=lambda x: x[1])
     # coords_two = sorted(coords_two, key=lambda x: x[1])
     # coords = coords_one + coords_two
-    print(coords)
+    # print(coords)
 
     # # find remaining four points in the middle
     # coords.append([(coords[0][0] + coords[2][0])/2 - 10, (coords[0][1] + coords[2][1])/2])
@@ -315,11 +443,13 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     # coords.append([(coords[1][0] + coords[3][0])/2 + 10, (coords[1][1] + coords[3][1])/2])
 
     # #rearrange list
-    # output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
+    output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
     # output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[6], coords[4], coords[0], coords[7], coords[3], coords[2], coords[5] 
 
-    for out in coords:
+    for out in yellow_coords:
         cv2.circle(frame, (int(out[0]), int(out[1])), 5, (0, 0, 255), -1)  # Red dots for corners
+    for out in red_coords:
+        cv2.circle(frame, (int(out[0]), int(out[1])), 5, (255, 255, 255), -1)  # White dots for corners
 
     # # # Save coordinates to a file
     # with open("selected_points.txt", "w") as f:
