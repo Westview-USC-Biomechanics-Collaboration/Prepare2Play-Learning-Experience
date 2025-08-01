@@ -179,7 +179,7 @@ def find_best_rect(contours, min_area=2000):
     return best_rect
                 
 
-def select_points(cap, short):
+def select_points(cap):
     import cv2
     import numpy as np
 
@@ -374,8 +374,8 @@ def select_points(cap, short):
     coords = coords_one + coords_two
     print(coords)
 
-    # # #rearrange list
     output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
+    #rearrange list
     output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[0], coords[1], coords[3], coords[2], coords[4], coords[5], coords[7], coords[6] 
 
     print("Plate 1 corners:", output[0:4])
