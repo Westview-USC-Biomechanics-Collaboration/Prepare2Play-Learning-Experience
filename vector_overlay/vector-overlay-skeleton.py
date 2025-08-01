@@ -160,8 +160,8 @@ class VectorOverlay:
 
         self.corners = []
 
-    def check_corner(self, path, top=False):
-        self.corners = select_points(video_path=path, top=top)
+    def check_corner(self, path, short):
+        self.corners = select_points(video_path=path, short=short)
 
     def check_direction(self, points):
         # Assuming points is a list of tuples [(x1, y1), (x2, y2)]
@@ -322,7 +322,7 @@ class VectorOverlay:
         Fx	Fy	Fz	|Ft|	Ax	Ay				Fx	Fy	Fz	|Ft|	Ax	Ay
         N	N	N	N	    m	m				N	N	N	 N	    m	m
         """
-        self.check_corner(self.long_view_path, top=False)
+        self.check_corner(self.long_view_path, short=False)
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -372,7 +372,7 @@ class VectorOverlay:
 
         cap = cv.VideoCapture(self.top_view_path)
         frame_number = 0
-        self.check_corner(self.top_view_path, top=True)
+        self.check_corner(self.top_view_path, short=False)
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -419,7 +419,7 @@ class VectorOverlay:
 
         cap = cv.VideoCapture(self.short_view_path)
         frame_number = 0
-        self.check_corner(self.short_view_path, top=False)
+        self.check_corner(self.short_view_path, short=True)
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
