@@ -1,5 +1,6 @@
 import threading
 import os
+import pandas as pd
 from vector_overlay.vectoroverlay_GUI import VectorOverlay
 from newData.ledSyncing import run_led_syncing  # rename or move if needed
 import cv2
@@ -11,17 +12,29 @@ def vectorOverlayWithAlignmentCallback(self):
         video_file = os.path.basename(self.Video.path)
         force_file = os.path.basename(self.Force.path)
 
+        print(f"Name of the video file: {video_file}")
+        print(f"Name of the force file: {force_file}")
+
         # Step 1: Run syncing and get lag
         lag = run_led_syncing(parent_path, video_file, force_file)
 
-        # Step 2: Apply lag by trimming force data
-        if lag > 0:
-            trim_rows = lag * self.state.step_size
-            self.Force.data = self.Force.data.iloc[trim_rows:].reset_index(drop=True)
+        print(f"Detected lag: {lag} frames")
+
+        force_analysis_filename = force_file.replace('.txt', '_Analysis_Force.csv')
+        passed_force_file = os.path.join(parent_path, force_analysis_filename)
+
+        print(f"Looking for force file at: {passed_force_file}")
+
+        # Check if file exists
+        if not os.path.exists(passed_force_file):
+            print(f"Error: Force analysis file not found at {passed_force_file}")
+            return
+
+        force_data = pd.read_csv(passed_force_file)
 
         # Step 3: Run vector overlay with adjusted force data
         self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        v = VectorOverlay(data=self.Force.data, video=self.Video.cam)
+        v = VectorOverlay(data=force_data, video=self.Video.cam)
 
         temp_video = "vector_overlay_temp.mp4"
         selected = self.selected_view.get()

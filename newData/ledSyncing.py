@@ -50,7 +50,7 @@ def run_led_syncing(parent_path, video_file, force_file):
             break
 
         b, g, r = frame[:, :, 0], frame[:, :, 1], frame[:, :, 2]
-        
+
         y, x = led_center[1], led_center[0]
         signal_b = np.round(np.mean(b[y - delta:y + delta + 1, x - delta:x + delta + 1]))
         signal_g = np.round(np.mean(g[y - delta:y + delta + 1, x - delta:x + delta + 1]))
@@ -91,6 +91,8 @@ def run_led_syncing(parent_path, video_file, force_file):
     # --- Save aligned force data ---
     df_force_filename = force_file.replace('.txt', '_Analysis_Force.csv')
     df_force_subset.to_csv(os.path.join(parent_path, df_force_filename), index=False)
+
+    print(f"Saved force data to file_path: {os.path.join(parent_path, df_force_filename)}")
 
     # --- Save final alignment result ---
     max_corr = np.max(correlation)

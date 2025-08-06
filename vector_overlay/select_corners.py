@@ -19,7 +19,7 @@ def get_zoomed_region(frame, x, y, zoom_size=50, zoom_factor=2):
 
     # Create a black image of the zoom_size x zoom_size (original scale)
     black_canvas = np.zeros((zoom_size, zoom_size, 3), dtype=np.uint8)
- 
+
     # Compute the placement coordinates on the black canvas
     roi_h, roi_w = roi.shape[:2]
     y_offset = (zoom_size - roi_h) // 2
@@ -121,7 +121,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
 
     # Load an image instead of a video
     # frame = cv2.imread("vector_overlay\IMG_2518.jpg")
-    
+
     if not cap.isOpened():
         print("Could not open video file.")
         exit()
@@ -140,21 +140,21 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     # Create a binary mask where yellow colors are white
     mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
 
-    cv2.namedWindow("original", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("original", 800, 600)  # Set window size
-    cv2.imshow("original", mask)
+    #cv2.namedWindow("original", cv2.WINDOW_NORMAL)
+    #cv2.resizeWindow("original", 800, 600)  # Set window size
+    #cv2.imshow("original", mask)
 
     # Optional: closing to seal any final small gaps
     # Horizontal kernel to connect horizontal lines
     kernel_h = np.ones((1, 200), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_h)
     kernel_v = np.ones((1, 1), np.uint8)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_v) 
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_v)
 
-    cv2.namedWindow("one", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("one", 800, 600)  # Set window size
-    cv2.imshow("one", mask)
-    
+    #cv2.namedWindow("one", cv2.WINDOW_NORMAL)
+    #cv2.resizeWindow("one", 800, 600)  # Set window size
+    #cv2.imshow("one", mask)
+
     # ROI crop
     # h, w = mask.shape
     # roi = mask[int(h * 0.40):int(h * 0.85), int(w * 0.01):int(w * 0.85)]
@@ -173,8 +173,8 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
         cx, cy = x + w // 2, y + h // 2  # Center of the original box
 
         # Scale factors
-        scale_x = 1  
-        scale_y = 1  
+        scale_x = 1
+        scale_y = 1
 
         # New width and height
         new_w = int(w * scale_x)
@@ -192,9 +192,9 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
         roi = mask[y1:y2, x1:x2]
         offset_x, offset_y = x1, y1  # for mapping back later
 
-    cv2.namedWindow("kernel observation", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("kernel observation", 800, 600)  # Set window size
-    cv2.imshow("kernel observation", roi)
+    #cv2.namedWindow("kernel observation", cv2.WINDOW_NORMAL)
+    #cv2.resizeWindow("kernel observation", 800, 600)  # Set window size
+    #cv2.imshow("kernel observation", roi)
 
     # Find all contours in the mask
     contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -205,7 +205,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     # Minimum area to filter out noise
     min_area = 2000
     max_area = 30000
-    
+
     #save corners
     for contour in contours:
         contour += [offset_x, offset_y]
@@ -225,7 +225,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
                 for corner in corners:
                     x, y = corner
                     coords.append([x, y])
-    
+
     coords_one = sorted(coords, key=lambda x: x[0])[0:2]
     coords_two = sorted(coords, key=lambda x: x[0])[2:]
     coords_one = sorted(coords_one, key=lambda x: x[1])
@@ -241,7 +241,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
 
     #rearrange list
     output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
-    output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[6], coords[4], coords[0], coords[7], coords[3], coords[2], coords[5] 
+    output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[6], coords[4], coords[0], coords[7], coords[3], coords[2], coords[5]
 
     for out in output:
         cv2.circle(frame, (int(out[0]), int(out[1])), 5, (0, 0, 255), -1)  # Red dots for corners
