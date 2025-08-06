@@ -7,7 +7,7 @@ from scipy import signal
 
 def run_led_syncing(parent_path, video_file, force_file):
     startTime = time.time()
- 
+
     # Use the passed parameters instead of hardcoded values
     video_path = os.path.join(parent_path, video_file)
 
@@ -50,7 +50,7 @@ def run_led_syncing(parent_path, video_file, force_file):
             break
 
         b, g, r = frame[:, :, 0], frame[:, :, 1], frame[:, :, 2]
-        
+
         y, x = led_center[1], led_center[0]
         signal_b = np.round(np.mean(b[y - delta:y + delta + 1, x - delta:x + delta + 1]))
         signal_g = np.round(np.mean(g[y - delta:y + delta + 1, x - delta:x + delta + 1]))
@@ -108,7 +108,8 @@ def run_led_syncing(parent_path, video_file, force_file):
 
     lagFile = os.path.join(parent_path, '_Results.csv')
     lagValue = df_result['Video Frame for t_zero force'].values[0]
-    lagValue = int(abs(lagValue))
+    lagValue = int(lagValue)
+    print(f"Video Frame for t_zero force: {lagValue}")
     return lagValue
 
 # Allow the script to be run directly if needed
