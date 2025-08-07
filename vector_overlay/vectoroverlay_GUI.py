@@ -136,12 +136,10 @@ class VectorOverlay:
         video_frames = self.frame_count
         video_duration = video_frames / self.fps
 
-        # Calculate force data sampling rate
-        if self.force_fps is None:
-            # Assume force data covers the same time period as video
-            self.force_fps = force_samples / video_duration
 
-        print(f"Force data: {force_samples} samples at {self.force_fps:.2f} Hz")
+
+
+        print(f"Force data: {force_samples}")
         print(f"Video: {video_frames} frames at {self.fps} fps ({video_duration:.2f}s)")
 
         # Calculate samples per frame with offset
@@ -167,7 +165,7 @@ class VectorOverlay:
         fx2, fy2, fz2, px2, py2 = [], [], [], [], []
 
         # Extract timestamps from DataFrame
-        timestamps = self.data.index.values / (self.force_fps * 1)
+
 
         for frame_idx in range(video_frames):
             # Calculate corresponding data index with offset

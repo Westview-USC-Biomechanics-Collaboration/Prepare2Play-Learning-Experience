@@ -204,7 +204,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
 
     # Minimum area to filter out noise
     min_area = 2000
-    max_area = 30000
+    # max_area = 30000
 
     #save corners
     for contour in contours:
@@ -216,7 +216,7 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
         epsilon = 0.01 * cv2.arcLength(hull, True)  # adjust for precision
         approx = cv2.approxPolyDP(hull, epsilon, True)
 
-        if area > min_area and area < max_area:
+        if area > min_area:
 
             corners = approx.reshape(-1, 2)  # shape (num_points, 2)
 
@@ -233,11 +233,17 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     coords = coords_one + coords_two
     print(coords)
 
+    print(f"Detected {len(coords)} corners.")
+    if len(coords) < 4:
+        print("Error: Not enough corners detected. Please try again.")
+
     # find remaining four points in the middle
     coords.append([(coords[0][0] + coords[2][0])/2 - 10, (coords[0][1] + coords[2][1])/2])
     coords.append([(coords[0][0] + coords[2][0])/2 + 10, (coords[0][1] + coords[2][1])/2])
     coords.append([(coords[1][0] + coords[3][0])/2 - 10, (coords[1][1] + coords[3][1])/2])
     coords.append([(coords[1][0] + coords[3][0])/2 + 10, (coords[1][1] + coords[3][1])/2])
+
+
 
     #rearrange list
     output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
