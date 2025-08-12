@@ -76,7 +76,7 @@ def run_led_syncing(parent_path, video_file, force_file):
     force_path = os.path.join(parent_path, force_file)
     df_force = pd.read_csv(force_path, header=17, delimiter='\t', encoding='latin1').drop(0)
 
-    df_force['RedSignal'] = np.sign(df_force['Fz.2'].astype('float64'))
+    df_force['RedSignal'] = -np.sign(df_force['Fz.2'].astype('float64'))
 
     # Downsample force to match video rate (10x slower)
     df_force_subset = df_force.iloc[::10].reset_index(drop=True)
