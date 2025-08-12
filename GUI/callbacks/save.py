@@ -67,12 +67,12 @@ def saveCallback(self):
             label1_1 = "Fy1"
             label1_2 = "Fz1"
             label2_1 = "Fy2"
-            label2_2 = "Fz2"
+            label2_2 = "Fx2"
         elif(self.selected_view.get()=="Short View"):
             label1_1 = "Fx1"
             label1_2 = "Fz1"
             label2_1 = "Fx2"
-            label2_2 = "Fz2"
+            label2_2 = "Fx2"
         else: # top view
             label1_1 = "Fy1"
             label1_2 = "Fx1"
@@ -228,7 +228,7 @@ def saveCallback(self):
             fout.write(f"Total frame: {self.Video.total_frames}\n")
             fout.write(f"FPS: {self.Video.fps}\n")
             fout.write(f"Video start frame: {self.state.video_align}\n\n")
-            
+
             fout.write(f"Force data path: {self.Force.path}\n")
             fout.write(f"Force start frame(before align && with out small adjustments): {self.state.force_align}\n")
             fout.write(f"Force start time: {self.state.force_start}\n\n") # using video align because it's position after alignment
@@ -271,12 +271,12 @@ def saveCallback(self):
     self.EndLabel.grid(row=2,column=2,sticky="nsew",padx=10,pady=10)
     self.save_end_button = tk.Button(self.save_window,text="label end",command=lambda:_label(1))
     self.save_end_button.grid(row=3,column=2,sticky="nsew",padx=10,pady=10)
-    
+
     self.cushion_entry = tk.Entry(self.save_window)
     self.cushion_entry.grid(row=4,column=1,padx=10,pady=10,sticky="w")
     self.cushion_label = tk.Label(self.save_window, text = "set cushion time(s) :")
     self.cushion_label.grid(row=4,column=0,padx=10,pady=10)
-    
+
     self.COM_checkbox = tk.Checkbutton(self.save_window, text="active COM", variable=self.COM_intVar)
     self.COM_checkbox.grid(row=5,column=0,columnspan=3,sticky="nsew",padx=10,pady=10)
 
