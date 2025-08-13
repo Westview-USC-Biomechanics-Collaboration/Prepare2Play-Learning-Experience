@@ -38,22 +38,6 @@ Prepare2Play/
 │ ├── file_io.py
 │ └── frame_converter.py
 ```
-
-## ✅ Outstanding Tasks
-
-- [ ] Implement correct vector overly for side and top view
-- [ ] Auto detections for force plate corners (assuming they are always in the same location)
-- [ ] Implement direct processing from LED syncing to GUI
-- [ ] Modularize Vector Overlay Code
-
----
-
-## 🧪 Actively Developed Branches
-
-| Branch | Description |
-|--------|-------------|
-| [`GUI for LED Syncing`](https://github.com/your-org/your-repo/tree/dev](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/tree/testingLED)) | (Deren) Takes in raw .csv file, syncs using LED, outputs vector overlay. Currently only working for top view   |
-
 ---
 
 ## 🛠️ Installation
