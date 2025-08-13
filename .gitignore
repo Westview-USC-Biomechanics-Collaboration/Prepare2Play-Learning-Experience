@@ -5,11 +5,16 @@
 *.png
 *.jpeg
 *.txt
+*.csv
 *.mp4
 *.exe
 *.venv
+*.json
+*.spec
 
 outputs/
 venv/
 data/
-*.spec
+pycache/
+
+*.MOV

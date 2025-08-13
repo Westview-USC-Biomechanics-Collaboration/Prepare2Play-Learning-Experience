@@ -1,112 +1,274 @@
+import numpy as np
 import cv2
-import ctypes
 
 # Globals for cursor position
 cursor_x, cursor_y = 0, 0
 
 # Function to zoom in on a region and draw a blue cross
-def get_zoomed_region(image, x, y, zoom_size=50, zoom_factor=2):
-    h, w = image.shape[:2]
-    x1, y1 = max(0, x - zoom_size), max(0, y - zoom_size)
-    x2, y2 = min(w, x + zoom_size), min(h, y + zoom_size)
+def get_zoomed_region(frame, x, y, zoom_size=50, zoom_factor=2):
+    h, w = frame.shape[:2]
+    half_size = zoom_size // 2
 
-    # Extract the region
-    region = image[y1:y2, x1:x2]
-    zoomed_region = cv2.resize(region, None, fx=zoom_factor, fy=zoom_factor, interpolation=cv2.INTER_LINEAR)
+    # Coordinates of the ROI in the original frame
+    x1 = max(0, x - half_size)
+    y1 = max(0, y - half_size)
+    x2 = min(w, x + half_size)
+    y2 = min(h, y + half_size)
 
-    # Draw a blue cross in the center of the zoomed region
-    zh, zw = zoomed_region.shape[:2]
+    roi = frame[y1:y2, x1:x2]
+
+    # Create a black image of the zoom_size x zoom_size (original scale)
+    black_canvas = np.zeros((zoom_size, zoom_size, 3), dtype=np.uint8)
+
+    # Compute the placement coordinates on the black canvas
+    roi_h, roi_w = roi.shape[:2]
+    y_offset = (zoom_size - roi_h) // 2
+    x_offset = (zoom_size - roi_w) // 2
+
+    # Place the ROI in the center of the black canvas
+    black_canvas[y_offset:y_offset+roi_h, x_offset:x_offset+roi_w] = roi
+
+    # Resize the canvas to zoom in
+    zoomed = cv2.resize(black_canvas, None, fx=zoom_factor, fy=zoom_factor, interpolation=cv2.INTER_LINEAR)
+
+    # Draw blue crosshair in the center
+    zh, zw = zoomed.shape[:2]
     center_x, center_y = zw // 2, zh // 2
-    color = (255, 0, 0)  # Blue color in BGR
+    color = (255, 0, 0)  # Blue in BGR
+    thickness = 1
 
-    # Horizontal line
-    cv2.line(zoomed_region, (center_x - 10, center_y), (center_x + 10, center_y), color, 2)
-    # Vertical line
-    cv2.line(zoomed_region, (center_x, center_y - 10), (center_x, center_y + 10), color, 2)
+    cv2.line(zoomed, (center_x, 0), (center_x, zh), color, thickness)
+    cv2.line(zoomed, (0, center_y), (zw, center_y), color, thickness)
 
-    return zoomed_region
+    return zoomed
+
+# def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
+#     # Check if video opened successfully
+#     if not cap.isOpened():
+#         print("Error: Could not open video.")
+#         return
+#     cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+#     # Read the first frame
+#     ret, frame = cap.read()
+#     if not ret:
+#         print("Error: Could not read the frame.")
+#         return
+
+#     # Resize the frame by a scale of 0.5
+#     frame = cv2.resize(frame, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
+
+#     # List to store the points
+#     points = []
+
+#     # Click event to select points
+#     def mouse_callback(event, x, y, flags, param):
+#         global cursor_x, cursor_y
+#         if event == cv2.EVENT_LBUTTONDOWN:
+#             # Capture clicked points
+#             points.append([int(x * 2), int(y * 2)])  # Scale back to original size
+#             cv2.circle(frame, (x, y), 5, (0, 0, 255), -1)
+#             cv2.imshow('Main Window', frame)
+
+#             if len(points) == num_points:
+#                 cv2.destroyWindow('Main Window')
+#                 cv2.destroyWindow('Zoom Window')
+#         if event == cv2.EVENT_MOUSEMOVE:
+#             # Update cursor position
+#             cursor_x, cursor_y = x, y
+
+#     # Set mouse callbacks
+#     cv2.namedWindow('Main Window', cv2.WINDOW_NORMAL)
+#     cv2.setMouseCallback('Main Window', mouse_callback)
+
+#     cv2.namedWindow('Zoom Window', cv2.WINDOW_NORMAL)
+#     cv2.setWindowProperty('Zoom Window', cv2.WND_PROP_TOPMOST, 1)  # Keep on top
+
+#     global cursor_x, cursor_y
+#     cursor_x, cursor_y = 0, 0
+
+#     while len(points) < num_points:
+#         # Show the main window
+#         cv2.imshow('Main Window', frame)
+
+#         # Get the zoomed-in region using the helper function
+#         zoomed = get_zoomed_region(frame, cursor_x, cursor_y)
+
+#         # Display the zoomed-in view
+#         cv2.imshow('Zoom Window', zoomed)
+#         cv2.moveWindow('Zoom Window', cursor_x + 200, cursor_y - 100)
+
+#         if cv2.waitKey(1) & 0xFF == ord('q'):
+#             break
+
+#     # Save the points to a file
+#     with open('selected_points.txt', 'w') as f:
+#         for point in points:
+#             f.write(f'{point[0]},{point[1]}\n')
+
+#     print("Points saved to selected_points.txt")
+#     return points
 
 def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
-    # Load user32 library for DPI scaling (Windows 10+)
-    user32 = ctypes.windll.user32
-    ctypes.windll.user32.SetProcessDPIAware()
-    user32.GetDpiForSystem.restype = ctypes.c_uint
+    import cv2
+    import numpy as np
 
-    # Get system DPI
-    try:
-        dpi = round(user32.GetDpiForSystem() / 96.0, 2)
-    except:
-        print("Using default scale factor dpi=1.50")
-        dpi = 1.5
-    print(f"# Assuming 1.00 is 96 dpi\nCurrent system dpi is {dpi}")
+    # Define yellow color range in HSV
+    lower_yellow = np.array([20, 100, 100])
+    upper_yellow = np.array([35, 255, 255])
 
-    # Check if video opened successfully
-    if not cap.isOpened():
-        print("Error: Could not open video.")
-        return
-
-    # Read the first frame
+    # Open the video
     ret, frame = cap.read()
+
+    # Load an image instead of a video
+    # frame = cv2.imread("vector_overlay\IMG_2518.jpg")
+
+    if not cap.isOpened():
+        print("Could not open video file.")
+        exit()
+
     if not ret:
-        print("Error: Could not read the frame.")
-        return
+        print("Error reading video during selecting corners")
+        exit()
 
-    # Resize based on DPI
-    height, width, _ = frame.shape
-    frame = cv2.resize(frame, (int(width / dpi), int(height / dpi)))
+    if frame is None:
+        print("Error with rect detection")
+        exit()
 
-    # List to store the points
-    points = []
+    # Convert to HSV
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    # Click event to select points
-    def mouse_callback(event, x, y, flags, param):
-        global cursor_x, cursor_y
-        if event == cv2.EVENT_LBUTTONDOWN:
-            # Capture clicked points
-            points.append([int(x * dpi), int(y * dpi)])
-            cv2.circle(frame, (x, y), 5, (0, 0, 255), -1)
-            cv2.imshow('Main Window', frame)
+    # Create a binary mask where yellow colors are white
+    mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
 
-            if len(points) == num_points:
-                cv2.destroyWindow('Main Window')
-                cv2.destroyWindow('Zoom Window')
-        if event == cv2.EVENT_MOUSEMOVE:
-            # Update cursor position
-            cursor_x, cursor_y = x, y
+    #cv2.namedWindow("original", cv2.WINDOW_NORMAL)
+    #cv2.resizeWindow("original", 800, 600)  # Set window size
+    #cv2.imshow("original", mask)
 
-    # Set mouse callbacks
-    cv2.namedWindow('Main Window', cv2.WINDOW_NORMAL)
-    cv2.setMouseCallback('Main Window', mouse_callback)
+    # Optional: closing to seal any final small gaps
+    # Horizontal kernel to connect horizontal lines
+    kernel_h = np.ones((1, 200), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_h)
+    kernel_v = np.ones((1, 1), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_v)
 
-    cv2.namedWindow('Zoom Window', cv2.WINDOW_NORMAL)
-    cv2.setWindowProperty('Zoom Window', cv2.WND_PROP_TOPMOST, 1)  # Keep on top
+    #cv2.namedWindow("one", cv2.WINDOW_NORMAL)
+    #cv2.resizeWindow("one", 800, 600)  # Set window size
+    #cv2.imshow("one", mask)
 
-    global cursor_x, cursor_y
-    cursor_x, cursor_y = 0, 0
+    # ROI crop
+    # h, w = mask.shape
+    # roi = mask[int(h * 0.40):int(h * 0.85), int(w * 0.01):int(w * 0.85)]
+    # offset_x, offset_y = int(w * 0.01), int(h * 0.4)
 
-    while len(points) < num_points:
-        # Show the main window
-        cv2.imshow('Main Window', frame)
+    # Trying to auto create roi
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        # Get the zoomed-in region using the helper function
-        zoomed = get_zoomed_region(frame, cursor_x, cursor_y)
+    # Optional: filter by area
+    contours = [c for c in contours if cv2.contourArea(c) > 2000]
 
-        # Display the zoomed-in view
-        cv2.imshow('Zoom Window', zoomed)
-        cv2.moveWindow('Zoom Window', cursor_x + 200, cursor_y - 100)
+    # Get the bounding box of the largest contour
+    if contours:
+        c = max(contours, key=cv2.contourArea)
+        x, y, w, h = cv2.boundingRect(c)
+        cx, cy = x + w // 2, y + h // 2  # Center of the original box
 
-        #print(cursor_x,cursor_y)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        # Scale factors
+        scale_x = 1
+        scale_y = 1
 
-    # Save the points to a file
-    with open('selected_points.txt', 'w') as f:
-        for point in points:
-            f.write(f'{point[0]},{point[1]}\n')
+        # New width and height
+        new_w = int(w * scale_x)
+        new_h = int(h * scale_y)
 
-    print("Points saved to selected_points.txt")
-    return points
+        # New top-left corner
+        x1 = max(0, cx - new_w // 2)
+        y1 = max(0, cy - new_h // 2)
+
+        # New bottom-right corner
+        x2 = min(mask.shape[1], cx + new_w // 2)
+        y2 = min(mask.shape[0], cy + new_h // 2)
+
+        # Extract scaled ROI
+        roi = mask[y1:y2, x1:x2]
+        offset_x, offset_y = x1, y1  # for mapping back later
+
+    #cv2.namedWindow("kernel observation", cv2.WINDOW_NORMAL)
+    #cv2.resizeWindow("kernel observation", 800, 600)  # Set window size
+    #cv2.imshow("kernel observation", roi)
+
+    # Find all contours in the mask
+    contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Prepare to save coordinates
+    coords = []
+
+    # Minimum area to filter out noise
+    min_area = 2000
+    # max_area = 30000
+
+    #save corners
+    for contour in contours:
+        contour += [offset_x, offset_y]
+        hull = cv2.convexHull(contour)
+        area = cv2.contourArea(hull)
+
+        # Approximate contour to polygon to reduce points
+        epsilon = 0.01 * cv2.arcLength(hull, True)  # adjust for precision
+        approx = cv2.approxPolyDP(hull, epsilon, True)
+
+        if area > min_area:
+
+            corners = approx.reshape(-1, 2)  # shape (num_points, 2)
+
+            if len(corners) == 4:
+                cv2.drawContours(frame, [approx], -1, (255, 0, 0), 2)  # Blue polygon outline
+                for corner in corners:
+                    x, y = corner
+                    coords.append([x, y])
+
+    coords_one = sorted(coords, key=lambda x: x[0])[0:2]
+    coords_two = sorted(coords, key=lambda x: x[0])[2:]
+    coords_one = sorted(coords_one, key=lambda x: x[1])
+    coords_two = sorted(coords_two, key=lambda x: x[1])
+    coords = coords_one + coords_two
+    print(coords)
+
+    print(f"Detected {len(coords)} corners.")
+    if len(coords) < 4:
+        print("Error: Not enough corners detected. Please try again.")
+
+    # find remaining four points in the middle
+    coords.append([(coords[0][0] + coords[2][0])/2 - 10, (coords[0][1] + coords[2][1])/2])
+    coords.append([(coords[0][0] + coords[2][0])/2 + 10, (coords[0][1] + coords[2][1])/2])
+    coords.append([(coords[1][0] + coords[3][0])/2 - 10, (coords[1][1] + coords[3][1])/2])
+    coords.append([(coords[1][0] + coords[3][0])/2 + 10, (coords[1][1] + coords[3][1])/2])
+
+
+
+    #rearrange list
+    output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
+    output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[6], coords[4], coords[0], coords[7], coords[3], coords[2], coords[5]
+
+    for out in output:
+        cv2.circle(frame, (int(out[0]), int(out[1])), 5, (0, 0, 255), -1)  # Red dots for corners
+
+    # # Save coordinates to a file
+    with open("selected_points.txt", "w") as f:
+        for x, y in output:
+            f.write(f"{x},{y}\n")
+
+    print(f"{len(output)} coordinates saved to file.")
+
+    # Show the result
+    cv2.namedWindow("Detected Yellow Rectangles", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("Detected Yellow Rectangles", 800, 600)  # Set window size
+    cv2.imshow("Detected Yellow Rectangles", frame)
+
+    cv2.waitKey(0)  # Wait indefinitely until a key is pressed
+    cv2.destroyAllWindows()
+
+    return output
 
 if __name__ == "__main__":
-    cap = cv2.VideoCapture(r"C:\Users\16199\Downloads\test0721.mp4")
+    cap = cv2.VideoCapture(r"vector_overlay\pbd_IT_12.vid03.MOV")
     select_points(cap, num_points=8)

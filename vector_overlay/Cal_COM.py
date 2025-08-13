@@ -14,8 +14,8 @@
 #   segments author: Chase Chen
 def calculateCOM(dataIn, sex):
     import pandas as pd
-    from segments import segments
-    from segdim_deleva import segmentdim
+    from vector_overlay.segments import segments
+    from vector_overlay.segdim_deleva import segmentdim
     data = dataIn
     reference = segmentdim(sex)
 

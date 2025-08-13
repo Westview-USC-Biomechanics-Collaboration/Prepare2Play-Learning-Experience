@@ -10,7 +10,6 @@ Author:
     cwiens32@gmail.com
 """
 
-
 def segmentdim(sex):
     """
     Function::: segmentdim
@@ -41,131 +40,50 @@ def segmentdim(sex):
         numpy
     """
 
-    # Dependencies
     import pandas as pd
     import numpy as np
-    
-    # create segment dimension dict
-    segloc = pd.DataFrame(index=['head', 'trunk', 'upperarm', 'forearm',
-                                 'hand', 'thigh', 'shank', 'foot'],
-                          columns=['origin', 'other', 'joint_p', 'joint_d'],
-                          dtype=str).reindex(columns=['origin', 'other',
-                                             'joint_p', 'joint_d'])
-    
-    # create segment dimension dict
-    segdim = pd.DataFrame(index=['head', 'trunk', 'upperarm', 'forearm',
-                                 'hand', 'thigh', 'shank', 'foot'],
-                          columns=['cmpos', 'massper', 'r_gyr'],
-                          dtype=np.int64)
-    
-    #%% store location of origin and other for each segment
-    # origin
-    segloc['origin']['head'] = 'vertex'
-    segloc['origin']['trunk'] = 'c7'
-    segloc['origin']['upperarm'] = 'shoulder'
-    segloc['origin']['forearm'] = 'elbow'
-    segloc['origin']['hand'] = 'wrist'
-    segloc['origin']['thigh'] = 'hip'
-    segloc['origin']['shank'] = 'knee'
-    segloc['origin']['foot'] = 'heel'
-    # other
-    segloc['other']['head'] = 'c7'
-    segloc['other']['trunk'] = 'hip'
-    segloc['other']['upperarm'] = 'elbow'
-    segloc['other']['forearm'] = 'wrist'
-    segloc['other']['hand'] = 'finger'
-    segloc['other']['thigh'] = 'knee'
-    segloc['other']['shank'] = 'ankle'
-    segloc['other']['foot'] = 'toe'
-    
-    #%% store location of proximal joint and distal joint landmarks
-    # origin
-    segloc['joint_p']['head'] = None
-    segloc['joint_p']['trunk'] = 'c7'
-    segloc['joint_p']['upperarm'] = 'shoulder'
-    segloc['joint_p']['forearm'] = 'elbow'
-    segloc['joint_p']['hand'] = 'wrist'
-    segloc['joint_p']['thigh'] = 'hip'
-    segloc['joint_p']['shank'] = 'knee'
-    segloc['joint_p']['foot'] = 'ankle'
-    # other
-    segloc['joint_d']['head'] = 'c7'
-    segloc['joint_d']['trunk'] = 'hip'
-    segloc['joint_d']['upperarm'] = 'elbow'
-    segloc['joint_d']['forearm'] = 'wrist'
-    segloc['joint_d']['hand'] = None
-    segloc['joint_d']['thigh'] = 'knee'
-    segloc['joint_d']['shank'] = 'ankle'
-    segloc['joint_d']['foot'] = None
 
-    #%% location of center of mass length percentages for each segment
-    # if female..
+    # Define segments
+    segments_list = ['head', 'trunk', 'upperarm', 'forearm', 'hand', 'thigh', 'shank', 'foot']
+
+    # Create segment location and dimension dataframes
+    segloc = pd.DataFrame(index=segments_list, columns=['origin', 'other', 'joint_p', 'joint_d'], dtype=object)
+    segdim = pd.DataFrame(index=segments_list, columns=['cmpos', 'massper', 'r_gyr'], dtype=np.float64)
+
+    # Set segment location info
+    segloc.loc['head', ['origin', 'other']]     = ['vertex', 'c7']
+    segloc.loc['trunk', ['origin', 'other']]    = ['c7', 'hip']
+    segloc.loc['upperarm', ['origin', 'other']] = ['shoulder', 'elbow']
+    segloc.loc['forearm', ['origin', 'other']]  = ['elbow', 'wrist']
+    segloc.loc['hand', ['origin', 'other']]     = ['wrist', 'finger']
+    segloc.loc['thigh', ['origin', 'other']]    = ['hip', 'knee']
+    segloc.loc['shank', ['origin', 'other']]    = ['knee', 'ankle']
+    segloc.loc['foot', ['origin', 'other']]     = ['heel', 'toe']
+
+    segloc.loc['head', ['joint_p', 'joint_d']]      = [None, 'c7']
+    segloc.loc['trunk', ['joint_p', 'joint_d']]     = ['c7', 'hip']
+    segloc.loc['upperarm', ['joint_p', 'joint_d']]  = ['shoulder', 'elbow']
+    segloc.loc['forearm', ['joint_p', 'joint_d']]   = ['elbow', 'wrist']
+    segloc.loc['hand', ['joint_p', 'joint_d']]      = ['wrist', None]
+    segloc.loc['thigh', ['joint_p', 'joint_d']]     = ['hip', 'knee']
+    segloc.loc['shank', ['joint_p', 'joint_d']]     = ['knee', 'ankle']
+    segloc.loc['foot', ['joint_p', 'joint_d']]      = ['ankle', None]
+
+    # Segment parameters based on sex
     if sex == 'f':
-        segdim['cmpos']['head'] = 0.4841
-        segdim['cmpos']['trunk'] = 0.4964
-        segdim['cmpos']['upperarm'] = 0.5754
-        segdim['cmpos']['forearm'] = 0.4592
-        segdim['cmpos']['hand'] = 0.3502
-        segdim['cmpos']['thigh'] = 0.3612
-        segdim['cmpos']['shank'] = 0.4416
-        segdim['cmpos']['foot'] = 0.4014
-    
+        cmpos = [0.4841, 0.4964, 0.5754, 0.4592, 0.3502, 0.3612, 0.4416, 0.4014]
+        massper = [0.0668, 0.4257, 0.0255, 0.0138, 0.0056, 0.1478, 0.0481, 0.0129]
+        r_gyr = [0.271, 0.307, 0.278, 0.263, 0.241, 0.369, 0.271, 0.299]
     else:
-        segdim['cmpos']['head'] = 0.5002
-        segdim['cmpos']['trunk'] = 0.5138
-        segdim['cmpos']['upperarm'] = 0.5772
-        segdim['cmpos']['forearm'] = 0.4608
-        segdim['cmpos']['hand'] = 0.3691
-        segdim['cmpos']['thigh'] = 0.4095
-        segdim['cmpos']['shank'] = 0.4459
-        segdim['cmpos']['foot'] = 0.4415
-        
-    #%% mass percents for each segment
-    # if female..
-    if sex == 'f':
-        segdim['massper']['head'] = 0.0668
-        segdim['massper']['trunk'] = 0.4257
-        segdim['massper']['upperarm'] = 0.0255
-        segdim['massper']['forearm'] = 0.0138
-        segdim['massper']['hand'] = 0.0056
-        segdim['massper']['thigh'] = 0.1478
-        segdim['massper']['shank'] = 0.0481
-        segdim['massper']['foot'] = 0.0129
-    
-    else:
-        segdim['massper']['head'] = 0.0694
-        segdim['massper']['trunk'] = 0.4346
-        segdim['massper']['upperarm'] = 0.0271
-        segdim['massper']['forearm'] = 0.0162
-        segdim['massper']['hand'] = 0.0061
-        segdim['massper']['thigh'] = 0.1416
-        segdim['massper']['shank'] = 0.0433
-        segdim['massper']['foot'] = 0.0137
-        
-    #%% radius of gyration for each segment
-    # if female..
-    if sex == 'f':
-        segdim['r_gyr']['head'] = 0.271
-        segdim['r_gyr']['trunk'] = 0.307
-        segdim['r_gyr']['upperarm'] = 0.278
-        segdim['r_gyr']['forearm'] = 0.263
-        segdim['r_gyr']['hand'] = 0.241
-        segdim['r_gyr']['thigh'] = 0.369
-        segdim['r_gyr']['shank'] = 0.271
-        segdim['r_gyr']['foot'] = 0.299
-    
-    else:
-        segdim['r_gyr']['head'] = 0.303
-        segdim['r_gyr']['trunk'] = 0.328
-        segdim['r_gyr']['upperarm'] = 0.285
-        segdim['r_gyr']['forearm'] = 0.278
-        segdim['r_gyr']['hand'] = 0.285
-        segdim['r_gyr']['thigh'] = 0.329
-        segdim['r_gyr']['shank'] = 0.255
-        segdim['r_gyr']['foot'] = 0.257
-        
-    #%% join data tables
+        cmpos = [0.5002, 0.5138, 0.5772, 0.4608, 0.3691, 0.4095, 0.4459, 0.4415]
+        massper = [0.0694, 0.4346, 0.0271, 0.0162, 0.0061, 0.1416, 0.0433, 0.0137]
+        r_gyr = [0.303, 0.328, 0.285, 0.278, 0.285, 0.329, 0.255, 0.257]
+
+    segdim.loc[:, 'cmpos'] = cmpos
+    segdim.loc[:, 'massper'] = massper
+    segdim.loc[:, 'r_gyr'] = r_gyr
+
+    # Join data tables
     segments = segloc.join(segdim)
 
-    #%% return data frame
     return segments
