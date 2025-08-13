@@ -219,7 +219,7 @@ def process_frame(q: processing.Queue, results_queue: processing.Queue, sex, con
             #print("[DEBUG] [COM] - Frame index:", frame_index)
             
             try:
-                item = q.get(timeout=10)
+                item = q.get()
             except queue.Empty:
                 print(f"[PROCESS {processing.current_process().name}] Timed out waiting for frame.")
                 results_queue.put(None)
@@ -272,7 +272,7 @@ def process_frame(q: processing.Queue, results_queue: processing.Queue, sex, con
                     row["COM_y"] = dataout[1]
 
                 results_queue.put(row)
-                print(f"Size of result_queue: {results_queue.qsize()}")
+                #print(f"Size of result_queue: {results_queue.qsize()}")
 
             except Exception as e:
                 print(f"Error processing frame {frame_index}: {e}")
@@ -348,7 +348,7 @@ class Processor:
         sentinel_count = 0
         while sentinel_count < num_workers:
             try:
-                item = result_queue.get(timeout=60) # Add a timeout here for debugging
+                item = result_queue.get() # Add a timeout here for debugging
                 if item is None:
                     sentinel_count += 1
                     print(f"[MAIN] Received sentinel from worker ({sentinel_count}/{num_workers})")
@@ -365,7 +365,7 @@ class Processor:
         joined_workers_count = 0
         for p in workers:
             print(f"[MAIN] Attempting to join worker {p.name} (PID: {p.pid})...")
-            p.join(timeout=60) # Try to join with a timeout
+            p.join() # Try to join with a timeout
 
             if p.is_alive():
                 print(f"[MAIN ERROR] Worker {p.name} (PID: {p.pid}) did NOT join after timeout (still alive). Forcibly terminating...")
