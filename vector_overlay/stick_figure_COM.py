@@ -282,8 +282,14 @@ def process_frame(q: processing.Queue, results_queue: processing.Queue, sex, con
 
 def frame_reader(frame_queue: processing.Queue, video_path):
     print(f"[READER] Attempting to open video: '{video_path}'") # <-- ADD THIS LINE
+    with open("lag.txt", "r") as f:
+        lag = int(f.read().strip())  
+        print(f"Got the lag from vector overlay! {lag}")
     cap = cv2.VideoCapture(video_path)
-    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+    if lag >= 10:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, lag - 10)  # Skip (lag - 10) frames before video to prevent errors with multiple people in the video!
+    else:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, lag)  # Start from the lag if lag is less than 10
     if not cap.isOpened():
         print("Error: Could not open video.")
         return
@@ -311,10 +317,9 @@ class Processor:
 
         self.video_path = video_path
         
-        with open("lag.txt", "r") as f:
-            lag = int(f.read().strip())
-        for _ in range(lag):
-            self.video_path.read()
+        
+
+        
         
     
     def SaveToTxt(self, sex, filename, confidencelevel=0.85, displayCOM=False):
