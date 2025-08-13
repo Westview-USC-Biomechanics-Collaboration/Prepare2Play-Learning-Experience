@@ -2,6 +2,7 @@ import tkinter as tk
 import threading
 import cv2
 from vector_overlay.stick_figure_COM import Processor
+from vector_overlay.vectoroverlay_GUI import VectorOverlay
 
 def COMCallback(self, s):
     print("[INFO] COM processing...")
