@@ -151,7 +151,8 @@ class DisplayApp:
         self.background.create_window(layoutHelper(3, "horizontal"), 575, window=self.buttons['label_video'])
         self.background.create_window(layoutHelper(6, "horizontal"), 575, window=self.buttons['label_force'])
         self.background.create_window(layoutHelper(9, "horizontal"), 575, window=self.buttons['save'])
-        self.background.create_window(100, 800, window=self.buttons['COM'])
+        self.background.create_window(100, 800, window=self.buttons['Male_COM'])
+        self.background.create_window(100, 850, window=self.buttons['Female_COM'])
 
     def initLabels(self):  
         self.labels = self.labelManager.create_labels()
@@ -345,6 +346,12 @@ class DisplayApp:
 
     def startCOM(self):
         COMCallback(self)
+    
+    def startMaleCOM(self):
+        COMCallback(self, "m")
+    
+    def startFemaleCOM(self):
+        COMCallback(self, "f")
 
     def save(self):
         saveCallback(self)

@@ -18,6 +18,9 @@ def vectorOverlayWithAlignmentCallback(self):
         # Step 1: Run syncing and get lag
         lag = run_led_syncing(parent_path, video_file, force_file)
 
+        with open("lag.txt", "w") as f:
+            f.write(str(lag))
+
         print(f"Detected lag: {lag} frames")
 
         force_analysis_filename = force_file.replace('.txt', '_Analysis_Force.csv')

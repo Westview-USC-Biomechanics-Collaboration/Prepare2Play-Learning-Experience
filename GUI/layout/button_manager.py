@@ -1,5 +1,5 @@
 # GUI/layout/button_manager.py
-from callbacks.vector_overlay_combined import vectorOverlayWithAlignmentCallback
+from GUI.callbacks.vector_overlay_combined import vectorOverlayWithAlignmentCallback
 
 import tkinter as tk
 
@@ -21,6 +21,7 @@ class ButtonManager:
         self.buttons['label_video'] = tk.Button(self.parent.master, text="Label Video", command=self.parent.label_video)
         self.buttons['label_force'] = tk.Button(self.parent.master, text="Label Force", command=self.parent.label_force)
         self.buttons['save'] = tk.Button(self.parent.master, text="Save", command=self.parent.save)
-        self.buttons['COM'] = tk.Button(self.parent.master, text="COM", command=self.parent.startCOM)
+        self.buttons['Male_COM'] = tk.Button(self.parent.master, text="Male_COM", command=self.parent.startMaleCOM)
+        self.buttons['Female_COM'] = tk.Button(self.parent.master, text="Female_COM", command=self.parent.startFemaleCOM)
 
         return self.buttons
