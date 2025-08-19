@@ -219,7 +219,7 @@ def process_frame(q: processing.Queue, results_queue: processing.Queue, sex, con
             #print("[DEBUG] [COM] - Frame index:", frame_index)
             
             try:
-                item = q.get(timeout=10)
+                item = q.get()
             except queue.Empty:
                 print(f"[PROCESS {processing.current_process().name}] Timed out waiting for frame.")
                 results_queue.put(None)
@@ -272,7 +272,7 @@ def process_frame(q: processing.Queue, results_queue: processing.Queue, sex, con
                     row["COM_y"] = dataout[1]
 
                 results_queue.put(row)
-                print(f"Size of result_queue: {results_queue.qsize()}")
+                #print(f"Size of result_queue: {results_queue.qsize()}")
 
             except Exception as e:
                 print(f"Error processing frame {frame_index}: {e}")
@@ -282,8 +282,14 @@ def process_frame(q: processing.Queue, results_queue: processing.Queue, sex, con
 
 def frame_reader(frame_queue: processing.Queue, video_path):
     print(f"[READER] Attempting to open video: '{video_path}'") # <-- ADD THIS LINE
+    with open("lag.txt", "r") as f:
+        lag = int(f.read().strip())  
+        print(f"Got the lag from vector overlay! {lag}")
     cap = cv2.VideoCapture(video_path)
-    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+    if lag >= 10:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, lag - 10)  # Skip (lag - 10) frames before video to prevent errors with multiple people in the video!
+    else:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, lag)  # Start from the lag if lag is less than 10
     if not cap.isOpened():
         print("Error: Could not open video.")
         return
@@ -311,10 +317,9 @@ class Processor:
 
         self.video_path = video_path
         
-        with open("lag.txt", "r") as f:
-            lag = int(f.read().strip())
-        for _ in range(lag):
-            self.video_path.read()
+        
+
+        
         
     
     def SaveToTxt(self, sex, filename, confidencelevel=0.85, displayCOM=False):
@@ -343,7 +348,7 @@ class Processor:
         sentinel_count = 0
         while sentinel_count < num_workers:
             try:
-                item = result_queue.get(timeout=60) # Add a timeout here for debugging
+                item = result_queue.get() # Add a timeout here for debugging
                 if item is None:
                     sentinel_count += 1
                     print(f"[MAIN] Received sentinel from worker ({sentinel_count}/{num_workers})")
@@ -360,7 +365,7 @@ class Processor:
         joined_workers_count = 0
         for p in workers:
             print(f"[MAIN] Attempting to join worker {p.name} (PID: {p.pid})...")
-            p.join(timeout=60) # Try to join with a timeout
+            p.join() # Try to join with a timeout
 
             if p.is_alive():
                 print(f"[MAIN ERROR] Worker {p.name} (PID: {p.pid}) did NOT join after timeout (still alive). Forcibly terminating...")
