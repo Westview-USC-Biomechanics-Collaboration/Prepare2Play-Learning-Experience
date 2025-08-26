@@ -30,12 +30,18 @@ def run_led_syncing(parent_path, video_file, force_file):
     if not ret:
         raise Exception("Failed to read first frame.")
 
-    # --- Find LED center once (using blue channel) ---
+    # --- Find initial LED center (using blue channel) ---
     b_first = first_frame[:, :, 0]
-    _, thresh_b_first = cv2.threshold(b_first, 127, 255, cv2.THRESH_BINARY)
-    res = cv2.matchTemplate(thresh_b_first, template, cv2.TM_SQDIFF)
+    # Threshold full image for visualization and ROI for detection (bottom half only)
+    _, thresh_b_first_full = cv2.threshold(b_first, 127, 255, cv2.THRESH_BINARY)
+    h_first, w_first = b_first.shape
+    roi_y0_first = h_first // 2
+    _, thresh_b_first_roi = cv2.threshold(b_first[roi_y0_first:, :], 127, 255, cv2.THRESH_BINARY)
+    # Template matching on bottom half ROI
+    res = cv2.matchTemplate(thresh_b_first_roi, template, cv2.TM_SQDIFF)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-    top_left = min_loc
+    # Map ROI coordinates back to full-frame
+    top_left = (min_loc[0], min_loc[1] + roi_y0_first)
     led_center = np.add(top_left, (template_center_offset_x, template_center_offset_y))
 
     # --- Prepare output ---
@@ -51,10 +57,23 @@ def run_led_syncing(parent_path, video_file, force_file):
 
         b, g, r = frame[:, :, 0], frame[:, :, 1], frame[:, :, 2]
 
-        y, x = led_center[1], led_center[0]
-        signal_b = np.round(np.mean(b[y - delta:y + delta + 1, x - delta:x + delta + 1]))
-        signal_g = np.round(np.mean(g[y - delta:y + delta + 1, x - delta:x + delta + 1]))
-        signal_r = np.round(np.mean(r[y - delta:y + delta + 1, x - delta:x + delta + 1]))
+        # Search only in bottom half of the frame
+        h, w = b.shape
+        roi_y0 = h // 2
+        _, thresh_b_roi = cv2.threshold(b[roi_y0:, :], 127, 255, cv2.THRESH_BINARY)
+        res = cv2.matchTemplate(thresh_b_roi, template, cv2.TM_SQDIFF)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+        top_left = (min_loc[0], min_loc[1] + roi_y0)
+        led_center = np.add(top_left, (template_center_offset_x, template_center_offset_y))
+        y, x = int(led_center[1]), int(led_center[0])
+        y0 = max(0, y - delta)
+        y1 = min(b.shape[0], y + delta + 1)
+        x0 = max(0, x - delta)
+        x1 = min(b.shape[1], x + delta + 1)
+
+        signal_b = np.round(np.mean(b[y0:y1, x0:x1]))
+        signal_g = np.round(np.mean(g[y0:y1, x0:x1]))
+        signal_r = np.round(np.mean(r[y0:y1, x0:x1]))
 
         df_new = pd.DataFrame([[video_file, frame_counter, x, y, signal_b, signal_g, signal_r]],
                               columns=df.columns)
@@ -76,16 +95,28 @@ def run_led_syncing(parent_path, video_file, force_file):
     force_path = os.path.join(parent_path, force_file)
     df_force = pd.read_csv(force_path, header=17, delimiter='\t', encoding='latin1').drop(0)
 
-    df_force['RedSignal'] = -np.sign(df_force['Fz.2'].astype('float64'))
+    df_force['RedSignal'] = np.sign(df_force['Fz.2'].astype('float64'))
 
     # Downsample force to match video rate (10x slower)
     df_force_subset = df_force.iloc[::10].reset_index(drop=True)
     signal_force = df_force_subset['RedSignal']
     signal_video = df['RedScore_Clean']
 
-    # --- Align signals ---
-    correlation = signal.correlate(signal_video, signal_force, mode="valid")
-    lags = signal.correlation_lags(signal_video.size, signal_force.size, mode="valid")
+    # --- Align signals (z-normalized) ---
+    # Convert to float and z-normalize to mitigate imbalance/offsets
+    video_arr = np.asarray(signal_video, dtype=float)
+    force_arr = np.asarray(signal_force, dtype=float)
+    if np.std(video_arr) > 0:
+        video_arr = (video_arr - np.mean(video_arr)) / np.std(video_arr)
+    else:
+        video_arr = video_arr - np.mean(video_arr)
+    if np.std(force_arr) > 0:
+        force_arr = (force_arr - np.mean(force_arr)) / np.std(force_arr)
+    else:
+        force_arr = force_arr - np.mean(force_arr)
+
+    correlation = signal.correlate(video_arr, force_arr, mode="valid")
+    lags = signal.correlation_lags(video_arr.size, force_arr.size, mode="valid")
     lag = lags[np.argmax(correlation)]
 
     # --- Save aligned force data ---
@@ -95,8 +126,8 @@ def run_led_syncing(parent_path, video_file, force_file):
     print(f"Saved force data to file_path: {os.path.join(parent_path, df_force_filename)}")
 
     # --- Save final alignment result ---
-    max_corr = np.max(correlation)
-    perfect_corr = min(len(signal_force), len(signal_video))
+    max_corr = float(np.max(correlation))
+    perfect_corr = min(len(force_arr), len(video_arr))
     relative_score = max_corr / perfect_corr
 
     df_result = pd.DataFrame([[video_file, force_file, lag, max_corr, perfect_corr, relative_score]],
@@ -110,7 +141,7 @@ def run_led_syncing(parent_path, video_file, force_file):
 
     lagFile = os.path.join(parent_path, '_Results.csv')
     lagValue = df_result['Video Frame for t_zero force'].values[0]
-    lagValue = int(abs(lagValue))
+    lagValue = int(lagValue)
     return lagValue
 
 # Allow the script to be run directly if needed
