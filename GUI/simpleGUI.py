@@ -45,6 +45,7 @@ from GUI.layout.canvas_manager import CanvasManager
 from GUI.layout.button_manager import ButtonManager
 from GUI.layout.label_manager import LabelManager
 from GUI.layout.timeline_manager import TimelineManager
+from GUI.layout.background_manager import BackgroundManager
 
 class DisplayApp:
     def __init__(self, master):
@@ -57,6 +58,8 @@ class DisplayApp:
         self.buttonManager = ButtonManager(self)
         self.labelManager = LabelManager(self)
         self.timelineManager = TimelineManager(self)
+        self.backgroundManager = BackgroundManager(self.master)
+        self.background = self.backgroundManager.init_background()  # store background canvas
 
         # Initialize UI
         self.initUI()
@@ -75,7 +78,6 @@ class DisplayApp:
         self.master.geometry("1320x1080")
         self.master.lift()
 
-        self.initBackground()
         self.master.update_idletasks()
         self.initCanvas()
         self.initSlider()
@@ -83,43 +85,6 @@ class DisplayApp:
         self.initButtonLayout() 
         self.initTimeline() # init slider must happen before timeline
         self.initSaveWindow()
-    
-    def initBackground(self):
-        self.plate = tk.StringVar(value="Force Plate 1")
-        self.option = tk.StringVar(value="Fz")
-
-        # Determine the correct path based on whether the app is running as an exe or not
-        if getattr(sys, 'frozen', False):
-            # If running from the packaged executable
-            app_path = sys._MEIPASS  # Temporary folder where bundled files are extracted
-        else:
-            # If running from source code
-            app_path = os.path.dirname(__file__)
-
-        # scale_factor = 1.0/self.master.tk.call('tk', 'scaling')
-        # self.master.tk.call('tk', 'scaling', scale_factor)
-
-        # Load the background image
-        img_path = os.path.join(app_path, "lookBack.jpg")
-        self.bg_image = None
-        try:
-            image = Image.open(img_path)
-            bg_image = ImageTk.PhotoImage(image)
-            self.bg_image = bg_image  # Store reference to image here to prevent garbage collection
-        except FileNotFoundError:
-            print(f"Error: {img_path} not found.")
-
-        # Create a background canvas
-        self.background = Canvas(self.master)
-        self.background.pack(fill=tk.BOTH, expand=True)
-
-        # Display the background image on the canvas
-        self.background.create_image(0, 0, image=self.bg_image, anchor="nw")
-
-        # Adjust the canvas size to fit the image
-        self.background.config(width=bg_image.width(), height=bg_image.height())
-        self.background.tag_lower("all")
-
 
     def initCanvas(self):
         self.canvasManager.canvas1, self.canvasManager.canvas2, self.canvasManager.canvas3 = self.canvasManager.init_canvases()
@@ -376,14 +341,14 @@ class DisplayApp:
         self.fig, self.ax = plt.subplots(figsize=(canvas_width / 100, canvas_height / 100), dpi=100)
 
         # Read data based on plate and force
-        plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
+        plate_number = "1" if self.backgroundManager.plate.get() == "Force Plate 1" else "2"
         x_position = float(self.Force.data.iloc[int(self.state.loc * self.state.step_size + self.state.zoom_pos), 0])
         y_value = float(
-            self.Force.data.loc[int(self.state.loc * self.state.step_size + self.state.zoom_pos), f"{self.option.get()}{plate_number}"])
+            self.Force.data.loc[int(self.state.loc * self.state.step_size + self.state.zoom_pos), f"{self.backgroundManager.option.get()}{plate_number}"])
 
         # Set x and y
         self.x = self.Force.data.iloc[:, 0]
-        self.y = self.Force.data.loc[:, f"{self.option.get()}{plate_number}"]
+        self.y = self.Force.data.loc[:, f"{self.backgroundManager.option.get()}{plate_number}"]
 
         # Plot data
         self.ax.plot(self.x, self.y, linestyle='-', color='blue', linewidth=0.5)
@@ -397,7 +362,7 @@ class DisplayApp:
                                                  linewidth=1)
         # Add a label with the force type inside the plot (top-left corner)
         self.text_label = self.ax.text(
-            0.05, 0.95, f"{self.plate.get()}\n{self.option.get()}: {y_value:.2f}",
+            0.05, 0.95, f"{self.backgroundManager.plate.get()}\n{self.backgroundManager.option.get()}: {y_value:.2f}",
             transform=self.ax.transAxes, fontsize=12, color='black', verticalalignment='top',
             horizontalalignment='left', bbox=dict(facecolor='white', edgecolor='none', alpha=0.5)
         )
@@ -405,7 +370,7 @@ class DisplayApp:
         # Update line and text
         self.zoom_baseline.set_xdata([x_position])
         self.line.set_xdata([x_position])
-        self.text_label.set_text(f"{self.plate.get()}\n{self.option.get()}: {y_value:.2f}")
+        self.text_label.set_text(f"{self.backgroundManager.plate.get()}\n{self.backgroundManager.option.get()}: {y_value:.2f}")
 
         # Embed the Matplotlib figure in the Tkinter canvas
         self.figure_canvas = FigureCanvasTkAgg(self.fig, self.canvasManager.canvas2)
