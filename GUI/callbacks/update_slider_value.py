@@ -54,12 +54,12 @@ def process(self,*value):
             # normalized_position = int(value) / (self.slider['to'])
             # x_position = self.ax.get_xlim()[0] + normalized_position * (self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
             try:
-                plate_number = "1" if self.plate.get() == "Force Plate 1" else "2"
+                plate_number = "1" if self.backgroundManager.plate.get() == "Force Plate 1" else "2"
                 x_position = float(self.Force.data.iloc[int(self.state.loc * self.state.step_size + self.state.zoom_pos),0])
-                y_value = float(self.Force.data.loc[int(self.state.loc * self.state.step_size + self.state.zoom_pos),f"{self.option.get()}{plate_number}"])
+                y_value = float(self.Force.data.loc[int(self.state.loc * self.state.step_size + self.state.zoom_pos),f"{self.backgroundManager.option.get()}{plate_number}"])
                 self.zoom_baseline.set_xdata([self.Force.data.iloc[self.state.loc*self.state.step_size,0]])
                 self.line.set_xdata([x_position])
-                self.text_label.set_text(f"{self.plate.get()}\n{self.option.get()}: {y_value:.2f}")
+                self.text_label.set_text(f"{self.backgroundManager.plate.get()}\n{self.backgroundManager.option.get()}: {y_value:.2f}")
                 self.figure_canvas.draw()
 
             except IndexError as e:
