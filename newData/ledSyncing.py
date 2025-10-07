@@ -61,6 +61,11 @@ def run_led_syncing(parent_path, video_file, force_file):
         h, w = b.shape
         roi_y0 = h // 2
         _, thresh_b_roi = cv2.threshold(b[roi_y0:, :], 127, 255, cv2.THRESH_BINARY)
+
+        cv2.namedWindow("found led", cv2.WINDOW_NORMAL)
+        cv2.resizeWindow("found led", 800, 600)  # Set window size
+        cv2.imshow("found led", thresh_b_roi)
+        cv2.waitKey(0)  # Wait indefinitely until a key is pressed
         res = cv2.matchTemplate(thresh_b_roi, template, cv2.TM_SQDIFF)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
         top_left = (min_loc[0], min_loc[1] + roi_y0)
@@ -70,7 +75,7 @@ def run_led_syncing(parent_path, video_file, force_file):
         y1 = min(b.shape[0], y + delta + 1)
         x0 = max(0, x - delta)
         x1 = min(b.shape[1], x + delta + 1)
-
+ 
         signal_b = np.round(np.mean(b[y0:y1, x0:x1]))
         signal_g = np.round(np.mean(g[y0:y1, x0:x1]))
         signal_r = np.round(np.mean(r[y0:y1, x0:x1]))
