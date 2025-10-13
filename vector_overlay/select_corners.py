@@ -517,12 +517,12 @@ def select_points(self, cap, view):
     print(f"{len(output)} coordinates saved to file.")
 
     # Show the result
-    # cv2.namedWindow("Detected Yellow Rectangles", cv2.WINDOW_NORMAL)
-    # cv2.resizeWindow("Detected Yellow Rectangles", 800, 600)  # Set window size
-    # cv2.imshow("Detected Yellow Rectangles", frame)
+    cv2.namedWindow("Detected Yellow Rectangles", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("Detected Yellow Rectangles", 800, 600)  # Set window size
+    cv2.imshow("Detected Yellow Rectangles", frame)
 
-    # cv2.waitKey(0)  # Wait indefinitely until a key is pressed
-    # cv2.destroyAllWindows()
+    cv2.waitKey(0)  # Wait indefinitely until a key is pressed
+    cv2.destroyAllWindows()
 
     return output
 
