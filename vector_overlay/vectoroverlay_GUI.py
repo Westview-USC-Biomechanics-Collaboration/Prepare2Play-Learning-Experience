@@ -88,11 +88,10 @@ class VectorOverlay:
 
         # Initialize
         self.setFrameData()
-        self.check_corner(cap=self.video)
         self.readData()
 
-    def check_corner(self, cap):
-        self.corners = select_points(cap=cap, num_points=8)
+    def check_corner(self, view):
+        self.corners = select_points(self, cap=self.video, view=view)
 
     def setFrameData(self):
         cap = self.video

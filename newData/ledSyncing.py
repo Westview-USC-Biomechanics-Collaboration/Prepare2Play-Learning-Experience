@@ -62,9 +62,10 @@ def run_led_syncing(parent_path, video_file, force_file):
         roi_y0 = h // 2
         _, thresh_b_roi = cv2.threshold(b[roi_y0:, :], 127, 255, cv2.THRESH_BINARY)
 
-        cv2.namedWindow("found led", cv2.WINDOW_NORMAL)
-        cv2.resizeWindow("found led", 800, 600)  # Set window size
-        cv2.imshow("found led", thresh_b_roi)
+        # cv2.namedWindow("found led", cv2.WINDOW_NORMAL)
+        # cv2.resizeWindow("found led", 800, 600)  # Set window size
+        # cv2.imshow("found led", thresh_b_roi)
+        
         cv2.waitKey(0)  # Wait indefinitely until a key is pressed
         res = cv2.matchTemplate(thresh_b_roi, template, cv2.TM_SQDIFF)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)

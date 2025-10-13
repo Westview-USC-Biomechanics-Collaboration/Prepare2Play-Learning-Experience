@@ -352,7 +352,7 @@ def two_rect_detection(cap, num_points=8, zoom_size=50, zoom_factor=2):
 
     return output
 
-def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
+def select_points(self, cap, view):
     import cv2
     import numpy as np
 
@@ -384,9 +384,9 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     # Create a binary mask where yellow colors are white
     mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
 
-    #cv2.namedWindow("original", cv2.WINDOW_NORMAL)
-    #cv2.resizeWindow("original", 800, 600)  # Set window size
-    #cv2.imshow("original", mask)
+    # cv2.namedWindow("original", cv2.WINDOW_NORMAL)
+    # cv2.resizeWindow("original", 800, 600)  # Set window size
+    # cv2.imshow("original", mask)
 
     # Optional: closing to seal any final small gaps
     # Horizontal kernel to connect horizontal lines
@@ -395,50 +395,63 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     kernel_v = np.ones((1, 1), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_v)
 
-    #cv2.namedWindow("one", cv2.WINDOW_NORMAL)
-    #cv2.resizeWindow("one", 800, 600)  # Set window size
-    #cv2.imshow("one", mask)
+    # cv2.namedWindow("one", cv2.WINDOW_NORMAL)
+    # cv2.resizeWindow("one", 800, 600)  # Set window size
+    # cv2.imshow("one", mask)
 
     # ROI crop
     # h, w = mask.shape
     # roi = mask[int(h * 0.40):int(h * 0.85), int(w * 0.01):int(w * 0.85)]
     # offset_x, offset_y = int(w * 0.01), int(h * 0.4)
 
-    # Trying to auto create roi
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # # Trying to auto create roi
+    # contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Optional: filter by area
-    contours = [c for c in contours if cv2.contourArea(c) > 2000]
+    # # Optional: filter by area
+    # contours = [c for c in contours if cv2.contourArea(c) > 2000]
 
-    # Get the bounding box of the largest contour
-    if contours:
-        c = max(contours, key=cv2.contourArea)
-        x, y, w, h = cv2.boundingRect(c)
-        cx, cy = x + w // 2, y + h // 2  # Center of the original box
+    # # Get the bounding box of the largest contour
+    # if contours:
+    #     c = max(contours, key=cv2.contourArea)
+    #     x, y, w, h = cv2.boundingRect(c)
+    #     cx, cy = x + w // 2, y + h // 2  # Center of the original box
 
-        # Scale factors
-        scale_x = 1
-        scale_y = 1
+    #     # Scale factors
+    #     scale_x = 1
+    #     scale_y = 1
 
-        # New width and height
-        new_w = int(w * scale_x)
-        new_h = int(h * scale_y)
+    #     # New width and height
+    #     new_w = int(w * scale_x)
+    #     new_h = int(h * scale_y)
 
-        # New top-left corner
-        x1 = max(0, cx - new_w // 2)
-        y1 = max(0, cy - new_h // 2)
+    #     # New top-left corner
+    #     x1 = max(0, cx - new_w // 2)
+    #     y1 = max(0, cy - new_h // 2)
 
-        # New bottom-right corner
-        x2 = min(mask.shape[1], cx + new_w // 2)
-        y2 = min(mask.shape[0], cy + new_h // 2)
+    #     # New bottom-right corner
+    #     x2 = min(mask.shape[1], cx + new_w // 2)
+    #     y2 = min(mask.shape[0], cy + new_h // 2)
 
-        # Extract scaled ROI
-        roi = mask[y1:y2, x1:x2]
-        offset_x, offset_y = x1, y1  # for mapping back later
+    #     # Extract scaled ROI
+    #     roi = mask[y1:y2, x1:x2]
+    #     offset_x, offset_y = x1, y1  # for mapping back later
 
-    #cv2.namedWindow("kernel observation", cv2.WINDOW_NORMAL)
-    #cv2.resizeWindow("kernel observation", 800, 600)  # Set window size
-    #cv2.imshow("kernel observation", roi)
+    h, w = mask.shape[:2]
+    print(f"The view of the video is {view}")
+    if view == "Long View":
+        y1, y2 = int(0.6 * h), int(0.9 * h)
+        x1, x2 = int(0.25 * w), int(0.75 * w)
+        offset_x, offset_y = x1, y1
+    elif view == "Top View":
+        y1, y2 = int(0.4 * h), int(0.9 * h)
+        x1, x2 = int(0.25 * w), int(0.8 * w)
+        offset_x, offset_y = x1, y1
+
+    roi = mask[y1:y2, x1:x2]
+
+    # cv2.namedWindow("kernel observation", cv2.WINDOW_NORMAL)
+    # cv2.resizeWindow("kernel observation", 800, 600)  # Set window size
+    # cv2.imshow("kernel observation", roi)
 
     # Find all contours in the mask
     contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -504,15 +517,15 @@ def select_points(cap, num_points=8, zoom_size=50, zoom_factor=2):
     print(f"{len(output)} coordinates saved to file.")
 
     # Show the result
-    cv2.namedWindow("Detected Yellow Rectangles", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("Detected Yellow Rectangles", 800, 600)  # Set window size
-    cv2.imshow("Detected Yellow Rectangles", frame)
+    # cv2.namedWindow("Detected Yellow Rectangles", cv2.WINDOW_NORMAL)
+    # cv2.resizeWindow("Detected Yellow Rectangles", 800, 600)  # Set window size
+    # cv2.imshow("Detected Yellow Rectangles", frame)
 
-    cv2.waitKey(0)  # Wait indefinitely until a key is pressed
-    cv2.destroyAllWindows()
+    # cv2.waitKey(0)  # Wait indefinitely until a key is pressed
+    # cv2.destroyAllWindows()
 
     return output
 
 if __name__ == "__main__":
-    cap = cv2.VideoCapture(r"vector_overlay\pbd_IT_12.vid03.MOV")
-    select_points(cap, num_points=8)
+    cap = cv2.VideoCapture(r"C:\Users\Arnav\Downloads\JPJ_12_GS_long.vid01.MOV")
+    select_points(cap)

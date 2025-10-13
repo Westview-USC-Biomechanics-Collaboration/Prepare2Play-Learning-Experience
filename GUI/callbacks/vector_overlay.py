@@ -16,10 +16,13 @@ def process(self):
     v = VectorOverlay(data=self.Force.data,video=self.Video.cam)
     
     if(self.selected_view.get()=="Long View"):
+        v.check_corner("Long View")
         v.LongVectorOverlay(outputName=temp_video)
     elif(self.selected_view.get()=="Short View"):
+        v.check_corner("Short View")
         v.ShortVectorOverlay(outputName=temp_video)
     elif(self.selected_view.get()=="Top View"):
+        v.check_corner("Top View")
         v.TopVectorOverlay(outputName=temp_video)
 
     self.Video.vector_cam = cv2.VideoCapture(temp_video)
