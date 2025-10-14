@@ -229,7 +229,7 @@ def process_frame(q: processing.Queue, results_queue: processing.Queue, sex, con
                 print(f"[PROCESS {processing.current_process().name}] got sentinel and is exiting.")
                 results_queue.put(None)
                 break  # Sentinel to signal "no more data"
-            print(f"[PROCESS {processing.current_process().name}] Got frame {item[0]}")
+            # print(f"[PROCESS {processing.current_process().name}] Got frame {item[0]}")
 
             frame_index, frame_data = item
             try:

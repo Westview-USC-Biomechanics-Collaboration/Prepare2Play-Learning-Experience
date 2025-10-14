@@ -55,7 +55,7 @@ def uploadVideoCallback(self):
 
     # if a video is selected, start a background thread
     def threadTarget():
-        process(self)
+        process(self, self.selected_view.get())
         self.master.after(0,self._update_video_timeline)
         
     if self.Video.path:
@@ -63,7 +63,7 @@ def uploadVideoCallback(self):
         uploadVideoThread.start()
 
 
-def process(self):
+def process(self, view):
         path = Path(self.Video.path)
         if not path.exists():
             print("[ERROR] File not found:", path)
