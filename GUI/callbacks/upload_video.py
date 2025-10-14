@@ -87,7 +87,7 @@ def process(self):
             ]
             subprocess.run(cmd, check=True)
             return out
-        
+         
         # --- Convert and then open the resulting MOV file ---
         if path.suffix.lower() != ".mov":
             try:
