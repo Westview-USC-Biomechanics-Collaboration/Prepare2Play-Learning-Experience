@@ -178,6 +178,7 @@ def run_led_syncing(parent_path, video_file, force_file):
     lagFile = os.path.join(parent_path, '_Results.csv')
     lagValue = df_result['Video Frame for t_zero force'].values[0]
     lagValue = int(lagValue)
+
     return lagValue
 
 # Allow the script to be run directly if needed
