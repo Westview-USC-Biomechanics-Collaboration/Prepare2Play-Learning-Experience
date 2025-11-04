@@ -44,6 +44,9 @@ class FileFormatter:
         """
         data = numpy.loadtxt(filePath, skiprows=19)
         df = pandas.DataFrame(data, columns=self.columns)
+        hz = 1 / (df['abs time (s)'].diff().mean())
+        self.hz = hz
+        print(f"[DEBUG] Approximate sampling rate: {hz:.2f} Hz")
         if not self.__columnchecker(df):
             print("The columns are not correct")
             raise ValueError("The columns are not correct")

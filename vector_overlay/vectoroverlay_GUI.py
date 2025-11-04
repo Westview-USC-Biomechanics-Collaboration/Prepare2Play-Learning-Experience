@@ -159,6 +159,8 @@ class VectorOverlay:
         print(f"Samples per frame: {samples_per_frame:.3f}")
         #print(f"Time offset: {self.time_offset}s ({offset_samples} samples)")
 
+        
+
         # Initialize arrays
         fx1, fy1, fz1, px1, py1 = [], [], [], [], []
         fx2, fy2, fz2, px2, py2 = [], [], [], [], []
@@ -172,7 +174,7 @@ class VectorOverlay:
             # Use stepsize to sample force data for each frame
             stepsize = max(1, int(force_samples / video_frames)) if video_frames > 0 else 1
             data_idx = frame_idx * stepsize
-            print(f"Data index: {data_idx}")
+            # print(f"Data index: {data_idx}")
 
             # Ensure index is within bounds
             if 0 <= data_idx < len(self.data):
@@ -275,13 +277,25 @@ class VectorOverlay:
         # If lag is negative, skip force data samples (video starts earlier)
         frames_to_skip = int(abs(lag_seconds) * self.fps)
         force_idx_offset = 0
+
+        total_frames = self.frame_count
+        video_limit = total_frames - (frames_to_skip if lag_seconds > 0 else 0)
+        data_limit  = len(self.fx1) - (frames_to_skip if lag_seconds < 0 else 0)
+        max_frames  = max(0, min(video_limit, data_limit))
+
         if lag_seconds > 0:
             print(f"Skipping {frames_to_skip} video frames to align video with force data.")
             for _ in range(frames_to_skip):
                 self.video.read()
+                if _ >= max_frames:
+                    break
         elif lag_seconds < 0:
-            print(f"Skipping {frames_to_skip} force data samples to start video earlier.")
-            force_idx_offset = frames_to_skip
+            if frames_to_skip > max_frames:
+                force_idx_offset = max_frames
+                print(f"Skipping {force_idx_offset} force data samples to start video earlier.")
+            else:
+                print(f"Skipping {frames_to_skip} force data samples to start video earlier.")
+                force_idx_offset = frames_to_skip
 
         out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
                             (self.frame_width, self.frame_height))

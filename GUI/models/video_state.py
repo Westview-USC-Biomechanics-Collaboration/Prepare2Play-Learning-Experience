@@ -13,6 +13,7 @@ class VideoState:
         self.led_signal = pd.DataFrame() # Store square wave signal from a csv file
         # Create variable to store the template matching stuff
         self.view = ""
+        self.hz = 0
 
     def load(self, path):
         self.path = path
