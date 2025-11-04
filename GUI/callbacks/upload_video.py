@@ -113,6 +113,8 @@ def process(self, view):
         self.canvasManager.photo_image1 = self.frameConverter.cvToPillow(camera=self.Video.cam,width=self.Video.frame_width,height=self.Video.frame_height)
         self.canvasID_1 = self.canvasManager.canvas1.create_image(200, 150, image=self.canvasManager.photo_image1, anchor="center")
 
+        print(f"[DEBUG] FPS: {self.Video.fps}, Total Frames: {self.Video.total_frames}")
+        
         # convert timeline image from cvFrame to pillow image
         self.timelineManager.timeline2 = timeline(0, 1)
         videoTimeline = Image.fromarray(self.timelineManager.timeline2.draw_rect(loc=self.state.loc))

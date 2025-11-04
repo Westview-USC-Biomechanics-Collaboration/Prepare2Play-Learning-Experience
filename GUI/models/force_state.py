@@ -5,6 +5,7 @@ class ForceState:
         self.path = None
         self.data = pd.DataFrame()
         self.rows = 0
+        self.hz = 0
 
     def load(self, path):
         self.path = path

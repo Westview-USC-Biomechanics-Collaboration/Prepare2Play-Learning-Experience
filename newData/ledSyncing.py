@@ -4,6 +4,10 @@ import pandas as pd
 import time
 import os
 from scipy import signal
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+plt.ioff() 
 
 def run_led_syncing(parent_path, video_file, force_file):
     startTime = time.time()
@@ -140,10 +144,41 @@ def run_led_syncing(parent_path, video_file, force_file):
     df_result.to_csv(os.path.join(parent_path, df_result_filename), index=False)
 
     print(f"Done. Columns in force data: {df_force.columns.tolist()}")
+    print(f"[DEBUG] The relative score is {relative_score}")
+
+    if lag >= 0:
+        force_pad = pd.concat([pd.Series(np.zeros(lag)), df_force_subset['RedSignal']], ignore_index=True)
+    else:
+        force_pad = df_force_subset['RedSignal'].iloc[abs(lag):].reset_index(drop=True)
+
+    n = min(len(signal_video), len(force_pad))
+    sig = np.asarray(signal_video[:n])
+    frc = np.asarray(force_pad[:n])
+
+    # --- Plot (same styling & axes as your original) ---
+    from matplotlib.figure import Figure
+    from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+
+    fig = Figure(figsize=(8, 4))
+    canvas = FigureCanvas(fig)
+    ax = fig.add_subplot(111)
+
+    ax.plot(sig, alpha=0.5, label="Video signal")                    # same alpha
+    ax.plot(frc, alpha=0.5, linestyle="dashed", label="Force pad")   # dashed line
+
+    # same title/xlabel/xlim as your pyplot code
+    ax.set_title(f"Alignment Using a Lag of {lag} Frames")
+    ax.set_xlabel("Frame ID")
+    ax.set_xlim(0, 3030)
+
+    ax.legend(loc="best")
+    fig.tight_layout()
+    fig.savefig(os.path.join(parent_path, "led_sync_preview.png"), dpi=150, bbox_inches="tight")
 
     lagFile = os.path.join(parent_path, '_Results.csv')
     lagValue = df_result['Video Frame for t_zero force'].values[0]
     lagValue = int(lagValue)
+
     return lagValue
 
 # Allow the script to be run directly if needed
