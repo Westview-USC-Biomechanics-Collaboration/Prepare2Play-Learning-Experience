@@ -442,12 +442,11 @@ def select_points(self, cap, view):
         y1, y2 = int(0.6 * h), int(0.9 * h)
         x1, x2 = int(0.25 * w), int(0.75 * w)
         offset_x, offset_y = x1, y1
+        roi = mask[y1:y2, x1:x2]
     elif view == "Top View":
-        y1, y2 = int(0.4 * h), int(0.9 * h)
-        x1, x2 = int(0.25 * w), int(0.8 * w)
-        offset_x, offset_y = x1, y1
+        roi = mask
 
-    roi = mask[y1:y2, x1:x2]
+    
 
     # cv2.namedWindow("kernel observation", cv2.WINDOW_NORMAL)
     # cv2.resizeWindow("kernel observation", 800, 600)  # Set window size
@@ -465,7 +464,8 @@ def select_points(self, cap, view):
 
     #save corners
     for contour in contours:
-        contour += [offset_x, offset_y]
+        if view == "Long View":
+            contour += [offset_x, offset_y]
         hull = cv2.convexHull(contour)
         area = cv2.contourArea(hull)
 
