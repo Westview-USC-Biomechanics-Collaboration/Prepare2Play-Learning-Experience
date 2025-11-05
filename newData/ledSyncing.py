@@ -7,9 +7,10 @@ from scipy import signal
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+import GUI.models.video_state
 plt.ioff() 
 
-def run_led_syncing(parent_path, video_file, force_file):
+def run_led_syncing(self, parent_path, video_file, force_file):
     startTime = time.time()
 
     # Use the passed parameters instead of hardcoded values
@@ -155,6 +156,27 @@ def run_led_syncing(parent_path, video_file, force_file):
     sig = np.asarray(signal_video[:n])
     frc = np.asarray(force_pad[:n])
 
+    # # --- Plot (same styling & axes as your original) ---
+    # from matplotlib.figure import Figure
+    # from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+
+    # fig = Figure(figsize=(8, 4))
+    # canvas = FigureCanvas(fig)
+    # ax = fig.add_subplot(111)
+
+    # ax.step(sig, alpha=0.5, label="Video signal")                    # same alpha
+    # ax.step(frc, alpha=0.5, label="Force")   # dashed line
+    # ax.plot()
+    # # same title/xlabel/xlim as your pyplot code
+    # ax.set_title(f"Alignment Using a Lag of {lag} Frames")
+    # ax.set_xlabel("Frame ID")
+    # print(f"[DEBUG] Total frames: {self.Video.total_frames}")
+    # # n = len(sig)
+    # ax.set_xlim(n//2 - 500, n//2 + 500)
+
+    # ax.legend(loc="best")
+    # fig.tight_layout()
+    # fig.savefig(os.path.join(parent_path, "led_sync_preview.png"), dpi=150, bbox_inches="tight")
     # --- Plot (same styling & axes as your original) ---
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
@@ -163,17 +185,25 @@ def run_led_syncing(parent_path, video_file, force_file):
     canvas = FigureCanvas(fig)
     ax = fig.add_subplot(111)
 
-    ax.plot(sig, alpha=0.5, label="Video signal")                    # same alpha
-    ax.plot(frc, alpha=0.5, linestyle="dashed", label="Force pad")   # dashed line
+    # Explicit x-values prevent step() from misinterpreting arguments
+    x = np.arange(n)
 
-    # same title/xlabel/xlim as your pyplot code
+    ax.step(x, sig, where='mid', alpha=0.5, label="Video signal")
+    ax.step(x, frc, where='mid', alpha=0.5, label="Force")
+
+    # Labels and title
     ax.set_title(f"Alignment Using a Lag of {lag} Frames")
     ax.set_xlabel("Frame ID")
-    ax.set_xlim(0, 3030)
+
+    # X-axis limits (safe even when n < 1000)
+    left = max(0, n//2 - 500)
+    right = min(n, n//2 + 500)
+    ax.set_xlim(left, right)
 
     ax.legend(loc="best")
     fig.tight_layout()
-    fig.savefig(os.path.join(parent_path, "led_sync_preview.png"), dpi=150, bbox_inches="tight")
+    fig.savefig(os.path.join(parent_path, "led_sync_preview.png"),
+                dpi=150, bbox_inches="tight")
 
     lagFile = os.path.join(parent_path, '_Results.csv')
     lagValue = df_result['Video Frame for t_zero force'].values[0]
