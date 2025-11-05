@@ -4,8 +4,13 @@ import pandas as pd
 import time
 import os
 from scipy import signal
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+import GUI.models.video_state
+plt.ioff() 
 
-def run_led_syncing(parent_path, video_file, force_file):
+def run_led_syncing(self, parent_path, video_file, force_file):
     startTime = time.time()
 
     # Use the passed parameters instead of hardcoded values
@@ -61,6 +66,8 @@ def run_led_syncing(parent_path, video_file, force_file):
         h, w = b.shape
         roi_y0 = h // 2
         _, thresh_b_roi = cv2.threshold(b[roi_y0:, :], 127, 255, cv2.THRESH_BINARY)
+
+        
         res = cv2.matchTemplate(thresh_b_roi, template, cv2.TM_SQDIFF)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
         top_left = (min_loc[0], min_loc[1] + roi_y0)
@@ -70,7 +77,7 @@ def run_led_syncing(parent_path, video_file, force_file):
         y1 = min(b.shape[0], y + delta + 1)
         x0 = max(0, x - delta)
         x1 = min(b.shape[1], x + delta + 1)
-
+ 
         signal_b = np.round(np.mean(b[y0:y1, x0:x1]))
         signal_g = np.round(np.mean(g[y0:y1, x0:x1]))
         signal_r = np.round(np.mean(r[y0:y1, x0:x1]))
@@ -138,10 +145,70 @@ def run_led_syncing(parent_path, video_file, force_file):
     df_result.to_csv(os.path.join(parent_path, df_result_filename), index=False)
 
     print(f"Done. Columns in force data: {df_force.columns.tolist()}")
+    print(f"[DEBUG] The relative score is {relative_score}")
+
+    if lag >= 0:
+        force_pad = pd.concat([pd.Series(np.zeros(lag)), df_force_subset['RedSignal']], ignore_index=True)
+    else:
+        force_pad = df_force_subset['RedSignal'].iloc[abs(lag):].reset_index(drop=True)
+
+    n = min(len(signal_video), len(force_pad))
+    sig = np.asarray(signal_video[:n])
+    frc = np.asarray(force_pad[:n])
+
+    # # --- Plot (same styling & axes as your original) ---
+    # from matplotlib.figure import Figure
+    # from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+
+    # fig = Figure(figsize=(8, 4))
+    # canvas = FigureCanvas(fig)
+    # ax = fig.add_subplot(111)
+
+    # ax.step(sig, alpha=0.5, label="Video signal")                    # same alpha
+    # ax.step(frc, alpha=0.5, label="Force")   # dashed line
+    # ax.plot()
+    # # same title/xlabel/xlim as your pyplot code
+    # ax.set_title(f"Alignment Using a Lag of {lag} Frames")
+    # ax.set_xlabel("Frame ID")
+    # print(f"[DEBUG] Total frames: {self.Video.total_frames}")
+    # # n = len(sig)
+    # ax.set_xlim(n//2 - 500, n//2 + 500)
+
+    # ax.legend(loc="best")
+    # fig.tight_layout()
+    # fig.savefig(os.path.join(parent_path, "led_sync_preview.png"), dpi=150, bbox_inches="tight")
+    # --- Plot (same styling & axes as your original) ---
+    from matplotlib.figure import Figure
+    from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+
+    fig = Figure(figsize=(8, 4))
+    canvas = FigureCanvas(fig)
+    ax = fig.add_subplot(111)
+
+    # Explicit x-values prevent step() from misinterpreting arguments
+    x = np.arange(n)
+
+    ax.step(x, sig, where='mid', alpha=0.5, label="Video signal")
+    ax.step(x, frc, where='mid', alpha=0.5, label="Force")
+
+    # Labels and title
+    ax.set_title(f"Alignment Using a Lag of {lag} Frames")
+    ax.set_xlabel("Frame ID")
+
+    # X-axis limits (safe even when n < 1000)
+    left = max(0, n//2 - 500)
+    right = min(n, n//2 + 500)
+    ax.set_xlim(left, right)
+
+    ax.legend(loc="best")
+    fig.tight_layout()
+    fig.savefig(os.path.join(parent_path, "led_sync_preview.png"),
+                dpi=150, bbox_inches="tight")
 
     lagFile = os.path.join(parent_path, '_Results.csv')
     lagValue = df_result['Video Frame for t_zero force'].values[0]
     lagValue = int(lagValue)
+
     return lagValue
 
 # Allow the script to be run directly if needed

@@ -16,7 +16,7 @@ def vectorOverlayWithAlignmentCallback(self):
         print(f"Name of the force file: {force_file}")
 
         # Step 1: Run syncing and get lag
-        lag = run_led_syncing(parent_path, video_file, force_file)
+        lag = run_led_syncing(self, parent_path, video_file, force_file)
 
         with open("lag.txt", "w") as f:
             f.write(str(lag))
@@ -42,10 +42,13 @@ def vectorOverlayWithAlignmentCallback(self):
         temp_video = "vector_overlay_temp.mp4"
         selected = self.selected_view.get()
         if selected == "Long View":
+            v.check_corner("Long View")
             v.LongVectorOverlay(outputName=temp_video, lag=lag)
         elif selected == "Short View":
+            v.check_corner("Short View")
             v.ShortVectorOverlay(outputName=temp_video, lag=lag)
         elif selected == "Top View":
+            v.check_corner("Top View")
             v.TopVectorOverlay(outputName=temp_video, lag=lag)
 
         self.Video.vector_cam = cv2.VideoCapture(temp_video)

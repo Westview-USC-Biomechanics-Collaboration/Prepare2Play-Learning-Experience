@@ -88,11 +88,10 @@ class VectorOverlay:
 
         # Initialize
         self.setFrameData()
-        self.check_corner(cap=self.video)
         self.readData()
 
-    def check_corner(self, cap):
-        self.corners = select_points(cap=cap, num_points=8)
+    def check_corner(self, view):
+        self.corners = select_points(self, cap=self.video, view=view)
 
     def setFrameData(self):
         cap = self.video
@@ -160,6 +159,8 @@ class VectorOverlay:
         print(f"Samples per frame: {samples_per_frame:.3f}")
         #print(f"Time offset: {self.time_offset}s ({offset_samples} samples)")
 
+        
+
         # Initialize arrays
         fx1, fy1, fz1, px1, py1 = [], [], [], [], []
         fx2, fy2, fz2, px2, py2 = [], [], [], [], []
@@ -173,7 +174,7 @@ class VectorOverlay:
             # Use stepsize to sample force data for each frame
             stepsize = max(1, int(force_samples / video_frames)) if video_frames > 0 else 1
             data_idx = frame_idx * stepsize
-            print(f"Data index: {data_idx}")
+            # print(f"Data index: {data_idx}")
 
             # Ensure index is within bounds
             if 0 <= data_idx < len(self.data):
@@ -276,13 +277,25 @@ class VectorOverlay:
         # If lag is negative, skip force data samples (video starts earlier)
         frames_to_skip = int(abs(lag_seconds) * self.fps)
         force_idx_offset = 0
+
+        total_frames = self.frame_count
+        video_limit = total_frames - (frames_to_skip if lag_seconds > 0 else 0)
+        data_limit  = len(self.fx1) - (frames_to_skip if lag_seconds < 0 else 0)
+        max_frames  = max(0, min(video_limit, data_limit))
+
         if lag_seconds > 0:
             print(f"Skipping {frames_to_skip} video frames to align video with force data.")
             for _ in range(frames_to_skip):
                 self.video.read()
+                if _ >= max_frames:
+                    break
         elif lag_seconds < 0:
-            print(f"Skipping {frames_to_skip} force data samples to start video earlier.")
-            force_idx_offset = frames_to_skip
+            if frames_to_skip > max_frames:
+                force_idx_offset = max_frames
+                print(f"Skipping {force_idx_offset} force data samples to start video earlier.")
+            else:
+                print(f"Skipping {frames_to_skip} force data samples to start video earlier.")
+                force_idx_offset = frames_to_skip
 
         out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
                             (self.frame_width, self.frame_height))
@@ -327,46 +340,63 @@ class VectorOverlay:
             cv2.destroyAllWindows()
         print(f"Finished processing video; Total Frames: {frame_number}")
 
-    def TopVectorOverlay(self, outputName=None, show_preview=True):
-        """Top view vector overlay with optimized processing"""
-        self.normalizeForces(self.fy1, self.fy2, self.fx1, self.fx2)
+    def TopVectorOverlay(self, outputName=None, show_preview=True, lag=0):
+        """Top view vector overlay with lag-based video/data alignment (video starts earlier if lag < 0)"""
+        print("Lag parameter:", lag)
+        # If lag is in frames, convert to seconds (if user passes a large int)
+        lag_seconds = lag / self.fps
+        print(f"Applying lag of {lag_seconds} seconds to force data synchronization...")
+        self.normalizeForces(self.fy1, self.fy2, self.fz1, self.fz2)
 
         if self.frame_width is None or self.frame_height is None:
             print("Error: Frame data not set.")
             return
 
-        # Handle None or empty output name
         if not outputName:
             outputName = "top_view_overlay_output.mp4"
             print(f"No output name provided, using default: {outputName}")
 
         # Reset video to beginning
         self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        frame_number = 0
+        print("Starting long view overlay processing...")
+
+        # If lag is positive, skip video frames (video starts later)
+        # If lag is negative, skip force data samples (video starts earlier)
+        frames_to_skip = int(abs(lag_seconds) * self.fps)
+        force_idx_offset = 0
+        if lag_seconds > 0:
+            print(f"Skipping {frames_to_skip} video frames to align video with force data.")
+            for _ in range(frames_to_skip):
+                self.video.read()
+        elif lag_seconds < 0:
+            print(f"Skipping {frames_to_skip} force data samples to start video earlier.")
+            force_idx_offset = frames_to_skip
 
         out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
-                           (self.frame_width, self.frame_height))
+                            (self.frame_width, self.frame_height))
 
-        frame_number = 0
-
-        print("Starting top view overlay processing...")
-
-        while self.video.isOpened() and frame_number < len(self.fx1):
+        # Only process the frames that have corresponding force data
+        while self.video.isOpened() and frame_number + force_idx_offset < len(self.fx1):
             ret, frame = self.video.read()
             if not ret:
                 print(f"Can't read frame at position {frame_number}")
                 break
 
-            # Map forces to view coordinates
-            fx1 = -self.fy1[frame_number]  # -Fy maps to x in top view
-            fx2 = -self.fy2[frame_number]
-            fy1 = -self.fx1[frame_number]  # -Fx maps to y in top view
-            fy2 = -self.fx2[frame_number]
+            force_idx = frame_number + force_idx_offset
 
-            # Map pressure positions
-            px1 = self.py1[frame_number]
-            py1 = 1 - self.px1[frame_number]  # Invert y-coordinate
-            px2 = self.py2[frame_number]
-            py2 = 1 - self.px2[frame_number]
+            fx1 = -self.fy1[force_idx]
+            fx2 = -self.fy2[force_idx]
+            fy1 = self.fz1[force_idx]
+            fy2 = self.fz2[force_idx]
+            px1 = self.py1[force_idx]
+            py1 = self.px1[force_idx]
+            px2 = self.py2[force_idx]
+            py2 = self.px2[force_idx]
+
+            # Debugging output for force values
+            print(f"Frame {frame_number}: fx1={fx1}, fy1={fy1}, px1={px1}, py1={py1}")
+
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
 
@@ -378,9 +408,8 @@ class VectorOverlay:
             frame_number += 1
             out.write(frame)
 
-            # Progress indicator
             if frame_number % 30 == 0:
-                print(f"Processed {frame_number}/{len(self.fx1)} frames")
+                print(f"Processed {frame_number}/{len(self.fx1) - force_idx_offset} frames")
 
         out.release()
         if show_preview:
