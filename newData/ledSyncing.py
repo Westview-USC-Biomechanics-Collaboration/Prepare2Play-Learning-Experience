@@ -196,9 +196,9 @@ def run_led_syncing(self, parent_path, video_file, force_file):
     ax.set_xlabel("Frame ID")
 
     # X-axis limits (safe even when n < 1000)
-    left = max(0, n//2 - 500)
-    right = min(n, n//2 + 500)
-    ax.set_xlim(left, right)
+    # left = max(0, n//2 - 500)
+    # right = min(n, n//2 + 500)
+    ax.set_xlim(0, n)
 
     ax.legend(loc="best")
     fig.tight_layout()
