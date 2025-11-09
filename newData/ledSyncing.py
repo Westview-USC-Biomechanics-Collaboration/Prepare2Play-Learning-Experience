@@ -47,6 +47,12 @@ def run_led_syncing(parent_path, video_file, force_file):
     # Map ROI coordinates back to full-frame
     top_left = (min_loc[0], min_loc[1] + roi_y0_first)
     led_center = np.add(top_left, (template_center_offset_x, template_center_offset_y))
+    cv2.drawMarker(first_frame, top_left, (255, 0, 0), thickness=3)
+    cv2.drawMarker(first_frame, led_center, (255, 0, 0), thickness=3)
+    cv2.namedWindow("Detected LED", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("Detected LED", 800, 600)  # Set window size
+    cv2.imshow("Detected LED", first_frame)
+    cv2.waitKey(0)
 
     # --- Prepare output ---
     df = pd.DataFrame(columns=['File', 'FrameNumber', 'CenterX', 'CenterY', 'BlueScore', 'GreenScore', 'RedScore'])
@@ -65,12 +71,16 @@ def run_led_syncing(parent_path, video_file, force_file):
         h, w = b.shape
         roi_y0 = h // 2
         _, thresh_b_roi = cv2.threshold(b[roi_y0:, :], 127, 255, cv2.THRESH_BINARY)
-
-        
-        res = cv2.matchTemplate(thresh_b_roi, template, cv2.TM_SQDIFF)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
         top_left = (min_loc[0], min_loc[1] + roi_y0)
         led_center = np.add(top_left, (template_center_offset_x, template_center_offset_y))
+        if frame_counter < 5:
+            cv2.drawMarker(frame, top_left, (255, 0, 0), thickness=3)
+            cv2.drawMarker(frame, led_center, (255, 0, 0), thickness=3)
+            cv2.namedWindow("Detected LED", cv2.WINDOW_NORMAL)
+            cv2.resizeWindow("Detected LED", 800, 600)  # Set window size
+            cv2.imshow("Detected LED", frame)
+            cv2.waitKey(0)
         y, x = int(led_center[1]), int(led_center[0])
         y0 = max(0, y - delta)
         y1 = min(b.shape[0], y + delta + 1)
@@ -93,6 +103,37 @@ def run_led_syncing(parent_path, video_file, force_file):
     df['RedScore_Shifted'] = df['RedScore'] - red_score_threshold
     df['RedScore_Clean'] = np.sign(df['RedScore_Shifted'])
 
+    # --- Find Actual FPS ---
+    led = (df['RedScore_Clean'].to_numpy() > 0).astype(int)
+    frames = df['FrameNumber'].to_numpy()
+
+    # Find contiguous ON and OFF segments
+    edges = np.diff(np.r_[led[0], led])              # changes between samples
+    change_idx = np.where(edges != 0)[0]             # indices where state flips
+    # segment boundaries (start idx inclusive, end idx inclusive)
+    starts = np.r_[0, change_idx + 1]
+    ends   = np.r_[change_idx, len(led) - 1]
+
+    # For each segment, compute length in *frames* (use FrameNumber for robustness)
+    seg_is_on = led[starts] == 1
+    seg_len_frames = (frames[ends] - frames[starts]) + 1  # inclusive
+
+    # Longest ON and longest OFF (in frames)
+    if np.any(seg_is_on):
+        longest_on_frames = int(seg_len_frames[seg_is_on].max())
+    else:
+        raise RuntimeError("No ON segment found in LED signal.")
+
+    if np.any(~seg_is_on):
+        longest_off_frames = int(seg_len_frames[~seg_is_on].max())
+    else:
+        raise RuntimeError("No OFF segment found in LED signal.")
+
+    # Your assumption: longest ON + longest OFF == 0.4 s (Arduino cycle)
+    T_cycle_sec = 0.4
+    frames_per_cycle = longest_on_frames + longest_off_frames
+    actual_fps_est = frames_per_cycle / T_cycle_sec
+
     # --- Save video analysis ---
     df_filename = video_file.replace('.mov', '_Analysis_Front.csv').replace('.MOV', '_Analysis_Front.csv')
     df.to_csv(os.path.join(parent_path, df_filename), index=False)
@@ -103,8 +144,8 @@ def run_led_syncing(parent_path, video_file, force_file):
 
     df_force['RedSignal'] = np.sign(df_force['Fz.2'].astype('float64'))
 
-    # Downsample force to match video rate (10x slower)
-    df_force_subset = df_force.iloc[::10].reset_index(drop=True)
+    # Downscaling by 10
+    df_force_subset = df_force.iloc[::10].reset_index(drop=True) #temporary
     signal_force = df_force_subset['RedSignal']
     signal_video = df['RedScore_Clean']
 
@@ -144,6 +185,8 @@ def run_led_syncing(parent_path, video_file, force_file):
     df_result.to_csv(os.path.join(parent_path, df_result_filename), index=False)
 
     print(f"Done. Columns in force data: {df_force.columns.tolist()}")
+    print(f"[LED longest] ON={longest_on_frames} frames, OFF={longest_off_frames} frames, "
+        f"sum={frames_per_cycle} → actual_fps≈{actual_fps_est:.2f}")
     print(f"[DEBUG] The relative score is {relative_score}")
 
     if lag >= 0:
