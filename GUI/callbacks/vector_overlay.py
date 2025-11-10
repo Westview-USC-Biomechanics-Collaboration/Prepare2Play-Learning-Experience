@@ -9,7 +9,7 @@ def vectorOverlayCallback(self):
         self.state.vector_overlay_enabled = True
     vectorOverlayThread = threading.Thread(target=threadTarget,daemon=True)
     vectorOverlayThread.start()
-
+ 
 def process(self):
     temp_video = "vector_overlay_temp.mp4"
     self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
