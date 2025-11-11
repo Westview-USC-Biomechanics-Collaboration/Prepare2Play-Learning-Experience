@@ -2,7 +2,7 @@ import threading
 import os
 import pandas as pd
 from vector_overlay.vectoroverlay_GUI import VectorOverlay
-from newData.ledSyncing import run_led_syncing  # rename or move if needed
+from GUI.callbacks.ledSyncing import run_led_syncing  
 import cv2
 
 def vectorOverlayWithAlignmentCallback(self):

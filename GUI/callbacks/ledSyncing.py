@@ -94,8 +94,8 @@ def run_led_syncing(self, parent_path, video_file, force_file):
     df['RedScore_Shifted'] = df['RedScore'] - red_score_threshold
     df['RedScore_Clean'] = np.sign(df['RedScore_Shifted'])
 
-    # --- Save video analysis ---
-    df_filename = video_file.replace('.mov', '_Analysis_Front.csv').replace('.MOV', '_Analysis_Front.csv')
+    # --- Save video analysis --- TODO: where is this used? if not needed, remove!
+    df_filename = video_file.replace('.mov', '_Analysis_Front.csv').replace('.MOV', '_Analysis.csv')
     df.to_csv(os.path.join(parent_path, df_filename), index=False)
 
     # --- Load and process force plate data ---
@@ -127,10 +127,10 @@ def run_led_syncing(self, parent_path, video_file, force_file):
     lag = lags[np.argmax(correlation)]
 
     # --- Save aligned force data ---
-    df_force_filename = force_file.replace('.txt', '_Analysis_Force.csv')
-    df_force_subset.to_csv(os.path.join(parent_path, df_force_filename), index=False)
+    # df_force_filename = force_file.replace('.txt', '_Analysis_Force.csv')
+    # df_force_subset.to_csv(os.path.join(parent_path, df_force_filename), index=False)
 
-    print(f"Saved force data to file_path: {os.path.join(parent_path, df_force_filename)}")
+    # print(f"Saved force data to file_path: {os.path.join(parent_path, df_force_filename)}")
 
     # --- Save final alignment result ---
     max_corr = float(np.max(correlation))
@@ -141,8 +141,8 @@ def run_led_syncing(self, parent_path, video_file, force_file):
                              columns=['Video File', 'Force File', 'Video Frame for t_zero force',
                                       'Correlation Score', 'Perfect Score', 'Relative Score'])
 
-    df_result_filename = force_file.replace('.txt', '_Results.csv')
-    df_result.to_csv(os.path.join(parent_path, df_result_filename), index=False)
+    # df_result_filename = force_file.replace('.txt', '_Results.csv')
+    # df_result.to_csv(os.path.join(parent_path, df_result_filename), index=False)
 
     print(f"Done. Columns in force data: {df_force.columns.tolist()}")
     print(f"[DEBUG] The relative score is {relative_score}")
@@ -217,4 +217,4 @@ if __name__ == "__main__":
     parent_path = r"C:\Users\Deren\OneDrive\Desktop\USCProject\Prepare2Play-Learning-Experience\newData"
     video_file = "walk_test_vid01.mov"
     force_file = "walktest1.txt"
-    run_led_syncing(parent_path, video_file, force_file)
+    run_led_syncing(parent_path, video_file, force_file) # type: ignore

@@ -40,7 +40,7 @@ from GUI.callbacks.COM import COMCallback
 # NEW IMPORTS from modularizing:
 from GUI.models.video_state import VideoState
 from GUI.models.force_state import ForceState
-from GUI.models.state_manager import StateManager
+from GUI.models.variable_manager import StateManager
 from GUI.layout.canvas_manager import CanvasManager
 from GUI.layout.button_manager import ButtonManager
 from GUI.layout.label_manager import LabelManager
