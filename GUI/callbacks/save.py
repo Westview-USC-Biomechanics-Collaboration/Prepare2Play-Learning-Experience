@@ -170,7 +170,7 @@ def saveCallback(self):
             out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), self.Video.fps,(self.Video.frame_width, self.Video.frame_height+480))
         else:
             out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), self.Video.fps,(self.Video.frame_width+640, self.Video.frame_height))
-
+ 
         # Saving frame with graph
         while(self.Video.vector_cam.isOpened() and count<= self.save_end+cushion_frames):
             ret1, frame1 = self.Video.cam.read()

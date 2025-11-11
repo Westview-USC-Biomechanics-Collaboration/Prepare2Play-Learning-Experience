@@ -13,6 +13,7 @@ import queue
 import cv2 as cv
 from vector_overlay.select_corners import select_points
 import os
+from Util.COM_helper import COM_helper
 
 
 
@@ -339,10 +340,11 @@ def process_frame(q: processing.Queue, resultsVector_queue: processing.Queue, re
                 resultsCOM_queue.put(row)
                 #print(f"Size of result_queue: {results_queue.qsize()}")
 
-                fps = cfg['fps']; lag = cfg['lag']
-                frames_to_skip = int(abs(lag / float(fps)))
-                force_offset   = frames_to_skip if lag < 0 else 0
-                f_idx = frame_index + force_offset
+                # fps = cfg['fps'] 
+                # lag = cfg['lag']
+                # frames_to_skip = int(abs(lag / float(fps)))
+                # force_offset   = frames_to_skip if lag < 0 else 0
+                f_idx = frame_index 
 
                 if 0 <= f_idx < len(cfg['fx1']):
                     _fx1 = -cfg['fy1'][f_idx]; _fx2 = -cfg['fy2'][f_idx]
@@ -365,19 +367,14 @@ def process_frame(q: processing.Queue, resultsVector_queue: processing.Queue, re
                 resultsCOM_queue.put(None)
                 break
 
-def frame_reader(frame_queue: processing.Queue, video_path, lag, num_workers):
+def frame_reader(frame_queue: processing.Queue, video_path, start_frame, num_workers, max_frames):
     print(f"[READER] Attempting to open video: '{video_path}'") # <-- ADD THIS LINE
     cap = cv2.VideoCapture(video_path)
-    if lag >= 10:
-        cap.set(cv2.CAP_PROP_POS_FRAMES, lag - 10)  # Skip (lag - 10) frames before video to prevent errors with multiple people in the video!
-    else:
-        cap.set(cv2.CAP_PROP_POS_FRAMES, lag)  # Start from the lag if lag is less than 10
-    if not cap.isOpened():
-        print("Error: Could not open video.")
-        return
+    if start_frame > 0:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
     index = 0
     print("[INFO] Loading frames from video...")
-    while cap.isOpened():
+    while cap.isOpened() and index < max_frames:
         ret, frame = cap.read()
         if not ret:
             break
@@ -441,6 +438,7 @@ class Processor:
 
         self.readData()
         self.normalizeForces(self.fx1, self.fx2, self.fy1, self.fy2)
+        self.apply_lag_alignment()
 
     def check_corner(self, view):
         cap = cv2.VideoCapture(self.video_path)
@@ -585,6 +583,49 @@ class Processor:
         self.px2 = tuple(px2)
         self.py2 = tuple(py2)
     
+    def apply_lag_alignment(self):
+        """
+        Align video vs force data once, so workers have 1:1 frame<->sample.
+        Assume self.lag is in FRAMES (if it's seconds, convert with int(round(lag_seconds * self.fps))).
+        """
+        lag_frames = int(self.lag)
+
+        # Where to start the reader
+        self.reader_start_frame = 0
+
+        if lag_frames > 0:
+            # Video should start later -> advance video by lag_frames
+            self.reader_start_frame = lag_frames
+
+        elif lag_frames < 0:
+            # Video should start earlier -> trim force arrays by -lag_frames
+            off = -lag_frames
+            def trim(t):
+                # safe trim when arrays may be shorter than off
+                return t[off:] if len(t) > off else ()
+
+            self.fx1 = trim(self.fx1); self.fx2 = trim(self.fx2)
+            self.fy1 = trim(self.fy1); self.fy2 = trim(self.fy2)
+            self.fz1 = trim(self.fz1); self.fz2 = trim(self.fz2)
+            self.px1 = trim(self.px1); self.px2 = trim(self.px2)
+            self.py1 = trim(self.py1); self.py2 = trim(self.py2)
+
+            # after trimming, set lag to 0 so downstream code doesn’t re-apply it
+            self.lag = 0
+
+        # Also cap the effective length so video and force arrays have overlap
+        max_len = min(
+            self.frame_count - self.reader_start_frame,
+            len(self.fx1), len(self.fx2), len(self.fy1), len(self.fy2)
+        )
+        # Optionally trim all arrays to max_len to keep things simple:
+        self.fx1 = self.fx1[:max_len]; self.fx2 = self.fx2[:max_len]
+        self.fy1 = self.fy1[:max_len]; self.fy2 = self.fy2[:max_len]
+        self.fz1 = self.fz1[:max_len]; self.fz2 = self.fz2[:max_len]
+        self.px1 = self.px1[:max_len]; self.px2 = self.px2[:max_len]
+        self.py1 = self.py1[:max_len]; self.py2 = self.py2[:max_len]
+        self.effective_frames = max_len
+    
     def SaveToTxt(self, sex, filename, confidencelevel=0.85, displayCOM=False):
         startTime = time.time()
 
@@ -600,9 +641,9 @@ class Processor:
         resultCOM_queue = Queue()
         resultVector_queue = Queue()
 
-        num_workers = processing.cpu_count()
+        num_workers = min(6, processing.cpu_count())
 
-        reader_thread = threading.Thread(target=frame_reader, args=(frame_queue, self.video_path, self.lag, num_workers))
+        reader_thread = threading.Thread(target=frame_reader, args=(frame_queue, self.video_path, self.reader_start_frame, num_workers, self.effective_frames))
         reader_thread.start()
 
         writer = processing.Process(
@@ -674,6 +715,21 @@ class Processor:
 
         endTime = time.time()
         print("[INFO] COM Total time taken: ", endTime - startTime)
+
+        count = 0
+        vector_cam = cv2.VideoCapture(self.output_mp4)
+        com_helper = COM_helper()
+        while(vector_cam.isOpened() and count < self.effective_frames):
+            ret, frame = vector_cam.read()
+            frame = com_helper.drawFigure(frame, count)
+            cv2.imshow("Long View", cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5))))
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+            count += 1
+
+        vector_cam.release()
+        cv2.destroyAllWindows()
+        
 
 
 
