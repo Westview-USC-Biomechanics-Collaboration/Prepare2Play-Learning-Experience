@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from vector_overlay.vectoroverlay_GUI import VectorOverlay
 from vector_overlay.COM_vectoroverlay import Processor
-from newData.ledSyncing import run_led_syncing  # rename or move if needed
+from GUI.callbacks.ledSyncing import run_led_syncing  # rename or move if needed
 from GUI.callbacks.global_variable import globalVariable
 import cv2
 
