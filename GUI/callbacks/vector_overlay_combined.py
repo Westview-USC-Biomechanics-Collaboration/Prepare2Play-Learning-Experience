@@ -42,22 +42,22 @@ def vectorOverlayWithAlignmentCallback(self):
 
         temp_video = "vector_overlay_temp.mp4"
 
-        # v = VectorOverlay(data=force_data, video=self.Video.cam)
-        v = Processor(self.Video.path, self.Force.data, lag, temp_video)
+        v = VectorOverlay(data=force_data, video=self.Video.cam)
+        # v = Processor(self.Video.path, self.Force.data, lag, temp_video)
 
         selected = self.selected_view.get()
         if selected == "Long View":
             v.check_corner("Long View")
-            # v.LongVectorOverlay(outputName=temp_video, lag=lag)
-            v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
+            v.LongVectorOverlay(outputName=temp_video, lag=lag)
+            # v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
         elif selected == "Short View":
             v.check_corner("Short View")
-            # v.ShortVectorOverlay(outputName=temp_video, lag=lag)
-            v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
+            v.ShortVectorOverlay(outputName=temp_video, lag=lag)
+            # v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
         elif selected == "Top View":
             v.check_corner("Top View")
-            # v.TopVectorOverlay(outputName=temp_video, lag=lag)
-            v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
+            v.TopVectorOverlay(outputName=temp_video, lag=lag)
+            # v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
 
         self.Video.vector_cam = cv2.VideoCapture(temp_video)
         self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)

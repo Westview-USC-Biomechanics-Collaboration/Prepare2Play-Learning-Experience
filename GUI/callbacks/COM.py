@@ -12,12 +12,12 @@ def COMCallback(self, s):
          
     
     def threadTarget():
-        # print("[INFO] Starting COM processing in a separate thread...")
-        # processor = Processor(self.Video.path)
-        # processor.SaveToTxt(sex=s, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
-        # print("[INFO] COM processing finished.")
-        # self.COM_flag = True
-        globalVariable.sex = s
+        print("[INFO] Starting COM processing in a separate thread...")
+        processor = Processor(self.Video.path)
+        processor.SaveToTxt(sex=s, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
+        print("[INFO] COM processing finished.")
+        self.COM_flag = True
+        # globalVariable.sex = s
 
     COMThread = threading.Thread(target=threadTarget, daemon=True)
     COMThread.start()

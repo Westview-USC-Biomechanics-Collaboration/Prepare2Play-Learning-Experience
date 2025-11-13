@@ -340,18 +340,49 @@ def process_frame(q: processing.Queue, resultsVector_queue: processing.Queue, re
                 resultsCOM_queue.put(row)
                 #print(f"Size of result_queue: {results_queue.qsize()}")
 
-                # fps = cfg['fps'] 
-                # lag = cfg['lag']
-                # frames_to_skip = int(abs(lag / float(fps)))
-                # force_offset   = frames_to_skip if lag < 0 else 0
-                f_idx = frame_index 
+                fps = cfg['fps'] 
+                lag = cfg['lag']
+                frame_count = cfg['frame_count']
+                frames_to_skip = int(abs(lag))
+                force_offset = 0
 
-                if 0 <= f_idx < len(cfg['fx1']):
-                    _fx1 = -cfg['fy1'][f_idx]; _fx2 = -cfg['fy2'][f_idx]
-                    _fy1 =  cfg['fz1'][f_idx]; _fy2 =  cfg['fz2'][f_idx]
-                    _px1 =  cfg['py1'][f_idx]; _py1 =  cfg['px1'][f_idx]
-                    _px2 =  cfg['py2'][f_idx]; _py2 =  cfg['px2'][f_idx]
-                    drawArrows(full_frame, _fx1, _fx2, _fy1, _fy2, _px1, _px2, _py1, _py2, cfg['corners'])
+                video_limit = frame_count - (frames_to_skip if lag > 0 else 0)
+                data_limit  = len(cfg['fx1']) - (frames_to_skip if lag < 0 else 0)
+                max_frames  = max(0, min(video_limit, data_limit))
+                # if lag < 0:
+                #     if frames_to_skip > max_frames:
+                #         force_offset = max_frames
+                #     else:
+                #         force_offset = frames_to_skip
+                # else:
+                #     force_offset = 0
+                # f_idx = frame_index + force_offset 
+
+                # print(f"frame_index: {frame_index}, force_offset: {force_offset}, f_idx: {f_idx}")
+                f_idx = frame_index
+                # if 0 <= f_idx < len(cfg['fx1']):
+
+                # Safety guard
+                if not (0 <= f_idx < len(cfg['fx1'])):
+                    print(f"[WORKER] frame_index {frame_index} has out-of-bounds f_idx={f_idx}")
+                    resultsVector_queue.put((frame_index, full_frame))
+                    resultsCOM_queue.put(row)
+                    continue
+                _fx1 = -cfg['fy1'][f_idx] 
+                _fx2 = -cfg['fy2'][f_idx]
+                _fy1 =  cfg['fz1'][f_idx] 
+                _fy2 =  cfg['fz2'][f_idx]
+                _px1 =  cfg['py1'][f_idx] 
+                _py1 =  cfg['px1'][f_idx]
+                _px2 =  cfg['py2'][f_idx] 
+                _py2 =  cfg['px2'][f_idx]
+                if frame_index < 10:
+                    print(f"[WORKER] frame={frame_index}, f_idx={f_idx}, "
+                        f"fx1={_fx1:.2f}, fy1={_fy1:.2f}, "
+                        f"fx2={_fx2:.2f}, fy2={_fy2:.2f}, "
+                        f"px1={_px1:.2f}, py1={_py1:.2f}, "
+                        f"px2={_px2:.2f}, py2={_py2:.2f}")
+                drawArrows(full_frame, _fx1, _fx2, _fy1, _fy2, _px1, _px2, _py1, _py2, cfg['corners'])
 
                 # --- sends to Writer Queue ---
                 resultsVector_queue.put((frame_index, full_frame))   # for writer
@@ -367,17 +398,23 @@ def process_frame(q: processing.Queue, resultsVector_queue: processing.Queue, re
                 resultsCOM_queue.put(None)
                 break
 
-def frame_reader(frame_queue: processing.Queue, video_path, start_frame, num_workers, max_frames):
+def frame_reader(frame_queue: processing.Queue, video_path, start_frame, num_workers, max_frames, cfg):
     print(f"[READER] Attempting to open video: '{video_path}'") # <-- ADD THIS LINE
+    total_frames = cfg['frame_count']
+    video_limit = total_frames - (start_frame if cfg['lag'] > 0 else 0)
+    data_limit  = len(cfg['fx1']) - (start_frame if cfg['lag'] < 0 else 0)
+    skip_max = max(0, min(video_limit, data_limit))
     cap = cv2.VideoCapture(video_path)
-    if start_frame > 0:
-        cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
     index = 0
+    cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+    current_frame = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+    print("Currently reading frame:", current_frame)
     print("[INFO] Loading frames from video...")
-    while cap.isOpened() and index < max_frames:
+    while cap.isOpened() and index < total_frames:
         ret, frame = cap.read()
         if not ret:
-            break
+            break 
         try:
             frame_queue.put((index, frame.copy()))  # <--- ADDED timeout
         except:
@@ -438,6 +475,7 @@ class Processor:
 
         self.readData()
         self.normalizeForces(self.fx1, self.fx2, self.fy1, self.fy2)
+        self.debug_force_array_mapping(n=10)
         self.apply_lag_alignment()
 
     def check_corner(self, view):
@@ -583,47 +621,101 @@ class Processor:
         self.px2 = tuple(px2)
         self.py2 = tuple(py2)
     
+    def debug_force_array_mapping(self, n=10):
+        """
+        Compare what we *think* we're putting in fx1/fx2... to the raw DataFrame values.
+        This checks the stepsize/data_idx logic AND plate-1/plate-2 column mapping.
+        """
+        force_samples = len(self.data)
+        video_frames = self.frame_count
+        stepsize = max(1, int(force_samples / video_frames)) if video_frames > 0 else 1
+
+        print("\n[DEBUG] Force array mapping check")
+        print(f"force_samples={force_samples}, video_frames={video_frames}, stepsize={stepsize}")
+        print("frame_idx | data_idx | Fx1_raw  Fx1_arr  Fx2_raw  Fx2_arr  Fz1_raw  Fz1_arr  Fz2_raw  Fz2_arr")
+
+        for frame_idx in range(min(n, video_frames)):
+            data_idx = frame_idx * stepsize
+            if data_idx >= force_samples:
+                break
+
+            row = self.data.iloc[data_idx]
+            Fx1_raw = row.get("Fx1", None)
+            Fx2_raw = row.get("Fx2", None)
+            Fz1_raw = row.get("Fz1", None)
+            Fz2_raw = row.get("Fz2", None)
+
+            Fx1_arr = self.fx1[frame_idx]
+            Fx2_arr = self.fx2[frame_idx]
+            Fz1_arr = self.fz1[frame_idx]
+            Fz2_arr = self.fz2[frame_idx]
+
+            print(f"{frame_idx:8d} | {data_idx:8d} | "
+                f"{Fx1_raw:7.2f} {Fx1_arr:7.2f}  "
+                f"{Fx2_raw:7.2f} {Fx2_arr:7.2f}  "
+                f"{Fz1_raw:7.2f} {Fz1_arr:7.2f}  "
+                f"{Fz2_raw:7.2f} {Fz2_arr:7.2f}")
+    
     def apply_lag_alignment(self):
         """
         Align video vs force data once, so workers have 1:1 frame<->sample.
         Assume self.lag is in FRAMES (if it's seconds, convert with int(round(lag_seconds * self.fps))).
         """
-        lag_frames = int(self.lag)
+        lag_seconds = self.lag / self.fps
+        lag_frames = int(abs(lag_seconds) * self.fps)
+
+        print(f"Lag: {self.lag}")
+        print(f"lag_frames: {lag_frames}")
+
+        video_limit = self.frame_count - (lag_frames if self.lag > 0 else 0)
+        data_limit  = len(self.fx1) - (lag_frames if self.lag < 0 else 0)
+        max_frames  = max(0, min(video_limit, data_limit))
+
 
         # Where to start the reader
         self.reader_start_frame = 0
+        force_idx_offset = 0
 
-        if lag_frames > 0:
+        if lag_seconds > 0:
             # Video should start later -> advance video by lag_frames
-            self.reader_start_frame = lag_frames
-
-        elif lag_frames < 0:
+            self.reader_start_frame = min(lag_frames, max(0, self.frame_count - 1))
+            print(f"reader start_frame: {self.reader_start_frame}")
+        elif lag_seconds < 0:
+            if lag_frames > max_frames:
+                force_idx_offset = max_frames
+                print(f"Skipping {force_idx_offset} force data samples to start video earlier.")
+            else:
+                print(f"Skipping {lag_frames} force data samples to start video earlier.")
+                force_idx_offset = lag_frames
             # Video should start earlier -> trim force arrays by -lag_frames
-            off = -lag_frames
-            def trim(t):
+            def trim(t, force_idx_offset):
                 # safe trim when arrays may be shorter than off
-                return t[off:] if len(t) > off else ()
+                return t[force_idx_offset:]
 
-            self.fx1 = trim(self.fx1); self.fx2 = trim(self.fx2)
-            self.fy1 = trim(self.fy1); self.fy2 = trim(self.fy2)
-            self.fz1 = trim(self.fz1); self.fz2 = trim(self.fz2)
-            self.px1 = trim(self.px1); self.px2 = trim(self.px2)
-            self.py1 = trim(self.py1); self.py2 = trim(self.py2)
+            self.fx1 = trim(self.fx1, force_idx_offset) 
+            self.fx2 = trim(self.fx2, force_idx_offset)
+            self.fy1 = trim(self.fy1, force_idx_offset) 
+            self.fy2 = trim(self.fy2, force_idx_offset)
+            self.fz1 = trim(self.fz1, force_idx_offset) 
+            self.fz2 = trim(self.fz2, force_idx_offset)
+            self.px1 = trim(self.px1, force_idx_offset) 
+            self.px2 = trim(self.px2, force_idx_offset)
+            self.py1 = trim(self.py1, force_idx_offset) 
+            self.py2 = trim(self.py2, force_idx_offset)
 
             # after trimming, set lag to 0 so downstream code doesn’t re-apply it
             self.lag = 0
 
         # Also cap the effective length so video and force arrays have overlap
         max_len = min(
-            self.frame_count - self.reader_start_frame,
-            len(self.fx1), len(self.fx2), len(self.fy1), len(self.fy2)
+            self.frame_count - self.reader_start_frame, len(self.fx1)
         )
         # Optionally trim all arrays to max_len to keep things simple:
-        self.fx1 = self.fx1[:max_len]; self.fx2 = self.fx2[:max_len]
-        self.fy1 = self.fy1[:max_len]; self.fy2 = self.fy2[:max_len]
-        self.fz1 = self.fz1[:max_len]; self.fz2 = self.fz2[:max_len]
-        self.px1 = self.px1[:max_len]; self.px2 = self.px2[:max_len]
-        self.py1 = self.py1[:max_len]; self.py2 = self.py2[:max_len]
+        # self.fx1 = self.fx1[:max_len]; self.fx2 = self.fx2[:max_len]
+        # self.fy1 = self.fy1[:max_len]; self.fy2 = self.fy2[:max_len]
+        # self.fz1 = self.fz1[:max_len]; self.fz2 = self.fz2[:max_len]
+        # self.px1 = self.px1[:max_len]; self.px2 = self.px2[:max_len]
+        # self.py1 = self.py1[:max_len]; self.py2 = self.py2[:max_len]
         self.effective_frames = max_len
     
     def SaveToTxt(self, sex, filename, confidencelevel=0.85, displayCOM=False):
@@ -631,7 +723,8 @@ class Processor:
 
         cfg = dict(
             sex=sex, confidence=confidencelevel, displayCOM=displayCOM,
-            fps=self.fps, lag=self.lag, corners=self.corners,
+            fps=self.fps, frame_count=self.frame_count, frame_width=self.frame_width, frame_height=self.frame_height, 
+            lag=self.lag, corners=self.corners,
             fx1=self.fx1, fx2=self.fx2, fy1=self.fy1, fy2=self.fy2,
             fz1=self.fz1, fz2=self.fz2, px1=self.px1, px2=self.px2,
             py1=self.py1, py2=self.py2
@@ -643,7 +736,7 @@ class Processor:
 
         num_workers = min(6, processing.cpu_count())
 
-        reader_thread = threading.Thread(target=frame_reader, args=(frame_queue, self.video_path, self.reader_start_frame, num_workers, self.effective_frames))
+        reader_thread = threading.Thread(target=frame_reader, args=(frame_queue, self.video_path, self.reader_start_frame, num_workers, self.effective_frames, cfg))
         reader_thread.start()
 
         writer = processing.Process(
