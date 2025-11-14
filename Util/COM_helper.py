@@ -23,7 +23,7 @@ class COM_helper:
         parsed_line.append({"name":"COM","x":line[-2],"y":line[-1]})
         return parsed_line
     
-    def drawFigure(self, frame, row: int):
+    def drawFigure(self, frame, row: int): 
         import cv2
         frame = frame.copy()  # Prevent in-place modification
         
@@ -46,7 +46,7 @@ class COM_helper:
             except (KeyError, ValueError, TypeError) as e:
                 print(f"[ERROR] Skipping invalid point: {point} — {e}")
         
-        print("[DEBUG] finished drawing")
+        # print("[DEBUG] finished drawing")
         return frame
 
 if __name__ == "__main__":

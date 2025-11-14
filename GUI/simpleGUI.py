@@ -33,7 +33,6 @@ from GUI.callbacks.update_slider_value import sliderCallback
 from GUI.callbacks.upload_video import uploadVideoCallback
 from GUI.callbacks.align import alignCallback
 from GUI.callbacks.graph import graphOptionCallback
-from GUI.callbacks.vector_overlay import vectorOverlayCallback
 from GUI.callbacks.stepF import stepF
 from GUI.callbacks.save import saveCallback
 from GUI.callbacks.COM import COMCallback

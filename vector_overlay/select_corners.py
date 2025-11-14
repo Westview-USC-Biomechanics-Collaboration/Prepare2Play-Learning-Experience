@@ -384,9 +384,9 @@ def select_points(self, cap, view):
     # Create a binary mask where yellow colors are white
     mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
 
-    # cv2.namedWindow("original", cv2.WINDOW_NORMAL)
-    # cv2.resizeWindow("original", 800, 600)  # Set window size
-    # cv2.imshow("original", mask)
+    cv2.namedWindow("original", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("original", 800, 600)  # Set window size
+    cv2.imshow("original", mask)
 
     # Optional: closing to seal any final small gaps
     # Horizontal kernel to connect horizontal lines
@@ -395,9 +395,9 @@ def select_points(self, cap, view):
     kernel_v = np.ones((1, 1), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_v)
 
-    # cv2.namedWindow("one", cv2.WINDOW_NORMAL)
-    # cv2.resizeWindow("one", 800, 600)  # Set window size
-    # cv2.imshow("one", mask)
+    cv2.namedWindow("one", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("one", 800, 600)  # Set window size
+    cv2.imshow("one", mask)
 
     # ROI crop
     # h, w = mask.shape
@@ -448,9 +448,9 @@ def select_points(self, cap, view):
 
     
 
-    # cv2.namedWindow("kernel observation", cv2.WINDOW_NORMAL)
-    # cv2.resizeWindow("kernel observation", 800, 600)  # Set window size
-    # cv2.imshow("kernel observation", roi)
+    cv2.namedWindow("kernel observation", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("kernel observation", 800, 600)  # Set window size
+    cv2.imshow("kernel observation", roi)
 
     # Find all contours in the mask
     contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)

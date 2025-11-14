@@ -125,6 +125,7 @@ def frame_reader(frame_q: Queue, video_path: str, fps: float, start_frame: int =
         frame_q.put(None)
     cap.release()
 
+<<<<<<< HEAD
 
 # ------------------------------------------------------------------
 # 4. Main processor – one-pass video + CSV + annotated output
@@ -155,6 +156,12 @@ class PoseProcessor:
              confidence=confidencelevel,
              display_com=displayCOM,
              lag_frames=lag_frames)
+=======
+class Processor:
+    def __init__(self, video_path):
+        #self.cam:cv2.VideoCapture = cam
+        self.video_path = video_path
+>>>>>>> 6f9942dc3b4259cf438d3220e0c4b1f79eac982e
     
     # ------------------------------------------------------------------
     def run(self,
