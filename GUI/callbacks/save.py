@@ -42,15 +42,9 @@ def saveCallback(self):
         #matplotlib.use('Agg')
         self._pop_up(text="Processing video ...\nThis may take a few minutes\n",follow=True)
 
-        try:
-            print(f"\nentry: {self.cushion_entry.get()}\nfps: {self.Video.fps}")
-            cushion_frames = int(self.cushion_entry.get()) * (self.Video.fps)
-            print(cushion_frames)
-        except ValueError as e:
-            self._pop_up(text="Invalid cushion time, please put numbers")
-            print("invalid input!!\n")
-            print(e)
-            return
+        # Set cushion_frames to 0 (removed user input)
+        cushion_frames = 0
+        print(f"Using cushion_frames: {cushion_frames}")
 
         self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
         self.Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
@@ -233,8 +227,8 @@ def saveCallback(self):
             fout.write(f"Force start frame(before align && with out small adjustments): {self.state.force_align}\n")
             fout.write(f"Force start time: {self.state.force_start}\n\n") # using video align because it's position after alignment
 
-            fout.write(f"Cushion time: {self.cushion_entry.get()}\n")
-            fout.write(f"Cushion frame: {cushion_frames}\n")  # num of frames before interval of interest and num of frame after if applicable
+            fout.write(f"Cushion time: 0\n")
+            fout.write(f"Cushion frame: 0\n")  # Cushion feature removed, always 0
 
             fout.write(f"Saving time: {datetime.now()}\n")
             fout.write(f"All rights reserved by Westview PUSD")
@@ -272,16 +266,11 @@ def saveCallback(self):
     self.save_end_button = tk.Button(self.save_window,text="label end",command=lambda:_label(1))
     self.save_end_button.grid(row=3,column=2,sticky="nsew",padx=10,pady=10)
 
-    self.cushion_entry = tk.Entry(self.save_window)
-    self.cushion_entry.grid(row=4,column=1,padx=10,pady=10,sticky="w")
-    self.cushion_label = tk.Label(self.save_window, text = "set cushion time(s) :")
-    self.cushion_label.grid(row=4,column=0,padx=10,pady=10)
-
     self.COM_checkbox = tk.Checkbutton(self.save_window, text="active COM", variable=self.COM_intVar)
-    self.COM_checkbox.grid(row=5,column=0,columnspan=3,sticky="nsew",padx=10,pady=10)
+    self.COM_checkbox.grid(row=4,column=0,columnspan=3,sticky="nsew",padx=10,pady=10)
 
     self.save_confirm_button = tk.Button(self.save_window,text="export video",command=_export)
-    self.save_confirm_button.grid(row=6,column=0,columnspan=3,sticky="nsew",padx=10,pady=10)
+    self.save_confirm_button.grid(row=5,column=0,columnspan=3,sticky="nsew",padx=10,pady=10)
 
     # lift the save window to the front
     self.save_window.lift()
