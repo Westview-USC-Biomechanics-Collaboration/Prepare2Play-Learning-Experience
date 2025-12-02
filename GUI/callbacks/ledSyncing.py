@@ -9,252 +9,14 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import GUI.models.video_state
 plt.ioff()
-def plate_transformation_matrix():
-    # # Load video
-    # cap = cv2.VideoCapture(c.path_video)
+def plate_transformation_matrix(self, view, path_video):
     
-    # #------ Determine appropriate threshold for making mask to find plates -------#
-    # print('\n-------------- Finding Threshold for Finding Plates ----------------')
-    # threshold_list = []
-    # for frame_number in range(c.num_frames_for_threshold):
-    #     ##### Get current frame and extract crop of Red Channel
-    #     print('Frame Number: ', str(frame_number))
-    #     cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
-    #     ret, frame = cap.read()
-        
-    #     cropRGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)[c.crop_y0:c.crop_y1, c.crop_x0:c.crop_x1, :]
-    #     cropR = cropRGB[:, :, 0]
-        
-    #     ##### Determine threshold to use for making mask from Red Channel crop
-    #     # Sweep through possible intensity thresholds
-    #     # Use each as a threshold and determine number of positive pixels
-    #     # Note, thresholding 0/255 instead of 0/1 to make visualization easier
-    #     intensity_list = []
-    #     positive_count_list = []
-    #     for intensity in range(0,256):
-    #         ret, maskR = cv2.threshold(cropR, intensity, 255, cv2.THRESH_BINARY)
-    #         intensity_list.append(intensity)
-    #         positive_count_list.append(maskR.sum()/255)
-        
-    #     # Calculate profile of positive counts as a function of intensity
-    #     # Calculate 1st and 2nd derivatives as delta of counts (intensity step = 1)
-    #     # Find peaks associated with lower and upper thresholds around the
-    #     # the intensities corrsponding to the plate perimeter.
-    #     #   As the threshold increases there are three main zones:
-    #     #       1) There is a large drop associated with the vast majority of pixels
-    #     #           below threshold (i.e., black platform and green background)
-    #     #       2) A range of thresholds where the counts drops gradually because
-    #     #           the majority of the counts are due to the plate perimeter so 
-    #     #           the mask is not changing much
-    #     #       3) A range where the counts drop a bit faster now that the
-    #     #           threshold is high enough to remove portions of the perimeter
-    #     #   By smoothing the absolute value of the 2nd derivative, we create a
-    #     #   profile where 2 or 3 peaks are detectable:
-    #     #       1) Large peak associated with zone 1 above.
-    #     #           We want the threshold toabove this peak.
-    #     #       2) A small wide peak associated with zone 2 may or may not be found.
-    #     #           We don't need to find a peak in this zone.
-    #     #       3) A medium peak associated with zone 3.
-    #     #           We want the threshold to be below this peak.
-    #     #   We select the threshold by averaging the intensities from two limits:
-    #     #       1) Lower limit based on the intensity associated with the
-    #     #           right side of the zone 1 peak (highest intensity for zone 1)
-    #     #       2) Upper limit based on the intensity associated with the
-    #     #           left side of the zone 3 peak (lowest intensity for zone 3)
-    #     #
-    #     i_data = [0]
-    #     delta1_data=[0]
-    #     delta2_data=[0]
-    #     abs_delta2_data = [0]
-    #     # Manually tabulate deltas
-    #     for i in range(1,256):
-    #         i_data.append(i)
-    #         delta1 = positive_count_list[i] - positive_count_list[i-1]
-    #         delta1_data.append(delta1)
-    #         delta2 = delta1_data[i] - delta1_data[i-1]
-    #         delta2_data.append(delta2)
-    #         abs_delta2_data.append(abs(delta2))
-            
-    #     # Smooth the curve to make it easier to find just 2 or 3 peaks
-    #     sg = signal.savgol_filter(abs_delta2_data, 30, 1)
-        
-    #     # Only going to use cases where we only find 2 or 3 peaks
-    #     # Assume the first peak is for zone 1 and last peak is for zone 3
-    #     # Doesn't matter if a peak is found for zone 2
-    #     peaks = signal.find_peaks(sg, width=10)
-    #     num_peaks = len(peaks[0])
-    #     threshold = 0
-    #     if num_peaks ==2 or num_peaks==3:
-    #         print('Number of peaks: ' + str(num_peaks))
-    #         if c.make_plots==True: plt.plot(i_data, sg)
-    #         for p in range(len(peaks[0])):
-    #             x_peak = peaks[0][p]
-    #             print('Peak at ' + str(x_peak))
-    #             if c.make_plots==True: plt.vlines(x=x_peak, ymin=plt.ylim()[0], ymax = plt.ylim()[1], colors='red', linestyles='--')
-    
-    #         left_limit = peaks[1]['right_ips'][0]
-    #         right_limit = peaks[1]['left_ips'][-1]
-    #         threshold = (left_limit + right_limit)//2 
-    #         threshold_list.append(threshold)
-    #         if c.make_plots == True:
-    #              plt.vlines(x=threshold, ymin=plt.ylim()[0], ymax = plt.ylim()[1], colors='green', linestyles='solid')
-    #              plt.title('Intensity Threshold for Frame: ' + str(frame_number))
-    #              plt.show()
-        
-    #     if threshold > 0:
-    #         print('Threshold for frame ' + str(frame_number) + ' : ' +str(threshold))
-    #     else:
-    #         print('No threshold found for frame ' + str(frame_number))
-    
-    # # Select a robust threshold based on median value
-    # intensity_threshold = np.median(threshold_list)
-    # print('\nThreshold  for plate finding: ' + str(intensity_threshold))
-    # #-----------------------------------------------------------------------------#
-    
-    # Select threshold
-# =============================================================================
-#     if c.use_auto_threshold == True:
-#         print('Use Auto Threshold')
-#         intensity_threshold = get_auto_threshold()
-#     else:
-#         print('Use Fixed Threshold')
-#         intensity_threshold = c.fixed_threshold
-# 
-#     print(intensity_threshold)
-# =============================================================================
-    #---------------- Find Corners of Two-Plate System ---------------------------#
-
     
     print('\n-----------------Finding Corners --------------------------------')
     # Load video
-    cap = cv2.VideoCapture(c.path_video)
+    cap = cv2.VideoCapture(path_video)
     
-# =============================================================================
-#     min_area = c.min_plate_area
-#     print('################### Min Area: ' + str(min_area))
-#     corners_list = []
-#     for frame_number in range(c.num_frames_for_corners):
-#         ##### Get current frame and extract crop of Red Channel
-#         print('Frame Number: ', str(frame_number))
-#         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
-#         ret, frame = cap.read()
-#         if c.top_view: frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
-#         
-#         cropRGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)[c.crop_y0:c.crop_y1, c.crop_x0:c.crop_x1, :]
-#         cropR = cropRGB[:, :, 0]
-#         
-#         # Create mask for finding contours
-#         # Use erode and dialte to improve robustness
-#         ret, mask = cv2.threshold(cropR, intensity_threshold, 255, cv2.THRESH_BINARY)
-#         mask = cv2.dilate(mask, kernel=np.ones((5, 5), np.uint8), iterations=1)
-#         mask = cv2.erode(mask, kernel=np.ones((3, 3), np.uint8), iterations=1)
-#         mask = cv2.dilate(mask, kernel=np.ones((5, 5), np.uint8), iterations=1)
-#         mask = cv2.erode(mask, kernel=np.ones((3, 3), np.uint8), iterations=1)
-#         #plt.imshow(mask, cmap='gray'), plt.show()
-#         
-#         # Find set of contours for the mask
-#         contours, hierarchy = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
-#         
-#         # Process appropriate contours to find corners
-#         # Require minimum area to avoid contours thaat are too small
-#         for contour in contours:
-#             area = cv2.contourArea(contour)
-#             if area > min_area:
-#                 print(area)
-#                 #img = cropRGB.copy()
-#                 #cv2.drawContours(img, [contour], -1, (0,255,0), 2)
-#                 #plt.imshow(img), plt.show()
-#                 
-#                 contourFilled = np.zeros((cropR.shape[0], cropR.shape[1])).astype(np.uint8)
-#                 cv2.drawContours(contourFilled, [contour], -1, 255, cv2.FILLED)
-#                 #plt.imshow(contourFilled, cmap='gray'), plt.show()
-#                 
-#                 # Find the four corners via template matching
-#                 res_11 = cv2.matchTemplate(contourFilled, c.template_11, cv2.TM_SQDIFF)
-#                 min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res_11)
-#                 corner_11x = min_loc[0] + c.offset_11[0]
-#                 corner_11y = min_loc[1] + c.offset_11[1]
-#         
-#                 res_12 = cv2.matchTemplate(contourFilled, c.template_12 ,cv2.TM_SQDIFF)
-#                 min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res_12)
-#                 corner_12x = min_loc[0] + c.offset_12[0]
-#                 corner_12y = min_loc[1] + c.offset_12[1]
-#         
-#                 res_21 = cv2.matchTemplate(contourFilled, c.template_21, cv2.TM_SQDIFF)
-#                 min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res_21)
-#                 corner_21x = min_loc[0] + c.offset_21[0]
-#                 corner_21y = min_loc[1] + c.offset_21[1]
-#         
-#                 res_22 = cv2.matchTemplate(contourFilled, c.template_22, cv2.TM_SQDIFF)
-#                 min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res_22)
-#                 corner_22x = min_loc[0] + c.offset_22[0]
-#                 corner_22y = min_loc[1] + c.offset_22[1]                   
-#                 
-#                 corners = np.array([[corner_11x, corner_11y], [corner_12x, corner_12y], [corner_22x, corner_22y], [corner_21x, corner_21y]])
-#                 corners = corners.reshape(1, 4, 2)
-#                 corners_list.append(corners)
-#                 
-#                 # Print plot showing location based on identified corners
-#                 if c.make_plots == True:
-#                     imgC = cropRGB.copy()
-#                     cv2.polylines(imgC, corners, True, (0,255,0), 2)
-#                     plt.imshow(imgC)
-#                     plt.title('Plate Location for Frame: ' + str(frame_number)) 
-#                     plt.show()
-#                 
-#             
-#     # Report Results of Corner Detection
-#     print('\nCorner locations found for each frame (by row):')
-#     results = np.array(corners_list).reshape(len(corners_list), 4, 2)
-#     for i in range(4):
-#         for j in range(2):
-#             print(results[:, i, j])
-#     
-#     print('\nSpans (Max - Min) for each corner:')
-#     print(np.max(results, axis=0) - np.min(results, axis=0))
-#     
-#     corner_locations = np.median(results, axis=0)
-#     print('\nCorner locaations in the context of the cropped image used to find plates:')
-#     print(corner_locations)
-#     
-#     ### Adjust corner locations to correspond to the location in full frame images
-#     # Adjustment based on the origin of the crop location
-#     corner_locations += [c.crop_x0, c.crop_y0]
-#     print('\nCorner locaations in the context of the full frame images:')
-#     print(corner_locations)
-# =============================================================================
-    
-    
-    #------------------- Calculate Transformation Matrix -------------------------#
-    # Transformation Matrix will map a pressure point location on either of the 
-    # plates to the location in the full frame image.
-    #
-    # The pressure point locations for each plate are expressed as:
-    #   1) A value from -0.450 to +0.450 meters for Ay
-    #       Note, this is for the horizontal (X-direction) of the front view
-    #   2) A value from -0.300 to +0.300 meters for Ax
-    #       Note, this is for the vertical (Y-direction) of the front view
-    # The center of each plate is expressed as the (0, 0) origin of the plate
-    #
-    # We are treating the two-side-by-side plates as a single unit for mapping
-    # Plate 1 is on the left when looking at the front view video.
-    # There is a small gap between plates to isolate them from each other.
-    # We will assume this gap is 0.004 meters, but this value can be changed.
-    # We will make the origin of the two-plate system to be in the center of this
-    # gap between the plates.
-    # Therefore, the pressure point locations need to:
-    #   1) Span from -0.902 to +0.902 meters horizontaly (Ay)
-    #       a) Need to subtract 0.452 from Plate1 Ay
-    #       b) Need to add 0.452 to Plate2 Ay
-    #   2) Span from -0.300 to +0.300 vertically (Ax)
-    #       No adjustment is needed for Ax of either plate
-    #
-    # The transformation Matrix will map:
-    #   From:   The ideal rectangle that is 1.804 X 0.600 meters in size
-    #   To:     The quadrilateral shape seen in the image that is distorted due to
-    #           the camera perspective; defined by the 4 corners we found.
-    #
-    # Ideal Rectangle described as +/- deltas from center
+
     delta_x = 0.902
     delta_y = 0.300
     
@@ -268,7 +30,7 @@ def plate_transformation_matrix():
     ret, frame = cap.read()
     if not ret or frame is None:
         cap.release()
-        raise RuntimeError(f"Could not read a frame from: {c.path_video}")
+        raise RuntimeError(f"Could not read a frame from: {path_video}")
 
     # Load an image instead of a video
     # frame = cv2.imread("vector_overlay\IMG_2518.jpg")
@@ -298,15 +60,13 @@ def plate_transformation_matrix():
 
     h, w = mask.shape[:2]
     offset_x, offset_y = 0,0
-# =============================================================================
-#     if not c.top_view:
-#         y1, y2 = int(0.6 * h), int(0.9 * h)
-#         x1, x2 = int(0.25 * w), int(0.75 * w)
-#         offset_x, offset_y = x1, y1
-#         roi = mask[y1:y2, x1:x2]
-#     else:
-# =============================================================================
-    roi = mask
+    if view:
+        y1, y2 = int(0.6 * h), int(0.9 * h)
+        x1, x2 = int(0.25 * w), int(0.75 * w)
+        offset_x, offset_y = x1, y1
+        roi = mask[y1:y2, x1:x2]
+    else:
+        roi = mask
 
     
 
@@ -326,7 +86,7 @@ def plate_transformation_matrix():
 
     #save corners
     for contour in contours:
-        if not c.top_view:
+        if view != "Top View":
             contour += [offset_x, offset_y]
         hull = cv2.convexHull(contour)
         area = cv2.contourArea(hull)
@@ -392,7 +152,7 @@ def plate_transformation_matrix():
     
     return matrix
 
-def process_force_file(parent_path, force_file):    
+def process_force_file(M, parent_path, force_file):    
     # Read data from txt file, need to avoid a header section
     # Column identifiers occupy two rows (name and units) which results in
     # all values being imported as strings.
@@ -509,6 +269,9 @@ def process_force_file(parent_path, force_file):
     # if save_force_data == True:
     #     print('Saving force data information')
     #     df_trimmed.to_csv(path_force_data_dataframe)
+
+    df_force_filename = force_file.replace('.txt', '_Analysis_Force.csv')
+    df_trimmed.to_csv(os.path.join(parent_path, df_force_filename), index=False)
     
     
     return df_trimmed
@@ -673,7 +436,7 @@ def get_alignment_signal_from_video(self, path_video, video_file):
     df = pd.DataFrame([], columns=['Experiment','FrameNumber', 'RedScore'])
     
     # Get the location of the LED
-    center = find_led_location()
+    center = find_led_location(self, path_video, video_file)
     
     # Process the video
     cap = cv2.VideoCapture(path_video)
@@ -753,87 +516,83 @@ def get_alignment_signal_from_video(self, path_video, video_file):
     
     return df
 
-def align_data(self, df_f, df_v, output_folder):
+def align_data(self, df_f, df_v):
     force_step = 10
-    experiment_name = video_file.removesuffix('.mov').removesuffix('.MOV').removesuffix('.MP4').removesuffix('.mp4')
-
-
-    save_aligned = True
-    file_aligned_dataframe = experiment_name + '_{AlignedData}.csv'
-    path_aligned_dataframe = os.path.join(parent_path, output_folder, file_aligned_dataframe)
-
-    file_aligned_plot = experiment_name + '_{AlignedData_partial}.png'
-    path_aligned_plot = os.path.join(parent_path, output_folder, file_aligned_plot)
 
     # Create dataframe with subset of force data to match video fps
     df = df_f.iloc[::force_step].reset_index()
-    
+
     # Extract LED signal from force data subset 
     signal_force = df['FP_LED_Signal']
-    
+
     # Extract LED signal from video
     print("Columns in df_video:", df_v.columns.tolist())
     signal_video = df_v['Video_LED_Signal']
-    
+
     # Determine alignment offset
     correlation = signal.correlate(signal_video, signal_force, mode="valid")
     lags = signal.correlation_lags(signal_video.size, signal_force.size, mode="valid")
     lag = lags[np.argmax(correlation)]
     print('Frame Offset for Alignment: ' + str(lag))
-    
-    max_corr = np.max(correlation)
-    perfect_corr = np.min([len(signal_force), len(signal_video)])
+
+    max_corr = float(np.max(correlation))
+    perfect_corr = min(len(signal_force), len(signal_video))
     relative_score = max_corr / perfect_corr
-    print('Relative Alighnment Score: ' + str(relative_score))
+    print('Relative Alignment Score: ' + str(relative_score))
 
-    
     # Create a unified dataframe with the video frame data associated with forces
-    df['FrameNumber'] = list(np.arange(lag, lag+len(df)))
-    
-    df = pd.merge(df, df_v, on='FrameNumber', how='left')
-    
-    # Show plot
-    plt.plot(df['FP_LED_Signal'], alpha=0.50)
-    plt.plot(df['Video_LED_Signal'], alpha=0.50, linestyle='dotted')
-    plt.xlim((int(0.35*len(df)), int(0.65*len(df))))
-    plt.show()
+    df['FrameNumber'] = list(np.arange(lag, lag + len(df)))
+    df_aligned = pd.merge(df, df_v, on='FrameNumber', how='left')
 
-    if save_aligned == True:
-        print('Saving aligned data')
-        df.to_csv(path_aligned_dataframe)
-        
-        plt.plot(df['FP_LED_Signal'], alpha=0.50)
-        plt.plot(df['Video_LED_Signal'], alpha=0.50, linestyle='dotted')
-        plt.xlim((int(0.35*len(df)), int(0.65*len(df))))
-        plt.savefig(path_aligned_plot)
-    
-    return df
+    return df_aligned, int(lag), max_corr, perfect_corr, relative_score
 
 
-def new_led(parent_path, video_file, force_file):
+def new_led(self, view, parent_path, video_file, force_file):
     path_video = os.path.join(parent_path, video_file)
+
+    # 1) Plate transform
+    start_time = time.time()
+    M = plate_transformation_matrix(self, view, path_video)
+    print('\nTime for plate_transformation_matrix: ' + str(time.time() - start_time))
     
+    # 2) Force file → processed force dataframe
     s_time = time.time()
-    df_force = process_force_file(parent_path, force_file)
+    df_force = process_force_file(M, parent_path, force_file)
     print('\nTime for process_force_file: ' + str(time.time() - s_time))
 
-
-    # Process video to extract the alignment signal based on the Red LED
+    # 3) Video → LED alignment signal dataframe (includes Video_LED_Signal)
     s_time = time.time()
-    df_video = get_alignment_signal_from_video(path_video, video_file)
-    print('Time for function: ' + str(time.time() - s_time))
+    df_video = get_alignment_signal_from_video(self, path_video, video_file)
+    print('Time for get_alignment_signal_from_video: ' + str(time.time() - s_time))
 
-
-    # Align the force and video data
+    # 4) Align the force and video data (now also get lag + scores)
     s_time = time.time()
-    df_aligned = align_data(df_force, df_video)
-    print('Time for function: ' + str(time.time() - s_time))
+    df_aligned, lag, max_corr, perfect_corr, relative_score = align_data(self, df_force, df_video)
+    print('Time for align_data: ' + str(time.time() - s_time))
 
-    lagFile = os.path.join(parent_path, '_Results.csv')
-    lagValue = df_aligned['Video Frame for t_zero force'].values[0]
-    lagValue = int(lagValue)
+    # 5) Save alignment results in the same style as run_led_syncing
+    df_result = pd.DataFrame(
+        [[video_file, force_file, lag, max_corr, perfect_corr, relative_score]],
+        columns=[
+            'Video File',
+            'Force File',
+            'Video Frame for t_zero force',
+            'Correlation Score',
+            'Perfect Score',
+            'Relative Score'
+        ]
+    )
 
-    return lagValue
+    # Same naming pattern as run_led_syncing
+    df_result_filename = force_file.replace('.txt', '_Results.csv')
+    df_result_path = os.path.join(parent_path, df_result_filename)
+    df_result.to_csv(df_result_path, index=False)
+
+    print(f"[RESULTS] Saved LED sync results to: {df_result_path}")
+    print(f"[RESULTS] lag={lag}, max_corr={max_corr}, perfect_corr={perfect_corr}, relative_score={relative_score}")
+
+    lagValue = int(lag)
+    return lagValue, df_aligned
 
 def run_led_syncing(self, parent_path, video_file, force_file):
     startTime = time.time()
