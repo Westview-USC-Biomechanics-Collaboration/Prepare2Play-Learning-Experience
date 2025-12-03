@@ -281,10 +281,10 @@ def find_led_location(self, view, path_video, video_file):
     frame_width = 1920
     frame_height = 1080
     if view == "Short View":
-        led_x0 = 500
-        led_x1 = 960
-        led_y0 = 500
-        led_y1 = 980
+        led_x0 = 200
+        led_x1 = 660
+        led_y0 = 600
+        led_y1 = 980 
     else:    
         led_x0 = 800
         led_x1 = 1160
