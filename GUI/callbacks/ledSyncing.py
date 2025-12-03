@@ -276,14 +276,20 @@ def process_force_file(M, parent_path, force_file):
     
     return df_trimmed
 
-def find_led_location(self, path_video, video_file):
+def find_led_location(self, view, path_video, video_file):
     # Specify a sub-region for cropping to make the search for the LED easier
     frame_width = 1920
     frame_height = 1080
-    led_x0 = 850
-    led_x1 = 1160
-    led_y0 = 800
-    led_y1 = 1080
+    if view == "Short View":
+        led_x0 = 500
+        led_x1 = 960
+        led_y0 = 500
+        led_y1 = 980
+    else:    
+        led_x0 = 800
+        led_x1 = 1160
+        led_y0 = 800
+        led_y1 = 1080
     #######################################
 
     ###############################################################################
@@ -403,7 +409,7 @@ def find_led_location(self, path_video, video_file):
 #   Function for extracting the Red LED signal from the video
 #   INPUTS:     Path to video file is specified in the AnalysisConfig file
 #   OUTPUT:     Dataframe with the Red LED Signal calculated for everey frame of video
-def get_alignment_signal_from_video(self, path_video, video_file):
+def get_alignment_signal_from_video(self, view, path_video, video_file):
     frame_width = 1920
     frame_height = 1080
     led_x0 = 850
@@ -436,7 +442,7 @@ def get_alignment_signal_from_video(self, path_video, video_file):
     df = pd.DataFrame([], columns=['Experiment','FrameNumber', 'RedScore'])
     
     # Get the location of the LED
-    center = find_led_location(self, path_video, video_file)
+    center = find_led_location(self, view, path_video, video_file)
     
     # Process the video
     cap = cv2.VideoCapture(path_video)
@@ -562,7 +568,7 @@ def new_led(self, view, parent_path, video_file, force_file):
 
     # 3) Video → LED alignment signal dataframe (includes Video_LED_Signal)
     s_time = time.time()
-    df_video = get_alignment_signal_from_video(self, path_video, video_file)
+    df_video = get_alignment_signal_from_video(self, view, path_video, video_file)
     print('Time for get_alignment_signal_from_video: ' + str(time.time() - s_time))
 
     # 4) Align the force and video data (now also get lag + scores)
