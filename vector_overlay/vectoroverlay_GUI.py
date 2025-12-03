@@ -367,7 +367,7 @@ class VectorOverlay:
             float(np.max(np.abs(F2_Fy))) if len(F2_Fy) else 0.0,
             float(np.max(np.abs(F2_Fz))) if len(F2_Fz) else 0.0,
         )
-
+ 
         if max_force > 0:
             scale_factor = min(self.frame_height, self.frame_width) * 0.8 / max_force
         else:
