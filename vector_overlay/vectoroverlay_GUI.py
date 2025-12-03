@@ -657,14 +657,14 @@ class VectorOverlay:
 
     def ShortVectorOverlay(self, df_aligned, outputName=None, show_preview=True):
         """
-        Long view vector overlay using df_aligned for exact frame/force mapping.
+        Short view vector overlay using df_aligned for exact frame/force mapping.
 
         - Uses df_aligned['FrameNumber'] to pick video frames
         - Uses df_aligned force columns to compute arrows
         - Draws arrows with the same logic as your original (fx1 = -Fy, fy1 = Fz, etc.)
         - Ignores the old lag/fps-based alignment (df_aligned already includes it)
         """
-        print("\n========== LongVectorOverlay (df_aligned) START ==========")
+        print("\n========== ShortVectorOverlay (df_aligned) START ==========")
         print(f"df_aligned rows: {len(df_aligned)}")
         print(f"Video frames: {self.frame_count}, fps: {self.fps}")
 
@@ -673,7 +673,7 @@ class VectorOverlay:
             return
 
         if not outputName:
-            outputName = "long_view_overlay_output.mp4"
+            outputName = "short_view_overlay_output.mp4"
             print(f"No output name provided, using default: {outputName}")
 
         # -------- 1. Compute a global scale factor from df_aligned forces --------
@@ -803,7 +803,7 @@ class VectorOverlay:
             # Show preview if desired
             if show_preview:
                 cv2.imshow(
-                    "Long View (df_aligned)",
+                    "Short View (df_aligned)",
                     cv2.resize(
                         frame,
                         (int(self.frame_width * 0.5), int(self.frame_height * 0.5))
@@ -820,7 +820,7 @@ class VectorOverlay:
             cv2.destroyAllWindows()
 
         print(f"Finished processing video; Total Frames written: {processed}")
-        print("========== LongVectorOverlay (df_aligned) END ==========\n")
+        print("========== ShortVectorOverlay (df_aligned) END ==========\n")
 
 # Example usage with synchronization parameters
 if __name__ == "__main__":
