@@ -17,7 +17,7 @@
 5. Open your terminal and run:
    ```bash
    pip install -r requirements.txt
-
+6. Open terminal and run: winget install --id Gyan.FFmpeg -e
 
 ## 👥 Contributors
 
