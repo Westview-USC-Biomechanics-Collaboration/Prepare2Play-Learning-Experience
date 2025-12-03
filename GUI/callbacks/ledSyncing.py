@@ -57,10 +57,10 @@ def plate_transformation_matrix(self, view, path_video):
     cv2.resizeWindow("one", 800, 600)  # Set window size
     cv2.imshow("one", mask)
     
-
+ 
     h, w = mask.shape[:2]
     offset_x, offset_y = 0,0
-    if view:
+    if view == "Long View":
         y1, y2 = int(0.6 * h), int(0.9 * h)
         x1, x2 = int(0.25 * w), int(0.75 * w)
         offset_x, offset_y = x1, y1
