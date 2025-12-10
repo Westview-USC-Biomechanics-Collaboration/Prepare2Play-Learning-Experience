@@ -229,9 +229,16 @@ def two_rect_detection(cap, num_points=8, zoom_size=50, zoom_factor=2):
         cx, cy = x + w // 2, y + h // 2  # Center of the original box
 
         # Scale factors
-        scale_x = 1.2  
-        scale_y = 1.2  
-
+        if view == "top":
+            scale_x = 0.7   # narrower horizontally for top view
+            scale_y = 1.7   # taller vertically
+        elif view == "side":
+            scale_x = 1.6   # wider horizontally
+            scale_y = 1.2
+        else:
+            # default crop
+            scale_x = 1.2
+            scale_y = 1.2
         # New width and height
         new_w = int(w * scale_x)
         new_h = int(h * scale_y)
@@ -444,7 +451,10 @@ def select_points(self, cap, view):
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
     elif view == "Top View":
-        roi = mask
+        y1, y2 = int(0.3 * h), int(0.8 * h)
+        x1, x2 = int(0.2 * w), int(0.8 * w)
+        offset_x, offset_y = x1, y1
+        roi = mask[y1:y2, x1:x2]
 
     
 
@@ -464,8 +474,7 @@ def select_points(self, cap, view):
 
     #save corners
     for contour in contours:
-        if view == "Long View":
-            contour += [offset_x, offset_y]
+        contour += [offset_x, offset_y]
         hull = cv2.convexHull(contour)
         area = cv2.contourArea(hull)
 

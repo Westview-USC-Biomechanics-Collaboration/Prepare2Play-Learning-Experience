@@ -55,11 +55,11 @@ def vectorOverlayWithAlignmentCallback(self):
             # v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
         elif selected == "Short View":
             v.check_corner("Short View")
-            v.ShortVectorOverlay(outputName=temp_video, lag=lag)
+            v.ShortVectorOverlay(df_aligned, outputName=temp_video, lag=lag)
             # v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
         elif selected == "Top View":
             v.check_corner("Top View")
-            v.TopVectorOverlay(outputName=temp_video, lag=lag)
+            v.TopVectorOverlay(df_aligned, outputName=temp_video, lag=lag)
             # v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
 
         self.Video.vector_cam = cv2.VideoCapture(temp_video)
