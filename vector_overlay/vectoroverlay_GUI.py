@@ -630,6 +630,11 @@ class VectorOverlay:
                         f"F1_Fy={raw_F1_Fy:.2f}, F1_Fz={raw_F1_Fz:.2f}"
                     )
 
+            # fx1, fx2 = fx2, fx1
+            # fy1, fy2 = fy2, fy1
+            # px1, px2 = px2, px1
+            # py1, py2 = py2, py1
+
             # ----- Draw arrows exactly the same way as original -----
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
 
@@ -655,7 +660,7 @@ class VectorOverlay:
         print(f"Finished processing video; Total Frames written: {processed}")
         print("========== TopVectorOverlay (df_aligned) END ==========\n")
 
-    def ShortVectorOverlay(self, df_aligned, outputName=None, show_preview=True):
+    def ShortVectorOverlay(self, df_aligned, outputName=None, show_preview=True, lag=0):
         """
         Short view vector overlay using df_aligned for exact frame/force mapping.
 

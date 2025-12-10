@@ -444,7 +444,16 @@ def select_points(self, cap, view):
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
     elif view == "Top View":
-        roi = mask
+        y1, y2 = int(0.3 * h), int(0.8 * h)
+        x1, x2 = int(0.2 * w), int(0.8 * w)
+        offset_x, offset_y = x1, y1
+        roi = mask[y1:y2, x1:x2]
+    else:
+        y1, y2 = int(0.4 * h), int(0.8 * h)
+        x1, x2 = int(0.45 * w), int(0.8 * w)
+        offset_x, offset_y = x1, y1
+        roi = mask[y1:y2, x1:x2]
+
 
     
 
@@ -464,8 +473,7 @@ def select_points(self, cap, view):
 
     #save corners
     for contour in contours:
-        if view == "Long View":
-            contour += [offset_x, offset_y]
+        contour += [offset_x, offset_y]
         hull = cv2.convexHull(contour)
         area = cv2.contourArea(hull)
 

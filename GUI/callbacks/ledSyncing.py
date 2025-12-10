@@ -65,8 +65,16 @@ def plate_transformation_matrix(self, view, path_video):
         x1, x2 = int(0.25 * w), int(0.75 * w)
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
+    elif view == "Top View":
+        y1, y2 = int(0.3 * h), int(0.8 * h)
+        x1, x2 = int(0.2 * w), int(0.8 * w)
+        offset_x, offset_y = x1, y1
+        roi = mask[y1:y2, x1:x2]
     else:
-        roi = mask
+        y1, y2 = int(0.4 * h), int(0.8 * h)
+        x1, x2 = int(0.45 * w), int(0.8 * w)
+        offset_x, offset_y = x1, y1
+        roi = mask[y1:y2, x1:x2]
 
     
 
@@ -86,8 +94,7 @@ def plate_transformation_matrix(self, view, path_video):
 
     #save corners
     for contour in contours:
-        if view != "Top View":
-            contour += [offset_x, offset_y]
+        contour += [offset_x, offset_y]
         hull = cv2.convexHull(contour)
         area = cv2.contourArea(hull)
 
@@ -281,11 +288,20 @@ def find_led_location(self, view, path_video, video_file):
     frame_width = 1920
     frame_height = 1080
     if view == "Short View":
-        led_x0 = 200
-        led_x1 = 660
-        led_y0 = 600
-        led_y1 = 980 
-    else:    
+        led_x0 = 650
+        led_x1 = 750
+        led_y0 = 700
+        led_y1 = 830  
+    elif view == "Long View":    
+        led_x0 = 800
+        led_x1 = 1160
+        led_y0 = 800
+        led_y1 = 1080
+    else:
+        # led_x0 = 1500
+        # led_x1 = 2560
+        # led_y0 = 200
+        # led_y1 = 780
         led_x0 = 800
         led_x1 = 1160
         led_y0 = 800
@@ -396,7 +412,35 @@ def find_led_location(self, view, path_video, video_file):
     # Save summary image and data frame
     # cv2.imwrite(os.path.join(c.output_path, video_file.replace('.MP4', '_LED_Location.PNG')), full_composite)
     # df_location.to_csv(os.path.join(c.output_path, video_file.replace('.MP4', '_LED_Location.csv')), index=False)
-    
+    frame_vis = frame.copy()
+
+    # Draw crop (ROI) outline
+    cv2.rectangle(
+        frame_vis,
+        (led_x0, led_y0),   # top-left corner
+        (led_x1, led_y1),   # bottom-right corner
+        (0, 255, 0),        # green
+        thickness=2
+    )
+
+    # (optional) also draw LED marker
+    full_x = center[0] + led_x0
+    full_y = center[1] + led_y0
+    cv2.drawMarker(
+        frame_vis,
+        (full_x, full_y),
+        (0, 0, 255),
+        cv2.MARKER_CROSS,
+        markerSize=40,
+        thickness=2
+    )
+
+    # Show full frame
+    cv2.namedWindow("Frame with ROI", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("Frame with ROI", 800, 600)
+    cv2.imshow("Frame with ROI", frame_vis)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     # Release video resource
     cap.release()
     
