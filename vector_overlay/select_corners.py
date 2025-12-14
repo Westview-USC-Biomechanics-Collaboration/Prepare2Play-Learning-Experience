@@ -442,7 +442,7 @@ def select_points(self, cap, view):
     h, w = mask.shape[:2]
     print(f"The view of the video is {view}")
     if view == "Long View":
-        y1, y2 = int(0.6 * h), int(0.9 * h)
+        y1, y2 = int(0.7 * h), int(0.9 * h)
         x1, x2 = int(0.25 * w), int(0.75 * w)
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
