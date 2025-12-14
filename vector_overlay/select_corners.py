@@ -306,7 +306,7 @@ def two_rect_detection(cap, num_points=8, zoom_size=50, zoom_factor=2):
         hull = cv2.convexHull(contour)
 
         # Approximate contour to polygon to reduce points
-        epsilon = 0.01 * cv2.arcLength(hull, True)  # adjust for precision
+        epsilon = 0.03 * cv2.arcLength(hull, True)  # adjust for precision
         approx = cv2.approxPolyDP(hull, epsilon, True)
 
         corners = approx.reshape(-1, 2)  # shape (num_points, 2)
@@ -357,8 +357,11 @@ def select_points(self, cap, view):
     import numpy as np
 
     # Define yellow color range in HSV
-    lower_yellow = np.array([20, 100, 100])
-    upper_yellow = np.array([35, 255, 255])
+    lower_yellow = np.array([18, 80, 50])
+    upper_yellow = np.array([38, 255, 255])
+
+    # lower_yellow = np.array([15, 60, 40])
+    # upper_yellow = np.array([45, 255, 255])
 
     # Open the video
     ret, frame = cap.read()
@@ -444,12 +447,12 @@ def select_points(self, cap, view):
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
     elif view == "Top View":
-        y1, y2 = int(0.3 * h), int(0.8 * h)
+        y1, y2 = int(0.3 * h), int(0.7 * h)
         x1, x2 = int(0.2 * w), int(0.8 * w)
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
     else:
-        y1, y2 = int(0.4 * h), int(0.8 * h)
+        y1, y2 = int(0.6 * h), int(0.8 * h)
         x1, x2 = int(0.45 * w), int(0.8 * w)
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
@@ -478,7 +481,7 @@ def select_points(self, cap, view):
         area = cv2.contourArea(hull)
 
         # Approximate contour to polygon to reduce points
-        epsilon = 0.01 * cv2.arcLength(hull, True)  # adjust for precision
+        epsilon = 0.03 * cv2.arcLength(hull, True)  # adjust for precision
         approx = cv2.approxPolyDP(hull, epsilon, True)
 
         if area > min_area:
@@ -503,16 +506,26 @@ def select_points(self, cap, view):
         print("Error: Not enough corners detected. Please try again.")
 
     # find remaining four points in the middle
-    coords.append([(coords[0][0] + coords[2][0])/2 - 10, (coords[0][1] + coords[2][1])/2])
-    coords.append([(coords[0][0] + coords[2][0])/2 + 10, (coords[0][1] + coords[2][1])/2])
-    coords.append([(coords[1][0] + coords[3][0])/2 - 10, (coords[1][1] + coords[3][1])/2])
-    coords.append([(coords[1][0] + coords[3][0])/2 + 10, (coords[1][1] + coords[3][1])/2])
+    if view == "Short View":
+        coords.append([(coords[2][0] + coords[3][0])/2, (coords[2][1] + coords[3][1])/2 - 25])
+        coords.append([(coords[2][0] + coords[3][0])/2, (coords[2][1] + coords[3][1])/2])
+        coords.append([(coords[0][0] + coords[1][0])/2, (coords[0][1] + coords[1][1])/2 - 25])
+        coords.append([(coords[0][0] + coords[1][0])/2, (coords[0][1] + coords[1][1])/2])
+    else:
+        coords.append([(coords[0][0] + coords[2][0])/2 - 10, (coords[0][1] + coords[2][1])/2])
+        coords.append([(coords[0][0] + coords[2][0])/2 + 10, (coords[0][1] + coords[2][1])/2])
+        coords.append([(coords[1][0] + coords[3][0])/2 - 10, (coords[1][1] + coords[3][1])/2])
+        coords.append([(coords[1][0] + coords[3][0])/2 + 10, (coords[1][1] + coords[3][1])/2])
 
 
 
     #rearrange list
     output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
-    output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[6], coords[4], coords[0], coords[7], coords[3], coords[2], coords[5]
+    if view == "Short View":
+        output[0], output[1], output[2], output[3] = coords[0], coords[2], coords[4], coords[6]
+        output[4], output[5], output[6], output[7] = coords[7], coords[5], coords[3], coords[1]
+    else:
+        output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[6], coords[4], coords[0], coords[7], coords[3], coords[2], coords[5]
 
     for out in output:
         cv2.circle(frame, (int(out[0]), int(out[1])), 5, (0, 0, 255), -1)  # Red dots for corners

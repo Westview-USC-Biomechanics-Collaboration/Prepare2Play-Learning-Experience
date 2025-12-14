@@ -23,8 +23,11 @@ def plate_transformation_matrix(self, view, path_video):
     pts_rectangle = np.float32([[-delta_x, -delta_y], [delta_x, -delta_y],
                                 [-delta_x, delta_y], [delta_x, delta_y]])
     # Define yellow color range in HSV
-    lower_yellow = np.array([20, 100, 100])
-    upper_yellow = np.array([35, 255, 255])
+    lower_yellow = np.array([18, 80, 50])
+    upper_yellow = np.array([38, 255, 255])
+
+    # lower_yellow = np.array([15, 60, 40])
+    # upper_yellow = np.array([45, 255, 255])
 
     # Open the video
     ret, frame = cap.read()
@@ -66,12 +69,12 @@ def plate_transformation_matrix(self, view, path_video):
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
     elif view == "Top View":
-        y1, y2 = int(0.3 * h), int(0.8 * h)
+        y1, y2 = int(0.3 * h), int(0.7 * h)
         x1, x2 = int(0.2 * w), int(0.8 * w)
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
     else:
-        y1, y2 = int(0.4 * h), int(0.8 * h)
+        y1, y2 = int(0.6 * h), int(0.8 * h)
         x1, x2 = int(0.45 * w), int(0.8 * w)
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
@@ -89,7 +92,10 @@ def plate_transformation_matrix(self, view, path_video):
     coords = []
 
     # Minimum area to filter out noise
-    min_area = 2000
+    if view != "Long View" and view != "Top View":
+        min_area = 500
+    else:
+        min_area = 2000
     # max_area = 30000
 
     #save corners
@@ -99,7 +105,7 @@ def plate_transformation_matrix(self, view, path_video):
         area = cv2.contourArea(hull)
 
         # Approximate contour to polygon to reduce points
-        epsilon = 0.01 * cv2.arcLength(hull, True)  # adjust for precision
+        epsilon = 0.03 * cv2.arcLength(hull, True)  # adjust for precision
         approx = cv2.approxPolyDP(hull, epsilon, True)
 
         if area > min_area:
