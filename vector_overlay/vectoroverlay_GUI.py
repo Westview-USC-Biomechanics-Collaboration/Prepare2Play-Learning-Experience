@@ -655,16 +655,16 @@ class VectorOverlay:
         print(f"Finished processing video; Total Frames written: {processed}")
         print("========== TopVectorOverlay (df_aligned) END ==========\n")
 
-    def ShortVectorOverlay(self, df_aligned, outputName=None, show_preview=True, lag=0):
+    def ShortVectorOverlay(self, df_aligned, outputName=None, show_preview=True):
         """
-        Top view vector overlay using df_aligned for exact frame/force mapping.
+        Short view vector overlay using df_aligned for exact frame/force mapping.
 
         - Uses df_aligned['FrameNumber'] to pick video frames
         - Uses df_aligned force columns to compute arrows
         - Draws arrows with the same logic as your original (fx1 = -Fy, fy1 = Fz, etc.)
         - Ignores the old lag/fps-based alignment (df_aligned already includes it)
         """
-        print("\n========== TopVectorOverlay (df_aligned) START ==========")
+        print("\n========== ShortVectorOverlay (df_aligned) START ==========")
         print(f"df_aligned rows: {len(df_aligned)}")
         print(f"Video frames: {self.frame_count}, fps: {self.fps}")
 
@@ -692,7 +692,7 @@ class VectorOverlay:
             float(np.max(np.abs(F2_Fy))) if len(F2_Fy) else 0.0,
             float(np.max(np.abs(F2_Fz))) if len(F2_Fz) else 0.0,
         )
-
+ 
         if max_force > 0:
             scale_factor = min(self.frame_height, self.frame_width) * 0.8 / max_force
         else:
@@ -739,7 +739,10 @@ class VectorOverlay:
                 break
 
             # ----- Forces (same orientation logic as your original code) -----
-            # Horizontal is -Fy, vertical is Fz.
+            # In your class you do:
+            #   fx1 = -self.fy1[force_idx]
+            #   fy1 =  self.fz1[force_idx]
+            # So here we mimic that: horizontal is -Fy, vertical is Fz.
             raw_F1_Fy = float(row.get("FP1_Fy", 0.0) or 0.0)
             raw_F1_Fz = float(row.get("FP1_Fz", 0.0) or 0.0)
             raw_F2_Fy = float(row.get("FP2_Fy", 0.0) or 0.0)
@@ -750,7 +753,12 @@ class VectorOverlay:
             fx2 = -raw_F2_Fy * scale_factor
             fy2 =  raw_F2_Fz * scale_factor
 
-            # ----- Pressure coordinates → normalized 0–1 as in readData(), THEN SWAP -----
+            # ----- Pressure coordinates → normalized 0–1 as in readData() -----
+            # rename_dict in __init__ mapped:
+            #   'FP1_Ax' -> 'Ax1', 'FP1_Ay' -> 'Ay1', etc.
+            # but since we are using df_aligned *before* that rename,
+            # we read directly from 'FP1_Ax', 'FP1_Ay', etc.
+             # ----- Pressure coordinates → normalized 0–1 as in readData(), THEN SWAP -----
             ax1 = float(row.get("FP1_Ax", 0.0) or 0.0)
             ay1 = float(row.get("FP1_Ay", 0.0) or 0.0)
             ax2 = float(row.get("FP2_Ax", 0.0) or 0.0)
@@ -762,15 +770,16 @@ class VectorOverlay:
             pressure_x2 = np.clip((ax2 + 0.3) / 0.6, 0, 1)
             pressure_y2 = np.clip((ay2 + 0.45) / 0.9, 0, 1)
 
-            # Mimic original LongVectorOverlay mapping:
+            # IMPORTANT: mimic original LongVectorOverlay mapping:
             #   px1 = self.py1[force_idx]
             #   py1 = self.px1[force_idx]
+            # i.e., swap x/y before rect_to_trapezoid
             px1 = pressure_y1
             py1 = pressure_x1
             px2 = pressure_y2
             py2 = pressure_x2
 
-            # ----- Debug prints ----- 
+            # ----- Debug prints (similar style to your previous logs) -----
             if processed < 10 or processed % 30 == 0:
                 video_t = frame_idx / self.fps if self.fps else 0.0
                 if force_time_array is not None and 0 <= idx < len(force_time_array):
@@ -794,7 +803,7 @@ class VectorOverlay:
             # Show preview if desired
             if show_preview:
                 cv2.imshow(
-                    "Top View (df_aligned)",
+                    "Short View (df_aligned)",
                     cv2.resize(
                         frame,
                         (int(self.frame_width * 0.5), int(self.frame_height * 0.5))
@@ -811,7 +820,7 @@ class VectorOverlay:
             cv2.destroyAllWindows()
 
         print(f"Finished processing video; Total Frames written: {processed}")
-        print("========== TopVectorOverlay (df_aligned) END ==========\n")
+        print("========== ShortVectorOverlay (df_aligned) END ==========\n")
 
 # Example usage with synchronization parameters
 if __name__ == "__main__":

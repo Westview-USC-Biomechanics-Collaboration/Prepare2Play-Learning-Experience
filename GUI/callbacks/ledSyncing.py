@@ -57,7 +57,7 @@ def plate_transformation_matrix(self, view, path_video):
     cv2.resizeWindow("one", 800, 600)  # Set window size
     cv2.imshow("one", mask)
     
-
+ 
     h, w = mask.shape[:2]
     offset_x, offset_y = 0,0
     if view == "Long View":
@@ -283,20 +283,11 @@ def find_led_location(self, view, path_video, video_file):
     frame_width = 1920
     frame_height = 1080
     if view == "Short View":
-        led_x0 = 500
-        led_x1 = 960
-        led_y0 = 500
-        led_y1 = 980
-    elif view == "Long View":    
-        led_x0 = 800
-        led_x1 = 1160
-        led_y0 = 800
-        led_y1 = 1080
-    else:
-        # led_x0 = 1500
-        # led_x1 = 2560
-        # led_y0 = 200
-        # led_y1 = 780
+        led_x0 = 200
+        led_x1 = 660
+        led_y0 = 600
+        led_y1 = 980 
+    else:    
         led_x0 = 800
         led_x1 = 1160
         led_y0 = 800

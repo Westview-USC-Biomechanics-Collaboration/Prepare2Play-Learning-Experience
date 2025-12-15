@@ -33,6 +33,7 @@ class BackgroundManager:
 
         # Create the canvas
         self.background = Canvas(self.master, width=win_w, height=win_h)
+        print(f"Window Width: {win_w} and Height: {win_h}")
         self.background.pack(fill=tk.BOTH, expand=True)
 
         # Load & draw image
