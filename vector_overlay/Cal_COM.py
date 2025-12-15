@@ -33,7 +33,7 @@ def calculateCOM(dataIn, sex):
     other_list = []
     other_name_list = []
     #iterate through the origin list to find segments COM
-    for a in range(len(origin)-1):
+    for a in range(len(origin)):
 
         if count == 6:
             count =0
@@ -51,9 +51,17 @@ def calculateCOM(dataIn, sex):
             other_list.append(otherobject)
         count += 1
 
+    # Get the masses:
+    head_mass = headobject.mass
+    trunk_mass = trunkobject.mass
+    other_masses = sum(obj.mass for obj in other_list)
+
+    # Total mass:
+    total_mass = head_mass + trunk_mass + other_masses
+
     # formular = Xcom = (m1*x1+ ...)/(m1 + ...)
-    Xcom = ((headobject.COM[0]*headobject.mass) + trunkobject.COM[0]*trunkobject.mass + sum(objects.COM[0]*objects.mass for objects in other_list))/ 1
-    Ycom = ((headobject.COM[1]*headobject.mass) + trunkobject.COM[1]*trunkobject.mass + sum(objects.COM[1]*objects.mass for objects in other_list))/ 1
+    Xcom = ((headobject.COM[0]*headobject.mass) + trunkobject.COM[0]*trunkobject.mass + sum(objects.COM[0]*objects.mass for objects in other_list))/ total_mass
+    Ycom = ((headobject.COM[1]*headobject.mass) + trunkobject.COM[1]*trunkobject.mass + sum(objects.COM[1]*objects.mass for objects in other_list))/ total_mass
 
 
     # Now we have every segment of human body as an object, we need a for loop to iterate through all objects

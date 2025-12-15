@@ -2,7 +2,10 @@ import threading
 import os
 import pandas as pd
 from vector_overlay.vectoroverlay_GUI import VectorOverlay
-from newData.ledSyncing import run_led_syncing  # rename or move if needed
+from vector_overlay.COM_vectoroverlay import Processor
+from GUI.callbacks.ledSyncing import run_led_syncing  # rename or move if needed
+from GUI.callbacks.ledSyncing import new_led
+from GUI.callbacks.global_variable import globalVariable
 import cv2
 
 def vectorOverlayWithAlignmentCallback(self):
@@ -15,9 +18,13 @@ def vectorOverlayWithAlignmentCallback(self):
         print(f"Name of the video file: {video_file}")
         print(f"Name of the force file: {force_file}")
 
-        # Step 1: Run syncing and get lag
-        lag = run_led_syncing(self, parent_path, video_file, force_file)
+        selected = self.selected_view.get()
 
+        # Step 1: Run syncing and get lag
+        #lag = run_led_syncing(self, parent_path, video_file, force_file)
+        lag, df_aligned = new_led(self, selected, parent_path, video_file, force_file)
+        self.state.df_aligned = df_aligned
+        
         with open("lag.txt", "w") as f:
             f.write(str(lag))
 
@@ -37,19 +44,24 @@ def vectorOverlayWithAlignmentCallback(self):
 
         # Step 3: Run vector overlay with adjusted force data
         self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        v = VectorOverlay(data=force_data, video=self.Video.cam)
 
         temp_video = "vector_overlay_temp.mp4"
-        selected = self.selected_view.get()
+
+        v = VectorOverlay(data=force_data, video=self.Video.cam)
+        # v = Processor(self.Video.path, self.Force.data, lag, temp_video)
+
         if selected == "Long View":
             v.check_corner("Long View")
-            v.LongVectorOverlay(outputName=temp_video, lag=lag)
+            v.LongVectorOverlay(df_aligned, outputName=temp_video, lag=lag)
+            # v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
         elif selected == "Short View":
             v.check_corner("Short View")
-            v.ShortVectorOverlay(outputName=temp_video, lag=lag)
+            v.ShortVectorOverlay(df_aligned, outputName=temp_video, lag=lag)
+            # v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
         elif selected == "Top View":
             v.check_corner("Top View")
-            v.TopVectorOverlay(outputName=temp_video, lag=lag)
+            v.TopVectorOverlay(df_aligned, outputName=temp_video, lag=lag)
+            # v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
 
         self.Video.vector_cam = cv2.VideoCapture(temp_video)
         self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
