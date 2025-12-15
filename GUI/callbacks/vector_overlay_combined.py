@@ -23,6 +23,7 @@ def vectorOverlayWithAlignmentCallback(self):
         # Step 1: Run syncing and get lag
         #lag = run_led_syncing(self, parent_path, video_file, force_file)
         lag, df_aligned = new_led(self, selected, parent_path, video_file, force_file)
+        self.state.df_aligned = df_aligned
         
         with open("lag.txt", "w") as f:
             f.write(str(lag))

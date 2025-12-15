@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from io import BytesIO
 from datetime import datetime
+import pandas as pd
 def saveCallback(self):
     print("user clicked save button")
     file_path = tk.filedialog.asksaveasfilename(
@@ -52,45 +53,143 @@ def saveCallback(self):
             print(e)
             return
 
-        self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
-        self.Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
-        count = self.save_start - cushion_frames
+        # self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
+        # self.Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
+        # count = self.save_start - cushion_frames
 
         print(f"cam1 frame: {self.Video.cam.get(cv2.CAP_PROP_FRAME_COUNT)}\ncam2 frame:{self.Video.vector_cam.get(cv2.CAP_PROP_FRAME_COUNT)}")
 
         # creating matplot graph
         fig1,ax1 = plt.subplots()
         fig2,ax2 = plt.subplots()
-        time = self.x
+        # time = self.x
 
-        if(self.selected_view.get()=="Long View"):
-            label1_1 = "Fy1"
-            label1_2 = "Fz1"
-            label2_1 = "Fy2"
-            label2_2 = "Fx2"
-        elif(self.selected_view.get()=="Short View"):
-            label1_1 = "Fx1"
-            label1_2 = "Fz1"
-            label2_1 = "Fx2"
-            label2_2 = "Fx2"
-        else: # top view
-            label1_1 = "Fy1"
-            label1_2 = "Fx1"
-            label2_1 = "Fy2"
-            label2_2 = "Fx2"
+        # if(self.selected_view.get()=="Long View"):
+        #     label1_1 = "Fy1"
+        #     label1_2 = "Fz1"
+        #     label2_1 = "Fy2"
+        #     label2_2 = "Fx2"
+        # elif(self.selected_view.get()=="Short View"):
+        #     label1_1 = "Fx1"
+        #     label1_2 = "Fz1"
+        #     label2_1 = "Fx2"
+        #     label2_2 = "Fx2"
+        # else: # top view
+        #     label1_1 = "Fy1"
+        #     label1_2 = "Fx1"
+        #     label2_1 = "Fy2"
+        #     label2_2 = "Fx2"
+        if self.selected_view.get() == "Long View":
+            label1_1 = "FP1_Fy"
+            label1_2 = "FP1_Fz"
+            label2_1 = "FP2_Fy"
+            label2_2 = "FP2_Fz"   # <-- you had Fx2 here earlier; long view uses Fz for vertical
+        elif self.selected_view.get() == "Short View":
+            label1_1 = "FP1_Fx"
+            label1_2 = "FP1_Fz"
+            label2_1 = "FP2_Fx"
+            label2_2 = "FP2_Fz"
+        else:  # Top View
+            label1_1 = "FP1_Fy"
+            label1_2 = "FP1_Fx"
+            label2_1 = "FP2_Fy"
+            label2_2 = "FP2_Fx"
 
+        dfa = self.state.df_aligned.dropna(subset=["FrameNumber"]).copy()
+        dfa["FrameNumber"] = dfa["FrameNumber"].astype(int)
+
+        start_f = int(self.save_start - cushion_frames)
+        end_f   = int(self.save_end   + cushion_frames)
+
+        baseF = int(dfa["FrameNumber"].min())
+
+        start_f_abs = int(start_f + baseF) 
+        end_f_abs = int(end_f + baseF)
+
+        start_abs = start_f_abs
+        end_abs   = end_f_abs
+
+        start_vid = start_abs - baseF
+        end_vid   = end_abs   - baseF
+
+        # start_vid = start_abs - baseF
+        # end_vid = end_abs - baseF
+
+        print("baseF:", baseF)
+
+        print("df_aligned rows:", len(dfa))
+        print("df_aligned FrameNumber range:", dfa["FrameNumber"].min(), dfa["FrameNumber"].max())
+
+        print("absolute export range:", start_abs, end_abs)
+
+        print("requested frame range:", start_f, end_f)
+
+        # Clamp to available aligned range
+        minF = int(dfa["FrameNumber"].min())
+        maxF = int(dfa["FrameNumber"].max())
+
+        start_f_abs_clamped = max(start_abs, minF)
+        end_f_abs_clamped   = min(end_abs, maxF)
+
+        print("clamped ABS frame range:", start_f_abs_clamped, end_f_abs_clamped)
+
+        if start_f_abs_clamped > end_f_abs_clamped:
+            raise RuntimeError(
+                f"Selected export range (absolute) [{start_abs}, {end_abs}] does not overlap df_aligned "
+                f"[{minF}, {maxF}]."
+            )
+
+
+        print("clamped frame range:", start_f_abs_clamped, end_f_abs_clamped)
+
+        dfw = dfa[(dfa["FrameNumber"] >= start_f_abs_clamped) & (dfa["FrameNumber"] <= end_f_abs_clamped)].copy()
+        print("dfw rows:", len(dfw))
+        if len(dfw) == 0:
+            raise RuntimeError("dfw is empty: your save range does not overlap df_aligned FrameNumber range.")
+        
+        force_cols = [label1_1, label1_2, label2_1, label2_2]  # only these
+
+        print("dfw rows:", len(dfw))
+        print("dfw FrameNumber range:", dfw["FrameNumber"].min(), dfw["FrameNumber"].max())
+        print("force cols present:", [c for c in force_cols if c in dfw.columns])
+        print("non-nan counts:", dfw[force_cols].notna().sum())
+
+        
         # force plate 1
-        y1 = self.Force.data.loc[:,label1_1]
-        y2 = self.Force.data.loc[:,label1_2]
+        y1 = dfw.loc[:,label1_1]
+        y2 = dfw.loc[:,label1_2]
         # force plate 2
-        y3 = self.Force.data.loc[:,label2_1]
-        y4 = self.Force.data.loc[:,label2_2]
+        y3 = dfw.loc[:,label2_1]
+        y4 = dfw.loc[:,label2_2]
 
         ymax = max(y1.max(),y2.max(),y3.max(),y4.max())
         ymin = min(y1.min(),y2.min(),y3.min(),y4.min())
 
-        self.Force.data.loc[0:self.state.step_size*self.save_start,:] = np.nan
-        self.Force.data.loc[self.state.step_size*self.save_end:,:] = np.nan
+        with open("lag.txt", "r") as f:
+            lag = int(f.read().strip())
+        print(f"Saving Video the lag value is: {lag}")
+        # lag_frames = min(lag, int(self.Video.cam.get(cv2.CAP_PROP_FRAME_COUNT)))  # <- you said lag is in frames
+        # lag_rows = int(round(lag_frames * self.state.step_size))
+
+        # dfw.loc[0:self.state.step_size*(self.save_start),:] = np.nan
+        # dfw.loc[self.state.step_size*self.save_end:,:] = np.nan
+        start_vid = start_abs - baseF
+        end_vid   = end_abs   - baseF
+
+        self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
+        self.Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.save_start - cushion_frames)
+
+        count = start_abs          # aligned timeline (matches dfw FrameNumber)
+        count_vid = self.save_start - cushion_frames          # actual video timeline (matches cv2 read position) 
+
+        save_start_abs = int(self.save_start + baseF)
+        save_end_abs   = int(self.save_end   + baseF)
+
+        dfw.loc[dfw["FrameNumber"] < save_start_abs, force_cols] = np.nan
+        dfw.loc[dfw["FrameNumber"] > save_end_abs,   force_cols] = np.nan
+
+        time_col = "abs time (s)" if "abs time (s)" in dfw.columns else "Time(s)"
+        time = pd.to_numeric(dfw[time_col], errors="coerce")  # length == len(dfw)
 
         ax1.clear()
         ax1.set_title(f"Force plate 1 Force Time Graph")
@@ -101,7 +200,10 @@ def saveCallback(self):
         ax1.set_xlabel("Time (s.)")
         ax1.set_ylabel("Forces (N.)")
 
-        line1 = ax1.axvline(x=self.Force.data.iloc[int(count), 0], color='red', linestyle='--', linewidth=1.5)
+        # line1 = ax1.axvline(x=dfw.iloc[int(count), 0], color='red', linestyle='--', linewidth=1.5)
+
+        # cur_row = int(count * self.state.step_size) + lag_rows
+        # cur_row = np.clip(cur_row, 0, len(self.Force.data)-1)
 
         ax2.clear()
         ax2.set_title(f"Force plate 2 Force Time Graph")
@@ -112,11 +214,19 @@ def saveCallback(self):
         ax2.set_xlabel("Time (s.)")
         ax2.set_ylabel("Forces (N.)")
 
-        line2 = ax2.axvline(x=self.Force.data.iloc[int(count), 0], color='red', linestyle='--', linewidth=1.5)
+        # line2 = ax2.axvline(x=dfw.iloc[int(count), 0], color='red', linestyle='--', linewidth=1.5)
+        r0 = dfw.loc[dfw["FrameNumber"] == count]
+        cur_t0 = float(r0.iloc[0][time_col]) if len(r0) else float(time.iloc[0])
+        line1 = ax1.axvline(x=cur_t0, color="red", linestyle="--", linewidth=1.5)
+        line2 = ax2.axvline(x=cur_t0, color="red", linestyle="--", linewidth=1.5)
         def render_matplotlib_to_cv2(cur):
-            cur = np.clip(cur, 9, self.Force.data.shape[0]-1)  # 0609 update: make sure value is in range
+            cur = np.clip(cur, 9, dfw.shape[0]-1)  # 0609 update: make sure value is in range
             # cur is the row
-            LOCtime = self.Force.data.iloc[int(cur),0]
+            # LOCtime = dfw.iloc[int(cur),0]
+            # line1.set_xdata([LOCtime])
+            # line2.set_xdata([LOCtime])
+
+            LOCtime = float(dfw.iloc[int(cur)][time_col])
             line1.set_xdata([LOCtime])
             line2.set_xdata([LOCtime])
 
@@ -166,23 +276,43 @@ def saveCallback(self):
 
                 return cv2.vconcat([gap, image1, image2, gap])  # Now correctly formatted
 
+
+        SLOW_FACTOR = 2.0   # or 2.5 for presentations
+        out_fps = max(1.0, self.Video.fps / SLOW_FACTOR)
         if self.Video.frame_width > self.Video.frame_height:
-            out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), self.Video.fps,(self.Video.frame_width, self.Video.frame_height+480))
+            out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), out_fps,(self.Video.frame_width, self.Video.frame_height+480))
         else:
-            out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), self.Video.fps,(self.Video.frame_width+640, self.Video.frame_height))
+            out = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), out_fps,(self.Video.frame_width+640, self.Video.frame_height))
  
         # Saving frame with graph
-        while(self.Video.vector_cam.isOpened() and count<= self.save_end+cushion_frames):
+        while(self.Video.vector_cam.isOpened() and count_vid <= end_f):
             ret1, frame1 = self.Video.cam.read()
             ret3, frame3 = self.Video.vector_cam.read()
             if self.COM_intVar.get()==1:
-                frame3 = self.COM_helper.drawFigure(frame3, count)
+                frame3 = self.COM_helper.drawFigure(frame3, count_vid)
             if not ret1 or not ret3:
                 # if this calls when the frame_number is equal to the total frame count then the stream has just ended
-                print(f"Can't read frame at position {count}")
+                print(f"Can't read frame at position {count_vid}")
                 break
-            graphs = render_matplotlib_to_cv2(int(count * self.state.step_size))  # pass in current row
-            if(count<self.save_start):
+
+            time_col = "abs time (s)" if "abs time (s)" in dfw.columns else "Time(s)"
+            time = dfw[time_col].astype(float)
+            r = dfw.loc[dfw["FrameNumber"] == count]
+            if len(r):
+                cur_t = float(r.iloc[0][time_col])
+                line1.set_xdata([cur_t])
+                line2.set_xdata([cur_t])
+            else:
+                line1.set_xdata([np.nan])
+                line2.set_xdata([np.nan])
+
+            # graphs = render_matplotlib_to_cv2(int(count * self.state.step_size))  # pass in current row
+            
+            # render graph based on dfw index for count_abs
+            idx = dfw.index[dfw["FrameNumber"] == count]
+            graphs = render_matplotlib_to_cv2(int(idx[0]) if len(idx) else 0)
+
+            if(count_vid<self.save_start):
                 print("doing ori")
                 """
                 12/10 notes
@@ -194,7 +324,7 @@ def saveCallback(self):
                 else:
                     combined_frame = cv2.hconcat([frame1,graphs])
 
-            elif(count<=self.save_end):
+            elif(count_vid<=self.save_end):
                 print("doing vector")
                 if (self.Video.frame_width > self.Video.frame_height):
                     combined_frame = cv2.vconcat([frame3,graphs])
@@ -213,7 +343,8 @@ def saveCallback(self):
                 cv2.destroyAllWindows()
                 break
             out.write(combined_frame)
-            count+=1
+            count += 1
+            count_vid += 1
 
         plt.close(fig1)
         plt.close(fig2)

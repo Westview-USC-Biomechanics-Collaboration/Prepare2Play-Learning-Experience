@@ -22,6 +22,7 @@ class StateManager:
         self.step_size      = 10    # step siize unit: rows/frame
         self.zoom_pos       = 0     # canvas 2: force data offset -step size<zoom_pos<+step size
         self.force_align    = None  # Intialize force align value and video align value
+        self.df_aligned = None
 
         # video
         self.rot = 0 # rotated direction
