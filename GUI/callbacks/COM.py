@@ -7,9 +7,6 @@ from GUI.callbacks.global_variable import globalVariable
 
 def COMCallback(self, s):
     print("[INFO] COM processing...")
-
-    
-         
     
     def threadTarget():
         print("[INFO] Starting COM processing in a separate thread...")
