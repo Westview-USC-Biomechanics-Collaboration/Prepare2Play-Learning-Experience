@@ -194,9 +194,9 @@ def two_rect_detection(cap, num_points=8, zoom_size=50, zoom_factor=2):
     cv2.imshow("red_opened", red_mask)
 
     # Optional: closing to seal any final small gaps
-    kernel_h = np.ones((1, 200), np.uint8)
+    kernel_h = np.ones((1, 100), np.uint8)
     yellow_mask = cv2.morphologyEx(yellow_mask, cv2.MORPH_CLOSE, kernel_h)
-    kernel_v = np.ones((100, 1), np.uint8)
+    kernel_v = np.ones((1, 1), np.uint8)
     yellow_mask = cv2.morphologyEx(yellow_mask, cv2.MORPH_CLOSE, kernel_v)
 
     red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, kernel_h)
@@ -393,7 +393,7 @@ def select_points(self, cap, view):
 
     # Optional: closing to seal any final small gaps
     # Horizontal kernel to connect horizontal lines
-    kernel_h = np.ones((1, 200), np.uint8)
+    kernel_h = np.ones((1, 100), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_h)
     kernel_v = np.ones((1, 1), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_v)

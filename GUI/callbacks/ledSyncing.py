@@ -51,7 +51,7 @@ def plate_transformation_matrix(self, view, path_video):
 
     # Optional: closing to seal any final small gaps
     # Horizontal kernel to connect horizontal lines
-    kernel_h = np.ones((1, 200), np.uint8)
+    kernel_h = np.ones((1, 100), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_h)
     kernel_v = np.ones((1, 1), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_v)
