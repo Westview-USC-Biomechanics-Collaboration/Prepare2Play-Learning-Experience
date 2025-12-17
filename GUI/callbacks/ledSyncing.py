@@ -105,7 +105,10 @@ def plate_transformation_matrix(self, view, path_video):
         area = cv2.contourArea(hull)
 
         # Approximate contour to polygon to reduce points
-        epsilon = 0.03 * cv2.arcLength(hull, True)  # adjust for precision
+        if view == "Short View":
+            epsilon = 0.03 * cv2.arcLength(hull, True)  # adjust for precision
+        else:
+            epsilon = 0.01 * cv2.arcLength(hull, True)  # adjust for precision
         approx = cv2.approxPolyDP(hull, epsilon, True)
 
         if area > min_area:
@@ -295,13 +298,13 @@ def find_led_location(self, view, path_video, video_file):
     frame_height = 1080
     if view == "Short View":
         led_x0 = 650
-        led_x1 = 750
-        led_y0 = 700
-        led_y1 = 830  
+        led_x1 = 850
+        led_y0 = 600
+        led_y1 = 800
     elif view == "Long View":    
         led_x0 = 800
         led_x1 = 1160
-        led_y0 = 800
+        led_y0 = 950
         led_y1 = 1080
     else:
         # led_x0 = 1500
@@ -310,23 +313,23 @@ def find_led_location(self, view, path_video, video_file):
         # led_y1 = 780
         led_x0 = 800
         led_x1 = 1160
-        led_y0 = 800
+        led_y0 = 950
         led_y1 = 1080
     #######################################
 
     ###############################################################################
-    # Create a template of the LED when using Blue minus Green mask
-    # Expect bright spot surrounded by black
-    # Use a blurred circle for the spot to help find the center when matching
-    # Start with black rectangle
-    led_template = np.zeros((61,61)).astype(np.uint8)
-    # Make white circle in the center and 
-    #cv2.circle(led_template, (20,20), 10, 255, -1)
-    cv2.rectangle(led_template, (5,10), (56,51), 255, -1)
-    #led_template = cv2.blur(led_template, (20,20))
+
+    led_template = np.zeros((77,91)).astype(np.uint8)
+    # Make white rectangle, centered along x but offset along y since near the edge of the image
+    # Note, corners of rectangle are in (x, y) format, not (y, x)
+    cv2.rectangle(led_template, (20,20), (71, 57), 200, -1)
+    # Add dark rectangle for the region where the actual LEDs appear
+    cv2.rectangle(led_template, (43,27), (47, 32), 10, -1)
+    led_template = cv2.blur(led_template, (5,5))
     # Offsets from corner to center
-    led_template_center_offset_x = 20
-    led_template_center_offset_y = 20
+    led_template_center_offset_x = 45
+    led_template_center_offset_y = 39 + 5 #shift an extra 5 pixels to avoid LED itself
+
     ###############################################################################
 
     # Define delta for determining the size if the area to use for averaging of LED signal
@@ -396,7 +399,7 @@ def find_led_location(self, view, path_video, video_file):
     print('Y span = ' + str(center_y_span))
     
     # Adjust location to correspond to the location in the full image
-    xy_location = (center[0] + led_x0, center[1] + led_y0)
+    xy_location = (center[1] + led_x0, center[0] + led_y0)
     df_location['CenterX_FullFrame'] = xy_location[0]
     df_location['CenterY_FullFrame'] = xy_location[1]
     
@@ -414,6 +417,12 @@ def find_led_location(self, view, path_video, video_file):
     cv2.putText(header, summary3, (20, 125), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 1, cv2.LINE_AA)
     # Combine header and composite
     full_composite = cv2.vconcat([header, full_composite])
+
+    new_png = 'LED_Location_{'  '}.PNG'
+    new_csv = 'LED_Location_{'  '}.csv'
+
+    cv2.imwrite(os.path.join(r"c:\Users\Student\Downloads", new_png), full_composite)
+    df_location.to_csv(os.path.join(r"c:\Users\Student\Downloads", new_csv), index = False)
     
     # Save summary image and data frame
     # cv2.imwrite(os.path.join(c.output_path, video_file.replace('.MP4', '_LED_Location.PNG')), full_composite)
@@ -443,6 +452,7 @@ def find_led_location(self, view, path_video, video_file):
 
     # Show full frame
     cv2.namedWindow("Frame with ROI", cv2.WINDOW_NORMAL)
+    cv2.imwrite(r"c:\Users\Student\Downloads\LED_LOCATION.PNG", frame_vis)
     cv2.resizeWindow("Frame with ROI", 800, 600)
     cv2.imshow("Frame with ROI", frame_vis)
     cv2.waitKey(0)
@@ -474,14 +484,21 @@ def get_alignment_signal_from_video(self, view, path_video, video_file):
     # Expect bright spot surrounded by black
     # Use a blurred circle for the spot to help find the center when matching
     # Start with black rectangle
-    led_template = np.zeros((61,61)).astype(np.uint8)
+    led_template = np.zeros((79,91)).astype(np.uint8)
+
+    cv2.rectangle(led_template, (20,27), (71,68), 200, -1)
+
+    cv2.rectangle(led_template, (20,27),(71, 68),200,-1)
+
+    cv2.rectangle(led_template, (42,30), (49, 45), 10, -1)
+    led_template = cv2.blur(led_template,(5,5))
     # Make white circle in the center and 
     #cv2.circle(led_template, (20,20), 10, 255, -1)
     cv2.rectangle(led_template, (5,10), (56,51), 255, -1)
     #led_template = cv2.blur(led_template, (20,20))
     # Offsets from corner to center
-    led_template_center_offset_x = 20
-    led_template_center_offset_y = 20
+    led_template_center_offset_x = 45
+    led_template_center_offset_y = 47
     ###############################################################################
 
     # Define delta for determining the size if the area to use for averaging of LED signal
