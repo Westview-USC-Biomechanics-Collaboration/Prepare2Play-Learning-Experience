@@ -471,7 +471,10 @@ def select_points(self, cap, view):
     coords = []
 
     # Minimum area to filter out noise
-    min_area = 2000
+    if view != "Long View" and view != "Top View":
+        min_area = 500
+    else:
+        min_area = 2000
     # max_area = 30000
 
     #save corners
@@ -481,7 +484,10 @@ def select_points(self, cap, view):
         area = cv2.contourArea(hull)
 
         # Approximate contour to polygon to reduce points
-        epsilon = 0.03 * cv2.arcLength(hull, True)  # adjust for precision
+        if view == "Short View":
+            epsilon = 0.03 * cv2.arcLength(hull, True)  # adjust for precision
+        else:
+            epsilon = 0.01 * cv2.arcLength(hull, True)  # adjust for precision
         approx = cv2.approxPolyDP(hull, epsilon, True)
 
         if area > min_area:
