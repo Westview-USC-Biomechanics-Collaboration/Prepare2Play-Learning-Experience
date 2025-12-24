@@ -286,8 +286,8 @@ def process_force_file(M, parent_path, force_file):
     #     print('Saving force data information')
     #     df_trimmed.to_csv(path_force_data_dataframe)
 
-    df_force_filename = force_file.replace('.txt', '_Analysis_Force.csv')
-    df_trimmed.to_csv(os.path.join(parent_path, df_force_filename), index=False)
+    # df_force_filename = force_file.replace('.txt', '_Analysis_Force.csv')
+    # df_trimmed.to_csv(os.path.join(parent_path, df_force_filename), index=False)
     
     
     return df_trimmed
@@ -399,7 +399,7 @@ def find_led_location(self, view, path_video, video_file):
     print('Y span = ' + str(center_y_span))
     
     # Adjust location to correspond to the location in the full image
-    xy_location = (center[1] + led_x0, center[0] + led_y0)
+    xy_location = (center[0] + led_x0, center[1] + led_y0)
     df_location['CenterX_FullFrame'] = xy_location[0]
     df_location['CenterY_FullFrame'] = xy_location[1]
     
@@ -421,8 +421,8 @@ def find_led_location(self, view, path_video, video_file):
     new_png = 'LED_Location_{'  '}.PNG'
     new_csv = 'LED_Location_{'  '}.csv'
 
-    cv2.imwrite(os.path.join(r"c:\Users\Student\Downloads", new_png), full_composite)
-    df_location.to_csv(os.path.join(r"c:\Users\Student\Downloads", new_csv), index = False)
+    # cv2.imwrite(os.path.join(r"c:\Users\Student\Downloads", new_png), full_composite)
+    # df_location.to_csv(os.path.join(r"c:\Users\Student\Downloads", new_csv), index = False)
     
     # Save summary image and data frame
     # cv2.imwrite(os.path.join(c.output_path, video_file.replace('.MP4', '_LED_Location.PNG')), full_composite)
