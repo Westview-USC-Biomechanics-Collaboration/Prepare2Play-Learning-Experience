@@ -456,8 +456,6 @@ def select_points(self, cap, view):
         x1, x2 = int(0.45 * w), int(0.8 * w)
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
-
-
     
 
     cv2.namedWindow("kernel observation", cv2.WINDOW_NORMAL)
