@@ -329,7 +329,9 @@ def find_led_location(self, view, path_video, video_file):
     # Offsets from corner to center
     led_template_center_offset_x = 45
     led_template_center_offset_y = 39 + 5 #shift an extra 5 pixels to avoid LED itself
-
+    
+    led_template[0:61, :] = led_template[10:71, :]
+    led_template[0:10] = 0
     ###############################################################################
 
     # Define delta for determining the size if the area to use for averaging of LED signal
@@ -499,6 +501,9 @@ def get_alignment_signal_from_video(self, view, path_video, video_file):
     # Offsets from corner to center
     led_template_center_offset_x = 45
     led_template_center_offset_y = 47
+    
+    led_template[0:61, :] = led_template[10:71, :]
+    led_template[0:10] = 0
     ###############################################################################
 
     # Define delta for determining the size if the area to use for averaging of LED signal
