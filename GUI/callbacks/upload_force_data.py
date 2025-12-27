@@ -5,6 +5,90 @@ from PIL import Image, ImageTk
 from Util.ballDropDetect import ballDropDetect, forceSpikeDetect
 import math
 import pandas as pd
+from Util.windows_file_dialog import open_file_dialog
+
+# def uploadForceDataCallback(self):
+#     print("[INFO] Uploading force data...")
+
+#     # ---- FILE DIALOG (MAIN THREAD) ----
+#     path = open_file_dialog(
+#         title="Select Force Data File",
+#         filetypes=[
+#             ("Force Data", "*.csv;*.xlsx;*.xls;*.txt"),
+#             ("All Files", "*.*")
+#         ]
+#     )
+
+
+
+#     if not path:
+#         print("[INFO] No force file selected")
+#         return
+
+#     self.Force.path = path
+
+#     def threadTarget():
+#         try:
+#             process(self, path)
+#             self.master.after(0, self.plot_force_data)
+#             self.state.force_loaded = True
+#         except Exception as e:
+#             print("[ERROR] Force upload failed:", e)
+
+#     threading.Thread(target=threadTarget, daemon=True).start()
+
+
+# def process(self, path):
+#     """Background force processing"""
+#     if path.endswith(".txt"):
+#         self.Force.data = self.fileReader.readTxt(path)
+#     elif path.endswith(".xlsx") or path.endswith(".xls"):
+#         self.Force.data = self.fileReader.readExcel(path)
+#     elif path.endswith(".csv"):
+#         self.Force.data = self.fileReader.readCsv(path)
+#     else:
+#         raise ValueError("Unsupported force file type")
+
+#     self.Force.data = self.Force.data.apply(pd.to_numeric, errors="coerce")
+#     self.Force.rows = self.Force.data.shape[0]
+
+#     self.state.force_frame = int(self.Force.rows / self.state.step_size)
+
+#     self.timelineManager.timeline1 = timeline(
+#         0, self.state.force_frame / self.slider["to"]
+#     )
+
+#     img = Image.fromarray(
+#         self.timelineManager.timeline1.draw_rect(self.state.loc)
+#     )
+
+#     img = img.resize(
+#         (self.timelineManager.force_canvas.winfo_width(),
+#          self.timelineManager.force_canvas.winfo_height()),
+#         Image.Resampling.LANCZOS
+#     )
+
+#     self.timeline_image1 = ImageTk.PhotoImage(img)
+#     self.timelineManager.force_canvas.create_image(
+#         0, 0, image=self.timeline_image1, anchor=tk.NW
+#     )
+
+#     # Auto spike detection
+#     target_row = forceSpikeDetect(self.Force.data)
+#     self.state.loc = math.floor(target_row / self.state.step_size)
+#     self.label_force()
+
+#     print("[INFO] Force data loaded successfully")
+
+
+############################# OLD CODE BELOW FOR REFERENCE #############################
+import tkinter as tk
+import threading
+from GUI.Timeline import timeline
+from PIL import Image, ImageTk
+from Util.ballDropDetect import ballDropDetect, forceSpikeDetect
+import math
+import pandas as pd
 
 def uploadForceDataCallback(self:tk.Tk,):
     def threadTarget():
@@ -79,4 +163,3 @@ def process(self):
     # update Global variable
     self.state.loc = targetFrame  # update the global location variable
     self.label_force()
-

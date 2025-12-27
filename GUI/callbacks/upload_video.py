@@ -6,6 +6,165 @@ import cv2
 from Util.ballDropDetect import ballDropDetect
 import subprocess, shutil, os
 from pathlib import Path
+from Util.windows_file_dialog import open_file_dialog
+
+
+# def uploadVideoCallback(self):
+#     """
+#     Opens a modal view selector, then safely opens a file dialog and
+#     processes the video in a background thread.
+#     """
+
+#     def on_confirm():
+#         selected_view = self.selected_view.get()
+#         print(f"[INFO] Selected view: {selected_view}")
+
+#         view_popup.grab_release()
+#         view_popup.destroy()
+
+#         # ---- SAFE FILE DIALOG (MAIN THREAD ONLY) ----
+#         path = open_file_dialog(
+#             title="Select Force Data File",
+#             filetypes=[
+#                 ("Excel Files", "*.xlsx;*.xls"),
+#                 ("CSV Files", "*.csv"),
+#                 ("All Files", "*.*")
+#             ]
+#         )
+
+
+#         if not path:
+#             print("[INFO] No video selected")
+#             return
+
+#         self.Video.path = path
+#         self.selected_view.set(selected_view)
+
+#         def threadTarget():
+#             process(self, selected_view)
+#             self.master.after(0, self._update_video_timeline)
+
+#         threading.Thread(target=threadTarget, daemon=True).start()
+
+#     # ---- VIEW SELECTION POPUP (MODAL, NON-BLOCKING) ----
+#     view_popup = tk.Toplevel(self.master)
+#     view_popup.title("Select View")
+#     view_popup.transient(self.master)
+#     view_popup.grab_set()          # SAFE modal (do NOT use wait_window)
+#     view_popup.focus_force()
+
+#     tk.Radiobutton(view_popup, text="Long View",
+#                    variable=self.selected_view, value="Long View").pack(anchor=tk.W)
+#     tk.Radiobutton(view_popup, text="Top View",
+#                    variable=self.selected_view, value="Top View").pack(anchor=tk.W)
+#     tk.Radiobutton(view_popup, text="Short View",
+#                    variable=self.selected_view, value="Short View").pack(anchor=tk.W)
+
+#     tk.Button(view_popup, text="Confirm", command=on_confirm).pack(pady=10)
+
+
+# def process(self, view):
+#     """
+#     Load and prepare video. Runs in background thread.
+#     """
+#     path = Path(self.Video.path)
+#     if not path.exists():
+#         print("[ERROR] Video file not found:", path)
+#         return
+
+#     def convert_to_mov(src: str):
+#         p = Path(src)
+#         out = str(p.with_suffix(".mov"))
+
+#         exe = shutil.which("ffmpeg") or r"C:\ffmpeg\bin\ffmpeg.exe"
+#         if not exe or not os.path.exists(exe):
+#             raise RuntimeError("FFmpeg not found")
+
+#         subprocess.run([
+#             exe, "-y",
+#             "-i", str(p),
+#             "-c:v", "libx264",
+#             "-pix_fmt", "yuv420p",
+#             "-c:a", "aac",
+#             "-movflags", "+faststart",
+#             out
+#         ], check=True)
+
+#         return out
+
+#     try:
+#         mov_path = (
+#             convert_to_mov(self.Video.path)
+#             if path.suffix.lower() != ".mov"
+#             else self.Video.path
+#         )
+#     except Exception as e:
+#         print("[ERROR] Video conversion failed:", e)
+#         return
+
+#     # Release previous resources
+#     for attr in ("cam", "vector_cam"):
+#         if hasattr(self.Video, attr):
+#             try:
+#                 getattr(self.Video, attr).release()
+#             except:
+#                 pass
+
+#     self.Video.cam = cv2.VideoCapture(mov_path)
+#     if not self.Video.cam.isOpened():
+#         print("[ERROR] Could not open video")
+#         return
+
+#     self.Video.fps = int(self.Video.cam.get(cv2.CAP_PROP_FPS))
+#     self.Video.frame_width = int(self.Video.cam.get(cv2.CAP_PROP_FRAME_WIDTH))
+#     self.Video.frame_height = int(self.Video.cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
+#     self.Video.total_frames = int(self.Video.cam.get(cv2.CAP_PROP_FRAME_COUNT))
+#     self.Video.path = mov_path
+#     self.Video.original_path = mov_path
+
+#     self.slider.config(to=self.Video.total_frames)
+#     self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc)
+
+#     self.canvasManager.photo_image1 = self.frameConverter.cvToPillow(
+#         self.Video.cam,
+#         self.Video.frame_width,
+#         self.Video.frame_height
+#     )
+
+#     self.canvasID_1 = self.canvasManager.canvas1.create_image(
+#         200, 150,
+#         image=self.canvasManager.photo_image1,
+#         anchor="center"
+#     )
+
+#     # Timeline
+#     self.timelineManager.timeline2 = timeline(0, 1)
+#     img = Image.fromarray(self.timelineManager.timeline2.draw_rect(self.state.loc))
+#     img = img.resize(
+#         (self.timelineManager.video_canvas.winfo_width(),
+#          self.timelineManager.video_canvas.winfo_height()),
+#         Image.Resampling.LANCZOS
+#     )
+
+#     self.timeline_image2 = ImageTk.PhotoImage(img)
+#     self.timelineManager.video_canvas.create_image(
+#         0, 0, image=self.timeline_image2, anchor=tk.NW
+#     )
+
+#     self.master.after(0, self.label_video)
+#     self.state.video_loaded = True
+#     print("[INFO] Video loaded successfully")
+
+
+############################# OLD CODE BELOW FOR REFERENCE #############################
+import tkinter as tk
+import threading 
+from GUI.Timeline import timeline
+from PIL import Image, ImageTk
+import cv2
+from Util.ballDropDetect import ballDropDetect
+import subprocess, shutil, os
+from pathlib import Path
 
 def uploadVideoCallback(self):
     def _upload_video_with_view(self, popup_window):

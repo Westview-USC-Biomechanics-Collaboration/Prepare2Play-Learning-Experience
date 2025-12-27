@@ -449,34 +449,194 @@ def writer_process(results_q, out_path, fps, frame_size, num_workers):
     out.release()
 
 class Processor:
-    def __init__(self, video_path, data_df, lag, output_mp4, force_fps=None):
+    def __init__(self, video_path, data_df, lag, output_mp4, force_fps=None, trim_boundaries=None):
         self.video_path = video_path
         self.data = data_df
         self.lag = lag
         self.output_mp4 = output_mp4
-        self.force_fps  = force_fps
-
-        # open video to read metadata
-        print("Opening:", self.video_path, os.path.exists(self.video_path))
+        self.force_fps = force_fps
+        
+        # Store trim boundaries
+        self.trim_boundaries = trim_boundaries
+        
+        # Open video to read metadata
         cap = cv2.VideoCapture(self.video_path)
         if not cap.isOpened():
             raise RuntimeError(f"Could not open video: {self.video_path}")
-        self.frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        
+        self.frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.fps          = int(cap.get(cv2.CAP_PROP_FPS))
-        self.frame_count  = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.fps = int(cap.get(cv2.CAP_PROP_FPS))
+        self.frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         cap.release()
+        
+        # Calculate effective processing range
+        if self.trim_boundaries is not None:
+            self.start_frame, self.end_frame = self.trim_boundaries
+            print(f"[Processor] Using trim boundaries: {self.start_frame} to {self.end_frame}")
+        else:
+            self.start_frame = 0
+            self.end_frame = self.frame_count - 1
+            print(f"[Processor] Processing full video: 0 to {self.end_frame}")
+        
+        self.effective_frames = self.end_frame - self.start_frame + 1
+        print(f"[Processor] Effective frames to process: {self.effective_frames}")
+        
+        # Don't need force vectors for COM-only processing
+        self.corners = []
 
-        # vectors/pressures
-        self.fx1=self.fy1=self.fz1=self.px1=self.py1=()
-        self.fx2=self.fy2=self.fz2=self.px2=self.py2=()
+    def SaveToTxt(self, sex, filename, confidencelevel=0.85, displayCOM=False):
+        """
+        Process video within trim boundaries and save COM data.
+        Output CSV will have frame_index 0-based for trimmed range.
+        """
+        import time
+        import multiprocessing as processing
+        from multiprocessing import Queue
+        import threading
+        
+        startTime = time.time()
 
-        self.corners = []  
+        cfg = dict(
+            sex=sex, 
+            confidence=confidencelevel, 
+            displayCOM=displayCOM,
+            fps=self.fps, 
+            frame_count=self.frame_count,
+            frame_width=self.frame_width, 
+            frame_height=self.frame_height
+        )
 
-        self.readData()
-        self.normalizeForces(self.fx1, self.fx2, self.fy1, self.fy2)
-        self.debug_force_array_mapping(n=10)
-        self.apply_lag_alignment()
+        frame_queue = Queue()  
+        resultCOM_queue = Queue()
+
+        num_workers = min(6, processing.cpu_count())
+
+        # Modified frame reader that respects trim boundaries
+        def frame_reader_trimmed(frame_queue, video_path, start_frame, end_frame, num_workers):
+            """Read only frames within trim boundaries."""
+            print(f"[READER] Opening video: '{video_path}'")
+            cap = cv2.VideoCapture(video_path)
+            if not cap.isOpened():
+                print("[ERROR] Could not open video")
+                return
+            
+            # Seek to start frame
+            cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+            
+            print(f"[INFO] Reading frames {start_frame} to {end_frame}...")
+            output_idx = 0  # 0-based index for output
+            
+            for original_frame_idx in range(start_frame, end_frame + 1):
+                ret, frame = cap.read()
+                if not ret:
+                    print(f"[READER] Could not read frame {original_frame_idx}")
+                    break
+                
+                try:
+                    # Put frame with output index (0-based)
+                    frame_queue.put((output_idx, frame.copy()), timeout=5.0)
+                except:
+                    print(f"[READER] Timeout at frame {original_frame_idx}")
+                    break
+                
+                output_idx += 1
+                
+                if output_idx % 500 == 0:
+                    print(f"[READER] Loaded {output_idx} frames...")
+            
+            cap.release()
+            print(f"[READER] Done. Loaded {output_idx} frames.")
+            
+            # Send sentinels
+            for _ in range(num_workers):
+                frame_queue.put(None)
+
+        # Start reader thread
+        reader_thread = threading.Thread(
+            target=frame_reader_trimmed,
+            args=(frame_queue, self.video_path, self.start_frame, self.end_frame, num_workers)
+        )
+        reader_thread.start()
+
+        # Start worker processes (use existing process_frame function)
+        from vector_overlay.stick_figure_COM import process_frame
+        
+        workers = []
+        for i in range(num_workers):
+            p = processing.Process(
+                target=process_frame,
+                args=(frame_queue, None, resultCOM_queue, cfg),  # No vector queue needed
+                daemon=True
+            )
+            p.start()
+            workers.append(p)
+
+        reader_thread.join()
+        print("[MAIN] Reader thread finished")
+
+        # Drain result queue
+        output = []
+        sentinel_count = 0
+        while sentinel_count < num_workers:
+            try:
+                item = resultCOM_queue.get(timeout=10.0)
+                if item is None:
+                    sentinel_count += 1
+                else:
+                    output.append(item)
+            except Exception as e:
+                print(f"[MAIN ERROR] Error draining queue: {e}")
+                break
+        
+        print(f"[MAIN] Collected {len(output)} COM results")
+
+        # Join workers
+        for p in workers:
+            p.join(timeout=10.0)
+            if p.is_alive():
+                print(f"[MAIN] Terminating stuck worker {p.name}")
+                p.terminate()
+                p.join()
+
+        # Save results (frame_index will be 0-based for trimmed range)
+        output.sort(key=lambda x: x["frame_index"])
+        df = pd.DataFrame(output)
+        df.to_csv(filename, index=False)
+
+        endTime = time.time()
+        print(f"[INFO] COM Total time: {endTime - startTime:.2f}s")
+        print(f"[INFO] Saved {len(output)} frames of COM data to {filename}")
+        
+    ########## Above somewhere is the updated init
+    # def __init__(self, video_path, data_df, lag, output_mp4, force_fps=None):
+    #     self.video_path = video_path
+    #     self.data = data_df
+    #     self.lag = lag
+    #     self.output_mp4 = output_mp4
+    #     self.force_fps  = force_fps
+
+    #     # open video to read metadata
+    #     print("Opening:", self.video_path, os.path.exists(self.video_path))
+    #     cap = cv2.VideoCapture(self.video_path)
+    #     if not cap.isOpened():
+    #         raise RuntimeError(f"Could not open video: {self.video_path}")
+    #     self.frame_width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    #     self.frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    #     self.fps          = int(cap.get(cv2.CAP_PROP_FPS))
+    #     self.frame_count  = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    #     cap.release()
+
+    #     # vectors/pressures
+    #     self.fx1=self.fy1=self.fz1=self.px1=self.py1=()
+    #     self.fx2=self.fy2=self.fz2=self.px2=self.py2=()
+
+    #     self.corners = []  
+
+    #     self.readData()
+    #     self.normalizeForces(self.fx1, self.fx2, self.fy1, self.fy2)
+    #     self.debug_force_array_mapping(n=10)
+    #     self.apply_lag_alignment()
 
     def check_corner(self, view):
         cap = cv2.VideoCapture(self.video_path)
@@ -718,110 +878,111 @@ class Processor:
         # self.py1 = self.py1[:max_len]; self.py2 = self.py2[:max_len]
         self.effective_frames = max_len
     
-    def SaveToTxt(self, sex, filename, confidencelevel=0.85, displayCOM=False):
-        startTime = time.time()
+    ##### Updated version above somewhere - this is old
+    # def SaveToTxt(self, sex, filename, confidencelevel=0.85, displayCOM=False):
+    #     startTime = time.time()
 
-        cfg = dict(
-            sex=sex, confidence=confidencelevel, displayCOM=displayCOM,
-            fps=self.fps, frame_count=self.frame_count, frame_width=self.frame_width, frame_height=self.frame_height, 
-            lag=self.lag, corners=self.corners,
-            fx1=self.fx1, fx2=self.fx2, fy1=self.fy1, fy2=self.fy2,
-            fz1=self.fz1, fz2=self.fz2, px1=self.px1, px2=self.px2,
-            py1=self.py1, py2=self.py2
-        )
+    #     cfg = dict(
+    #         sex=sex, confidence=confidencelevel, displayCOM=displayCOM,
+    #         fps=self.fps, frame_count=self.frame_count, frame_width=self.frame_width, frame_height=self.frame_height, 
+    #         lag=self.lag, corners=self.corners,
+    #         fx1=self.fx1, fx2=self.fx2, fy1=self.fy1, fy2=self.fy2,
+    #         fz1=self.fz1, fz2=self.fz2, px1=self.px1, px2=self.px2,
+    #         py1=self.py1, py2=self.py2
+    #     )
 
-        frame_queue = Queue()  
-        resultCOM_queue = Queue()
-        resultVector_queue = Queue()
+    #     frame_queue = Queue()  
+    #     resultCOM_queue = Queue()
+    #     resultVector_queue = Queue()
 
-        num_workers = min(6, processing.cpu_count())
+    #     num_workers = min(6, processing.cpu_count())
 
-        reader_thread = threading.Thread(target=frame_reader, args=(frame_queue, self.video_path, self.reader_start_frame, num_workers, self.effective_frames, cfg))
-        reader_thread.start()
+    #     reader_thread = threading.Thread(target=frame_reader, args=(frame_queue, self.video_path, self.reader_start_frame, num_workers, self.effective_frames, cfg))
+    #     reader_thread.start()
 
-        writer = processing.Process(
-            target=writer_process,
-            args=(resultVector_queue, self.output_mp4, self.fps, (self.frame_width, self.frame_height), num_workers),
-            daemon=True
-        )
-        writer.start()
+    #     writer = processing.Process(
+    #         target=writer_process,
+    #         args=(resultVector_queue, self.output_mp4, self.fps, (self.frame_width, self.frame_height), num_workers),
+    #         daemon=True
+    #     )
+    #     writer.start()
 
 
-        # Start worker processes
-        workers: list[Process] = []
-        for i in range(num_workers):
-            print(f"[PROCESS] Starting process {i}")
-            p = processing.Process(target=process_frame,
-                       args=(frame_queue, resultVector_queue, resultCOM_queue, cfg),
-                       daemon=True)
-            p.start()
-            workers.append(p)
+    #     # Start worker processes
+    #     workers: list[Process] = []
+    #     for i in range(num_workers):
+    #         print(f"[PROCESS] Starting process {i}")
+    #         p = processing.Process(target=process_frame,
+    #                    args=(frame_queue, resultVector_queue, resultCOM_queue, cfg),
+    #                    daemon=True)
+    #         p.start()
+    #         workers.append(p)
 
-        reader_thread.join()
-        print("[MAIN] Reader thread finished")
+    #     reader_thread.join()
+    #     print("[MAIN] Reader thread finished")
 
-        print(f"Size of result_queue: {resultCOM_queue.qsize()}")
-        # Drain result queue
-        output = []
-        sentinel_count = 0
-        while sentinel_count < num_workers:
-            try:
-                item = resultCOM_queue.get() # Add a timeout here for debugging
-                if item is None:
-                    sentinel_count += 1
-                    print(f"[MAIN] Received sentinel from worker ({sentinel_count}/{num_workers})")
-                else:
-                    output.append(item)
-            except Exception as e:
-                print(f"[MAIN ERROR] Timeout or error while draining result queue: {e}")
-                print(f"[MAIN ERROR] Current sentinel count: {sentinel_count}/{num_workers}")
-                print(f"[MAIN ERROR] Remaining workers not yet joined: {[p.name for p in workers if p.is_alive()]}")
-                break # Break the loop if we timeout
-        print(f"[MAIN] Drained all results from queue. Total items: {len(output)}")
+    #     print(f"Size of result_queue: {resultCOM_queue.qsize()}")
+    #     # Drain result queue
+    #     output = []
+    #     sentinel_count = 0
+    #     while sentinel_count < num_workers:
+    #         try:
+    #             item = resultCOM_queue.get() # Add a timeout here for debugging
+    #             if item is None:
+    #                 sentinel_count += 1
+    #                 print(f"[MAIN] Received sentinel from worker ({sentinel_count}/{num_workers})")
+    #             else:
+    #                 output.append(item)
+    #         except Exception as e:
+    #             print(f"[MAIN ERROR] Timeout or error while draining result queue: {e}")
+    #             print(f"[MAIN ERROR] Current sentinel count: {sentinel_count}/{num_workers}")
+    #             print(f"[MAIN ERROR] Remaining workers not yet joined: {[p.name for p in workers if p.is_alive()]}")
+    #             break # Break the loop if we timeout
+    #     print(f"[MAIN] Drained all results from queue. Total items: {len(output)}")
 
-        print("[MAIN] Waiting for all worker processes to finish joining...")
-        joined_workers_count = 0
-        for p in workers:
-            print(f"[MAIN] Attempting to join worker {p.name} (PID: {p.pid})...")
-            p.join() # Try to join with a timeout
+    #     print("[MAIN] Waiting for all worker processes to finish joining...")
+    #     joined_workers_count = 0
+    #     for p in workers:
+    #         print(f"[MAIN] Attempting to join worker {p.name} (PID: {p.pid})...")
+    #         p.join() # Try to join with a timeout
 
-            if p.is_alive():
-                print(f"[MAIN ERROR] Worker {p.name} (PID: {p.pid}) did NOT join after timeout (still alive). Forcibly terminating...")
-                p.terminate() # <-- Forcefully terminate the rogue process
-                p.join() # Give it a moment to terminate after being signaled
-                if p.is_alive():
-                    print(f"[MAIN ERROR] Worker {p.name} (PID: {p.pid}) *still* alive after forceful termination!")
-                else:
-                    print(f"[MAIN] Worker {p.name} (PID: {p.pid}) successfully terminated after force.")
-                    joined_workers_count += 1 # Count it as "handled" for joining purposes
-            else:
-                # Process successfully joined within the timeout
-                joined_workers_count += 1
-                print(f"[MAIN] Worker {p.name} (PID: {p.pid}) finished joining.")
+    #         if p.is_alive():
+    #             print(f"[MAIN ERROR] Worker {p.name} (PID: {p.pid}) did NOT join after timeout (still alive). Forcibly terminating...")
+    #             p.terminate() # <-- Forcefully terminate the rogue process
+    #             p.join() # Give it a moment to terminate after being signaled
+    #             if p.is_alive():
+    #                 print(f"[MAIN ERROR] Worker {p.name} (PID: {p.pid}) *still* alive after forceful termination!")
+    #             else:
+    #                 print(f"[MAIN] Worker {p.name} (PID: {p.pid}) successfully terminated after force.")
+    #                 joined_workers_count += 1 # Count it as "handled" for joining purposes
+    #         else:
+    #             # Process successfully joined within the timeout
+    #             joined_workers_count += 1
+    #             print(f"[MAIN] Worker {p.name} (PID: {p.pid}) finished joining.")
 
                 
-        writer.join()
+    #     writer.join()
 
-        output.sort(key=lambda x: x["frame_index"])
-        df = pd.DataFrame(output)
-        df.to_csv(filename, index=False)
+    #     output.sort(key=lambda x: x["frame_index"])
+    #     df = pd.DataFrame(output)
+    #     df.to_csv(filename, index=False)
 
-        endTime = time.time()
-        print("[INFO] COM Total time taken: ", endTime - startTime)
+    #     endTime = time.time()
+    #     print("[INFO] COM Total time taken: ", endTime - startTime)
 
-        count = 0
-        vector_cam = cv2.VideoCapture(self.output_mp4)
-        com_helper = COM_helper()
-        while(vector_cam.isOpened() and count < self.effective_frames):
-            ret, frame = vector_cam.read()
-            frame = com_helper.drawFigure(frame, count)
-            cv2.imshow("Long View", cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5))))
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                    break
-            count += 1
+    #     count = 0
+    #     vector_cam = cv2.VideoCapture(self.output_mp4)
+    #     com_helper = COM_helper()
+    #     while(vector_cam.isOpened() and count < self.effective_frames):
+    #         ret, frame = vector_cam.read()
+    #         frame = com_helper.drawFigure(frame, count)
+    #         cv2.imshow("Long View", cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5))))
+    #         if cv2.waitKey(1) & 0xFF == ord("q"):
+    #                 break
+    #         count += 1
 
-        vector_cam.release()
-        cv2.destroyAllWindows()
+    #     vector_cam.release()
+    #     cv2.destroyAllWindows()
         
 
 

@@ -270,7 +270,7 @@ class DisplayApp:
             # Make the popup modal (blocks interaction with the main window)
             popup.grab_set()
             # Wait for the popup to be destroyed before returning to the main window
-            self.master.wait_window(popup)
+            # self.master.wait_window(popup)
 
     def label_video(self):
         self.state.video_align = self.state.loc
