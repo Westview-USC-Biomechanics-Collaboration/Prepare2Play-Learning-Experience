@@ -17,7 +17,7 @@ from io import BytesIO
 
 project_root  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_root not in sys.path:
-    sys.path.append(project_root)
+    sys.path.append(project_root)  
 # our script
 from vector_overlay.vectoroverlay_GUI import VectorOverlay
 from GUI.Timeline import timeline
