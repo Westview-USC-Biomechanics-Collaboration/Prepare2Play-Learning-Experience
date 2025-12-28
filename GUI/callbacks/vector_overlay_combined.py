@@ -3,29 +3,29 @@ vector_overlay_combined.py - Main callback for vector overlay with COM
 
 This file orchestrates:
 1. LED detection and alignment
-2. Vector overlay generation 
-3. COM calculation (using stick_figure_COM.py)
+2. COM calculation (FIRST - saves to pose_landmarks.csv)
+3. Vector overlay generation WITH COM drawn (single pass)
 """
 
 import threading
 import os
 import pandas as pd
+import cv2
 from vector_overlay.vectoroverlay_GUI import VectorOverlay
-from vector_overlay.stick_figure_COM import Processor  # ← Use stick_figure_COM!
+from vector_overlay.stick_figure_COM import Processor
 from GUI.callbacks.ledSyncing import new_led
 from GUI.callbacks.global_variable import globalVariable
-import cv2
+from Util.COM_helper import COM_helper
 
 
 def vectorOverlayWithAlignmentCallback(self):
     """
     Main entry point for creating vector overlay with COM.
     
-    This function:
-    1. Runs LED detection to align video and force data
-    2. Creates vector overlay using VectorOverlay class
-    3. Calculates COM using stick_figure_COM.Processor
-    4. Displays result in canvas3
+    Correct sequence:
+    1. LED detection → align video and force data
+    2. Calculate COM for ALL frames → save pose_landmarks.csv
+    3. Create vector overlay + draw COM in ONE PASS
     """
     
     def threadTarget():
@@ -37,60 +37,100 @@ def vectorOverlayWithAlignmentCallback(self):
             print("="*60)
             
             # ================================================================
-            # STEP 1: Get file paths
+            # STEP 1: Get file paths and view selection
             # ================================================================
-            print("\n[STEP 1/6] Gathering file information...")
+            print("\n[STEP 1/5] Gathering file information...")
             parent_path = os.path.dirname(self.Video.path)
             video_file = os.path.basename(self.Video.path)
             force_file = os.path.basename(self.Force.path)
             selected = self.selected_view.get()
-
+            
             print(f"  Video: {video_file}")
             print(f"  Force: {force_file}")
             print(f"  View: {selected}")
-
+            
             # ================================================================
             # STEP 2: LED Detection and Alignment
             # ================================================================
-            print("\n[STEP 2/6] Running LED detection and alignment...")
+            print("\n[STEP 2/5] Running LED detection and alignment...")
             print("  This detects the LED in the video and aligns with force data")
             
             lag, df_aligned = new_led(self, selected, parent_path, video_file, force_file)
             self.state.df_aligned = df_aligned
             
             # Save lag for other parts of code
-            with open("lag.txt", "w") as f:
+            with open(os.path.join(parent_path, "lag.txt"), "w") as f:
                 f.write(str(lag))
-
+            
             print(f"  ✓ Alignment complete! Lag = {lag} frames")
             print(f"  ✓ Aligned data shape: {df_aligned.shape}")
-
+            
             # ================================================================
             # STEP 3: Verify force file exists
             # ================================================================
-            print("\n[STEP 3/6] Verifying force analysis file...")
+            print("\n[STEP 3/5] Verifying force analysis file...")
             force_analysis_filename = force_file.replace('.txt', '_Analysis_Force.csv')
             passed_force_file = os.path.join(parent_path, force_analysis_filename)
-
+            
             if not os.path.exists(passed_force_file):
                 error_message = f"Force analysis file not found: {passed_force_file}"
                 raise FileNotFoundError(error_message)
-
+            
             force_data = pd.read_csv(passed_force_file)
             print(f"  ✓ Force data loaded: {len(force_data)} rows")
-
+            
             # ================================================================
-            # STEP 4: Create Vector Overlay (WITHOUT COM yet)
+            # STEP 4: Calculate COM FIRST (only if not Top View)
             # ================================================================
-            print("\n[STEP 4/6] Creating vector overlay...")
-            print("  This draws force arrows on the video")
+            apply_com = (selected != "Top View")
+            com_csv_path = os.path.join(parent_path, "pose_landmarks.csv")
+            
+            if apply_com:
+                print("\n[STEP 4/5] Computing COM (Center of Mass)...")
+                print("  This uses MediaPipe to detect body landmarks")
+                print("  and calculates COM for each frame")
+                print("  (This may take 30-60 seconds...)")
+                
+                # Use sex from global variable, default to male
+                sex = globalVariable.sex if globalVariable.sex else 'm'
+                print(f"  Using sex: {'Male' if sex == 'm' else 'Female'}")
+                
+                # Create Processor from stick_figure_COM
+                processor = Processor(self.Video.path)
+                
+                # Run COM calculation - saves to pose_landmarks.csv
+                processor.SaveToTxt(
+                    sex=sex,
+                    filename=com_csv_path,
+                    confidencelevel=0.85,
+                    displayCOM=True
+                )
+                
+                print("  ✓ COM calculation complete!")
+                print(f"  ✓ Results saved to: {com_csv_path}")
+                
+                # Mark COM as enabled
+                self.state.com_enabled = True
+                
+                # Initialize COM helper to read the CSV
+                self.COM_helper = COM_helper(path=com_csv_path)
+            else:
+                print("\n[STEP 4/5] Skipping COM calculation (Top View)")
+                self.state.com_enabled = False
+                self.COM_helper = None
+            
+            # ================================================================
+            # STEP 5: Create Vector Overlay WITH COM in ONE PASS
+            # ================================================================
+            print("\n[STEP 5/5] Creating vector overlay with COM...")
+            print("  This draws force arrows AND COM points on the video")
             
             # Reset video to beginning
             self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-
-            # Temporary video file for vector overlay
-            temp_video = "vector_overlay_temp.mp4"
-
+            
+            # Output video file
+            temp_video = os.path.join(parent_path, "vector_overlay_with_com.mp4")
+            
             # Create VectorOverlay instance
             v = VectorOverlay(data=force_data, video=self.Video.cam)
             
@@ -98,45 +138,53 @@ def vectorOverlayWithAlignmentCallback(self):
             print(f"  Detecting corners for {selected}...")
             v.check_corner(selected)
             
-            # Create overlay based on view
+            # Get trim boundaries (if they exist)
+            if hasattr(self.Video, 'has_trim_boundaries') and self.Video.has_trim_boundaries:
+                start_frame = self.Video.trim_start_frame
+                end_frame = self.Video.trim_end_frame
+                print(f"  Using trim boundaries: frames {start_frame}-{end_frame}")
+            else:
+                start_frame = 0
+                end_frame = self.Video.total_frames - 1
+                print("  Processing full video (no trim boundaries)")
+            
+            # Create overlay based on view - WITH COM in single pass
             if selected == "Long View":
-                print("  Creating Long View vector overlay...")
-                v.LongVectorOverlay(df_aligned, outputName=temp_video, lag=lag)
+                print("  Creating Long View vector overlay with COM...")
+                v.LongVectorOverlay_WithCOM(
+                    df_aligned, 
+                    outputName=temp_video,
+                    start_frame=start_frame,
+                    end_frame=end_frame,
+                    apply_com=apply_com,
+                    com_helper=self.COM_helper
+                )
             elif selected == "Short View":
-                print("  Creating Short View vector overlay...")
-                v.ShortVectorOverlay(df_aligned, outputName=temp_video, lag=lag)
+                print("  Creating Short View vector overlay with COM...")
+                v.ShortVectorOverlay_WithCOM(
+                    df_aligned, 
+                    outputName=temp_video,
+                    start_frame=start_frame,
+                    end_frame=end_frame,
+                    apply_com=apply_com,
+                    com_helper=self.COM_helper
+                )
             elif selected == "Top View":
-                print("  Creating Top View vector overlay...")
-                v.TopVectorOverlay(df_aligned, outputName=temp_video, lag=lag)
+                print("  Creating Top View vector overlay (no COM)...")
+                v.TopVectorOverlay_WithCOM(
+                    df_aligned, 
+                    outputName=temp_video,
+                    start_frame=start_frame,
+                    end_frame=end_frame,
+                    apply_com=False,  # Top view doesn't use COM
+                    com_helper=None
+                )
             
             print(f"  ✓ Vector overlay saved to: {temp_video}")
-
-            # ================================================================
-            # STEP 5: Calculate COM using stick_figure_COM
-            # ================================================================
-            print("\n[STEP 5/6] Computing COM (Center of Mass)...")
-            print("  This uses MediaPipe to detect body landmarks")
-            print("  and calculates COM for each frame")
-            print("  (This may take 30-60 seconds...)")
             
-            # Create Processor from stick_figure_COM
-            processor = Processor(self.Video.path)
+            # Store trimmed video path
+            self.Video.trimmed_path = temp_video
             
-            # Run COM calculation
-            # This will:
-            # - Detect pose landmarks in each frame
-            # - Calculate COM based on body segment masses
-            # - Save results to pose_landmarks.csv
-            processor.SaveToTxt(
-                sex=globalVariable.sex if globalVariable.sex else 'm',
-                filename="pose_landmarks.csv",
-                confidencelevel=0.85,
-                displayCOM=True
-            )
-            
-            print("  ✓ COM calculation complete!")
-            print("  ✓ Results saved to: pose_landmarks.csv")
-
             # ================================================================
             # STEP 6: Display result in canvas3
             # ================================================================
@@ -144,8 +192,13 @@ def vectorOverlayWithAlignmentCallback(self):
             
             # Load the vector overlay video
             self.Video.vector_cam = cv2.VideoCapture(temp_video)
+            
+            if not self.Video.vector_cam.isOpened():
+                raise RuntimeError(f"Could not open output video: {temp_video}")
+            
+            # Reset main camera to beginning
             self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-
+            
             # Display first frame in canvas3
             self.Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc)
             self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(
@@ -156,7 +209,7 @@ def vectorOverlayWithAlignmentCallback(self):
                 image=self.canvasManager.photo_image3, 
                 anchor="center"
             )
-
+            
             # Enable vector overlay flag
             self.state.vector_overlay_enabled = True
             
@@ -166,13 +219,18 @@ def vectorOverlayWithAlignmentCallback(self):
             print("="*60 + "\n")
             
             # Success popup
-            self.master.after(0, lambda: self._pop_up(
-                "✓ Vector overlay with COM completed successfully!\n\n"
-                "Results saved to:\n"
-                "- vector_overlay_temp.mp4 (video with arrows)\n"
-                "- pose_landmarks.csv (COM data)"
-            ))
-
+            success_msg = (
+                f"✓ Vector overlay completed successfully!\n\n"
+                f"View: {selected}\n"
+                f"COM: {'Enabled' if apply_com else 'Disabled'}\n\n"
+                f"Results saved to:\n"
+                f"- {temp_video}\n"
+            )
+            if apply_com:
+                success_msg += f"- {com_csv_path}\n"
+            
+            self.master.after(0, lambda: self._pop_up(success_msg))
+            
         except Exception as e:
             # Capture exception
             error_message = str(e)
@@ -187,7 +245,7 @@ def vectorOverlayWithAlignmentCallback(self):
             self.master.after(0, lambda msg=error_message: self._pop_up(
                 f"Error during vector overlay:\n\n{msg}"
             ))
-
+    
     # Launch processing in background thread
     threading.Thread(target=threadTarget, daemon=True).start()
 
