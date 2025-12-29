@@ -190,6 +190,7 @@ def saveCallback(self):
         ax1.clear()
         ax1.set_title(f"Force plate 1 Force Time Graph")
         ax1.set_ylim(ymin, ymax*1.2)
+        ax1.axhline(y=0, color="black", linestyle="-", linewidth=1.0) # new code
         ax1.plot(time, y1, linestyle='-', color='purple', linewidth=1.5, label="Force horizontal")
         ax1.plot(time, y2, linestyle='-', color='green', linewidth=1.5, label="Force vertical")
         ax1.legend()
@@ -204,6 +205,7 @@ def saveCallback(self):
         ax2.clear()
         ax2.set_title(f"Force plate 2 Force Time Graph")
         ax2.set_ylim(ymin, ymax*1.2)
+        ax2.axhline(y=0, color="black", linestyle="-", linewidth=1.0) # new code
         ax2.plot(time, y3, linestyle='-', color='orange', linewidth=1.5, label="Force horizontal")
         ax2.plot(time, y4, linestyle='-', color='blue', linewidth=1.5, label="Force vertical")
         ax2.legend()
