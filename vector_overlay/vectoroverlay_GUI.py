@@ -115,6 +115,7 @@ class VectorOverlay:
         self.py2 = ()
 
         self.corners = []
+        self.com_data = None # NEW
 
         # Initialize
         self.setFrameData()
@@ -158,6 +159,42 @@ class VectorOverlay:
         self.fx2 = tuple(f * scale_factor for f in self.fx2)
         self.fy2 = tuple(f * scale_factor for f in self.fy2)
         self.fz2 = tuple(f * scale_factor for f in self.fz2)
+    
+    # NEW METHODS
+    def load_com_data(self, com_csv_path):
+        """Load COM data from CSV."""
+        if com_csv_path is None or not com_csv_path:
+            self.com_data = None
+            return
+        
+        try:
+            self.com_data = pd.read_csv(com_csv_path)
+            print(f"[INFO] Loaded COM data: {self.com_data.shape}")
+        except Exception as e:
+            print(f"[ERROR] Failed to load COM: {e}")
+            self.com_data = None
+    
+    def draw_com_on_frame(self, frame, frame_number):
+        """Draw COM point if data available."""
+        if self.com_data is None:
+            return frame
+        
+        try:
+            com_row = self.com_data[self.com_data['frame_index'] == frame_number]
+            if len(com_row) > 0:
+                com_x = float(com_row.iloc[0]['COM_x'])
+                com_y = float(com_row.iloc[0]['COM_y'])
+                
+                # Scale from 0.3x to full size
+                com_x_full = int(com_x / 0.3)
+                com_y_full = int(com_y / 0.3)
+                
+                # Draw red COM dot
+                cv2.circle(frame, (com_x_full, com_y_full), 12, (0, 0, 255), -1)
+        except Exception as e:
+            print(f"[WARNING] Could not draw COM: {e}")
+        
+        return frame
 
     def readData(self):
         force_samples = len(self.data)
@@ -340,7 +377,21 @@ class VectorOverlay:
         
         return min(self.frame_height, self.frame_width) * 0.3 / max_force
 
-    def LongVectorOverlay(self, df_aligned, outputName=None, show_preview=True, lag=0):
+    def LongVectorOverlay(self, df_aligned, outputName=None, show_preview=True,
+                          lag=0, com_csv_path=None, show_landmarks=False,
+                          boundary_start=0, boundary_end=None):
+        """
+        Modified to support:
+        - com_csv_path: Path to COM CSV file
+        - show_landmarks: Whether to show green skeleton dots
+        - boundary_start/end: Frame boundaries to process
+        """
+        # Load COM data
+        self.load_com_data(com_csv_path)
+        
+        if boundary_end is None:
+            boundary_end = self.frame_count - 1
+
         """
         Long view vector overlay using df_aligned for exact frame/force mapping.
 
@@ -404,6 +455,9 @@ class VectorOverlay:
             # Safety: skip illegal frame indices
             if frame_idx < 0 or frame_idx >= self.frame_count:
                 print(f"[WARN] Row {idx}: FrameNumber {frame_idx} out of range, skipping.")
+                continue
+            
+            if frame_idx < boundary_start or frame_idx > boundary_end:
                 continue
 
             # Jump to the *exact* frame for this force sample
@@ -474,7 +528,8 @@ class VectorOverlay:
 
             # ----- Draw arrows exactly the same way as original -----
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
-
+            # ----- Optionally draw landmarks -----
+            frame = self.draw_com_on_frame(frame, frame_idx)
             # Show preview if desired
             if show_preview:
                 cv2.imshow(

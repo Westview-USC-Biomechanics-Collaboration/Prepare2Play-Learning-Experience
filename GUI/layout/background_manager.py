@@ -69,7 +69,7 @@ class BackgroundManager:
             self.background.tag_lower("bg")
 
         except FileNotFoundError:
-            print(f"[ERROR] Background image not found: {self.bg_image_path}")
+            #print(f"[ERROR] Background image not found: {self.bg_image_path}")
             self.background.config(bg="gray")
 
     def _on_resize(self, event):
