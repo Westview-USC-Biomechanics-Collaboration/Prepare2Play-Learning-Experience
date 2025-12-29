@@ -5,6 +5,8 @@ import numpy as np
 from io import BytesIO
 from datetime import datetime
 import pandas as pd
+from Util.COM_helper import COM_helper
+
 def saveCallback(self):
     print("user clicked save button")
     file_path = tk.filedialog.asksaveasfilename(
@@ -283,7 +285,13 @@ def saveCallback(self):
             ret1, frame1 = self.Video.cam.read()
             ret3, frame3 = self.Video.vector_cam.read()
             if self.COM_intVar.get()==1:
+                # Use count_vid as the actual video frame number, not CSV row index
+                # COM_helper will map this to the correct CSV row
                 frame3 = self.COM_helper.drawFigure(frame3, count_vid)
+                # Debug: Print when COM should be drawn
+                # if count_vid % 30 == 0:  # Print every 30 frames
+                #     has_data = self.COM_helper.has_data_for_frame(count_vid)
+                #     print(f"[SAVE] Frame {count_vid}: COM data {'FOUND' if has_data else 'NOT FOUND'}")
             if not ret1 or not ret3:
                 # if this calls when the frame_number is equal to the total frame count then the stream has just ended
                 print(f"Can't read frame at position {count_vid}")
@@ -363,6 +371,13 @@ def saveCallback(self):
 
             fout.write(f"Saving time: {datetime.now()}\n")
             fout.write(f"All rights reserved by Westview PUSD")
+
+    # --- INIT COM HELPER ---
+    if not hasattr(self, "COM_helper") or self.COM_helper is None:
+        self.COM_helper = COM_helper(
+            df=self.state.df_aligned,
+            video_align=self.state.video_align
+        )
 
     # Creating top level
     self.save_window = tk.Toplevel(self.master)

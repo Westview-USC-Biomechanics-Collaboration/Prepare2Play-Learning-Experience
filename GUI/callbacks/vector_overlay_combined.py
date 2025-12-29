@@ -7,6 +7,13 @@ from GUI.callbacks.ledSyncing_with_detection_system import new_led  # Updated im
 from GUI.callbacks.global_variable import globalVariable
 from Util.force_boundary_finder import find_force_boundaries, get_trimmed_subset
 from vector_overlay.com_processor_modified import BoundaryProcessor as Processor
+import warnings
+
+# Suppress specific deprecation warnings
+warnings.filterwarnings(
+    "ignore", 
+    message="SymbolDatabase.GetPrototype() is deprecated.*"
+)
 
 # Configurable settings
 MAX_COM_WORKERS = 3  # Easily adjustable number of workers for COM calculation
@@ -111,7 +118,11 @@ def vectorOverlayWithAlignmentCallback(self):
                 max_workers=MAX_COM_WORKERS
             )
             
-            print(f"[INFO] COM data saved to: {com_csv_path}")
+            if com_csv_path and os.path.exists(com_csv_path):
+            # Update COM_helper to use the new CSV
+                from Util.COM_helper import COM_helper
+                self.COM_helper = COM_helper(com_csv_path)
+                print(f"[INFO] COM_helper updated with: {com_csv_path}")
             
         except Exception as e:
             print(f"[ERROR] COM calculation failed: {e}")
@@ -153,7 +164,7 @@ def vectorOverlayWithAlignmentCallback(self):
             df_trimmed.rename(columns=column_rename, inplace=True)
 
             print("[COLUMNS BEFORE] LongVectorOverlay:", list(df_trimmed.columns))
-
+            print("Path to COM CSV before VectorOverlay:", com_csv_path)
             # Run vector overlay with COM for the selected view
             if selected == "Long View":
                 v.LongVectorOverlay(

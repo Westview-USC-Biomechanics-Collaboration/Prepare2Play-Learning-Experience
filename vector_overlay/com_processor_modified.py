@@ -143,7 +143,7 @@ class BoundaryProcessor:
         
         endTime = time.time()
         print(f"[INFO] COM processing complete in {endTime - startTime:.2f}s")
-        print(f"[INFO] Saved {len(df)} frames to {filename}")
+        print(f"[INFO-COM_Processor_Modified] Saved {len(df)} frames to {filename}")
         print("=" * 50 + "\n")
         
         return filename
