@@ -284,7 +284,7 @@ def process_frame(q: processing.Queue, results_queue: processing.Queue, sex, con
                 break
 
 def frame_reader(frame_queue: processing.Queue, video_path):
-    print(f"[READER] Attempting to open video: '{video_path}'") # <-- ADD THIS LINE
+    print(f"[READER] Attempting to open video: '{video_path}'") 
     with open("lag.txt", "r") as f:
         lag = int(f.read().strip())  
         print(f"Got the lag from vector overlay! {lag}")
