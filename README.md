@@ -23,10 +23,10 @@
   - Changed graph colors
   - Added resultant horizontal force and vertical force (Fz)
     - Purple and Orange for FP1 and FP2, respectively
-# TO-DO:
-- Manual input for the four corners
-- Manual input for the LED location
-- Vector colors for TOP VIEW should not be hard-coded (go in vectoroverlay_GUI.py, draw vectors method)
-- Side view auto detection of LED for the force plates 
-- Change naming convention from SHORT VIEW to SIDE VIEW in all the code
-  - Add SIDE VIEW to config + fix is_side1 boolean input for the parameter
+- TO-DO:
+  - Manual input for the four corners
+  - Manual input for the LED location
+  - Vector colors for TOP VIEW should not be hard-coded (go in vectoroverlay_GUI.py, draw vectors method)
+  - Side view auto detection of LED for the force plates 
+  - Change naming convention from SHORT VIEW to SIDE VIEW in all the code
+    - Add SIDE VIEW to config + fix is_side1 boolean input for the parameter
