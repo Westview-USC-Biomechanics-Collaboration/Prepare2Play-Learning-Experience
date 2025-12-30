@@ -1,11 +1,18 @@
 import csv
+import os
+import pandas as pd
 
 class COM_helper:
     def __init__(self, path: str = "D:\\Backup_download\\pose_landmarks.csv"):
         self.file_path = path
         self._cache = {}
         self._coords_are_normalized = None  # Will auto-detect
-        self._load_cache()
+        if not os.path.isfile(self.file_path):
+            print(f"[WARN] COM CSV not found at {self.file_path}. Using empty placeholder.")
+            # Create an empty DataFrame placeholder so the rest of the code won't break
+            self.df = pd.DataFrame(columns=["FrameNumber", "COM_x", "COM_y"])
+        else:
+            self._load_cache()
     
     def has_data_for_frame(self, video_frame: int) -> bool:
         """

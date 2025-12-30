@@ -162,7 +162,8 @@ def vectorOverlayWithAlignmentCallback(self):
                 'abs time (s)': 'Time(s)'  # ensure time column is consistent
             }
             df_trimmed.rename(columns=column_rename, inplace=True)
-
+            self.state.df_trimmed = df_trimmed.reset_index(drop=True)
+            
             print("[COLUMNS BEFORE] LongVectorOverlay:", list(df_trimmed.columns))
             print("Path to COM CSV before VectorOverlay:", com_csv_path)
             # Run vector overlay with COM for the selected view

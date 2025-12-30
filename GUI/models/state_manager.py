@@ -21,7 +21,9 @@ class StateManager:
         self.zoom_pos = 0            # Canvas 2: force data offset
         self.force_align = None      # Force alignment frame
         self.df_aligned = None       # Aligned force and video data
+        self.df_trimmed = None      # Trimmed force data subset (uses renamed version of columns - e.g. FP1_fy or something like this)
         
+
         # State variables - video
         self.rot = 0                 # Rotation direction
         self.video_align = None      # Video alignment frame
