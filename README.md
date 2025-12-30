@@ -11,8 +11,8 @@
    pip install -r requirements.txt
 6. Open terminal and run: winget install --id Gyan.FFmpeg -e
 
-## Changes
-# Nishk - Date: 12/30/2025
+# Changes
+## Nishk - Date: 12/30/2025
 - Graphs colors are "opposite" so "red" as the input will display blue in the graph
 - Saved PNG of the first frame
 - SIDE VIEW:
