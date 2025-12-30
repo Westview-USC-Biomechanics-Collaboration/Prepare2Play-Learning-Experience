@@ -659,7 +659,9 @@ class VectorOverlay:
         print(f"Processed {processed} frames, COM drawn on {com_drawn_count} frames")
         print("=" * 50 + "\n")
 
-    def TopVectorOverlay(self, df_aligned, outputName=None, show_preview=True, lag=0):
+    def TopVectorOverlay(self, df_aligned, outputName=None, show_preview=True,
+                          lag=0, com_csv_path=None, show_landmarks=False,
+                          boundary_start=0, boundary_end=None):
         """
         Top view vector overlay using df_aligned for exact frame/force mapping.
 
@@ -668,6 +670,9 @@ class VectorOverlay:
         - fx = -Fy, fy = -Fx
         - px = pressure_y, py = 1 - pressure_x
         """
+        if boundary_end is None:
+            boundary_end = self.frame_count - 1
+
         print("\n========== TopVectorOverlay (df_aligned) START ==========")
         print(f"df_aligned rows: {len(df_aligned)}")
         print(f"Video frames: {self.frame_count}, fps: {self.fps}")

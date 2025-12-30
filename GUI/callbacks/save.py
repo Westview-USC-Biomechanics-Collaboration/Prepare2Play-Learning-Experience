@@ -186,7 +186,6 @@ def saveCallback(self):
     # ============================================================
     # EXPORT (WITH GRAPHS)
     # ============================================================
-
     def export_video():
         """Export video with synchronized force graphs"""
         
@@ -204,17 +203,33 @@ def saveCallback(self):
         print(f"[SAVE] Rows to export: {len(dfw)}")
         print(f"[SAVE] COM enabled: {self.COM_intVar.get() == 1}")
 
-        # Get view-specific force labels
+        # ========== VIDEO SLOWDOWN FACTOR ==========
+        SLOW_FACTOR = 2.0
+        
+        # Get view-specific force labels and colors
         view = self.selected_view.get()
         if view == "Long View":
             label1_1, label1_2 = "FP1_Fy", "FP1_Fz"
             label2_1, label2_2 = "FP2_Fy", "FP2_Fz"
+            # Colors from old code: purple and green for FP1, orange and blue for FP2
+            color1_1, color1_2 = 'purple', 'green'
+            color2_1, color2_2 = 'orange', 'blue'
+            label1_1_name, label1_2_name = 'Force horizontal', 'Force vertical'
+            label2_1_name, label2_2_name = 'Force horizontal', 'Force vertical'
         elif view == "Short View":
             label1_1, label1_2 = "FP1_Fx", "FP1_Fz"
             label2_1, label2_2 = "FP2_Fx", "FP2_Fz"
+            color1_1, color1_2 = 'purple', 'green'
+            color2_1, color2_2 = 'orange', 'blue'
+            label1_1_name, label1_2_name = 'Force horizontal', 'Force vertical'
+            label2_1_name, label2_2_name = 'Force horizontal', 'Force vertical'
         else:  # Top View
             label1_1, label1_2 = "FP1_Fy", "FP1_Fx"
             label2_1, label2_2 = "FP2_Fy", "FP2_Fx"
+            color1_1, color1_2 = 'purple', 'green'
+            color2_1, color2_2 = 'orange', 'blue'
+            label1_1_name, label1_2_name = 'Force horizontal', 'Force vertical'
+            label2_1_name, label2_2_name = 'Force horizontal', 'Force vertical'
 
         # Get time column
         time_col = "abs time (s)" if "abs time (s)" in dfw.columns else "Time(s)"
@@ -234,52 +249,156 @@ def saveCallback(self):
 
         print(f"[SAVE] Time range: {lower_x:.2f} to {upper_x:.2f} seconds")
         print(f"[SAVE] Force range: {ymin:.2f} to {ymax:.2f} N")
+        print(f"[SAVE] Slowdown factor: {SLOW_FACTOR}x")
 
         # ========== CREATE STATIC PLOTS (ONCE) ==========
-        dpi = plt.rcParams['figure.dpi']
-        width_in = self.Video.frame_width / dpi
-        height_in = (self.Video.frame_height * 0.25) / dpi
-
+        # Create properly sized plots (not stretched)
+        # Use standard matplotlib figure size for good proportions
+        fig_width = 9.6  # inches (will create ~960px width at 100 dpi)
+        fig_height = 4.8  # inches (will create ~480px height at 100 dpi)
+        
         # Figure 1: Force Plate 1
-        fig1, ax1 = plt.subplots(figsize=(width_in, height_in))
-        fig1.subplots_adjust(bottom=0.2)
-        ax1.plot(time, y1, alpha=0.5, color='green', linewidth=1.5, label='Horizontal')
-        ax1.plot(time, y2, alpha=0.5, color='red', linewidth=1.5, label='Vertical')
+        fig1, ax1 = plt.subplots(figsize=(fig_width, fig_height), dpi=100)
+        fig1.subplots_adjust(bottom=0.15, left=0.1, right=0.95, top=0.92)
+        
+        ax1.plot(time, y1, linestyle='-', color=color1_1, linewidth=1.5, label=label1_1_name)
+        ax1.plot(time, y2, linestyle='-', color=color1_2, linewidth=1.5, label=label1_2_name)
         ax1.set_xlim([lower_x, upper_x])
         ax1.set_ylim([ymin, ymax * 1.2])
         ax1.axhline(0, color='black', linewidth=2.0, linestyle='--')
-        ax1.set_title('Force Plate 1')
-        ax1.set_xlabel("Time (s)")
-        ax1.set_ylabel("Force (N)")
-        ax1.legend(loc='upper left')
+        ax1.set_title('Force plate 1 Force Time Graph', fontsize=12, fontweight='bold')
+        ax1.set_xlabel("Time (s.)", fontsize=10)
+        ax1.set_ylabel("Forces (N.)", fontsize=10)
+        ax1.legend(loc='upper left', fontsize=9)
+        ax1.grid(True, alpha=0.3)
 
         # Figure 2: Force Plate 2
-        fig2, ax2 = plt.subplots(figsize=(width_in, height_in))
-        fig2.subplots_adjust(bottom=0.2)
-        ax2.plot(time, y3, alpha=0.5, color='blue', linewidth=1.5, label='Horizontal')
-        ax2.plot(time, y4, alpha=0.5, color='orange', linewidth=1.5, label='Vertical')
+        fig2, ax2 = plt.subplots(figsize=(fig_width, fig_height), dpi=100)
+        fig2.subplots_adjust(bottom=0.15, left=0.1, right=0.95, top=0.92)
+        
+        ax2.plot(time, y3, linestyle='-', color=color2_1, linewidth=1.5, label=label2_1_name)
+        ax2.plot(time, y4, linestyle='-', color=color2_2, linewidth=1.5, label=label2_2_name)
         ax2.set_xlim([lower_x, upper_x])
         ax2.set_ylim([ymin, ymax * 1.2])
         ax2.axhline(0, color='black', linewidth=2.0, linestyle='--')
-        ax2.set_title('Force Plate 2')
-        ax2.set_xlabel("Time (s)")
-        ax2.set_ylabel("Force (N)")
-        ax2.legend(loc='upper left')
+        ax2.set_title('Force plate 2 Force Time Graph', fontsize=12, fontweight='bold')
+        ax2.set_xlabel("Time (s.)", fontsize=10)
+        ax2.set_ylabel("Forces (N.)", fontsize=10)
+        ax2.legend(loc='upper left', fontsize=9)
+        ax2.grid(True, alpha=0.3)
 
         # Convert static plots to numpy arrays
         buf1 = BytesIO()
-        fig1.savefig(buf1, format='png')
+        fig1.savefig(buf1, format='png', dpi=100)
         buf1.seek(0)
         plot_static_1 = np.array(Image.open(buf1))[:, :, 0:3]
         buf1.close()
 
         buf2 = BytesIO()
-        fig2.savefig(buf2, format='png')
+        fig2.savefig(buf2, format='png', dpi=100)
         buf2.seek(0)
         plot_static_2 = np.array(Image.open(buf2))[:, :, 0:3]
         buf2.close()
 
         print(f"[SAVE] Static plot dimensions: {plot_static_1.shape}")
+
+    # ============================================================
+    # EXPORT (WITH GRAPHS)
+    # ============================================================
+
+    # def export_video():
+    #     """Export video with synchronized force graphs"""
+        
+    #     # Disable export button during processing
+    #     export_button.config(state=tk.DISABLED, text="Processing...")
+    #     self.save_window.update()
+        
+    #     start = min(self.save_start, self.save_end)
+    #     end = max(self.save_start, self.save_end)
+
+    #     dfw = df.iloc[start:end + 1].copy()
+
+    #     print(f"\n[SAVE] ===== EXPORT STARTING =====")
+    #     print(f"[SAVE] Exporting indices {start} → {end}")
+    #     print(f"[SAVE] Rows to export: {len(dfw)}")
+    #     print(f"[SAVE] COM enabled: {self.COM_intVar.get() == 1}")
+
+    #     # Get view-specific force labels
+    #     view = self.selected_view.get()
+    #     if view == "Long View":
+    #         label1_1, label1_2 = "FP1_Fy", "FP1_Fz"
+    #         label2_1, label2_2 = "FP2_Fy", "FP2_Fz"
+    #     elif view == "Short View":
+    #         label1_1, label1_2 = "FP1_Fx", "FP1_Fz"
+    #         label2_1, label2_2 = "FP2_Fx", "FP2_Fz"
+    #     else:  # Top View
+    #         label1_1, label1_2 = "FP1_Fy", "FP1_Fx"
+    #         label2_1, label2_2 = "FP2_Fy", "FP2_Fx"
+
+    #     # Get time column
+    #     time_col = "abs time (s)" if "abs time (s)" in dfw.columns else "Time(s)"
+    #     time = pd.to_numeric(dfw[time_col], errors="coerce")
+
+    #     # Extract force data
+    #     y1 = dfw[label1_1].fillna(0)
+    #     y2 = dfw[label1_2].fillna(0)
+    #     y3 = dfw[label2_1].fillna(0)
+    #     y4 = dfw[label2_2].fillna(0)
+
+    #     # Calculate axis limits
+    #     ymax = max(y1.max(), y2.max(), y3.max(), y4.max())
+    #     ymin = min(y1.min(), y2.min(), y3.min(), y4.min())
+    #     lower_x = time.min()
+    #     upper_x = time.max()
+
+    #     print(f"[SAVE] Time range: {lower_x:.2f} to {upper_x:.2f} seconds")
+    #     print(f"[SAVE] Force range: {ymin:.2f} to {ymax:.2f} N")
+
+    #     # ========== CREATE STATIC PLOTS (ONCE) ==========
+    #     dpi = plt.rcParams['figure.dpi']
+    #     width_in = self.Video.frame_width / dpi
+    #     height_in = (self.Video.frame_height * 0.25) / dpi
+
+    #     # Figure 1: Force Plate 1
+    #     fig1, ax1 = plt.subplots(figsize=(width_in, height_in))
+    #     fig1.subplots_adjust(bottom=0.2)
+    #     ax1.plot(time, y1, alpha=0.5, color='green', linewidth=1.5, label='Horizontal')
+    #     ax1.plot(time, y2, alpha=0.5, color='red', linewidth=1.5, label='Vertical')
+    #     ax1.set_xlim([lower_x, upper_x])
+    #     ax1.set_ylim([ymin, ymax * 1.2])
+    #     ax1.axhline(0, color='black', linewidth=2.0, linestyle='--')
+    #     ax1.set_title('Force Plate 1')
+    #     ax1.set_xlabel("Time (s)")
+    #     ax1.set_ylabel("Force (N)")
+    #     ax1.legend(loc='upper left')
+
+    #     # Figure 2: Force Plate 2
+    #     fig2, ax2 = plt.subplots(figsize=(width_in, height_in))
+    #     fig2.subplots_adjust(bottom=0.2)
+    #     ax2.plot(time, y3, alpha=0.5, color='blue', linewidth=1.5, label='Horizontal')
+    #     ax2.plot(time, y4, alpha=0.5, color='orange', linewidth=1.5, label='Vertical')
+    #     ax2.set_xlim([lower_x, upper_x])
+    #     ax2.set_ylim([ymin, ymax * 1.2])
+    #     ax2.axhline(0, color='black', linewidth=2.0, linestyle='--')
+    #     ax2.set_title('Force Plate 2')
+    #     ax2.set_xlabel("Time (s)")
+    #     ax2.set_ylabel("Force (N)")
+    #     ax2.legend(loc='upper left')
+
+    #     # Convert static plots to numpy arrays
+    #     buf1 = BytesIO()
+    #     fig1.savefig(buf1, format='png')
+    #     buf1.seek(0)
+    #     plot_static_1 = np.array(Image.open(buf1))[:, :, 0:3]
+    #     buf1.close()
+
+    #     buf2 = BytesIO()
+    #     fig2.savefig(buf2, format='png')
+    #     buf2.seek(0)
+    #     plot_static_2 = np.array(Image.open(buf2))[:, :, 0:3]
+    #     buf2.close()
+
+    #     print(f"[SAVE] Static plot dimensions: {plot_static_1.shape}")
 
         # ========== OPEN VIDEO CAPTURES ==========
         cam_vector = cv2.VideoCapture(self.save_vector_path)
