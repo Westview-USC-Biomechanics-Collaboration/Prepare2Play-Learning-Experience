@@ -152,6 +152,7 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
         # Find COM
         if displayCOM == True:
             datain = pd.Series(data, index=columns_name, name="Datain Series")
+            
             dataout = calculateCOM(datain, sex)
             cv2.circle(annotated_image, (int(dataout[0]), int(dataout[1])), 12, (0, 0, 255), -1)
 

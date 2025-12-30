@@ -709,6 +709,7 @@ class VectorOverlay:
         # print(f"Using scale_factor = {scale_factor:.3f}")
 
         # -------- 2) Video writer --------
+        self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
         out = cv.VideoWriter(
             outputName,
             cv.VideoWriter_fourcc(*"mp4v"),
@@ -734,6 +735,9 @@ class VectorOverlay:
 
             if frame_idx < 0 or frame_idx >= self.frame_count:
                 print(f"[WARN] Row {idx}: FrameNumber {frame_idx} out of range, skipping.")
+                continue
+            
+            if frame_idx < boundary_start or frame_idx > boundary_end:
                 continue
 
             self.video.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
@@ -775,16 +779,17 @@ class VectorOverlay:
             # Debug prints
             if processed < 10 or processed % 30 == 0:
                 video_t = frame_idx / self.fps if self.fps else 0.0
-                if force_time_array is not None and row_i < len(force_time_array):
-                    force_t = force_time_array[row_i]
+                if force_time_array is not None and 0 <= idx < len(force_time_array):
+                    force_t = force_time_array[idx]
                     print(
-                        f"[DEBUG] row={row_i:5d}, frame={frame_idx:5d}, "
+                        f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
                         f"video_t={video_t:.4f}s, {time_col_name}={force_t:.4f}s, Δ={force_t - video_t:.4f}s, "
                         f"F1_Fx={raw_F1_Fx:.2f}, F1_Fy={raw_F1_Fy:.2f}"
                     )
                 else:
                     print(
-                        f"[DEBUG] row={row_i:5d}, frame={frame_idx:5d}, video_t={video_t:.4f}s, "
+                        f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
+                        f"video_t={video_t:.4f}s, "
                         f"F1_Fx={raw_F1_Fx:.2f}, F1_Fy={raw_F1_Fy:.2f}"
                     )
 
@@ -792,10 +797,8 @@ class VectorOverlay:
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
 
             if show_preview:
-                cv2.imshow(
-                    "Top View (df_aligned)",
-                    cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5))),
-                )
+                preview_frame = cv2.resize(frame, (self.frame_width // 2, self.frame_height // 2))
+                cv2.imshow("Top View (No COM)", preview_frame)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
@@ -809,7 +812,9 @@ class VectorOverlay:
         print(f"Finished processing video; Total Frames written: {processed}")
         print("========== TopVectorOverlay (df_aligned) END ==========\n")
 
-    def ShortVectorOverlay(self, df_aligned, outputName=None, show_preview=True, lag=0):
+    def ShortVectorOverlay(self, df_aligned, outputName=None, show_preview=True,
+                          lag=0, com_csv_path=None, show_landmarks=False,
+                          boundary_start=0, boundary_end=None):
         """
         Short view vector overlay using df_aligned for exact frame/force mapping.
 
@@ -825,6 +830,13 @@ class VectorOverlay:
 
         Uses your trapezoid mapping via drawArrows(..., short=True).
         """
+        # Load COM data
+        # self.load_com_data(com_csv_path)
+        self.load_com_helper(com_csv_path)
+
+        if boundary_end is None:
+            boundary_end = self.frame_count - 1
+
         print("\n========== ShortVectorOverlay (df_aligned) START ==========")
         print(f"df_aligned rows: {len(df_aligned)}")
         print(f"Video frames: {self.frame_count}, fps: {self.fps}")
@@ -837,7 +849,7 @@ class VectorOverlay:
             outputName = "short_view_overlay_output.mp4"
             print(f"No output name provided, using default: {outputName}")
 
-        # ---- Determine which plate is in front ONCE (same logic you had) ----
+        # ---- Determine which plate is in front ONCE ----
         if len(self.corners) < 8:
             print("Error: corners not set. Run check_corner(view=...) first.")
             return
@@ -855,18 +867,41 @@ class VectorOverlay:
             df_aligned["FP2_Fz"].astype(float).fillna(0.0).to_numpy(),
         )
 
-        out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
-                            (self.frame_width, self.frame_height))
+        self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        out = cv.VideoWriter(
+            outputName,
+            cv.VideoWriter_fourcc(*'mp4v'),
+            self.fps,
+            (self.frame_width, self.frame_height)
+        )
+
+        # Optional: force time column for debug
+        if "Time(s)" in df_aligned.columns:
+            force_time_array = df_aligned["Time(s)"].astype(float).to_numpy()
+            time_col_name = "Time(s)"
+        elif "abs time (s)" in df_aligned.columns:
+            force_time_array = df_aligned["abs time (s)"].astype(float).to_numpy()
+            time_col_name = "abs time (s)"
+        else:
+            force_time_array = None
+            time_col_name = None
 
         processed = 0
-        for _, row in df_aligned.iterrows():
-            frame_number = int(row["FrameNumber"])
-            if frame_number < 0 or frame_number >= self.frame_count:
+        com_drawn_count = 0
+
+        for idx, row in df_aligned.iterrows():
+            frame_idx = int(row["FrameNumber"])
+            if frame_idx < 0 or frame_idx >= self.frame_count:
+                print(f"[WARN] Row {idx}: FrameNumber {frame_idx} out of range, skipping.")
                 continue
 
-            self.video.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+            if frame_idx < boundary_start or frame_idx > boundary_end:
+                continue
+
+            self.video.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
             ret, frame = self.video.read()
             if not ret:
+                print(f"[WARN] Could not read frame {frame_idx}, stopping.")
                 break
 
             # --- raw forces from df_aligned ---
@@ -904,11 +939,38 @@ class VectorOverlay:
                 px2 = 1 - px2
                 py1 = 1 - py1
                 py2 = 1 - py2
+            
+            if processed < 10 or processed % 30 == 0:
+                video_t = frame_idx / self.fps if self.fps else 0.0
+                if force_time_array is not None and 0 <= idx < len(force_time_array):
+                    force_t = force_time_array[idx]
+                    print(
+                        f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
+                        f"video_t={video_t:.4f}s, {time_col_name}={force_t:.4f}s, "
+                        f"Δ={force_t - video_t:.4f}s, "
+                    )
+                else:
+                    print(
+                        f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
+                        f"video_t={video_t:.4f}s, "
+                    )
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2, short=True)
 
+             # ----- Optionally draw landmarks -----
+            debug_com = (processed < 10)
+            # frame = self.draw_com_on_frame(frame, frame_idx, debug=debug_com)
+            if self.com_helper is not None:
+                frame = self.com_helper.drawFigure(frame, frame_idx)
+
+            # Track how many frames had COM drawn
+            if self.com_data is not None and frame_idx in self.com_data.index:
+                com_drawn_count += 1
+
+            # Show preview if desired
             if show_preview:
-                cv2.imshow("Short View (df_aligned)", cv2.resize(frame, (self.frame_width//2, self.frame_height//2)))
+                preview_frame = cv2.resize(frame, (self.frame_width // 2, self.frame_height // 2))
+                cv2.imshow("Short View with COM", preview_frame)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
@@ -919,7 +981,7 @@ class VectorOverlay:
         if show_preview:
             cv2.destroyAllWindows()
 
-        print(f"Finished processing short view; Total Frames written: {processed}")
+        print(f"Processed {processed} frames, COM drawn on {com_drawn_count} frames")
         print("========== ShortVectorOverlay (df_aligned) END ==========\n")
 
 # Example usage with synchronization parameters

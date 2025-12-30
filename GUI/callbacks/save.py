@@ -211,23 +211,23 @@ def saveCallback(self):
         if view == "Long View":
             label1_1, label1_2 = "FP1_Fy", "FP1_Fz"
             label2_1, label2_2 = "FP2_Fy", "FP2_Fz"
-            # Colors from old code: purple and green for FP1, orange and blue for FP2
+            # Colors from old code: purple and green for FP1, yellow and blue for FP2
             color1_1, color1_2 = 'purple', 'green'
-            color2_1, color2_2 = 'orange', 'blue'
+            color2_1, color2_2 = 'yellow', 'navy'
             label1_1_name, label1_2_name = 'Force horizontal', 'Force vertical'
             label2_1_name, label2_2_name = 'Force horizontal', 'Force vertical'
         elif view == "Short View":
             label1_1, label1_2 = "FP1_Fx", "FP1_Fz"
             label2_1, label2_2 = "FP2_Fx", "FP2_Fz"
             color1_1, color1_2 = 'purple', 'green'
-            color2_1, color2_2 = 'orange', 'blue'
+            color2_1, color2_2 = 'yellow', 'navy'
             label1_1_name, label1_2_name = 'Force horizontal', 'Force vertical'
             label2_1_name, label2_2_name = 'Force horizontal', 'Force vertical'
         else:  # Top View
             label1_1, label1_2 = "FP1_Fy", "FP1_Fx"
             label2_1, label2_2 = "FP2_Fy", "FP2_Fx"
             color1_1, color1_2 = 'purple', 'green'
-            color2_1, color2_2 = 'orange', 'blue'
+            color2_1, color2_2 = 'yellow', 'navy'
             label1_1_name, label1_2_name = 'Force horizontal', 'Force vertical'
             label2_1_name, label2_2_name = 'Force horizontal', 'Force vertical'
 
@@ -254,7 +254,7 @@ def saveCallback(self):
         # ========== CREATE STATIC PLOTS (ONCE) ==========
         # Create properly sized plots (not stretched)
         # Use standard matplotlib figure size for good proportions
-        fig_width = 9.6  # inches (will create ~960px width at 100 dpi)
+        fig_width = 8  # inches (will create ~960px width at 100 dpi)
         fig_height = 4.8  # inches (will create ~480px height at 100 dpi)
         
         # Figure 1: Force Plate 1
@@ -266,9 +266,9 @@ def saveCallback(self):
         ax1.set_xlim([lower_x, upper_x])
         ax1.set_ylim([ymin, ymax * 1.2])
         ax1.axhline(0, color='black', linewidth=2.0, linestyle='--')
-        ax1.set_title('Force plate 1 Force Time Graph', fontsize=12, fontweight='bold')
-        ax1.set_xlabel("Time (s.)", fontsize=10)
-        ax1.set_ylabel("Forces (N.)", fontsize=10)
+        ax1.set_title('Force-Time Graph for Plate 1', fontsize=12, fontweight='bold')
+        ax1.set_xlabel("Time (s)", fontsize=10)
+        ax1.set_ylabel("Forces (N)", fontsize=10)
         ax1.legend(loc='upper left', fontsize=9)
         ax1.grid(True, alpha=0.3)
 
@@ -281,9 +281,9 @@ def saveCallback(self):
         ax2.set_xlim([lower_x, upper_x])
         ax2.set_ylim([ymin, ymax * 1.2])
         ax2.axhline(0, color='black', linewidth=2.0, linestyle='--')
-        ax2.set_title('Force plate 2 Force Time Graph', fontsize=12, fontweight='bold')
-        ax2.set_xlabel("Time (s.)", fontsize=10)
-        ax2.set_ylabel("Forces (N.)", fontsize=10)
+        ax2.set_title('Force-Time Graph for Plate 2', fontsize=12, fontweight='bold')
+        ax2.set_xlabel("Time (s)", fontsize=10)
+        ax2.set_ylabel("Forces (N)", fontsize=10)
         ax2.legend(loc='upper left', fontsize=9)
         ax2.grid(True, alpha=0.3)
 
@@ -426,6 +426,14 @@ def saveCallback(self):
 
         # ========== PROCESS EACH FRAME ==========
         processed_count = 0
+        vline1 = ax1.axvline(time.iloc[0], color='red',
+                     linestyle='--', linewidth=1.5, alpha=0.6)
+        vline2 = ax2.axvline(time.iloc[0], color='blue',
+                                linestyle='--', linewidth=1.5, alpha=0.6)
+        ax1.set_xlim([lower_x, upper_x])
+        ax2.set_xlim([lower_x, upper_x])
+        ax1.set_ylim([ymin, ymax * 1.2])
+        ax2.set_ylim([ymin, ymax * 1.2])
 
         for df_idx, row in dfw.iterrows():
             # df_idx is the index in df_trimmed (0-based after reset)
@@ -448,14 +456,16 @@ def saveCallback(self):
             current_time = float(row[time_col])
 
             # Clear and redraw only the vertical line
-            ax1.cla()
-            ax2.cla()
-            ax1.set_xlim([lower_x, upper_x])
-            ax2.set_xlim([lower_x, upper_x])
-            ax1.set_ylim([ymin, ymax * 1.2])
-            ax2.set_ylim([ymin, ymax * 1.2])
-            ax1.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
-            ax2.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
+            # ax1.cla()
+            # ax2.cla()
+            # ax1.set_xlim([lower_x, upper_x])
+            # ax2.set_xlim([lower_x, upper_x])
+            # ax1.set_ylim([ymin, ymax * 1.2])
+            # ax2.set_ylim([ymin, ymax * 1.2])
+            # ax1.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
+            # ax2.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
+            vline1.set_xdata([current_time])
+            vline2.set_xdata([current_time])
 
             # Convert to numpy
             buf1 = BytesIO()

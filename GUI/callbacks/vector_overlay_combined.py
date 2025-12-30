@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import cv2
 from vector_overlay.vectoroverlay_GUI import VectorOverlay
-from GUI.callbacks.ledSyncing_with_detection_system import new_led  # Updated import
+from GUI.callbacks.ledSyncing_with_detection_system import new_led  
 from GUI.callbacks.global_variable import globalVariable
 from Util.force_boundary_finder import find_force_boundaries, get_trimmed_subset
 from vector_overlay.com_processor_modified import BoundaryProcessor as Processor
@@ -59,8 +59,8 @@ def vectorOverlayWithAlignmentCallback(self):
         
         self.state.df_aligned = df_aligned
         
-        with open("lag.txt", "w") as f:
-            f.write(str(lag))
+        # with open("lag.txt", "w") as f:
+        #     f.write(str(lag))
 
         print(f"Alignment complete. Lag: {lag} frames")
         print(f"df_aligned shape: {df_aligned.shape}")

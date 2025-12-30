@@ -14,7 +14,7 @@ from GUI.callbacks.led_detection_system import (
     process_view,
     LongViewLEDConfig,
     TopViewLEDConfig,
-    ShortViewLEDConfig,
+    SideViewLEDConfig,
     LEDDetector
 )
 
@@ -25,6 +25,35 @@ from GUI.callbacks.ledSyncing import (
     align_data
 )
 
+def swap_force_plates(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Swap FP1 and FP2 data in the dataframe.
+    
+    Args:
+        df: DataFrame with FP1_* and FP2_* columns
+        
+    Returns:
+        DataFrame with FP1 and FP2 data swapped
+    """
+    df = df.copy()
+    
+    # Define column pairs to swap
+    swap_pairs = [
+        ('FP1_Fx', 'FP2_Fx'),
+        ('FP1_Fy', 'FP2_Fy'),
+        ('FP1_Fz', 'FP2_Fz'),
+        ('FP1_|F|', 'FP2_|F|'),
+        ('FP1_Ax', 'FP2_Ax'),
+        ('FP1_Ay', 'FP2_Ay'),
+    ]
+    
+    for fp1_col, fp2_col in swap_pairs:
+        if fp1_col in df.columns and fp2_col in df.columns:
+            # Swap the columns
+            df[fp1_col], df[fp2_col] = df[fp2_col].copy(), df[fp1_col].copy()
+    
+    print("[SWAP] Swapped FP1 ↔ FP2 data")
+    return df
 
 def new_led_with_detection_system(self, view, parent_path, video_file, force_file):
     """
@@ -237,28 +266,117 @@ def _save_alignment_plot(df_aligned, lag, output_dir, view):
 
 def new_led(self, view, parent_path, video_file, force_file, use_detection_system=True):
     """
-    Main entry point for LED alignment.
+    Run LED syncing with optional new detection system. (plate swap)
     
     Args:
-        self: GUI instance
-        view: Camera view ("Long View", "Top View", or "Short View")
-        parent_path: Directory containing files
-        video_file: Video filename
-        force_file: Force data filename
-        use_detection_system: If True, use new detection system; if False, use original
-    
-    Returns:
-        tuple: (lag_frames, df_aligned)
+        view: View type ("Long View", "Top View", "Side1 View", "Side2 View")
+        use_detection_system: If True, use new LED detection system with plate swap
     """
+    import time
+    startTime = time.time()
+    
+    video_path = os.path.join(parent_path, video_file)
+    
     if use_detection_system:
-        try:
-            return new_led_with_detection_system(self, view, parent_path, video_file, force_file)
-        except Exception as e:
-            print(f"[ERROR] Detection system failed: {e}")
-            print("[FALLBACK] Using original method...")
-            return new_led_original(self, view, parent_path, video_file, force_file)
+        # Use new detection system
+        from GUI.callbacks.led_detection_system import process_view, config_map
+        
+        print(f"\n[INFO] Using NEW LED detection system for {view}")
+        
+        # Get config to check plate_swap setting
+        config_class = config_map.get(view)
+        if config_class is None:
+            raise ValueError(f"Unknown view: {view}")
+        
+        config = config_class()
+        should_swap = config.plate_swap
+        
+        print(f"[INFO] Force plate swap for {view}: {'YES' if should_swap else 'NO'}")
+        
+        # Process video to get LED signal
+        df_video = process_view(video_path, view, parent_path)
+        
+        # Load and process force data (same as before)
+        force_path = os.path.join(parent_path, force_file)
+        df_force = pd.read_csv(force_path, header=17, delimiter='\t', encoding='latin1').drop(0)
+        df_force = df_force.apply(pd.to_numeric, errors='coerce')
+        
+        # Rename columns
+        force_dict = {
+            'abs time (s)': 'Time(s)',
+            'Fx': 'FP1_Fx', 'Fy': 'FP1_Fy', 'Fz': 'FP1_Fz', '|Ft|': 'FP1_|F|', 
+            'Ax': 'FP1_Ax', 'Ay': 'FP1_Ay',
+            'Fx.1': 'FP2_Fx', 'Fy.1': 'FP2_Fy', 'Fz.1': 'FP2_Fz', '|Ft|.1': 'FP2_|F|', 
+            'Ax.1': 'FP2_Ax', 'Ay.1': 'FP2_Ay',
+            'Fx.2': 'FP3_Fx', 'Fy.2': 'FP3_Fy', 'Fz.2': 'FP3_Fz', '|Ft|.2': 'FP3_|F|', 
+            'Ax.2': 'FP3_Ax', 'Ay.2': 'FP3_Ay'
+        }
+        df_force.rename(columns=force_dict, inplace=True)
+        
+        # Create LED signal from force data
+        df_force['FP_LED_Signal'] = np.sign(df_force['FP3_Fz'])
+        
+        # Align force and video (same logic as original)
+        df_force_subset = df_force.iloc[::10].reset_index(drop=True)
+        signal_force = df_force_subset['FP_LED_Signal']
+        signal_video = df_video['Video_LED_Signal']
+        
+        # Z-normalize signals
+        video_arr = np.asarray(signal_video, dtype=float)
+        force_arr = np.asarray(signal_force, dtype=float)
+        
+        if np.std(video_arr) > 0:
+            video_arr = (video_arr - np.mean(video_arr)) / np.std(video_arr)
+        if np.std(force_arr) > 0:
+            force_arr = (force_arr - np.mean(force_arr)) / np.std(force_arr)
+        
+        from scipy import signal
+        correlation = signal.correlate(video_arr, force_arr, mode="valid")
+        lags = signal.correlation_lags(video_arr.size, force_arr.size, mode="valid")
+        lag = lags[np.argmax(correlation)]
+        
+        print(f"[INFO] Detected lag: {lag} frames")
+        
+        # Create aligned dataframe
+        df_force_subset['FrameNumber'] = list(range(lag, lag + len(df_force_subset)))
+        df_aligned = pd.merge(df_force_subset, df_video, on='FrameNumber', how='left')
+        
+        # **CRITICAL: Apply plate swap if needed**
+        if should_swap:
+            print(f"\n{'='*60}")
+            print(f"[SWAP] Applying force plate swap for {view}")
+            print(f"{'='*60}")
+            df_aligned = swap_force_plates(df_aligned)
+        
+        # Save results
+        max_corr = float(np.max(correlation))
+        perfect_corr = min(len(force_arr), len(video_arr))
+        relative_score = max_corr / perfect_corr
+        print(f"[INFO] Max Corr: {max_corr:.2f}, Perfect Corr: {perfect_corr:.2f}, Relative Score: {relative_score:.4f}")
+        
+        df_result = pd.DataFrame([[
+            video_file, force_file, lag, max_corr, perfect_corr, relative_score, should_swap
+        ]], columns=[
+            'Video File', 'Force File', 'Video Frame for t_zero force',
+            'Correlation Score', 'Perfect Score', 'Relative Score', 'Plate Swapped'
+        ])
+        
+        df_result_filename = force_file.replace('.txt', '_Results.csv')
+        df_result.to_csv(os.path.join(parent_path, df_result_filename), index=False)
+        
+        print(f"[INFO] LED sync complete. Time: {time.time() - startTime:.2f}s")
+        print(f"[INFO] Plate swap applied: {should_swap}")
+        
+        return lag, df_aligned
+    
     else:
-        return new_led_original(self, view, parent_path, video_file, force_file)
+        # Use original detection method (no plate swap)
+        print(f"\n[INFO] Using ORIGINAL LED detection method")
+        from GUI.callbacks.ledSyncing import run_led_syncing
+        lag = run_led_syncing(self, parent_path, video_file, force_file)
+        # Note: Original method doesn't return df_aligned, so you'd need to construct it
+        # For now, raising an error to force use of new system
+        raise NotImplementedError("Original method doesn't support df_aligned return")
 
 
 # For backward compatibility, keep old function name
