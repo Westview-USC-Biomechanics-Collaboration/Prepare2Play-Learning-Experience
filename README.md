@@ -23,7 +23,7 @@
   - Changed graph colors
   - Added resultant horizontal force and vertical force (Fz)
     - Purple and Orange for FP1 and FP2, respectively
-#TO-DO:
+# TO-DO:
 - Manual input for the four corners
 - Manual input for the LED location
 - Vector colors for TOP VIEW should not be hard-coded (go in vectoroverlay_GUI.py, draw vectors method)
