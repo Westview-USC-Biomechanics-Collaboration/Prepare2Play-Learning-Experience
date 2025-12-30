@@ -7,7 +7,7 @@ appearance and position.
 
 Key Features:
 - Automatic Side View classification (Side1 vs Side2) based on LED position
-- Support for different resolutions (1920x1080 for Long View, 3840x2160 for GoPro views)
+- Support for different resolutions (1920x1080 for Long View, 1920x1080 for GoPro views)
 - Configurable force plate swap for each view to maintain consistent orientation
 
 Author: Modified from original USC Biomechanics code
@@ -180,26 +180,26 @@ class TopViewLEDConfig(LEDConfig):
     """
     Configuration for Top View camera (GoPro).
     
-    Resolution: 3840x2160 (GoPro 4K)
+    Resolution: 1920x1080 (GoPro 4K)
     Force plate orientation: When LED is at top-center:
     - Physical left (in video) = FP2
     - Physical right (in video) = FP1
     So we SWAP to match Long View convention
     LED location: Top-center of frame (when camera looks down)
     """
-    def __init__(self):
+    def __init__(self): #TODO: check plate swap for top view depending on LED location (only implemented in side view)
         super().__init__(
             view_name="Top View",
-            frame_width=3840,
-            frame_height=2160,
+            frame_width=1920,
+            frame_height=1080,
             # Scale crop region for 4K resolution (2x the 1080p values)
-            led_crop_x0=1400,
-            led_crop_x1=2900,
-            led_crop_y0=100,
-            led_crop_y1=2100,
+            led_crop_x0=700,
+            led_crop_x1=1000,
+            led_crop_y0=80,
+            led_crop_y1=1000,
             template_center_offset_x=45,
             template_center_offset_y=44,
-            plate_swap=True  # Top view: swap FP1/FP2 to match Long View orientation
+            plate_swap=False  # Top view: swap FP1/FP2 to match Long View orientation
         )
     
     def create_led_template(self) -> np.ndarray:
@@ -230,7 +230,7 @@ class SideViewLEDConfig(LEDConfig):
     """
     Base configuration for Side View cameras (GoPro).
     
-    Resolution: 3840x2160 (GoPro 4K)
+    Resolution: 1920x1080 (GoPro 4K)
     
     NOTE: This is a base class. Use auto_detect_side_view() to automatically
     determine if this is Side1 or Side2 based on LED position, then create
@@ -239,34 +239,34 @@ class SideViewLEDConfig(LEDConfig):
     Side1: LED on left, Near plate = FP2, Far plate = FP1 (SWAP needed)
     Side2: LED on right, Near plate = FP1, Far plate = FP2 (NO swap)
     """
-    def __init__(self, is_side1: bool):
+    def __init__(self):
         """
         Initialize Side View configuration.
         
         Args:
             is_side1: True if LED is on left side (Side1), False if on right (Side2)
         """
-        if is_side1:
+        if True:
             # Side1: LED on left
             view_name = "Side1 View"
-            led_crop_x0 = 200
-            led_crop_x1 = 800
-            plate_swap = True  # Side1: near=FP2, far=FP1, so swap
+            led_crop_x0 = 1100
+            led_crop_x1 = 1500
+            plate_swap = False  # Side1: near=FP1, far=FP2, so swap
         else:
             # Side2: LED on right
             view_name = "Side2 View"
             led_crop_x0 = 3040
             led_crop_x1 = 3640
-            plate_swap = False  # Side2: near=FP1, far=FP2 (standard)
+            plate_swap = False  # Side2: near=FP2, far=FP1 (standard)
         
         super().__init__(
             view_name=view_name,
-            frame_width=3840,
-            frame_height=2160,
+            frame_width=1920,
+            frame_height=1080,
             led_crop_x0=led_crop_x0,
             led_crop_x1=led_crop_x1,
-            led_crop_y0=800,
-            led_crop_y1=1600,
+            led_crop_y0=600,
+            led_crop_y1=1000,
             template_center_offset_x=45,
             template_center_offset_y=47,
             plate_swap=plate_swap

@@ -1,13 +1,5 @@
 # Project Title
 
-## 🔄 Current Status
-
-- **Main Active Branch**: [`main`](https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience/tree/chase-GUI)  
-  _This is the most up-to-date working branch with the latest features and updates._
-
----
-
-
 ## 🛠️ Installation
 
 1. Download Python 3.10.11 from: https://www.python.org/downloads/  
@@ -19,15 +11,22 @@
    pip install -r requirements.txt
 6. Open terminal and run: winget install --id Gyan.FFmpeg -e
 
-## 👥 Contributors
-
-- Aarav Yadav  
-- Chase Chen  
-- Ayaan Irshad  
-- Jessie Bao  
-- Deren Erdem  
-- James Guo  
-- Rayyan Hussain  
-- Nishk Shah  
-- Breanna Thayillam  
-- Christopher Yuan
+## Changes
+# Date: 12/30/2025
+- Graphs colors are "opposite" so "red" as the input will display blue in the graph
+- Saved PNG of the first frame
+- SIDE VIEW:
+  - Corrected side view crops for LED detection
+- TOP VIEW:
+  - Corrected res (1920x1080)
+  - Changed LED crop
+  - Changed graph colors
+  - Added resultant horizontal force and vertical force (Fz)
+    - Purple and Orange for FP1 and FP2, respectively
+TO-DO:
+- Manual input for the four corners
+- Manual input for the LED location
+- Vector colors for TOP VIEW should not be hard-coded (go in vectoroverlay_GUI.py, draw vectors method)
+- Side view auto detection of LED for the force plates 
+- Change naming convention from SHORT VIEW to SIDE VIEW in all the code
+  - Add SIDE VIEW to config + fix is_side1 boolean input for the parameter

@@ -16,7 +16,7 @@ warnings.filterwarnings(
 )
 
 # Configurable settings
-MAX_COM_WORKERS = 3  # Easily adjustable number of workers for COM calculation
+MAX_COM_WORKERS = 4  # Easily adjustable number of workers for COM calculation
 FORCE_THRESHOLD = 50  # Minimum force in Newtons to include in processing
 BOUNDARY_PADDING = 10  # Extra frames before/after force threshold
 SHOW_LANDMARKS = False  # Show green landmark dots (set to True to enable)
@@ -34,6 +34,14 @@ def vectorOverlayWithAlignmentCallback(self):
         print(f"Force file: {force_file}")
 
         selected = self.selected_view.get()
+
+        cap = cv2.VideoCapture(self.Video.path)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
+        ret, frame  = cap.read()
+        new_filename = "First_Frame_of_Video.PNG"
+        cv2.imwrite(os.path.join(parent_path, new_filename), frame)
+        cap.release()
+
 
         # ======================================================================
         # STEP 1: ALIGN VIDEO AND FORCE DATA
@@ -177,7 +185,7 @@ def vectorOverlayWithAlignmentCallback(self):
                     boundary_start=boundary_start,
                     boundary_end=boundary_end
                 )
-            elif selected == "Short View":
+            elif selected == "Side View":
                 v.ShortVectorOverlay(
                     df_aligned=df_trimmed,
                     outputName=temp_video,

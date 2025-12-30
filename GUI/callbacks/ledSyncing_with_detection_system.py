@@ -63,7 +63,7 @@ def new_led_with_detection_system(self, view, parent_path, video_file, force_fil
     
     Args:
         self: GUI instance
-        view: "Long View", "Top View", or "Short View"
+        view: "Long View", "Top View", or "Side View"
         parent_path: Directory containing video and force files
         video_file: Video filename
         force_file: Force data filename
@@ -284,6 +284,7 @@ def new_led(self, view, parent_path, video_file, force_file, use_detection_syste
         print(f"\n[INFO] Using NEW LED detection system for {view}")
         
         # Get config to check plate_swap setting
+
         config_class = config_map.get(view)
         if config_class is None:
             raise ValueError(f"Unknown view: {view}")

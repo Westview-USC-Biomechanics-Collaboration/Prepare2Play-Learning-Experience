@@ -463,8 +463,11 @@ class VectorOverlay:
         end_point_2 = (int(point_pair2[0] + xf2), int(point_pair2[1] - yf2))
 
         # Draw arrows with different colors for each plate
-        cv.arrowedLine(frame, point_pair1, end_point_1, (0, 255, 0), 4)  # Green for plate 1
+        cv.arrowedLine(frame, point_pair1, end_point_1, (0, 255, 0), 4)  # Green for plate 1 
         cv.arrowedLine(frame, point_pair2, end_point_2, (255, 0, 0), 4)  # Blue for plate 2
+        # if VideoState.view == "Top View":
+        #     cv.arrowedLine(frame, point_pair1, end_point_1, (255, 0 ,255), 4)  # Purple for plate 1
+        #     cv.arrowedLine(frame, point_pair2, end_point_2, (0, 165, 255), 4)  # Orange for plate 2
 
     def scale_factor(self, x1, x2, y1, y2):
         max_force = max(
