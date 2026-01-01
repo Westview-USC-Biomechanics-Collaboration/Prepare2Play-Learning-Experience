@@ -531,8 +531,12 @@ def select_points(self, cap, view):
         output[0], output[1], output[2], output[3] = coords[0], coords[2], coords[4], coords[6]
         output[4], output[5], output[6], output[7] = coords[7], coords[5], coords[3], coords[1]
     else:
-        output[0], output[1], output[2], output[3], output[4], output[5], output[6], output[7] = coords[1], coords[6], coords[4], coords[0], coords[7], coords[3], coords[2], coords[5]
+        # plate 1: TL, TR, BR, BL
+        output[0], output[1], output[2], output[3] = coords[0], coords[4], coords[6], coords[1]
 
+        # plate 2: TL, TR, BR, BL
+        output[4], output[5], output[6], output[7] = coords[5], coords[2], coords[3], coords[7]
+        
     for out in output:
         cv2.circle(frame, (int(out[0]), int(out[1])), 5, (0, 0, 255), -1)  # Red dots for corners
 
