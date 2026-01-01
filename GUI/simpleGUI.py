@@ -59,6 +59,8 @@ class DisplayApp:
         self.timelineManager = TimelineManager(self)
         self.backgroundManager = BackgroundManager(self.master)
         self.background = self.backgroundManager.init_background()  # store background canvas
+        # from Util.COM_helper import COM_helper
+        # self.COM_helper = COM_helper("pose_landmarks.csv")
 
         # Initialize UI
         self.initUI()

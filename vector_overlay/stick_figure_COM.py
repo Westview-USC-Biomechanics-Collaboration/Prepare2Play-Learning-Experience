@@ -1,4 +1,6 @@
 import traceback
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning, module='google.protobuf.symbol_database')
 import mediapipe as mp
 import cv2
 import numpy as np
@@ -150,6 +152,7 @@ def draw_landmarks_on_image(annotated_image, pose_landmarks_list, sex, displayna
         # Find COM
         if displayCOM == True:
             datain = pd.Series(data, index=columns_name, name="Datain Series")
+            
             dataout = calculateCOM(datain, sex)
             cv2.circle(annotated_image, (int(dataout[0]), int(dataout[1])), 12, (0, 0, 255), -1)
 
@@ -281,7 +284,7 @@ def process_frame(q: processing.Queue, results_queue: processing.Queue, sex, con
                 break
 
 def frame_reader(frame_queue: processing.Queue, video_path):
-    print(f"[READER] Attempting to open video: '{video_path}'") # <-- ADD THIS LINE
+    print(f"[READER] Attempting to open video: '{video_path}'") 
     with open("lag.txt", "r") as f:
         lag = int(f.read().strip())  
         print(f"Got the lag from vector overlay! {lag}")

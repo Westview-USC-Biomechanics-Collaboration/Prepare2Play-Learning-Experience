@@ -22,20 +22,47 @@ def process(self,*value):
         try:
             if self.state.vector_overlay_enabled:
                 self.Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc)
-                if self.state.com_enabled:
-                    _, rawFrame = self.Video.vector_cam.read()
-                    COMFrame = rawFrame.copy()
-                    COMFrame = self.COM_helper.drawFigure(COMFrame, self.state.loc)
-                    self.canvasManager.photo_image3 = self.frameConverter.cvToPillowFromFrame(COMFrame,
-                                                            width=round(self.Video.frame_width * self.canvasManager.zoom_factor3),
-                                                            height=round(self.Video.frame_height * self.canvasManager.zoom_factor3))
-                    self.canvasManager.canvas3.create_image(self.canvasManager.offset_x3, self.canvasManager.offset_y3, image=self.canvasManager.photo_image3, anchor="center")
-
+                
+                if self.state.com_enabled and self.COM_helper:
+                    # Read frame and draw COM on it
+                    ret, frame = self.Video.vector_cam.read()
+                    
+                    if ret:
+                        # Draw COM dot on frame
+                        frame_with_com = self.COM_helper.drawFigure(frame, self.state.loc)
+                        
+                        # Resize for canvas
+                        frame_resized = cv2.resize(
+                            frame_with_com,
+                            (round(self.Video.frame_width * self.canvasManager.zoom_factor3),
+                            round(self.Video.frame_height * self.canvasManager.zoom_factor3))
+                        )
+                        
+                        # Convert to PhotoImage
+                        frame_rgb = cv2.cvtColor(frame_resized, cv2.COLOR_BGR2RGB)
+                        from PIL import Image, ImageTk
+                        self.canvasManager.photo_image3 = ImageTk.PhotoImage(Image.fromarray(frame_rgb))
+                    else:
+                        # Fallback if frame read fails
+                        self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(
+                            camera=self.Video.vector_cam,
+                            width=round(self.Video.frame_width * self.canvasManager.zoom_factor3),
+                            height=round(self.Video.frame_height * self.canvasManager.zoom_factor3)
+                        )
                 else:
-                    self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam,
-                                                            width=round(self.Video.frame_width * self.canvasManager.zoom_factor3),
-                                                            height=round(self.Video.frame_height * self.canvasManager.zoom_factor3))
-                    self.canvasManager.canvas3.create_image(self.canvasManager.offset_x3, self.canvasManager.offset_y3, image=self.canvasManager.photo_image3, anchor="center")
+                    # No COM, use original method
+                    self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(
+                        camera=self.Video.vector_cam,
+                        width=round(self.Video.frame_width * self.canvasManager.zoom_factor3),
+                        height=round(self.Video.frame_height * self.canvasManager.zoom_factor3)
+                    )
+                
+                self.canvasManager.canvas3.create_image(
+                    self.canvasManager.offset_x3,
+                    self.canvasManager.offset_y3,
+                    image=self.canvasManager.photo_image3,
+                    anchor="center"
+                )
         except IndexError as e:
             print("[ERROR] index out of range, check pose_landmarks.csv file to varify rows")
             traceback.print_exc()

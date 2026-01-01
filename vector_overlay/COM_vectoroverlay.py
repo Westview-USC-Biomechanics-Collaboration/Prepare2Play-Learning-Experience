@@ -1,4 +1,7 @@
 import traceback
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning, module='google.protobuf.symbol_database')
+
 import mediapipe as mp
 import cv2
 import numpy as np

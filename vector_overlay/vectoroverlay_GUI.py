@@ -6,6 +6,8 @@ import pandas as pd
 from vector_overlay.select_corners import select_points
 import numpy as np
 import os
+from Util.COM_helper import COM_helper
+
 
 def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords, short=False):
     """
@@ -42,7 +44,7 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords, short=Fal
 
 class VectorOverlay:
 
-    def __init__(self, data, video, force_fps=None):
+    def __init__(self, data, video, force_fps=None, view=None):
         """
         Initialize VectorOverlay with improved synchronization options.
 
@@ -89,6 +91,7 @@ class VectorOverlay:
         self.data = data
         self.video = video
         self.force_fps = force_fps
+        self.view = view
 
         print("========== VectorOverlay INIT ==========")
         print(f"Input force DataFrame shape: {data.shape}")
@@ -115,6 +118,8 @@ class VectorOverlay:
         self.py2 = ()
 
         self.corners = []
+        self.com_data = None # NEW
+        self.com_helper = None
 
         # Initialize
         self.setFrameData()
@@ -158,6 +163,138 @@ class VectorOverlay:
         self.fx2 = tuple(f * scale_factor for f in self.fx2)
         self.fy2 = tuple(f * scale_factor for f in self.fy2)
         self.fz2 = tuple(f * scale_factor for f in self.fz2)
+    
+    # NEW METHODS
+    def load_com_helper(self, com_csv_path):
+        if not com_csv_path:
+            print("[VectorOverlay] No COM CSV provided")
+            self.com_helper = None
+            return
+
+        self.com_helper = COM_helper(com_csv_path)
+
+    # def load_com_data(self, com_csv_path):
+    #     """
+    #     Load COM data from CSV file.
+        
+    #     Args:
+    #         com_csv_path: Path to CSV file with COM data
+    #     """
+    #     if com_csv_path is None or not com_csv_path:
+    #         print("[VectorOverlay] No COM data provided")
+    #         self.com_data = None
+    #         return
+        
+    #     try:
+    #         self.com_data = pd.read_csv(com_csv_path)
+    #         print(f"[VectorOverlay] Loaded COM data: {len(self.com_data)} rows")
+            
+    #         # Verify required columns exist
+    #         required_cols = ['frame_index', 'COM_x', 'COM_y']
+    #         missing = [col for col in required_cols if col not in self.com_data.columns]
+            
+    #         if missing:
+    #             print(f"[VectorOverlay WARNING] Missing columns: {missing}")
+    #             self.com_data = None
+    #             return
+            
+    #         # Print frame range for debugging
+    #         min_frame = self.com_data['frame_index'].min()
+    #         max_frame = self.com_data['frame_index'].max()
+    #         print(f"[VectorOverlay] COM frame range: {min_frame} to {max_frame}")
+            
+    #         # Create frame index lookup for fast access
+    #         self.com_data.set_index('frame_index', inplace=True)
+            
+        # except Exception as e:
+        #     print(f"[VectorOverlay ERROR] Failed to load COM data: {e}")
+        #     import traceback
+        #     traceback.print_exc()
+        #     self.com_data = None
+    
+    def draw_com_on_frame(self, frame, frame_number, debug=True):
+        """
+        Draw COM point on the frame if COM data is available.
+        
+        Args:
+            frame: The frame to draw on (will be modified in place)
+            frame_number: The current frame number
+            debug: If True, print debug info
+        
+        Returns:
+            frame: Frame with COM point drawn
+        """
+        if self.com_data is None:
+            if debug and frame_number % 30 == 0:
+                print(f"[VectorOverlay] Frame {frame_number}: No COM data loaded")
+            return frame
+        
+        try:
+            # Try to find COM data for this frame
+            if frame_number not in self.com_data.index:
+                if debug and frame_number % 30 == 0:
+                    print(f"[VectorOverlay] Frame {frame_number}: Not in COM data index")
+                return frame
+
+            com_row = self.com_data.loc[frame_number]
+            com_x = float(com_row['x'])
+            com_y = float(com_row['y'])
+            
+            # Skip if no data (0, 0)
+            if com_x == 0 and com_y == 0:
+                return frame
+            
+            frame = frame.copy()
+            height, width = frame.shape[:2]
+            
+            # Convert to pixel coordinates if necessary
+            if self._coords_are_normalized:
+                pixel_x = int(com_x * width)
+                pixel_y = int(com_y * height)
+            else:
+                # Already in pixel coordinates
+                pixel_x = int(com_x)
+                pixel_y = int(com_y)
+            
+            # Clamp to frame boundaries
+            pixel_x = max(0, min(pixel_x, width - 1))
+            pixel_y = max(0, min(pixel_y, height - 1))
+            
+            # Draw COM marker (red circle)
+            if pixel_x > 0 and pixel_y > 0:
+                cv2.circle(frame, (pixel_x, pixel_y), 12, (0, 0, 255), -1)
+                # Only print occasionally to avoid spam
+                if row % 30 == 0:
+                    print(f"[COM_helper] Frame {row}: Drew COM at pixel ({pixel_x}, {pixel_y}) from raw ({com_x:.2f}, {com_y:.2f})")
+            
+            # # Get COM coordinates
+            # com_row = self.com_data.loc[frame_number]
+            # com_x = float(com_row['COM_x'])
+            # com_y = float(com_row['COM_y'])
+            
+            # # CRITICAL: COM was calculated on 0.3x scaled frames
+            # # Scale back to full resolution
+            # com_x_full = int(com_x / 0.3)
+            # com_y_full = int(com_y / 0.3)
+            
+            # # Verify point is within frame bounds
+            # height, width = frame.shape[:2]
+            # if 0 <= com_x_full < width and 0 <= com_y_full < height:
+            #     # Draw red circle for COM
+            #     cv2.circle(frame, (com_x_full, com_y_full), 12, (0, 0, 255), -1)
+                
+            #     if debug:
+            #         print(f"[VectorOverlay] Frame {frame_number}: Drew COM at ({com_x_full}, {com_y_full})")
+            # else:
+            #     if debug:
+            #         print(f"[VectorOverlay] Frame {frame_number}: COM out of bounds: ({com_x_full}, {com_y_full})")
+        
+        except Exception as e:
+            if debug:
+                print(f"[VectorOverlay] Frame {frame_number}: Error drawing COM: {e}")
+        
+        return frame
+
 
     def readData(self):
         force_samples = len(self.data)
@@ -327,8 +464,11 @@ class VectorOverlay:
         end_point_2 = (int(point_pair2[0] + xf2), int(point_pair2[1] - yf2))
 
         # Draw arrows with different colors for each plate
-        cv.arrowedLine(frame, point_pair1, end_point_1, (0, 255, 0), 4)  # Green for plate 1
+        cv.arrowedLine(frame, point_pair1, end_point_1, (0, 255, 0), 4)  # Green for plate 1 
         cv.arrowedLine(frame, point_pair2, end_point_2, (255, 0, 0), 4)  # Blue for plate 2
+        if self.view == "Top View":
+            cv.arrowedLine(frame, point_pair1, end_point_1, (255, 0 ,200), 4)  # Purple for plate 1
+            cv.arrowedLine(frame, point_pair2, end_point_2, (0, 165, 255), 4)  # Orange for plate 2
 
     def scale_factor(self, x1, x2, y1, y2):
         max_force = max(
@@ -340,7 +480,22 @@ class VectorOverlay:
         
         return min(self.frame_height, self.frame_width) * 0.3 / max_force
 
-    def LongVectorOverlay(self, df_aligned, outputName=None, show_preview=True, lag=0):
+    def LongVectorOverlay(self, df_aligned, outputName=None, show_preview=True,
+                          lag=0, com_csv_path=None, show_landmarks=False,
+                          boundary_start=0, boundary_end=None):
+        """
+        Modified to support:
+        - com_csv_path: Path to COM CSV file
+        - show_landmarks: Whether to show green skeleton dots
+        - boundary_start/end: Frame boundaries to process
+        """
+        # Load COM data
+        # self.load_com_data(com_csv_path)
+        self.load_com_helper(com_csv_path)
+
+        if boundary_end is None:
+            boundary_end = self.frame_count - 1
+
         """
         Long view vector overlay using df_aligned for exact frame/force mapping.
 
@@ -398,12 +553,17 @@ class VectorOverlay:
 
         # -------- 3. Main loop: row-by-row using FrameNumber --------
         processed = 0
+        com_drawn_count = 0
+
         for idx, row in df_aligned.iterrows():
             frame_idx = int(row["FrameNumber"])
 
             # Safety: skip illegal frame indices
             if frame_idx < 0 or frame_idx >= self.frame_count:
                 print(f"[WARN] Row {idx}: FrameNumber {frame_idx} out of range, skipping.")
+                continue
+            
+            if frame_idx < boundary_start or frame_idx > boundary_end:
                 continue
 
             # Jump to the *exact* frame for this force sample
@@ -475,18 +635,24 @@ class VectorOverlay:
             # ----- Draw arrows exactly the same way as original -----
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
 
+            # ----- Optionally draw landmarks -----
+            debug_com = (processed < 10)
+            # frame = self.draw_com_on_frame(frame, frame_idx, debug=debug_com)
+            if self.com_helper is not None:
+                frame = self.com_helper.drawFigure(frame, frame_idx)
+
+            # Track how many frames had COM drawn
+            if self.com_data is not None and frame_idx in self.com_data.index:
+                com_drawn_count += 1
+
             # Show preview if desired
             if show_preview:
-                cv2.imshow(
-                    "Long View (df_aligned)",
-                    cv2.resize(
-                        frame,
-                        (int(self.frame_width * 0.5), int(self.frame_height * 0.5))
-                    )
-                )
+                preview_frame = cv2.resize(frame, (self.frame_width // 2, self.frame_height // 2))
+                cv2.imshow("Long View with COM", preview_frame)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
-
+            
+            # Write to output video
             out.write(frame)
             processed += 1
 
@@ -494,10 +660,12 @@ class VectorOverlay:
         if show_preview:
             cv2.destroyAllWindows()
 
-        print(f"Finished processing video; Total Frames written: {processed}")
-        print("========== LongVectorOverlay (df_aligned) END ==========\n")
+        print(f"Processed {processed} frames, COM drawn on {com_drawn_count} frames")
+        print("=" * 50 + "\n")
 
-    def TopVectorOverlay(self, df_aligned, outputName=None, show_preview=True, lag=0):
+    def TopVectorOverlay(self, df_aligned, outputName=None, show_preview=True,
+                          lag=0, com_csv_path=None, show_landmarks=False,
+                          boundary_start=0, boundary_end=None):
         """
         Top view vector overlay using df_aligned for exact frame/force mapping.
 
@@ -506,6 +674,9 @@ class VectorOverlay:
         - fx = -Fy, fy = -Fx
         - px = pressure_y, py = 1 - pressure_x
         """
+        if boundary_end is None:
+            boundary_end = self.frame_count - 1
+
         print("\n========== TopVectorOverlay (df_aligned) START ==========")
         print(f"df_aligned rows: {len(df_aligned)}")
         print(f"Video frames: {self.frame_count}, fps: {self.fps}")
@@ -542,6 +713,7 @@ class VectorOverlay:
         # print(f"Using scale_factor = {scale_factor:.3f}")
 
         # -------- 2) Video writer --------
+        self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
         out = cv.VideoWriter(
             outputName,
             cv.VideoWriter_fourcc(*"mp4v"),
@@ -567,6 +739,9 @@ class VectorOverlay:
 
             if frame_idx < 0 or frame_idx >= self.frame_count:
                 print(f"[WARN] Row {idx}: FrameNumber {frame_idx} out of range, skipping.")
+                continue
+            
+            if frame_idx < boundary_start or frame_idx > boundary_end:
                 continue
 
             self.video.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
@@ -608,16 +783,17 @@ class VectorOverlay:
             # Debug prints
             if processed < 10 or processed % 30 == 0:
                 video_t = frame_idx / self.fps if self.fps else 0.0
-                if force_time_array is not None and row_i < len(force_time_array):
-                    force_t = force_time_array[row_i]
+                if force_time_array is not None and 0 <= idx < len(force_time_array):
+                    force_t = force_time_array[idx]
                     print(
-                        f"[DEBUG] row={row_i:5d}, frame={frame_idx:5d}, "
+                        f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
                         f"video_t={video_t:.4f}s, {time_col_name}={force_t:.4f}s, Δ={force_t - video_t:.4f}s, "
                         f"F1_Fx={raw_F1_Fx:.2f}, F1_Fy={raw_F1_Fy:.2f}"
                     )
                 else:
                     print(
-                        f"[DEBUG] row={row_i:5d}, frame={frame_idx:5d}, video_t={video_t:.4f}s, "
+                        f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
+                        f"video_t={video_t:.4f}s, "
                         f"F1_Fx={raw_F1_Fx:.2f}, F1_Fy={raw_F1_Fy:.2f}"
                     )
 
@@ -625,10 +801,8 @@ class VectorOverlay:
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
 
             if show_preview:
-                cv2.imshow(
-                    "Top View (df_aligned)",
-                    cv2.resize(frame, (int(self.frame_width * 0.5), int(self.frame_height * 0.5))),
-                )
+                preview_frame = cv2.resize(frame, (self.frame_width // 2, self.frame_height // 2))
+                cv2.imshow("Top View (No COM)", preview_frame)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
@@ -642,7 +816,9 @@ class VectorOverlay:
         print(f"Finished processing video; Total Frames written: {processed}")
         print("========== TopVectorOverlay (df_aligned) END ==========\n")
 
-    def ShortVectorOverlay(self, df_aligned, outputName=None, show_preview=True, lag=0):
+    def ShortVectorOverlay(self, df_aligned, outputName=None, show_preview=True,
+                          lag=0, com_csv_path=None, show_landmarks=False,
+                          boundary_start=0, boundary_end=None):
         """
         Short view vector overlay using df_aligned for exact frame/force mapping.
 
@@ -658,6 +834,13 @@ class VectorOverlay:
 
         Uses your trapezoid mapping via drawArrows(..., short=True).
         """
+        # Load COM data
+        # self.load_com_data(com_csv_path)
+        self.load_com_helper(com_csv_path)
+
+        if boundary_end is None:
+            boundary_end = self.frame_count - 1
+
         print("\n========== ShortVectorOverlay (df_aligned) START ==========")
         print(f"df_aligned rows: {len(df_aligned)}")
         print(f"Video frames: {self.frame_count}, fps: {self.fps}")
@@ -670,7 +853,7 @@ class VectorOverlay:
             outputName = "short_view_overlay_output.mp4"
             print(f"No output name provided, using default: {outputName}")
 
-        # ---- Determine which plate is in front ONCE (same logic you had) ----
+        # ---- Determine which plate is in front ONCE ----
         if len(self.corners) < 8:
             print("Error: corners not set. Run check_corner(view=...) first.")
             return
@@ -688,18 +871,41 @@ class VectorOverlay:
             df_aligned["FP2_Fz"].astype(float).fillna(0.0).to_numpy(),
         )
 
-        out = cv.VideoWriter(outputName, cv.VideoWriter_fourcc(*'mp4v'), self.fps,
-                            (self.frame_width, self.frame_height))
+        self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        out = cv.VideoWriter(
+            outputName,
+            cv.VideoWriter_fourcc(*'mp4v'),
+            self.fps,
+            (self.frame_width, self.frame_height)
+        )
+
+        # Optional: force time column for debug
+        if "Time(s)" in df_aligned.columns:
+            force_time_array = df_aligned["Time(s)"].astype(float).to_numpy()
+            time_col_name = "Time(s)"
+        elif "abs time (s)" in df_aligned.columns:
+            force_time_array = df_aligned["abs time (s)"].astype(float).to_numpy()
+            time_col_name = "abs time (s)"
+        else:
+            force_time_array = None
+            time_col_name = None
 
         processed = 0
-        for _, row in df_aligned.iterrows():
-            frame_number = int(row["FrameNumber"])
-            if frame_number < 0 or frame_number >= self.frame_count:
+        com_drawn_count = 0
+
+        for idx, row in df_aligned.iterrows():
+            frame_idx = int(row["FrameNumber"])
+            if frame_idx < 0 or frame_idx >= self.frame_count:
+                print(f"[WARN] Row {idx}: FrameNumber {frame_idx} out of range, skipping.")
                 continue
 
-            self.video.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+            if frame_idx < boundary_start or frame_idx > boundary_end:
+                continue
+
+            self.video.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
             ret, frame = self.video.read()
             if not ret:
+                print(f"[WARN] Could not read frame {frame_idx}, stopping.")
                 break
 
             # --- raw forces from df_aligned ---
@@ -737,11 +943,38 @@ class VectorOverlay:
                 px2 = 1 - px2
                 py1 = 1 - py1
                 py2 = 1 - py2
+            
+            if processed < 10 or processed % 30 == 0:
+                video_t = frame_idx / self.fps if self.fps else 0.0
+                if force_time_array is not None and 0 <= idx < len(force_time_array):
+                    force_t = force_time_array[idx]
+                    print(
+                        f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
+                        f"video_t={video_t:.4f}s, {time_col_name}={force_t:.4f}s, "
+                        f"Δ={force_t - video_t:.4f}s, "
+                    )
+                else:
+                    print(
+                        f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
+                        f"video_t={video_t:.4f}s, "
+                    )
 
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2, short=True)
 
+             # ----- Optionally draw landmarks -----
+            debug_com = (processed < 10)
+            # frame = self.draw_com_on_frame(frame, frame_idx, debug=debug_com)
+            if self.com_helper is not None:
+                frame = self.com_helper.drawFigure(frame, frame_idx)
+
+            # Track how many frames had COM drawn
+            if self.com_data is not None and frame_idx in self.com_data.index:
+                com_drawn_count += 1
+
+            # Show preview if desired
             if show_preview:
-                cv2.imshow("Short View (df_aligned)", cv2.resize(frame, (self.frame_width//2, self.frame_height//2)))
+                preview_frame = cv2.resize(frame, (self.frame_width // 2, self.frame_height // 2))
+                cv2.imshow("Short View with COM", preview_frame)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
@@ -752,7 +985,7 @@ class VectorOverlay:
         if show_preview:
             cv2.destroyAllWindows()
 
-        print(f"Finished processing short view; Total Frames written: {processed}")
+        print(f"Processed {processed} frames, COM drawn on {com_drawn_count} frames")
         print("========== ShortVectorOverlay (df_aligned) END ==========\n")
 
 # Example usage with synchronization parameters

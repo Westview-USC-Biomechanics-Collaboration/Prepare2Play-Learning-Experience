@@ -31,10 +31,10 @@ def uploadVideoCallback(self):
                 # Top View chosen
                 self.selected_view = tk.StringVar(value="Top View")
                 print("Top View selected")
-            elif selected_view == "Short View":
-                # Short view chosen
-                self.selected_view = tk.StringVar(value="Short View")
-                print("Short View selected")
+            elif selected_view == "Side View":
+                # Side view chosen
+                self.selected_view = tk.StringVar(value="Side View")
+                print("Side View selected")
     # Open a file dialog for video files
     view_popup = tk.Toplevel(self.master)
     view_popup.title("Select View")
@@ -42,7 +42,7 @@ def uploadVideoCallback(self):
     # Create radio buttons for view options
     tk.Radiobutton(view_popup, text="Long View", variable=self.selected_view, value="Long View").pack(anchor=tk.W)
     tk.Radiobutton(view_popup, text="Top View", variable=self.selected_view, value="Top View").pack(anchor=tk.W)
-    tk.Radiobutton(view_popup, text="Short View", variable=self.selected_view, value="Short View").pack(anchor=tk.W)
+    tk.Radiobutton(view_popup, text="Side View", variable=self.selected_view, value="Side View").pack(anchor=tk.W)
 
     # Create a button to confirm the selection
     confirm_button = tk.Button(view_popup, text="Confirm", command=lambda: _upload_video_with_view(self,view_popup))
