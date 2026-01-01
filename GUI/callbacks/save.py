@@ -247,8 +247,8 @@ def saveCallback(self):
         horizontal_resultant_force_2 = 0
         
         # Calculate axis limits
-        ymax = max(y1.max(), y2.max(), y3.max(), y4.max())
-        ymin = min(y1.min(), y2.min(), y3.min(), y4.min())
+        ymax = max(y1.max(), y2.max(), y3.max(), y4.max(), y5.max(), y6.max())
+        ymin = min(y1.min(), y2.min(), y3.min(), y4.min(), y5.min(), y6.min())
         lower_x = time.min()
         upper_x = time.max()
 
@@ -272,8 +272,7 @@ def saveCallback(self):
             ax1.plot(time, horizontal_resultant_force_1, linestyle='-', color=color1_1, linewidth=1.5, label=label1_1_name)
             ax1.plot(time, y5, linestyle='-', color=color1_3, linewidth=1.5, label=label1_2_name)
             ax1.set_xlim([lower_x, upper_x])
-            ax1.set_ylim([ymin, ymax * 1.2])
-            ax1.axhline(0, color='black', linewidth=2.0, linestyle='--')
+            ax1.set_ylim([0, ymax * 1.2])
             ax1.set_title('Force-Time Graph for Plate 1', fontsize=12, fontweight='bold')
             ax1.set_xlabel("Time (s)", fontsize=10)
             ax1.set_ylabel("Forces (N)", fontsize=10)
@@ -286,8 +285,7 @@ def saveCallback(self):
             ax2.plot(time, horizontal_resultant_force_2, linestyle='-', color=color2_1, linewidth=1.5, label=label2_1_name)
             ax2.plot(time, y6, linestyle='-', color=color2_3, linewidth=1.5, label=label2_2_name)
             ax2.set_xlim([lower_x, upper_x])
-            ax2.set_ylim([ymin, ymax * 1.2])
-            ax2.axhline(0, color='black', linewidth=2.0, linestyle='--')
+            ax2.set_ylim([0, ymax * 1.2])
             ax2.set_title('Force-Time Graph for Plate 2', fontsize=12, fontweight='bold')
             ax2.set_xlabel("Time (s)", fontsize=10)
             ax2.set_ylabel("Forces (N)", fontsize=10)
@@ -339,104 +337,6 @@ def saveCallback(self):
 
         print(f"[SAVE] Static plot dimensions: {plot_static_1.shape}")
 
-    # ============================================================
-    # EXPORT (WITH GRAPHS)
-    # ============================================================
-
-    # def export_video():
-    #     """Export video with synchronized force graphs"""
-        
-    #     # Disable export button during processing
-    #     export_button.config(state=tk.DISABLED, text="Processing...")
-    #     self.save_window.update()
-        
-    #     start = min(self.save_start, self.save_end)
-    #     end = max(self.save_start, self.save_end)
-
-    #     dfw = df.iloc[start:end + 1].copy()
-
-    #     print(f"\n[SAVE] ===== EXPORT STARTING =====")
-    #     print(f"[SAVE] Exporting indices {start} → {end}")
-    #     print(f"[SAVE] Rows to export: {len(dfw)}")
-    #     print(f"[SAVE] COM enabled: {self.COM_intVar.get() == 1}")
-
-    #     # Get view-specific force labels
-    #     view = self.selected_view.get()
-    #     if view == "Long View":
-    #         label1_1, label1_2 = "FP1_Fy", "FP1_Fz"
-    #         label2_1, label2_2 = "FP2_Fy", "FP2_Fz"
-    #     elif view == "Short View":
-    #         label1_1, label1_2 = "FP1_Fx", "FP1_Fz"
-    #         label2_1, label2_2 = "FP2_Fx", "FP2_Fz"
-    #     else:  # Top View
-    #         label1_1, label1_2 = "FP1_Fy", "FP1_Fx"
-    #         label2_1, label2_2 = "FP2_Fy", "FP2_Fx"
-
-    #     # Get time column
-    #     time_col = "abs time (s)" if "abs time (s)" in dfw.columns else "Time(s)"
-    #     time = pd.to_numeric(dfw[time_col], errors="coerce")
-
-    #     # Extract force data
-    #     y1 = dfw[label1_1].fillna(0)
-    #     y2 = dfw[label1_2].fillna(0)
-    #     y3 = dfw[label2_1].fillna(0)
-    #     y4 = dfw[label2_2].fillna(0)
-
-    #     # Calculate axis limits
-    #     ymax = max(y1.max(), y2.max(), y3.max(), y4.max())
-    #     ymin = min(y1.min(), y2.min(), y3.min(), y4.min())
-    #     lower_x = time.min()
-    #     upper_x = time.max()
-
-    #     print(f"[SAVE] Time range: {lower_x:.2f} to {upper_x:.2f} seconds")
-    #     print(f"[SAVE] Force range: {ymin:.2f} to {ymax:.2f} N")
-
-    #     # ========== CREATE STATIC PLOTS (ONCE) ==========
-    #     dpi = plt.rcParams['figure.dpi']
-    #     width_in = self.Video.frame_width / dpi
-    #     height_in = (self.Video.frame_height * 0.25) / dpi
-
-    #     # Figure 1: Force Plate 1
-    #     fig1, ax1 = plt.subplots(figsize=(width_in, height_in))
-    #     fig1.subplots_adjust(bottom=0.2)
-    #     ax1.plot(time, y1, alpha=0.5, color='green', linewidth=1.5, label='Horizontal')
-    #     ax1.plot(time, y2, alpha=0.5, color='red', linewidth=1.5, label='Vertical')
-    #     ax1.set_xlim([lower_x, upper_x])
-    #     ax1.set_ylim([ymin, ymax * 1.2])
-    #     ax1.axhline(0, color='black', linewidth=2.0, linestyle='--')
-    #     ax1.set_title('Force Plate 1')
-    #     ax1.set_xlabel("Time (s)")
-    #     ax1.set_ylabel("Force (N)")
-    #     ax1.legend(loc='upper left')
-
-    #     # Figure 2: Force Plate 2
-    #     fig2, ax2 = plt.subplots(figsize=(width_in, height_in))
-    #     fig2.subplots_adjust(bottom=0.2)
-    #     ax2.plot(time, y3, alpha=0.5, color='blue', linewidth=1.5, label='Horizontal')
-    #     ax2.plot(time, y4, alpha=0.5, color='orange', linewidth=1.5, label='Vertical')
-    #     ax2.set_xlim([lower_x, upper_x])
-    #     ax2.set_ylim([ymin, ymax * 1.2])
-    #     ax2.axhline(0, color='black', linewidth=2.0, linestyle='--')
-    #     ax2.set_title('Force Plate 2')
-    #     ax2.set_xlabel("Time (s)")
-    #     ax2.set_ylabel("Force (N)")
-    #     ax2.legend(loc='upper left')
-
-    #     # Convert static plots to numpy arrays
-    #     buf1 = BytesIO()
-    #     fig1.savefig(buf1, format='png')
-    #     buf1.seek(0)
-    #     plot_static_1 = np.array(Image.open(buf1))[:, :, 0:3]
-    #     buf1.close()
-
-    #     buf2 = BytesIO()
-    #     fig2.savefig(buf2, format='png')
-    #     buf2.seek(0)
-    #     plot_static_2 = np.array(Image.open(buf2))[:, :, 0:3]
-    #     buf2.close()
-
-    #     print(f"[SAVE] Static plot dimensions: {plot_static_1.shape}")
-
         # ========== OPEN VIDEO CAPTURES ==========
         cam_vector = cv2.VideoCapture(self.save_vector_path)
 
@@ -463,14 +363,11 @@ def saveCallback(self):
 
         # ========== PROCESS EACH FRAME ==========
         processed_count = 0
+        
         # vline1 = ax1.axvline(time.iloc[0], color='blue',
         #              linestyle='--', linewidth=1.5, alpha=0.6) # Keep it blue bc it turns to red for
         # vline2 = ax2.axvline(time.iloc[0], color='blue',
         #                         linestyle='--', linewidth=1.5, alpha=0.6) # Keep it blue bc it turns to red bc BGR to RGB
-        ax1.set_xlim([lower_x, upper_x])
-        ax2.set_xlim([lower_x, upper_x])
-        ax1.set_ylim([ymin, ymax * 1.2])
-        ax2.set_ylim([ymin, ymax * 1.2])
 
         for df_idx, row in dfw.iterrows():
             # df_idx is the index in df_trimmed (0-based after reset)
@@ -495,10 +392,15 @@ def saveCallback(self):
             # Clear and redraw only the vertical line
             ax1.cla()
             ax2.cla()
+
             ax1.set_xlim([lower_x, upper_x])
             ax2.set_xlim([lower_x, upper_x])
-            ax1.set_ylim([ymin, ymax * 1.2])
-            ax2.set_ylim([ymin, ymax * 1.2])
+            if view == "Top View":
+                ax1.set_ylim([0, ymax * 1.2])
+                ax2.set_ylim([0, ymax * 1.2])
+            else:
+                ax1.set_ylim([ymin, ymax * 1.2])
+                ax2.set_ylim([ymin, ymax * 1.2])
             ax1.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
             ax2.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
             # vline1.set_xdata([current_time])

@@ -44,7 +44,7 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords, short=Fal
 
 class VectorOverlay:
 
-    def __init__(self, data, video, force_fps=None):
+    def __init__(self, data, video, force_fps=None, view=None):
         """
         Initialize VectorOverlay with improved synchronization options.
 
@@ -91,6 +91,7 @@ class VectorOverlay:
         self.data = data
         self.video = video
         self.force_fps = force_fps
+        self.view = view
 
         print("========== VectorOverlay INIT ==========")
         print(f"Input force DataFrame shape: {data.shape}")
@@ -465,9 +466,9 @@ class VectorOverlay:
         # Draw arrows with different colors for each plate
         cv.arrowedLine(frame, point_pair1, end_point_1, (0, 255, 0), 4)  # Green for plate 1 
         cv.arrowedLine(frame, point_pair2, end_point_2, (255, 0, 0), 4)  # Blue for plate 2
-        # if VideoState.view == "Top View":
-        #     cv.arrowedLine(frame, point_pair1, end_point_1, (255, 0 ,255), 4)  # Purple for plate 1
-        #     cv.arrowedLine(frame, point_pair2, end_point_2, (0, 165, 255), 4)  # Orange for plate 2
+        if self.view == "Top View":
+            cv.arrowedLine(frame, point_pair1, end_point_1, (255, 0 ,200), 4)  # Purple for plate 1
+            cv.arrowedLine(frame, point_pair2, end_point_2, (0, 165, 255), 4)  # Orange for plate 2
 
     def scale_factor(self, x1, x2, y1, y2):
         max_force = max(

@@ -154,7 +154,7 @@ def vectorOverlayWithAlignmentCallback(self):
             self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
             
             # Create VectorOverlay instance
-            v = VectorOverlay(data=df_trimmed, video=self.Video.cam)
+            v = VectorOverlay(data=df_trimmed, video=self.Video.cam, view=selected)
             
             # Detect corners for the selected view
             v.check_corner(selected)
