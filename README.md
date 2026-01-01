@@ -33,4 +33,4 @@
     - Add SIDE VIEW to config + fix is_side1 boolean input for the parameter
 ## Nishk - Date 1/1/2025
 - Vectors colors for TOP VIEW are NOT hardcoded anymore
-- TOP VIEW graph axis are drawn properly
+- TOP VIEW graph axis are drawn properly 
