@@ -186,15 +186,27 @@ def vectorOverlayWithAlignmentCallback(self):
                     boundary_start=boundary_start,
                     boundary_end=boundary_end
                 )
-            elif selected == "Side View":
-                v.ShortVectorOverlay(
+            elif selected == "Side1 View":
+                v.SideVectorOverlay(
                     df_aligned=df_trimmed,
                     outputName=temp_video,
                     lag=lag,
                     com_csv_path=com_csv_path,
                     show_landmarks=SHOW_LANDMARKS,
                     boundary_start=boundary_start,
-                    boundary_end=boundary_end
+                    boundary_end=boundary_end,
+                    is_side1=True  # FP1 is near
+                )
+            elif selected == "Side2 View":
+                v.SideVectorOverlay(
+                    df_aligned=df_trimmed,
+                    outputName=temp_video,
+                    lag=lag,
+                    com_csv_path=com_csv_path,
+                    show_landmarks=SHOW_LANDMARKS,
+                    boundary_start=boundary_start,
+                    boundary_end=boundary_end,
+                    is_side1=False  # FP2 is near
                 )
             elif selected == "Top View":
                 v.TopVectorOverlay(

@@ -7,6 +7,8 @@ from Util.ballDropDetect import ballDropDetect
 import subprocess, shutil, os
 from pathlib import Path
 
+# In GUI/callbacks/upload_video.py
+
 def uploadVideoCallback(self):
     def _upload_video_with_view(self, popup_window):
         """
@@ -21,20 +23,21 @@ def uploadVideoCallback(self):
         popup_window.destroy()
 
         # Proceed with video upload based on the selected view
-        #self.video_path = filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
         if self.Video.path:
             # Handle different views here
             if selected_view == "Long View":
                 self.selected_view = tk.StringVar(value="Long View")
                 print("Long View selected")
             elif selected_view == "Top View":
-                # Top View chosen
                 self.selected_view = tk.StringVar(value="Top View")
                 print("Top View selected")
-            elif selected_view == "Side View":
-                # Side view chosen
-                self.selected_view = tk.StringVar(value="Side View")
-                print("Side View selected")
+            elif selected_view == "Side1 View":
+                self.selected_view = tk.StringVar(value="Side1 View")
+                print("Side1 View selected (FP1 nearest to camera)")
+            elif selected_view == "Side2 View":
+                self.selected_view = tk.StringVar(value="Side2 View")
+                print("Side2 View selected (FP2 nearest to camera)")
+    
     # Open a file dialog for video files
     view_popup = tk.Toplevel(self.master)
     view_popup.title("Select View")
@@ -42,10 +45,11 @@ def uploadVideoCallback(self):
     # Create radio buttons for view options
     tk.Radiobutton(view_popup, text="Long View", variable=self.selected_view, value="Long View").pack(anchor=tk.W)
     tk.Radiobutton(view_popup, text="Top View", variable=self.selected_view, value="Top View").pack(anchor=tk.W)
-    tk.Radiobutton(view_popup, text="Side View", variable=self.selected_view, value="Side View").pack(anchor=tk.W)
+    tk.Radiobutton(view_popup, text="Side1 View (FP1 near camera)", variable=self.selected_view, value="Side1 View").pack(anchor=tk.W)
+    tk.Radiobutton(view_popup, text="Side2 View (FP2 near camera)", variable=self.selected_view, value="Side2 View").pack(anchor=tk.W)
 
     # Create a button to confirm the selection
-    confirm_button = tk.Button(view_popup, text="Confirm", command=lambda: _upload_video_with_view(self,view_popup))
+    confirm_button = tk.Button(view_popup, text="Confirm", command=lambda: _upload_video_with_view(self, view_popup))
     confirm_button.pack(pady=10)
 
     # Block the main window until the popup is closed
@@ -56,10 +60,10 @@ def uploadVideoCallback(self):
     # if a video is selected, start a background thread
     def threadTarget():
         process(self, self.selected_view.get())
-        self.master.after(0,self._update_video_timeline)
+        self.master.after(0, self._update_video_timeline)
         
     if self.Video.path:
-        uploadVideoThread = threading.Thread(target=threadTarget,daemon=True)
+        uploadVideoThread = threading.Thread(target=threadTarget, daemon=True)
         uploadVideoThread.start()
 
 

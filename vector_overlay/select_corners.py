@@ -352,7 +352,217 @@ def two_rect_detection(cap, num_points=8, zoom_size=50, zoom_factor=2):
 
     return output
 
+# def select_points(self, cap, view):
+#     import cv2
+#     import numpy as np
+
+#     # Define yellow color range in HSV
+#     lower_yellow = np.array([18, 80, 50])
+#     upper_yellow = np.array([38, 255, 255])
+
+#     # lower_yellow = np.array([15, 60, 40])
+#     # upper_yellow = np.array([45, 255, 255])
+
+#     # Open the video
+#     ret, frame = cap.read()
+
+#     # Load an image instead of a video
+#     # frame = cv2.imread("vector_overlay\IMG_2518.jpg")
+
+#     if not cap.isOpened():
+#         print("Could not open video file.")
+#         exit()
+
+#     if not ret:
+#         print("Error reading video during selecting corners")
+#         exit()
+
+#     if frame is None:
+#         print("Error with rect detection")
+#         exit()
+
+#     # Convert to HSV
+#     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+#     # Create a binary mask where yellow colors are white
+#     mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+
+#     cv2.namedWindow("original", cv2.WINDOW_NORMAL)
+#     cv2.resizeWindow("original", 800, 600)  # Set window size
+#     cv2.imshow("original", mask)
+
+#     # Optional: closing to seal any final small gaps
+#     # Horizontal kernel to connect horizontal lines
+#     kernel_h = np.ones((1, 100), np.uint8)
+#     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_h)
+#     kernel_v = np.ones((1, 1), np.uint8)
+#     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_v)
+
+#     cv2.namedWindow("one", cv2.WINDOW_NORMAL)
+#     cv2.resizeWindow("one", 800, 600)  # Set window size
+#     cv2.imshow("one", mask)
+
+#     # ROI crop
+#     # h, w = mask.shape
+#     # roi = mask[int(h * 0.40):int(h * 0.85), int(w * 0.01):int(w * 0.85)]
+#     # offset_x, offset_y = int(w * 0.01), int(h * 0.4)
+
+#     # # Trying to auto create roi
+#     # contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+#     # # Optional: filter by area
+#     # contours = [c for c in contours if cv2.contourArea(c) > 2000]
+
+#     # # Get the bounding box of the largest contour
+#     # if contours:
+#     #     c = max(contours, key=cv2.contourArea)
+#     #     x, y, w, h = cv2.boundingRect(c)
+#     #     cx, cy = x + w // 2, y + h // 2  # Center of the original box
+
+#     #     # Scale factors
+#     #     scale_x = 1
+#     #     scale_y = 1
+
+#     #     # New width and height
+#     #     new_w = int(w * scale_x)
+#     #     new_h = int(h * scale_y)
+
+#     #     # New top-left corner
+#     #     x1 = max(0, cx - new_w // 2)
+#     #     y1 = max(0, cy - new_h // 2)
+
+#     #     # New bottom-right corner
+#     #     x2 = min(mask.shape[1], cx + new_w // 2)
+#     #     y2 = min(mask.shape[0], cy + new_h // 2)
+
+#     #     # Extract scaled ROI
+#     #     roi = mask[y1:y2, x1:x2]
+#     #     offset_x, offset_y = x1, y1  # for mapping back later
+
+#     h, w = mask.shape[:2]
+#     print(f"The view of the video is {view}")
+#     if view == "Long View":
+#         y1, y2 = int(0.7 * h), int(0.9 * h)
+#         x1, x2 = int(0.25 * w), int(0.75 * w)
+#         offset_x, offset_y = x1, y1
+#         roi = mask[y1:y2, x1:x2]
+#     elif view == "Top View":
+#         y1, y2 = int(0.3 * h), int(0.7 * h)
+#         x1, x2 = int(0.2 * w), int(0.8 * w)
+#         offset_x, offset_y = x1, y1
+#         roi = mask[y1:y2, x1:x2]
+#     else:
+#         y1, y2 = int(0.6 * h), int(0.8 * h)
+#         x1, x2 = int(0.45 * w), int(0.8 * w)
+#         offset_x, offset_y = x1, y1
+#         roi = mask[y1:y2, x1:x2]
+
+
+    
+
+#     cv2.namedWindow("kernel observation", cv2.WINDOW_NORMAL)
+#     cv2.resizeWindow("kernel observation", 800, 600)  # Set window size
+#     cv2.imshow("kernel observation", roi)
+
+#     # Find all contours in the mask
+#     contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+#     # Prepare to save coordinates
+#     coords = []
+
+#     # Minimum area to filter out noise
+#     if view != "Long View" and view != "Top View":
+#         min_area = 500
+#     else:
+#         min_area = 2000
+#     # max_area = 30000
+
+#     #save corners
+#     for contour in contours:
+#         contour += [offset_x, offset_y]
+#         hull = cv2.convexHull(contour)
+#         area = cv2.contourArea(hull)
+
+#         # Approximate contour to polygon to reduce points
+#         if view == "Short View":
+#             epsilon = 0.03 * cv2.arcLength(hull, True)  # adjust for precision
+#         else:
+#             epsilon = 0.01 * cv2.arcLength(hull, True)  # adjust for precision
+#         approx = cv2.approxPolyDP(hull, epsilon, True)
+
+#         if area > min_area:
+
+#             corners = approx.reshape(-1, 2)  # shape (num_points, 2)
+
+#             if len(corners) == 4:
+#                 cv2.drawContours(frame, [approx], -1, (255, 0, 0), 2)  # Blue polygon outline
+#                 for corner in corners:
+#                     x, y = corner
+#                     coords.append([x, y])
+
+#     coords_one = sorted(coords, key=lambda x: x[0])[0:2]
+#     coords_two = sorted(coords, key=lambda x: x[0])[2:]
+#     coords_one = sorted(coords_one, key=lambda x: x[1])
+#     coords_two = sorted(coords_two, key=lambda x: x[1])
+#     coords = coords_one + coords_two
+#     print(coords)
+
+#     print(f"Detected {len(coords)} corners.")
+#     if len(coords) < 4:
+#         print("Error: Not enough corners detected. Please try again.")
+
+#     # find remaining four points in the middle
+#     if view == "Short View":
+#         coords.append([(coords[2][0] + coords[3][0])/2, (coords[2][1] + coords[3][1])/2 - 25])
+#         coords.append([(coords[2][0] + coords[3][0])/2, (coords[2][1] + coords[3][1])/2])
+#         coords.append([(coords[0][0] + coords[1][0])/2, (coords[0][1] + coords[1][1])/2 - 25])
+#         coords.append([(coords[0][0] + coords[1][0])/2, (coords[0][1] + coords[1][1])/2])
+#     else:
+#         coords.append([(coords[0][0] + coords[2][0])/2 - 10, (coords[0][1] + coords[2][1])/2])
+#         coords.append([(coords[0][0] + coords[2][0])/2 + 10, (coords[0][1] + coords[2][1])/2])
+#         coords.append([(coords[1][0] + coords[3][0])/2 - 10, (coords[1][1] + coords[3][1])/2])
+#         coords.append([(coords[1][0] + coords[3][0])/2 + 10, (coords[1][1] + coords[3][1])/2])
+
+
+
+#     #rearrange list
+#     output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
+#     if view == "Short View":
+#         output[0], output[1], output[2], output[3] = coords[0], coords[2], coords[4], coords[6]
+#         output[4], output[5], output[6], output[7] = coords[7], coords[5], coords[3], coords[1]
+#     else:
+#         # plate 1: TL, TR, BR, BL
+#         output[0], output[1], output[2], output[3] = coords[0], coords[4], coords[6], coords[1]
+
+#         # plate 2: TL, TR, BR, BL
+#         output[4], output[5], output[6], output[7] = coords[5], coords[2], coords[3], coords[7]
+        
+#     for out in output:
+#         cv2.circle(frame, (int(out[0]), int(out[1])), 5, (0, 0, 255), -1)  # Red dots for corners
+
+#     # # Save coordinates to a file
+#     with open("selected_points.txt", "w") as f:
+#         for x, y in output:
+#             f.write(f"{x},{y}\n")
+
+#     print(f"{len(output)} coordinates saved to file.")
+
+#     # Show the result
+#     cv2.namedWindow("Detected Yellow Rectangles", cv2.WINDOW_NORMAL)
+#     cv2.resizeWindow("Detected Yellow Rectangles", 800, 600)  # Set window size
+#     cv2.imshow("Detected Yellow Rectangles", frame)
+
+#     cv2.waitKey(0)  # Wait indefinitely until a key is pressed
+#     cv2.destroyAllWindows()
+
+#     return output
+# # Add this to vector_overlay/select_corners.py
+# # In vector_overlay/select_corners.py
+
 def select_points(self, cap, view):
+    """
+    Enhanced corner selection that handles all view types including Side1 and Side2.
+    """
     import cv2
     import numpy as np
 
@@ -360,14 +570,8 @@ def select_points(self, cap, view):
     lower_yellow = np.array([18, 80, 50])
     upper_yellow = np.array([38, 255, 255])
 
-    # lower_yellow = np.array([15, 60, 40])
-    # upper_yellow = np.array([45, 255, 255])
-
     # Open the video
     ret, frame = cap.read()
-
-    # Load an image instead of a video
-    # frame = cv2.imread("vector_overlay\IMG_2518.jpg")
 
     if not cap.isOpened():
         print("Could not open video file.")
@@ -388,59 +592,23 @@ def select_points(self, cap, view):
     mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
 
     cv2.namedWindow("original", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("original", 800, 600)  # Set window size
+    cv2.resizeWindow("original", 800, 600)
     cv2.imshow("original", mask)
 
-    # Optional: closing to seal any final small gaps
-    # Horizontal kernel to connect horizontal lines
+    # Morphological operations
     kernel_h = np.ones((1, 100), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_h)
     kernel_v = np.ones((1, 1), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_v)
 
-    cv2.namedWindow("one", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("one", 800, 600)  # Set window size
-    cv2.imshow("one", mask)
+    cv2.namedWindow("processed", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("processed", 800, 600)
+    cv2.imshow("processed", mask)
 
-    # ROI crop
-    # h, w = mask.shape
-    # roi = mask[int(h * 0.40):int(h * 0.85), int(w * 0.01):int(w * 0.85)]
-    # offset_x, offset_y = int(w * 0.01), int(h * 0.4)
-
-    # # Trying to auto create roi
-    # contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # # Optional: filter by area
-    # contours = [c for c in contours if cv2.contourArea(c) > 2000]
-
-    # # Get the bounding box of the largest contour
-    # if contours:
-    #     c = max(contours, key=cv2.contourArea)
-    #     x, y, w, h = cv2.boundingRect(c)
-    #     cx, cy = x + w // 2, y + h // 2  # Center of the original box
-
-    #     # Scale factors
-    #     scale_x = 1
-    #     scale_y = 1
-
-    #     # New width and height
-    #     new_w = int(w * scale_x)
-    #     new_h = int(h * scale_y)
-
-    #     # New top-left corner
-    #     x1 = max(0, cx - new_w // 2)
-    #     y1 = max(0, cy - new_h // 2)
-
-    #     # New bottom-right corner
-    #     x2 = min(mask.shape[1], cx + new_w // 2)
-    #     y2 = min(mask.shape[0], cy + new_h // 2)
-
-    #     # Extract scaled ROI
-    #     roi = mask[y1:y2, x1:x2]
-    #     offset_x, offset_y = x1, y1  # for mapping back later
-
+    # ROI crop based on view type
     h, w = mask.shape[:2]
     print(f"The view of the video is {view}")
+    
     if view == "Long View":
         y1, y2 = int(0.7 * h), int(0.9 * h)
         x1, x2 = int(0.25 * w), int(0.75 * w)
@@ -451,18 +619,27 @@ def select_points(self, cap, view):
         x1, x2 = int(0.2 * w), int(0.8 * w)
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
-    else:
+    elif view == "Side1 View":
+        # Side1: FP1 is near (left), FP2 is far (right)
+        y1, y2 = int(0.6 * h), int(0.85 * h)
+        x1, x2 = int(0.3 * w), int(0.85 * w)
+        offset_x, offset_y = x1, y1
+        roi = mask[y1:y2, x1:x2]
+    elif view == "Side2 View":
+        # Side2: FP2 is near (left), FP1 is far (right)
+        y1, y2 = int(0.6 * h), int(0.85 * h)
+        x1, x2 = int(0.15 * w), int(0.7 * w)
+        offset_x, offset_y = x1, y1
+        roi = mask[y1:y2, x1:x2]
+    else:  # Default (original "Short View")
         y1, y2 = int(0.6 * h), int(0.8 * h)
         x1, x2 = int(0.45 * w), int(0.8 * w)
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
 
-
-    
-
-    cv2.namedWindow("kernel observation", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("kernel observation", 800, 600)  # Set window size
-    cv2.imshow("kernel observation", roi)
+    cv2.namedWindow("roi", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("roi", 800, 600)
+    cv2.imshow("roi", roi)
 
     # Find all contours in the mask
     contours, _ = cv2.findContours(roi, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -471,92 +648,141 @@ def select_points(self, cap, view):
     coords = []
 
     # Minimum area to filter out noise
-    if view != "Long View" and view != "Top View":
+    if view in ["Side1 View", "Side2 View"]:
+        min_area = 800  # Adjusted for side views
+    elif view not in ["Long View", "Top View"]:
         min_area = 500
     else:
         min_area = 2000
-    # max_area = 30000
 
-    #save corners
+    # Save corners
     for contour in contours:
         contour += [offset_x, offset_y]
         hull = cv2.convexHull(contour)
         area = cv2.contourArea(hull)
 
-        # Approximate contour to polygon to reduce points
-        if view == "Short View":
-            epsilon = 0.03 * cv2.arcLength(hull, True)  # adjust for precision
+        # Approximate contour to polygon
+        if view in ["Side1 View", "Side2 View"]:
+            epsilon = 0.02 * cv2.arcLength(hull, True)
         else:
-            epsilon = 0.01 * cv2.arcLength(hull, True)  # adjust for precision
+            epsilon = 0.01 * cv2.arcLength(hull, True)
+        
         approx = cv2.approxPolyDP(hull, epsilon, True)
 
         if area > min_area:
-
-            corners = approx.reshape(-1, 2)  # shape (num_points, 2)
+            corners = approx.reshape(-1, 2)
 
             if len(corners) == 4:
-                cv2.drawContours(frame, [approx], -1, (255, 0, 0), 2)  # Blue polygon outline
+                cv2.drawContours(frame, [approx], -1, (255, 0, 0), 2)
                 for corner in corners:
                     x, y = corner
                     coords.append([x, y])
 
+    # Sort and arrange corners
     coords_one = sorted(coords, key=lambda x: x[0])[0:2]
     coords_two = sorted(coords, key=lambda x: x[0])[2:]
     coords_one = sorted(coords_one, key=lambda x: x[1])
     coords_two = sorted(coords_two, key=lambda x: x[1])
     coords = coords_one + coords_two
-    print(coords)
+
+    print(f"Detected corners: {coords}")
 
     print(f"Detected {len(coords)} corners.")
     if len(coords) < 4:
         print("Error: Not enough corners detected. Please try again.")
 
-    # find remaining four points in the middle
-    if view == "Short View":
-        coords.append([(coords[2][0] + coords[3][0])/2, (coords[2][1] + coords[3][1])/2 - 25])
-        coords.append([(coords[2][0] + coords[3][0])/2, (coords[2][1] + coords[3][1])/2])
-        coords.append([(coords[0][0] + coords[1][0])/2, (coords[0][1] + coords[1][1])/2 - 25])
-        coords.append([(coords[0][0] + coords[1][0])/2, (coords[0][1] + coords[1][1])/2])
-    else:
-        coords.append([(coords[0][0] + coords[2][0])/2 - 10, (coords[0][1] + coords[2][1])/2])
-        coords.append([(coords[0][0] + coords[2][0])/2 + 10, (coords[0][1] + coords[2][1])/2])
-        coords.append([(coords[1][0] + coords[3][0])/2 - 10, (coords[1][1] + coords[3][1])/2])
-        coords.append([(coords[1][0] + coords[3][0])/2 + 10, (coords[1][1] + coords[3][1])/2])
+    # Create output array for 8 corners (TL, TR, BR, BL for each plate)
+    output = [[0, 0] for _ in range(8)]
 
-
-
-    #rearrange list
-    output = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
-    if view == "Short View":
-        output[0], output[1], output[2], output[3] = coords[0], coords[2], coords[4], coords[6]
-        output[4], output[5], output[6], output[7] = coords[7], coords[5], coords[3], coords[1]
-    else:
-        # plate 1: TL, TR, BR, BL
-        output[0], output[1], output[2], output[3] = coords[0], coords[4], coords[6], coords[1]
-
-        # plate 2: TL, TR, BR, BL
-        output[4], output[5], output[6], output[7] = coords[5], coords[2], coords[3], coords[7]
+    # Arrange corners based on view
+    if view in ["Side1 View", "Side2 View"]:
+        # For side views, plates are front-to-back, not left-to-right
+        # coords_one = near plate, coords_two = far plate
         
-    for out in output:
-        cv2.circle(frame, (int(out[0]), int(out[1])), 5, (0, 0, 255), -1)  # Red dots for corners
+        if view == "Side1 View":
+            # Side1: FP1 is near (left in video), FP2 is far (right in video)
+            # Plate 1 (near/left): TL, TR, BR, BL
+            output[0] = coords_one[0]                                    # TL
+            output[1] = [(coords_one[0][0] + coords_two[0][0])/2,      # TR (middle)
+                        (coords_one[0][1] + coords_two[0][1])/2]
+            output[2] = [(coords_one[1][0] + coords_two[1][0])/2,      # BR (middle)
+                        (coords_one[1][1] + coords_two[1][1])/2]
+            output[3] = coords_one[1]                                    # BL
+            
+            # Plate 2 (far/right): TL, TR, BR, BL
+            output[4] = [(coords_one[0][0] + coords_two[0][0])/2,      # TL (middle)
+                        (coords_one[0][1] + coords_two[0][1])/2]
+            output[5] = coords_two[0]                                    # TR
+            output[6] = coords_two[1]                                    # BR
+            output[7] = [(coords_one[1][0] + coords_two[1][0])/2,      # BL (middle)
+                        (coords_one[1][1] + coords_two[1][1])/2]
+        
+        else:  # Side2 View
+            # Side2: FP2 is near (left in video), FP1 is far (right in video)
+            # Plate 1 (far/right): TL, TR, BR, BL
+            output[0] = [(coords_one[0][0] + coords_two[0][0])/2,      # TL (middle)
+                        (coords_one[0][1] + coords_two[0][1])/2]
+            output[1] = coords_two[0]                                    # TR
+            output[2] = coords_two[1]                                    # BR
+            output[3] = [(coords_one[1][0] + coords_two[1][0])/2,      # BL (middle)
+                        (coords_one[1][1] + coords_two[1][1])/2]
+            
+            # Plate 2 (near/left): TL, TR, BR, BL
+            output[4] = coords_one[0]                                    # TL
+            output[5] = [(coords_one[0][0] + coords_two[0][0])/2,      # TR (middle)
+                        (coords_one[0][1] + coords_two[0][1])/2]
+            output[6] = [(coords_one[1][0] + coords_two[1][0])/2,      # BR (middle)
+                        (coords_one[1][1] + coords_two[1][1])/2]
+            output[7] = coords_one[1]                                    # BL
+    
+    else:
+        # Long View, Top View, or legacy Short View
+        # Create middle points
+        mid_x_left = (coords_one[0][0] + coords_one[1][0]) / 2
+        mid_y_left = (coords_one[0][1] + coords_one[1][1]) / 2
+        
+        mid_x_right = (coords_two[0][0] + coords_two[1][0]) / 2
+        mid_y_right = (coords_two[0][1] + coords_two[1][1]) / 2
+        
+        offset = 10
+        
+        # Plate 1 (left): TL, TR, BR, BL
+        output[0] = coords_one[0]
+        output[1] = [mid_x_left + offset, mid_y_left]
+        output[2] = [mid_x_left + offset, mid_y_left]
+        output[3] = coords_one[1]
+        
+        # Plate 2 (right): TL, TR, BR, BL
+        output[4] = [mid_x_right - offset, mid_y_right]
+        output[5] = coords_two[0]
+        output[6] = coords_two[1]
+        output[7] = [mid_x_right - offset, mid_y_right]
 
-    # # Save coordinates to a file
+    # Draw final corners
+    for i, out in enumerate(output):
+        color = (0, 255, 255) if i < 4 else (0, 0, 255)  # Yellow for FP1, Red for FP2
+        cv2.circle(frame, (int(out[0]), int(out[1])), 5, color, -1)
+        cv2.putText(frame, str(i), (int(out[0])+10, int(out[1])-10),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+
+    # Save coordinates
     with open("selected_points.txt", "w") as f:
         for x, y in output:
             f.write(f"{x},{y}\n")
 
     print(f"{len(output)} coordinates saved to file.")
+    print(f"Plate 1 corners: {output[0:4]}")
+    print(f"Plate 2 corners: {output[4:8]}")
 
-    # Show the result
-    cv2.namedWindow("Detected Yellow Rectangles", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("Detected Yellow Rectangles", 800, 600)  # Set window size
-    cv2.imshow("Detected Yellow Rectangles", frame)
+    # Show result
+    cv2.namedWindow("Detected Rectangles", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("Detected Rectangles", 800, 600)
+    cv2.imshow("Detected Rectangles", frame)
 
-    cv2.waitKey(0)  # Wait indefinitely until a key is pressed
+    cv2.waitKey(0)
     cv2.destroyAllWindows()
 
     return output
-# Add this to vector_overlay/select_corners.py
 
 def manual_corner_adjustment(frame, initial_corners, view):
     """

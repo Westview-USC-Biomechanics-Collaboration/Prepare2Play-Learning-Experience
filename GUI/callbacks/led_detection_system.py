@@ -45,7 +45,7 @@ class LEDConfig:
     """
     view_name: str
     
-    # Frame dimensions (varies by camera type)
+    # Frame dimensions
     frame_width: int = 1920
     frame_height: int = 1080
     
@@ -226,52 +226,92 @@ class TopViewLEDConfig(LEDConfig):
         return template
 
 
-class SideViewLEDConfig(LEDConfig):
+class Side1ViewLEDConfig(LEDConfig):
     """
-    Base configuration for Side View cameras (GoPro).
+    Configuration for Side1 View camera.
     
-    Resolution: 1920x1080 (GoPro 4K)
-    
-    NOTE: This is a base class. Use auto_detect_side_view() to automatically
-    determine if this is Side1 or Side2 based on LED position, then create
-    the appropriate Side1ViewLEDConfig or Side2ViewLEDConfig.
-    
-    Side1: LED on left, Near plate = FP2, Far plate = FP1 (SWAP needed)
-    Side2: LED on right, Near plate = FP1, Far plate = FP2 (NO swap)
+    Resolution: 1920x1080 (GoPro)
+    Force plate orientation: Near plate (closest to camera) = FP1
+    LED location: Left side of frame
     """
     def __init__(self):
-        """
-        Initialize Side View configuration.
-        
-        Args:
-            is_side1: True if LED is on left side (Side1), False if on right (Side2)
-        """
-        if True:
-            # Side1: LED on left
-            view_name = "Side1 View"
-            led_crop_x0 = 1100
-            led_crop_x1 = 1500
-            plate_swap = False  # Side1: near=FP1, far=FP2, so swap
-        else:
-            # Side2: LED on right
-            view_name = "Side2 View"
-            led_crop_x0 = 3040
-            led_crop_x1 = 3640
-            plate_swap = False  # Side2: near=FP2, far=FP1 (standard)
-        
         super().__init__(
-            view_name=view_name,
+            view_name="Side1 View",
             frame_width=1920,
             frame_height=1080,
-            led_crop_x0=led_crop_x0,
-            led_crop_x1=led_crop_x1,
+            led_crop_x0=100,
+            led_crop_x1=500,
             led_crop_y0=600,
             led_crop_y1=1000,
             template_center_offset_x=45,
             template_center_offset_y=47,
-            plate_swap=plate_swap
+            plate_swap=False  # No swap needed - FP1 is near
         )
     
+    def create_led_template(self) -> np.ndarray:
+        """
+        Create template for Side1 View LED.
+        
+        Returns:
+            np.ndarray: LED template image
+        """
+        template = np.zeros((71, 91), dtype=np.uint8)
+        
+        # Main bright rectangle
+        cv2.rectangle(template, (20, 27), (71, 68), 200, -1)
+        
+        # Dark center where LEDs are
+        cv2.rectangle(template, (42, 30), (49, 45), 10, -1)
+        
+        # Blur to match processed images
+        template = cv2.blur(template, (5, 5))
+        
+        return template
+
+
+class Side2ViewLEDConfig(LEDConfig):
+    """
+    Configuration for Side2 View camera.
+    
+    Resolution: 1920x1080 (GoPro)
+    Force plate orientation: Near plate (closest to camera) = FP2
+    LED location: Right side of frame
+    """
+    def __init__(self):
+        super().__init__(
+            view_name="Side2 View",
+            frame_width=1920,
+            frame_height=1080,
+            led_crop_x0=1420,
+            led_crop_x1=1820,
+            led_crop_y0=600,
+            led_crop_y1=1000,
+            template_center_offset_x=45,
+            template_center_offset_y=47,
+            plate_swap=False  # No swap needed - FP2 is near
+        )
+    
+    def create_led_template(self) -> np.ndarray:
+        """
+        Create template for Side2 View LED.
+        
+        Returns:
+            np.ndarray: LED template image
+        """
+        template = np.zeros((71, 91), dtype=np.uint8)
+        
+        # Main bright rectangle
+        cv2.rectangle(template, (20, 27), (71, 68), 200, -1)
+        
+        # Dark center where LEDs are
+        cv2.rectangle(template, (42, 30), (49, 45), 10, -1)
+        
+        # Blur to match processed images
+        template = cv2.blur(template, (5, 5))
+        
+        return template
+
+
     def create_led_template(self) -> np.ndarray:
         """
         Create template for Side View LED.
@@ -696,7 +736,10 @@ class LEDDetector:
 config_map = {
     "Long View": LongViewLEDConfig,
     "Top View": TopViewLEDConfig,
+    "Side1 View": Side1ViewLEDConfig,
+    "Side2 View": Side2ViewLEDConfig,
 }
+
 
 def process_view(
     video_path: str,
@@ -710,36 +753,28 @@ def process_view(
     
     Args:
         video_path: Path to video file
-        view_type: One of "Long View", "Top View", or "Side View"
+        view_type: One of "Long View", "Top View", "Side1 View", or "Side2 View"
         output_path: Path to save all outputs
         
     Returns:
         DataFrame with LED signal for alignment
     """
-    # Handle Side View specially (requires auto-detection)
-    if view_type == "Side View":
-        print(f"\n{'='*60}")
-        print(f"Processing Side View (auto-detecting Side1 vs Side2)")
-        print(f"{'='*60}")
-        config = auto_detect_side_view(video_path)
-    elif view_type in config_map:
-        config = config_map[view_type]()
-    else:
+    if view_type not in config_map:
         raise ValueError(
             f"Unknown view type: {view_type}. "
-            f"Must be one of: Long View, Top View, Side View"
+            f"Must be one of: {', '.join(config_map.keys())}"
         )
+    
+    config = config_map[view_type]()
     
     # Create detector and process
     detector = LEDDetector(config)
     
-    if view_type != "Side View":
-        print(f"\n{'='*60}")
-        print(f"Processing {view_type}")
-        print(f"{'='*60}")
+    print(f"\n{'='*60}")
+    print(f"Processing {view_type}")
+    print(f"{'='*60}")
     
     print(f"Resolution: {config.frame_width}x{config.frame_height}")
-    print(f"Force Plate Swap: {'YES (FP1 ↔ FP2)' if config.plate_swap else 'NO (standard)'}")
     
     # Find LED location
     led_center = detector.find_led_location(video_path, output_path)
