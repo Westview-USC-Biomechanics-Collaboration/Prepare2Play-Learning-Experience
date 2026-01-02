@@ -667,7 +667,7 @@ class VectorOverlay:
         print(f"Processed {processed} frames, COM drawn on {com_drawn_count} frames")
         print("=" * 50 + "\n")
 
-    def TopVectorOverlay(self, df_aligned, outputName=None, show_preview=True,
+    def  vectorOverlay(self, df_aligned, outputName=None, show_preview=True,
                           lag=0, com_csv_path=None, show_landmarks=False,
                           boundary_start=0, boundary_end=None):
         """
