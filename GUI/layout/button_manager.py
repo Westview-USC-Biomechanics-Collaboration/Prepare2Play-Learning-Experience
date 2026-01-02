@@ -18,10 +18,9 @@ class ButtonManager:
         self.buttons['upload_video'] = tk.Button(self.parent.master, text="Upload Video", command=self.parent.upload_video)
         self.buttons['upload_force'] = tk.Button(self.parent.master, text="Upload Force File", command=self.parent.upload_force_data)
         self.buttons['vector_overlay'] = tk.Button(self.parent.master, text="Vector Overlay", command=lambda: vectorOverlayWithAlignmentCallback(self.parent))
-        self.buttons['label_video'] = tk.Button(self.parent.master, text="Label Video", command=self.parent.label_video)
-        self.buttons['label_force'] = tk.Button(self.parent.master, text="Label Force", command=self.parent.label_force)
         self.buttons['save'] = tk.Button(self.parent.master, text="Save", command=self.parent.save)
-        self.buttons['Male_COM'] = tk.Button(self.parent.master, text="Male_COM", command=self.parent.startMaleCOM)
-        self.buttons['Female_COM'] = tk.Button(self.parent.master, text="Female_COM", command=self.parent.startFemaleCOM)
+        self.buttons['set_male_COM'] = tk.Button(self.parent.master, text="Set Male COM", command=self.parent.setMale)
+        self.buttons['set_female_COM'] = tk.Button(self.parent.master, text="Set Female COM", command=self.parent.setFemale)
+
 
         return self.buttons

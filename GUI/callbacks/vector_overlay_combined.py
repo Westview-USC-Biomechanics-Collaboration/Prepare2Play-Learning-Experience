@@ -4,7 +4,7 @@ import pandas as pd
 import cv2
 from vector_overlay.vectoroverlay_GUI import VectorOverlay
 from GUI.callbacks.ledSyncing_with_detection_system import new_led  
-from GUI.callbacks.global_variable import globalVariable
+from GUI.callbacks import global_variable
 from Util.force_boundary_finder import find_force_boundaries, get_trimmed_subset
 from vector_overlay.com_processor_modified import BoundaryProcessor as Processor
 import warnings
@@ -73,7 +73,7 @@ def vectorOverlayWithAlignmentCallback(self):
         print(f"Alignment complete. Lag: {lag} frames")
         print(f"df_aligned shape: {df_aligned.shape}")
         print(f"df_aligned columns: {list(df_aligned.columns)}")
-
+        print("[DEBUG] Current Sex in globalVariable:", global_variable.globalVariable.sex)
         # ======================================================================
         # STEP 2: FIND FORCE BOUNDARIES (TRIMMING)
         # ======================================================================
@@ -96,7 +96,6 @@ def vectorOverlayWithAlignmentCallback(self):
             print("[INFO] Using full frame range as fallback")
             boundary_start = int(df_aligned['FrameNumber'].min())
             boundary_end = int(df_aligned['FrameNumber'].max())
-
         # ======================================================================
         # STEP 3: RUN COM CALCULATION ON TRIMMED SUBSET
         # ======================================================================
@@ -105,8 +104,10 @@ def vectorOverlayWithAlignmentCallback(self):
         
         try:
             # Determine sex for COM calculation
-            sex = globalVariable.sex if globalVariable.sex else 'm'  # default to male
-            if not globalVariable.sex:
+            print("[DEBUG] Current Sex in globalVariable:", global_variable.globalVariable.sex)
+            sex = global_variable.globalVariable.sex if global_variable.globalVariable.sex else 'm'  # default to male
+
+            if not global_variable.globalVariable.sex:
                 print("[WARNING] Sex not set in globalVariable, defaulting to 'male'")
             
             # Create COM processor using BoundaryProcessor wrapper
