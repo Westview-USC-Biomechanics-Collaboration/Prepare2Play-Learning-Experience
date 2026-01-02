@@ -14,6 +14,12 @@ import math
 import threading
 from datetime import datetime
 from io import BytesIO
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
+from GUI.callbacks import global_variable
 
 project_root  = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_root not in sys.path:
@@ -114,11 +120,9 @@ class DisplayApp:
         self.background.create_window(layoutHelper(3, "horizontal"), 525, window=self.buttons['upload_video'])
         self.background.create_window(layoutHelper(6, "horizontal"), 525, window=self.buttons['upload_force'])
         self.background.create_window(layoutHelper(9, "horizontal"), 525, window=self.buttons['vector_overlay'])
-        self.background.create_window(layoutHelper(3, "horizontal"), 575, window=self.buttons['label_video'])
-        self.background.create_window(layoutHelper(6, "horizontal"), 575, window=self.buttons['label_force'])
         self.background.create_window(layoutHelper(9, "horizontal"), 575, window=self.buttons['save'])
-        self.background.create_window(100, 800, window=self.buttons['Male_COM'])
-        self.background.create_window(100, 850, window=self.buttons['Female_COM'])
+        self.background.create_window(layoutHelper(3, "horizontal"), 575, window=self.buttons['set_male_COM'])
+        self.background.create_window(layoutHelper(6, "horizontal"), 575, window=self.buttons['set_female_COM'])
 
     def initLabels(self):  
         self.labels = self.labelManager.create_labels()
@@ -313,11 +317,20 @@ class DisplayApp:
     def startCOM(self):
         COMCallback(self)
     
-    def startMaleCOM(self):
-        COMCallback(self, "m")
+    # def startMaleCOM(self):
+    #     COMCallback(self, "m")
     
-    def startFemaleCOM(self):
-        COMCallback(self, "f")
+    # def startFemaleCOM(self):
+    #     COMCallback(self, "f")
+    def setMale(self):
+       global_variable.globalVariable.setMaleSex()
+       print("COM Sex set to male: ", global_variable.globalVariable.sex)
+       # Updates button appearance
+   
+    def setFemale(self):
+       global_variable.globalVariable.setFemaleSex()
+       print("COM Sex set to female: ", global_variable.globalVariable.sex)
+       # Updates button appearance
 
     def save(self):
         saveCallback(self)
