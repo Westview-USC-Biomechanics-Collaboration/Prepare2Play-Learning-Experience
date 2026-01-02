@@ -737,26 +737,18 @@ def select_points(self, cap, view):
     
     else:
         # Long View, Top View, or legacy Short View
-        # Create middle points
-        mid_x_left = (coords_one[0][0] + coords_one[1][0]) / 2
-        mid_y_left = (coords_one[0][1] + coords_one[1][1]) / 2
         
-        mid_x_right = (coords_two[0][0] + coords_two[1][0]) / 2
-        mid_y_right = (coords_two[0][1] + coords_two[1][1]) / 2
-        
-        offset = 10
-        
-        # Plate 1 (left): TL, TR, BR, BL
-        output[0] = coords_one[0]
-        output[1] = [mid_x_left + offset, mid_y_left]
-        output[2] = [mid_x_left + offset, mid_y_left]
-        output[3] = coords_one[1]
-        
-        # Plate 2 (right): TL, TR, BR, BL
-        output[4] = [mid_x_right - offset, mid_y_right]
-        output[5] = coords_two[0]
-        output[6] = coords_two[1]
-        output[7] = [mid_x_right - offset, mid_y_right]
+
+        coords.append([(coords[0][0] + coords[2][0])/2 - 10, (coords[0][1] + coords[2][1])/2])
+        coords.append([(coords[0][0] + coords[2][0])/2 + 10, (coords[0][1] + coords[2][1])/2])
+        coords.append([(coords[1][0] + coords[3][0])/2 - 10, (coords[1][1] + coords[3][1])/2])
+        coords.append([(coords[1][0] + coords[3][0])/2 + 10, (coords[1][1] + coords[3][1])/2])
+
+        # order plate 1
+        output[0], output[1], output[2], output[3] = coords[0], coords[4], coords[6], coords[1]
+
+        # order plate 2
+        output[4], output[5], output[6], output[7] = coords[5], coords[2], coords[3], coords[7]
 
     # Draw final corners
     for i, out in enumerate(output):

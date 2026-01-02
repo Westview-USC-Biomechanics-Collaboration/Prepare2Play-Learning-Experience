@@ -765,6 +765,7 @@ class VectorOverlay:
             fy1 = -raw_F1_Fx * scale_factor
             fy2 = -raw_F2_Fx * scale_factor
 
+
             # ----- TOP VIEW pressure mapping (match your working version) -----
             ax1 = float(row.get("FP1_Ax", 0.0) or 0.0)
             ay1 = float(row.get("FP1_Ay", 0.0) or 0.0)
