@@ -556,6 +556,152 @@ def select_points(self, cap, view):
     cv2.destroyAllWindows()
 
     return output
+# Add this to vector_overlay/select_corners.py
+
+def manual_corner_adjustment(frame, initial_corners, view):
+    """
+    Allow manual adjustment of detected corners.
+    
+    Args:
+        frame: Video frame to display
+        initial_corners: List of 8 [x, y] coordinates from auto-detection
+        view: View type string
+    
+    Returns:
+        List of 8 adjusted [x, y] coordinates
+    """
+    corners = [list(c) for c in initial_corners]  # Make mutable copy
+    selected_corner = None
+    dragging = False
+    
+    window_name = "Adjust Corners - Click and Drag"
+    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(window_name, 1200, 800)
+    
+    # Colors for plate 1 (yellow) and plate 2 (red)
+    colors = [(0, 255, 255)] * 4 + [(0, 0, 255)] * 4  # Yellow for plate1, Red for plate2
+    
+    def mouse_callback(event, x, y, flags, param):
+        nonlocal selected_corner, dragging, corners
+        
+        if event == cv2.EVENT_LBUTTONDOWN:
+            # Find nearest corner (within 20 pixels)
+            min_dist = 20
+            for i, corner in enumerate(corners):
+                dist = np.sqrt((x - corner[0])**2 + (y - corner[1])**2)
+                if dist < min_dist:
+                    selected_corner = i
+                    dragging = True
+                    min_dist = dist
+        
+        elif event == cv2.EVENT_MOUSEMOVE:
+            if dragging and selected_corner is not None:
+                corners[selected_corner] = [x, y]
+        
+        elif event == cv2.EVENT_LBUTTONUP:
+            dragging = False
+            selected_corner = None
+    
+    cv2.setMouseCallback(window_name, mouse_callback)
+    
+    print("\n" + "="*60)
+    print("MANUAL CORNER ADJUSTMENT")
+    print("="*60)
+    print("Controls:")
+    print("  - Click and drag any corner point to adjust")
+    print("  - Press 'r' to reset to auto-detected positions")
+    print("  - Press 'Enter' to confirm and continue")
+    print("  - Press 'q' to quit without saving")
+    print("\nCorner Order:")
+    print("  Plate 1 (Yellow): TL(0), TR(1), BR(2), BL(3)")
+    print("  Plate 2 (Red):    TL(4), TR(5), BR(6), BL(7)")
+    print("="*60)
+    
+    while True:
+        display_frame = frame.copy()
+        
+        # Draw corner points
+        for i, corner in enumerate(corners):
+            x, y = int(corner[0]), int(corner[1])
+            color = colors[i]
+            
+            # Larger circle if selected
+            radius = 8 if i == selected_corner else 5
+            thickness = -1 if i == selected_corner else 2
+            
+            cv2.circle(display_frame, (x, y), radius, color, thickness)
+            
+            # Label each corner
+            label = f"{i}"
+            cv2.putText(display_frame, label, (x + 10, y - 10),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+        
+        # Draw rectangles for each plate
+        plate1_pts = np.array([corners[0], corners[1], corners[2], corners[3]], dtype=np.int32)
+        plate2_pts = np.array([corners[4], corners[5], corners[6], corners[7]], dtype=np.int32)
+        
+        cv2.polylines(display_frame, [plate1_pts], True, (0, 255, 255), 2)  # Yellow
+        cv2.polylines(display_frame, [plate2_pts], True, (0, 0, 255), 2)    # Red
+        
+        # Instructions overlay
+        cv2.putText(display_frame, "Drag corners to adjust | 'r' reset | Enter to confirm",
+                   (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+        
+        cv2.imshow(window_name, display_frame)
+        
+        key = cv2.waitKey(1) & 0xFF
+        
+        if key == ord('r'):
+            # Reset to initial
+            corners = [list(c) for c in initial_corners]
+            print("Reset to auto-detected positions")
+        
+        elif key == 13:  # Enter
+            print("Corners confirmed!")
+            break
+        
+        elif key == ord('q'):
+            print("Adjustment cancelled")
+            cv2.destroyAllWindows()
+            return None
+    
+    cv2.destroyAllWindows()
+    
+    # Print final coordinates
+    print("\nFinal Corner Coordinates:")
+    print("Plate 1 (Yellow):")
+    for i in range(4):
+        print(f"  Corner {i}: ({corners[i][0]}, {corners[i][1]})")
+    print("Plate 2 (Red):")
+    for i in range(4, 8):
+        print(f"  Corner {i}: ({corners[i][0]}, {corners[i][1]})")
+    
+    return corners
+
+
+def select_points_with_manual_adjustment(self, cap, view):
+    """
+    Modified version of select_points that includes manual adjustment.
+    """
+    # First, auto-detect corners
+    auto_corners = select_points(self, cap, view)
+    
+    # Get first frame for display
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+    ret, frame = cap.read()
+    if not ret:
+        print("Error: Could not read frame for manual adjustment")
+        return auto_corners
+    
+    # Allow manual adjustment
+    adjusted_corners = manual_corner_adjustment(frame, auto_corners, view)
+    
+    # If user cancelled, return auto-detected
+    if adjusted_corners is None:
+        print("Using auto-detected corners")
+        return auto_corners
+    
+    return adjusted_corners
 
 if __name__ == "__main__":
     cap = cv2.VideoCapture(r"C:\Users\Arnav\Downloads\JPJ_12_GS_long.vid01.MOV")

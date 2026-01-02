@@ -16,7 +16,7 @@ warnings.filterwarnings(
 )
 
 # Configurable settings
-MAX_COM_WORKERS = 4  # Easily adjustable number of workers for COM calculation
+MAX_COM_WORKERS = 6  # Easily adjustable number of workers for COM calculation
 FORCE_THRESHOLD = 50  # Minimum force in Newtons to include in processing
 BOUNDARY_PADDING = 10  # Extra frames before/after force threshold
 SHOW_LANDMARKS = False  # Show green landmark dots (set to True to enable)

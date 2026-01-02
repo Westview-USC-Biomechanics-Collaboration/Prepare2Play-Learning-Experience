@@ -125,8 +125,12 @@ class VectorOverlay:
         self.setFrameData()
         self.readData()
 
+    # def check_corner(self, view):
+    #     self.corners = select_points(self, cap=self.video, view=view)
+
     def check_corner(self, view):
-        self.corners = select_points(self, cap=self.video, view=view)
+        from vector_overlay.select_corners import select_points_with_manual_adjustment
+        self.corners = select_points_with_manual_adjustment(self, cap=self.video, view=view)
 
     def setFrameData(self):
         cap = self.video
