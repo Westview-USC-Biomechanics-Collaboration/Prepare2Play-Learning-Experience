@@ -26,11 +26,13 @@
 - TO-DO:
   - Manual input for the four corners
   - Manual input for the LED location
-  - Vector colors for TOP VIEW should not be hard-coded (go in vectoroverlay_GUI.py, draw vectors method)
-  - Side view auto detection of LED for the force plates 
-  - Fix TOP VIEW graph axis (not written properly)
+  - Side view auto detection of LED for the force plates
   - Change naming convention from SHORT VIEW to SIDE VIEW in all the code
     - Add SIDE VIEW to config + fix is_side1 boolean input for the parameter
+  - Vector colors for TOP VIEW should not be hard-coded (go in vectoroverlay_GUI.py, draw vectors method) (DONE)
+  - Fix TOP VIEW graph axis (not written properly) (DONE)
+
 ## Nishk - Date 1/1/2025
 - Vectors colors for TOP VIEW are NOT hardcoded anymore
 - TOP VIEW graph axis are drawn properly 
+- Deleted old buttons (label force and label video) and added new ones for user selection of Male or Female COM
