@@ -282,10 +282,10 @@ class Side2ViewLEDConfig(LEDConfig):
             view_name="Side2 View",
             frame_width=1920,
             frame_height=1080,
-            led_crop_x0=1000,
-            led_crop_x1=1820,
+            led_crop_x0=600,
+            led_crop_x1=900,
             led_crop_y0=600,
-            led_crop_y1=1000,
+            led_crop_y1=800,
             template_center_offset_x=45,
             template_center_offset_y=47,
             plate_swap=False  # No swap needed - FP2 is near

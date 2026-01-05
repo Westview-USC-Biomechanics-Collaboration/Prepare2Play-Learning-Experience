@@ -621,14 +621,14 @@ def select_points(self, cap, view):
         roi = mask[y1:y2, x1:x2]
     elif view == "Side1 View":
         # Side1: FP1 is near (left), FP2 is far (right)
-        y1, y2 = int(0.6 * h), int(0.85 * h)
-        x1, x2 = int(0.3 * w), int(0.85 * w)
+        y1, y2 = int(0.6 * h), int(0.95 * h)
+        x1, x2 = int(0.3 * w), int(0.65 * w)
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
     elif view == "Side2 View":
         # Side2: FP2 is near (left), FP1 is far (right)
         y1, y2 = int(0.6 * h), int(0.85 * h)
-        x1, x2 = int(0.15 * w), int(0.7 * w)
+        x1, x2 = int(0.40 * w), int(0.7 * w)
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
     else:  # Default (original "Short View")
@@ -690,6 +690,7 @@ def select_points(self, cap, view):
     print(f"Detected {len(coords)} corners.")
     if len(coords) < 4:
         print("Error: Not enough corners detected. Please try again.")
+        print(f"Detected {len(coords)} corners")
 
     # Create output array for 8 corners (TL, TR, BR, BL for each plate)
     output = [[0, 0] for _ in range(8)]
@@ -698,42 +699,52 @@ def select_points(self, cap, view):
     if view in ["Side1 View", "Side2 View"]:
         # For side views, plates are front-to-back, not left-to-right
         # coords_one = near plate, coords_two = far plate
+
+        coords.append([(coords[2][0] + coords[3][0])/2, (coords[2][1] + coords[3][1])/2 - 25])
+        coords.append([(coords[2][0] + coords[3][0])/2, (coords[2][1] + coords[3][1])/2])
+        coords.append([(coords[0][0] + coords[1][0])/2, (coords[0][1] + coords[1][1])/2 - 25])
+        coords.append([(coords[0][0] + coords[1][0])/2, (coords[0][1] + coords[1][1])/2])
         
         if view == "Side1 View":
             # Side1: FP1 is near (left in video), FP2 is far (right in video)
             # Plate 1 (near/left): TL, TR, BR, BL
-            output[0] = coords_one[0]                                    # TL
-            output[1] = [(coords_one[0][0] + coords_two[0][0])/2,      # TR (middle)
-                        (coords_one[0][1] + coords_two[0][1])/2]
-            output[2] = [(coords_one[1][0] + coords_two[1][0])/2,      # BR (middle)
-                        (coords_one[1][1] + coords_two[1][1])/2]
-            output[3] = coords_one[1]                                    # BL
+            # output[0] = coords_one[0]                                    # TL
+            # output[1] = [(coords_one[0][0] + coords_two[0][0])/2,      # TR (middle)
+            #             (coords_one[0][1] + coords_two[0][1])/2]
+            # output[2] = [(coords_one[1][0] + coords_two[1][0])/2,      # BR (middle)
+            #             (coords_one[1][1] + coords_two[1][1])/2]
+            # output[3] = coords_one[1]                                    # BL
             
-            # Plate 2 (far/right): TL, TR, BR, BL
-            output[4] = [(coords_one[0][0] + coords_two[0][0])/2,      # TL (middle)
-                        (coords_one[0][1] + coords_two[0][1])/2]
-            output[5] = coords_two[0]                                    # TR
-            output[6] = coords_two[1]                                    # BR
-            output[7] = [(coords_one[1][0] + coords_two[1][0])/2,      # BL (middle)
-                        (coords_one[1][1] + coords_two[1][1])/2]
+            # # Plate 2 (far/right): TL, TR, BR, BL
+            # output[4] = [(coords_one[0][0] + coords_two[0][0])/2,      # TL (middle)
+            #             (coords_one[0][1] + coords_two[0][1])/2]
+            # output[5] = coords_two[0]                                    # TR
+            # output[6] = coords_two[1]                                    # BR
+            # output[7] = [(coords_one[1][0] + coords_two[1][0])/2,      # BL (middle)
+            #             (coords_one[1][1] + coords_two[1][1])/2]
+            output[0], output[1], output[2], output[3] = coords[7], coords[5], coords[3], coords[1] 
+            output[4], output[5], output[6], output[7] = coords[0], coords[2], coords[4], coords[6]
         
         else:  # Side2 View
             # Side2: FP2 is near (left in video), FP1 is far (right in video)
             # Plate 1 (far/right): TL, TR, BR, BL
-            output[0] = [(coords_one[0][0] + coords_two[0][0])/2,      # TL (middle)
-                        (coords_one[0][1] + coords_two[0][1])/2]
-            output[1] = coords_two[0]                                    # TR
-            output[2] = coords_two[1]                                    # BR
-            output[3] = [(coords_one[1][0] + coords_two[1][0])/2,      # BL (middle)
-                        (coords_one[1][1] + coords_two[1][1])/2]
+            # output[0] = [(coords_one[0][0] + coords_two[0][0])/2,      # TL (middle)
+            #             (coords_one[0][1] + coords_two[0][1])/2]
+            # output[1] = coords_two[0]                                    # TR
+            # output[2] = coords_two[1]                                    # BR
+            # output[3] = [(coords_one[1][0] + coords_two[1][0])/2,      # BL (middle)
+            #             (coords_one[1][1] + coords_two[1][1])/2]
             
-            # Plate 2 (near/left): TL, TR, BR, BL
-            output[4] = coords_one[0]                                    # TL
-            output[5] = [(coords_one[0][0] + coords_two[0][0])/2,      # TR (middle)
-                        (coords_one[0][1] + coords_two[0][1])/2]
-            output[6] = [(coords_one[1][0] + coords_two[1][0])/2,      # BR (middle)
-                        (coords_one[1][1] + coords_two[1][1])/2]
-            output[7] = coords_one[1]                                    # BL
+            # # Plate 2 (near/left): TL, TR, BR, BL
+            # output[4] = coords_one[0]                                    # TL
+            # output[5] = [(coords_one[0][0] + coords_two[0][0])/2,      # TR (middle)
+            #             (coords_one[0][1] + coords_two[0][1])/2]
+            # output[6] = [(coords_one[1][0] + coords_two[1][0])/2,      # BR (middle)
+            #             (coords_one[1][1] + coords_two[1][1])/2]
+            # output[7] = coords_one[1]                                    # BL
+
+            output[0], output[1], output[2], output[3] = coords[0], coords[2], coords[4], coords[6]
+            output[4], output[5], output[6], output[7] = coords[7], coords[5], coords[3], coords[1]
     
     else:
         # Long View, Top View, or legacy Short View

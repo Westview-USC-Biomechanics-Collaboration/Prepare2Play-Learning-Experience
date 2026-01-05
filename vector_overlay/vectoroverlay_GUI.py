@@ -35,10 +35,10 @@ def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords, short=Fal
     bottom_y = (bl_y + br_y) / 2
 
     # Map y-coordinate
-    if short:
-        new_y = bottom_y + y * (top_y - bottom_y)
-    else:
-        new_y = top_y + y * (bottom_y - top_y)
+    # if short:
+    #     new_y = bottom_y + y * (top_y - bottom_y)
+    # else:
+    new_y = top_y + y * (bottom_y - top_y)
 
     return (int(new_x), int(new_y))
 
@@ -613,10 +613,11 @@ class VectorOverlay:
             #   px1 = self.py1[force_idx]
             #   py1 = self.px1[force_idx]
             # i.e., swap x/y before rect_to_trapezoid
+
             px1 = pressure_y1
-            py1 = pressure_x1
+            py1 = 1.0 - pressure_x1
             px2 = pressure_y2
-            py2 = pressure_x2
+            py2 = 1.0 - pressure_x2
 
             # ----- Debug prints (similar style to your previous logs) -----
             if processed < 10 or processed % 30 == 0:
@@ -918,10 +919,16 @@ class VectorOverlay:
             pressure_y2 = np.clip((ay2 + 0.45) / 0.9, 0, 1)
 
             # For side views, map pressure coordinates
-            px1 = pressure_y1
-            py1 = 1.0 - pressure_x1
-            px2 = pressure_y2
-            py2 = 1.0 - pressure_x2
+            if self.view == "Side1 View":
+                px1 = 1.0 - pressure_x1
+                py1 = 1.0 - pressure_y1
+                px2 = 1.0 - pressure_x2
+                py2 = 1.0 - pressure_y2
+            else:
+                px1 = pressure_x1
+                py1 = pressure_y1
+                px2 = pressure_x2
+                py2 = pressure_y2
 
             # Debug prints
             if processed < 10 or processed % 30 == 0:
