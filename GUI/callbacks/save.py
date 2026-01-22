@@ -216,7 +216,14 @@ def saveCallback(self):
             color2_1, color2_2 = 'blue', 'red'
             label1_1_name, label1_2_name = 'Force horizontal', 'Force vertical'
             label2_1_name, label2_2_name = 'Force horizontal', 'Force vertical'
-        elif view == "Side View":
+        elif view == "Side1 View":
+            label1_1, label1_2 = "FP1_Fx", "FP1_Fz"
+            label2_1, label2_2 = "FP2_Fx", "FP2_Fz"
+            color1_1, color1_2 = 'purple', 'green'
+            color2_1, color2_2 = 'blue', 'red'
+            label1_1_name, label1_2_name = 'Force horizontal', 'Force vertical'
+            label2_1_name, label2_2_name = 'Force horizontal', 'Force vertical'
+        elif view == "Side2 View":
             label1_1, label1_2 = "FP1_Fx", "FP1_Fz"
             label2_1, label2_2 = "FP2_Fx", "FP2_Fz"
             color1_1, color1_2 = 'purple', 'green'
@@ -346,7 +353,8 @@ def saveCallback(self):
             return
 
         # ========== SETUP VIDEO WRITER ==========
-        out_fps = max(1.0, self.Video.fps / 2.0)
+        # out_fps = max(1.0, self.Video.fps)
+        out_fps = 60.0
         
         # Video on top, graphs on bottom
         out_height = self.Video.frame_height + plot_static_1.shape[0]

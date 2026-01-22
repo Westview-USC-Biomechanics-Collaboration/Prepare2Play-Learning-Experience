@@ -14,7 +14,8 @@ from GUI.callbacks.led_detection_system import (
     process_view,
     LongViewLEDConfig,
     TopViewLEDConfig,
-    SideViewLEDConfig,
+    Side1ViewLEDConfig,
+    Side2ViewLEDConfig,
     LEDDetector
 )
 
@@ -263,6 +264,108 @@ def _save_alignment_plot(df_aligned, lag, output_dir, view):
     except Exception as e:
         print(f"[WARNING] Could not save alignment plot: {e}")
 
+
+def new_led(self, view, parent_path, video_file, force_file, use_detection_system=True):
+    """
+    Run LED syncing with view-specific detection.
+    No more auto-detection - Side1 and Side2 are explicitly selected.
+    """
+    import time
+    startTime = time.time()
+    
+    video_path = os.path.join(parent_path, video_file)
+    
+    if use_detection_system:
+        from GUI.callbacks.led_detection_system import process_view, config_map
+        
+        print(f"\n[INFO] Using LED detection system for {view}")
+        
+        # Check if view is valid
+        if view not in config_map:
+            raise ValueError(f"Unknown view: {view}. Must be one of: {', '.join(config_map.keys())}")
+        
+        config_class = config_map[view]
+        config = config_class()
+        
+        print(f"[INFO] Processing {view}")
+        
+        # Process video to get LED signal
+        df_video = process_view(video_path, view, parent_path)
+
+        # Load and process force data
+        force_path = os.path.join(parent_path, force_file)
+        df_force = pd.read_csv(force_path, header=17, delimiter='\t', encoding='latin1').drop(0)
+        df_force = df_force.apply(pd.to_numeric, errors='coerce')
+        
+        # Rename columns
+        force_dict = {
+            'abs time (s)': 'Time(s)',
+            'Fx': 'FP1_Fx', 'Fy': 'FP1_Fy', 'Fz': 'FP1_Fz', '|Ft|': 'FP1_|F|', 
+            'Ax': 'FP1_Ax', 'Ay': 'FP1_Ay',
+            'Fx.1': 'FP2_Fx', 'Fy.1': 'FP2_Fy', 'Fz.1': 'FP2_Fz', '|Ft|.1': 'FP2_|F|', 
+            'Ax.1': 'FP2_Ax', 'Ay.1': 'FP2_Ay',
+            'Fx.2': 'FP3_Fx', 'Fy.2': 'FP3_Fy', 'Fz.2': 'FP3_Fz', '|Ft|.2': 'FP3_|F|', 
+            'Ax.2': 'FP3_Ax', 'Ay.2': 'FP3_Ay'
+        }
+        df_force.rename(columns=force_dict, inplace=True)
+        
+        # Create LED signal
+        df_force['FP_LED_Signal'] = np.sign(df_force['FP3_Fz'])
+        
+        # Align
+        df_force_subset = df_force.iloc[::10].reset_index(drop=True)
+        signal_force = df_force_subset['FP_LED_Signal']
+        signal_video = df_video['Video_LED_Signal']
+        
+        # Z-normalize
+        video_arr = np.asarray(signal_video, dtype=float)
+        force_arr = np.asarray(signal_force, dtype=float)
+        
+        if np.std(video_arr) > 0:
+            video_arr = (video_arr - np.mean(video_arr)) / np.std(video_arr)
+        if np.std(force_arr) > 0:
+            force_arr = (force_arr - np.mean(force_arr)) / np.std(force_arr)
+        
+        from scipy import signal
+        correlation = signal.correlate(video_arr, force_arr, mode="valid")
+        lags = signal.correlation_lags(video_arr.size, force_arr.size, mode="valid")
+        lag = lags[np.argmax(correlation)]
+        
+        print(f"[INFO] Detected lag: {lag} frames")
+        
+        # Create aligned dataframe
+        df_force_subset['FrameNumber'] = list(range(lag, lag + len(df_force_subset)))
+        df_aligned = pd.merge(df_force_subset, df_video, on='FrameNumber', how='left')
+        
+        # Save results
+        max_corr = float(np.max(correlation))
+        perfect_corr = min(len(force_arr), len(video_arr))
+        relative_score = max_corr / perfect_corr
+        
+        df_result = pd.DataFrame([[
+            video_file, force_file, lag, max_corr, perfect_corr, relative_score, view
+        ]], columns=[
+            'Video File', 'Force File', 'Video Frame for t_zero force',
+            'Correlation Score', 'Perfect Score', 'Relative Score', 'View Type'
+        ])
+        
+        df_result_filename = force_file.replace('.txt', '_Results.csv')
+        df_result.to_csv(os.path.join(parent_path, df_result_filename), index=False)
+        
+        print(f"[INFO] LED sync complete. Time: {time.time() - startTime:.2f}s")
+        
+        return lag, df_aligned
+
+    else:
+        # # Use original method
+        # # Use original detection method (no plate swap)
+        # print(f"\n[INFO] Using ORIGINAL LED detection method")
+        # from GUI.callbacks.ledSyncing import run_led_syncing
+        # lag = run_led_syncing(self, parent_path, video_file, force_file)
+        # # Note: Original method doesn't return df_aligned, so you'd need to construct it
+        # # For now, raising an error to force use of new system
+        # raise NotImplementedError("Original method doesn't support df_aligned return")
+        raise NotImplementedError("Original method no longer supported for side views")
 
 def new_led(self, view, parent_path, video_file, force_file, use_detection_system=True):
     """

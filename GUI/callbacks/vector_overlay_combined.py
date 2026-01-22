@@ -16,7 +16,7 @@ warnings.filterwarnings(
 )
 
 # Configurable settings
-MAX_COM_WORKERS = 4  # Easily adjustable number of workers for COM calculation
+MAX_COM_WORKERS = 6  # Easily adjustable number of workers for COM calculation
 FORCE_THRESHOLD = 50  # Minimum force in Newtons to include in processing
 BOUNDARY_PADDING = 10  # Extra frames before/after force threshold
 SHOW_LANDMARKS = False  # Show green landmark dots (set to True to enable)
@@ -186,15 +186,27 @@ def vectorOverlayWithAlignmentCallback(self):
                     boundary_start=boundary_start,
                     boundary_end=boundary_end
                 )
-            elif selected == "Side View":
-                v.ShortVectorOverlay(
+            elif selected == "Side1 View":
+                v.SideVectorOverlay(
                     df_aligned=df_trimmed,
                     outputName=temp_video,
                     lag=lag,
                     com_csv_path=com_csv_path,
                     show_landmarks=SHOW_LANDMARKS,
                     boundary_start=boundary_start,
-                    boundary_end=boundary_end
+                    boundary_end=boundary_end,
+                    is_side1=True  # FP1 is near
+                )
+            elif selected == "Side2 View":
+                v.SideVectorOverlay(
+                    df_aligned=df_trimmed,
+                    outputName=temp_video,
+                    lag=lag,
+                    com_csv_path=com_csv_path,
+                    show_landmarks=SHOW_LANDMARKS,
+                    boundary_start=boundary_start,
+                    boundary_end=boundary_end,
+                    is_side1=False  # FP2 is near
                 )
             elif selected == "Top View":
                 v.TopVectorOverlay(
