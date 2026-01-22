@@ -353,7 +353,8 @@ def saveCallback(self):
             return
 
         # ========== SETUP VIDEO WRITER ==========
-        out_fps = max(1.0, self.Video.fps)
+        # out_fps = max(1.0, self.Video.fps)
+        out_fps = 60.0
         
         # Video on top, graphs on bottom
         out_height = self.Video.frame_height + plot_static_1.shape[0]
