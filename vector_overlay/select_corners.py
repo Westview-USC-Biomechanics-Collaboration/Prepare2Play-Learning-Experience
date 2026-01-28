@@ -137,7 +137,7 @@ def two_rect_detection(cap, num_points=8, zoom_size=50, zoom_factor=2):
         return best_rect
 
     # Define yellow color range in HSV
-    lower_yellow = np.array([20, 100, 100])
+    lower_yellow = np.array([20, 150, 200])
     upper_yellow = np.array([35, 255, 255])
 
     # Lower range for red
@@ -688,9 +688,22 @@ def select_points(self, cap, view):
     print(f"Detected corners: {coords}")
 
     print(f"Detected {len(coords)} corners.")
+    # if len(coords) < 4:
+    print("Error: Not enough corners detected. Please try again.")
+    print(f"Detected {len(coords)} corners")
+    
+    # Define placeholders (centered rectangles)
     if len(coords) < 4:
-        print("Error: Not enough corners detected. Please try again.")
-        print(f"Detected {len(coords)} corners")
+        h, w = frame.shape[:2]
+        # Plate 1 placeholders (Left side)
+        p1 = [[int(w*0.2), int(h*0.4)], [int(w*0.4), int(h*0.4)], 
+                [int(w*0.4), int(h*0.6)], [int(w*0.2), int(h*0.6)]]
+        # Plate 2 placeholders (Right side)
+        p2 = [[int(w*0.6), int(h*0.4)], [int(w*0.8), int(h*0.4)], 
+                [int(w*0.8), int(h*0.6)], [int(w*0.6), int(h*0.6)]]
+        
+        return p1 + p2
+
 
     # Create output array for 8 corners (TL, TR, BR, BL for each plate)
     output = [[0, 0] for _ in range(8)]
@@ -914,7 +927,7 @@ def select_points_with_manual_adjustment(self, cap, view):
     """
     # First, auto-detect corners
     auto_corners = select_points(self, cap, view)
-    
+
     # Get first frame for display
     cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
     ret, frame = cap.read()
@@ -933,5 +946,5 @@ def select_points_with_manual_adjustment(self, cap, view):
     return adjusted_corners
 
 if __name__ == "__main__":
-    cap = cv2.VideoCapture(r"C:\Users\Arnav\Downloads\JPJ_12_GS_long.vid01.MOV")
+    cap = cv2.VideoCapture(r"C:\Users\outre\Downloads\CB_Side4.MOV")
     select_points(cap)
