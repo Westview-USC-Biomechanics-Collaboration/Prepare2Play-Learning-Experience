@@ -93,15 +93,15 @@ def process(self, view):
             return out
          
         # --- Convert and then open the resulting MOV file ---
-        if path.suffix.lower() != ".mov":
-            try:
-                mov_path = convert_mp4_to_mov(self.Video.path)
-            except Exception as e:
-                print(f"[ERROR] Failed to convert video: {e}")
-                return
-        else:
-            print("[INFO] Was originally a .mov file")
-            mov_path = self.Video.path    
+        # if path.suffix.lower() != ".mov":
+        #     try:
+        #         mov_path = convert_mp4_to_mov(self.Video.path)
+        #     except Exception as e:
+        #         print(f"[ERROR] Failed to convert video: {e}")
+        #         return
+        # else:
+        #     print("[INFO] Was originally a .mov file")
+        mov_path = self.Video.path    
         
         # --- Now open the (possibly converted) video normally ---
         self.Video.cam = cv2.VideoCapture(mov_path)
