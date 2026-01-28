@@ -685,13 +685,12 @@ def select_points(self, cap, view):
     print(f"Detected corners: {coords}")
 
     print(f"Detected {len(coords)} corners.")
-    # if len(coords) < 4:
-    print("Error: Not enough corners detected. Please try again.")
-    print(f"Detected {len(coords)} corners")
-    
+        
     # Define placeholders (centered rectangles)
     if len(coords) < 4:
         h, w = frame.shape[:2]
+        print("Error: Not enough corners detected. Please try again.")
+        print(f"Detected {len(coords)} corners")
         # Plate 1 placeholders (Left side)
         p1 = [[int(w*0.2), int(h*0.4)], [int(w*0.4), int(h*0.4)], 
                 [int(w*0.4), int(h*0.6)], [int(w*0.2), int(h*0.6)]]
