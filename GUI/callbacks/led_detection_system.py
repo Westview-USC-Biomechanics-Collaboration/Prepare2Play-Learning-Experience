@@ -143,7 +143,7 @@ class LongViewLEDConfig(LEDConfig):
             led_crop_y0=950,
             led_crop_y1=1080,
             template_center_offset_x=45,
-            template_center_offset_y=47,
+            template_center_offset_y=50,
             plate_swap=False  # Long view: left=FP1, right=FP2 (standard)
         )
     
@@ -240,7 +240,7 @@ class Side1ViewLEDConfig(LEDConfig):
             frame_width=1920,
             frame_height=1080,
             led_crop_x0=100,
-            led_crop_x1=1500,
+            led_crop_x1=1700,
             led_crop_y0=600,
             led_crop_y1=1000,
             template_center_offset_x=45,
@@ -286,7 +286,7 @@ class Side2ViewLEDConfig(LEDConfig):
             led_crop_x1=900,
             led_crop_y0=600,
             led_crop_y1=800,
-            template_center_offset_x=45,
+            template_center_offset_x=47,
             template_center_offset_y=47,
             plate_swap=False  # No swap needed - FP2 is near
         )

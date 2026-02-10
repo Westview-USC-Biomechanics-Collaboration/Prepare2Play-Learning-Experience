@@ -16,6 +16,7 @@ from datetime import datetime
 from io import BytesIO
 import sys
 from pathlib import Path
+import time
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
@@ -56,6 +57,7 @@ class DisplayApp:
     def __init__(self, master):
         self.master = master
 
+        self.VideoList = []
         self.Video = VideoState()
         self.Force = ForceState()
         self.state = StateManager()
@@ -81,6 +83,7 @@ class DisplayApp:
 
     def initUI(self):
         self.selected_view = tk.StringVar(value="Long View")
+        self.view_list = []
         self.master.title("Multi-Window Display App")
         self.master.geometry("1320x1080")
         self.master.lift()
@@ -312,7 +315,17 @@ class DisplayApp:
         uploadForceDataCallback(self)
 
     def vector_overlay(self):
-        vectorOverlayWithAlignmentCallback(self)
+        cntr = 0
+        start = time.perf_counter()
+        if len(self.VideoList):
+            for i in range(len(self.VideoList)):
+                frames = vectorOverlayWithAlignmentCallback(self, self.VideoList[i], self.view_list[cntr], cntr)
+                saveCallback(self, self.VideoList[i], self.view_list[cntr], frames)
+                cntr += 1
+        else:
+            print("There are no videos saved in the list")
+        elapsed_time = time.perf_counter() - start
+        print(f"[TIME] The entire processing time took about {elapsed_time} seconds")
 
     def startCOM(self):
         COMCallback(self)
@@ -427,7 +440,7 @@ class DisplayApp:
 
     def _update_video_timeline(self):
         # Assuming self.timelineManager.video_canvas is the canvas and self.timelineManager.timeline2.draw_rect() returns an image
-        videoTimeline = Image.fromarray(self.timelineManager.timeline2.draw_rect(loc=self.state.loc / self.Video.total_frames))
+        videoTimeline = Image.fromarray(self.timelineManager.timeline2.draw_rect(loc=self.state.loc / self.VideoList[0].total_frames))
 
         # Resize the image to fit the canvas size
         canvas_width = self.timelineManager.video_canvas.winfo_width()  # Get the width of the canvas

@@ -268,8 +268,8 @@ class VectorOverlay:
             if pixel_x > 0 and pixel_y > 0:
                 cv2.circle(frame, (pixel_x, pixel_y), 12, (0, 0, 255), -1)
                 # Only print occasionally to avoid spam
-                if row % 30 == 0:
-                    print(f"[COM_helper] Frame {row}: Drew COM at pixel ({pixel_x}, {pixel_y}) from raw ({com_x:.2f}, {com_y:.2f})")
+                # if row % 30 == 0:
+                #     print(f"[COM_helper] Frame {row}: Drew COM at pixel ({pixel_x}, {pixel_y}) from raw ({com_x:.2f}, {com_y:.2f})")
             
             # # Get COM coordinates
             # com_row = self.com_data.loc[frame_number]
@@ -544,6 +544,8 @@ class VectorOverlay:
             (self.frame_width, self.frame_height)
         )
 
+        frames = []
+
         # Optional: force time column for debug
         if "Time(s)" in df_aligned.columns:
             force_time_array = df_aligned["Time(s)"].astype(float).to_numpy()
@@ -554,38 +556,62 @@ class VectorOverlay:
         else:
             force_time_array = None
             time_col_name = None
+        
+        frame_numbers = df_aligned["FrameNumber"].to_numpy()
+        F1_Fy = df_aligned["FP1_Fy"].to_numpy(dtype=float)
+        F1_Fz = df_aligned["FP1_Fz"].to_numpy(dtype=float)
+        F2_Fy = df_aligned["FP2_Fy"].to_numpy(dtype=float)
+        F2_Fz = df_aligned["FP2_Fz"].to_numpy(dtype=float)
+        Ax1 = df_aligned["FP1_Ax"].to_numpy(dtype=float)
+        Ay1 = df_aligned["FP1_Ay"].to_numpy(dtype=float)
+        Ax2 = df_aligned["FP2_Ax"].to_numpy(dtype=float)
+        Ay2 = df_aligned["FP2_Ay"].to_numpy(dtype=float)
 
         # -------- 3. Main loop: row-by-row using FrameNumber --------
         processed = 0
         com_drawn_count = 0
 
-        for idx, row in df_aligned.iterrows():
-            frame_idx = int(row["FrameNumber"])
+        self.video.set(cv2.CAP_PROP_POS_FRAMES, boundary_start)
+        current_frame_idx = boundary_start
+
+        for i in range(len(frame_numbers)):
+            #frame_idx = int(row["FrameNumber"])
+            frame_idx = int(frame_numbers[i])
 
             # Safety: skip illegal frame indices
             if frame_idx < 0 or frame_idx >= self.frame_count:
-                print(f"[WARN] Row {idx}: FrameNumber {frame_idx} out of range, skipping.")
+                print(f"[WARN] Row {i}: FrameNumber {frame_idx} out of range, skipping.")
                 continue
             
             if frame_idx < boundary_start or frame_idx > boundary_end:
                 continue
 
             # Jump to the *exact* frame for this force sample
-            self.video.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+            # self.video.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+            # ret, frame = self.video.read()
+            # if not ret:
+            #     print(f"[WARN] Could not read frame {frame_idx}, stopping.")
+            #     break
+
+            # Advance sequentially
+            while current_frame_idx < frame_idx:
+                ret, _ = self.video.read()
+                current_frame_idx += 1
+                if not ret:
+                    break
+            
             ret, frame = self.video.read()
-            if not ret:
-                print(f"[WARN] Could not read frame {frame_idx}, stopping.")
-                break
+            current_frame_idx += 1
 
             # ----- Forces (same orientation logic as your original code) -----
             # In your class you do:
             #   fx1 = -self.fy1[force_idx]
             #   fy1 =  self.fz1[force_idx]
             # So here we mimic that: horizontal is -Fy, vertical is Fz.
-            raw_F1_Fy = float(row.get("FP1_Fy", 0.0) or 0.0)
-            raw_F1_Fz = float(row.get("FP1_Fz", 0.0) or 0.0)
-            raw_F2_Fy = float(row.get("FP2_Fy", 0.0) or 0.0)
-            raw_F2_Fz = float(row.get("FP2_Fz", 0.0) or 0.0)
+            raw_F1_Fy = float(F1_Fy[i] or 0.0)
+            raw_F1_Fz = float(F1_Fz[i] or 0.0)
+            raw_F2_Fy = float(F2_Fy[i] or 0.0)
+            raw_F2_Fz = float(F2_Fz[i] or 0.0)
 
             fx1 = -raw_F1_Fy * scale_factor
             fy1 =  raw_F1_Fz * scale_factor
@@ -598,10 +624,10 @@ class VectorOverlay:
             # but since we are using df_aligned *before* that rename,
             # we read directly from 'FP1_Ax', 'FP1_Ay', etc.
              # ----- Pressure coordinates → normalized 0–1 as in readData(), THEN SWAP -----
-            ax1 = float(row.get("FP1_Ax", 0.0) or 0.0)
-            ay1 = float(row.get("FP1_Ay", 0.0) or 0.0)
-            ax2 = float(row.get("FP2_Ax", 0.0) or 0.0)
-            ay2 = float(row.get("FP2_Ay", 0.0) or 0.0)
+            ax1 = float(Ax1[i] or 0.0)
+            ay1 = float(Ay1[i] or 0.0)
+            ax2 = float(Ax2[i] or 0.0)
+            ay2 = float(Ay2[i] or 0.0)
 
             # Same normalization as readData()
             pressure_x1 = np.clip((ax1 + 0.3) / 0.6, 0, 1)
@@ -622,20 +648,20 @@ class VectorOverlay:
             # ----- Debug prints (similar style to your previous logs) -----
             if processed < 10 or processed % 30 == 0:
                 video_t = frame_idx / self.fps if self.fps else 0.0
-                if force_time_array is not None and 0 <= idx < len(force_time_array):
-                    force_t = force_time_array[idx]
-                    print(
-                        f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
-                        f"video_t={video_t:.4f}s, {time_col_name}={force_t:.4f}s, "
-                        f"Δ={force_t - video_t:.4f}s, "
-                        f"F1_Fy={raw_F1_Fy:.2f}, F1_Fz={raw_F1_Fz:.2f}"
-                    )
-                else:
-                    print(
-                        f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
-                        f"video_t={video_t:.4f}s, "
-                        f"F1_Fy={raw_F1_Fy:.2f}, F1_Fz={raw_F1_Fz:.2f}"
-                    )
+                if force_time_array is not None and 0 <= i < len(force_time_array):
+                    force_t = force_time_array[i]
+                    # print(
+                    #     f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
+                    #     f"video_t={video_t:.4f}s, {time_col_name}={force_t:.4f}s, "
+                    #     f"Δ={force_t - video_t:.4f}s, "
+                    #     f"F1_Fy={raw_F1_Fy:.2f}, F1_Fz={raw_F1_Fz:.2f}"
+                    # )
+                # else:
+                    # print(
+                    #     f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
+                    #     f"video_t={video_t:.4f}s, "
+                    #     f"F1_Fy={raw_F1_Fy:.2f}, F1_Fz={raw_F1_Fz:.2f}"
+                    # )
 
             # ----- Draw arrows exactly the same way as original -----
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
@@ -659,6 +685,7 @@ class VectorOverlay:
             
             # Write to output video
             out.write(frame)
+            frames.append((ret, frame))
             processed += 1
 
         out.release()
@@ -667,6 +694,7 @@ class VectorOverlay:
 
         print(f"Processed {processed} frames, COM drawn on {com_drawn_count} frames")
         print("=" * 50 + "\n")
+        return frames
 
     def TopVectorOverlay(self, df_aligned, outputName=None, show_preview=True,
                           lag=0, com_csv_path=None, show_landmarks=False,
@@ -736,30 +764,49 @@ class VectorOverlay:
         else:
             force_time_array = None
             time_col_name = None
+        
+        frame_numbers = df_aligned["FrameNumber"].to_numpy()
+        F1_Fx = df_aligned["FP1_Fx"].to_numpy(dtype=float)
+        F1_Fy = df_aligned["FP1_Fy"].to_numpy(dtype=float)
+        F2_Fx = df_aligned["FP2_Fx"].to_numpy(dtype=float)
+        F2_Fy = df_aligned["FP2_Fy"].to_numpy(dtype=float)
+        Ax1 = df_aligned["FP1_Ax"].to_numpy(dtype=float)
+        Ay1 = df_aligned["FP1_Ay"].to_numpy(dtype=float)
+        Ax2 = df_aligned["FP2_Ax"].to_numpy(dtype=float)
+        Ay2 = df_aligned["FP2_Ay"].to_numpy(dtype=float)
 
         # -------- 3) Main loop: row-by-row using FrameNumber --------
         processed = 0
-        for row_i, (idx, row) in enumerate(df_aligned.iterrows()):
-            frame_idx = int(row["FrameNumber"])
+        frames = []
+
+        self.video.set(cv2.CAP_PROP_POS_FRAMES, boundary_start)
+        current_frame_idx = boundary_start
+
+        for i in range(len(frame_numbers)):
+            frame_idx = int(frame_numbers[i])
 
             if frame_idx < 0 or frame_idx >= self.frame_count:
-                print(f"[WARN] Row {idx}: FrameNumber {frame_idx} out of range, skipping.")
+                print(f"[WARN] Row {i}: FrameNumber {frame_idx} out of range, skipping.")
                 continue
             
             if frame_idx < boundary_start or frame_idx > boundary_end:
                 continue
 
-            self.video.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+            # Advance sequentially
+            while current_frame_idx < frame_idx:
+                ret, _ = self.video.read()
+                current_frame_idx += 1
+                if not ret:
+                    break
+            
             ret, frame = self.video.read()
-            if not ret:
-                print(f"[WARN] Could not read frame {frame_idx}, stopping.")
-                break
+            current_frame_idx += 1
 
             # ----- TOP VIEW force mapping (match your working TopVectorOverlay) -----
-            raw_F1_Fx = float(row.get("FP1_Fx", 0.0) or 0.0)
-            raw_F1_Fy = float(row.get("FP1_Fy", 0.0) or 0.0)
-            raw_F2_Fx = float(row.get("FP2_Fx", 0.0) or 0.0)
-            raw_F2_Fy = float(row.get("FP2_Fy", 0.0) or 0.0)
+            raw_F1_Fx = float(F1_Fx[i] or 0.0)
+            raw_F1_Fy = float(F1_Fy[i] or 0.0)
+            raw_F2_Fx = float(F2_Fx[i] or 0.0)
+            raw_F2_Fy = float(F2_Fy[i] or 0.0)
 
             fx1 = -raw_F1_Fy * scale_factor
             fx2 = -raw_F2_Fy * scale_factor
@@ -768,10 +815,10 @@ class VectorOverlay:
 
 
             # ----- TOP VIEW pressure mapping (match your working version) -----
-            ax1 = float(row.get("FP1_Ax", 0.0) or 0.0)
-            ay1 = float(row.get("FP1_Ay", 0.0) or 0.0)
-            ax2 = float(row.get("FP2_Ax", 0.0) or 0.0)
-            ay2 = float(row.get("FP2_Ay", 0.0) or 0.0)
+            ax1 = float(Ax1[i] or 0.0)
+            ay1 = float(Ay1[i] or 0.0)
+            ax2 = float(Ax2[i] or 0.0)
+            ay2 = float(Ay2[i] or 0.0)
 
             pressure_x1 = np.clip((ax1 + 0.3) / 0.6, 0, 1)
             pressure_y1 = np.clip((ay1 + 0.45) / 0.9, 0, 1)
@@ -789,19 +836,19 @@ class VectorOverlay:
             # Debug prints
             if processed < 10 or processed % 30 == 0:
                 video_t = frame_idx / self.fps if self.fps else 0.0
-                if force_time_array is not None and 0 <= idx < len(force_time_array):
-                    force_t = force_time_array[idx]
-                    print(
-                        f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
-                        f"video_t={video_t:.4f}s, {time_col_name}={force_t:.4f}s, Δ={force_t - video_t:.4f}s, "
-                        f"F1_Fx={raw_F1_Fx:.2f}, F1_Fy={raw_F1_Fy:.2f}"
-                    )
-                else:
-                    print(
-                        f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
-                        f"video_t={video_t:.4f}s, "
-                        f"F1_Fx={raw_F1_Fx:.2f}, F1_Fy={raw_F1_Fy:.2f}"
-                    )
+                if force_time_array is not None and 0 <= i < len(force_time_array):
+                    force_t = force_time_array[i]
+                #     print(
+                #         f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
+                #         f"video_t={video_t:.4f}s, {time_col_name}={force_t:.4f}s, Δ={force_t - video_t:.4f}s, "
+                #         f"F1_Fx={raw_F1_Fx:.2f}, F1_Fy={raw_F1_Fy:.2f}"
+                #     )
+                # else:
+                #     print(
+                #         f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
+                #         f"video_t={video_t:.4f}s, "
+                #         f"F1_Fx={raw_F1_Fx:.2f}, F1_Fy={raw_F1_Fy:.2f}"
+                #     )
 
             # Draw arrows using your trapezoid mapping (unchanged)
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
@@ -813,6 +860,7 @@ class VectorOverlay:
                     break
 
             out.write(frame)
+            frames.append((ret, frame))
             processed += 1
 
         out.release()
@@ -821,6 +869,7 @@ class VectorOverlay:
 
         print(f"Finished processing video; Total Frames written: {processed}")
         print("========== TopVectorOverlay (df_aligned) END ==========\n")
+        return frames
 # In vector_overlay/vectoroverlay_GUI.py, add a Side vector overlay method:
 
     def SideVectorOverlay(self, df_aligned, outputName=None, show_preview=True,
@@ -878,29 +927,48 @@ class VectorOverlay:
         else:
             force_time_array = None
             time_col_name = None
+        
+        frame_numbers = df_aligned["FrameNumber"].to_numpy()
+        F1_Fx = df_aligned["FP1_Fx"].to_numpy(dtype=float)
+        F1_Fz = df_aligned["FP1_Fz"].to_numpy(dtype=float)
+        F2_Fx = df_aligned["FP2_Fx"].to_numpy(dtype=float)
+        F2_Fz = df_aligned["FP2_Fz"].to_numpy(dtype=float)
+        Ax1 = df_aligned["FP1_Ax"].to_numpy(dtype=float)
+        Ay1 = df_aligned["FP1_Ay"].to_numpy(dtype=float)
+        Ax2 = df_aligned["FP2_Ax"].to_numpy(dtype=float)
+        Ay2 = df_aligned["FP2_Ay"].to_numpy(dtype=float)
 
         processed = 0
-        for row_i, (idx, row) in enumerate(df_aligned.iterrows()):
-            frame_idx = int(row["FrameNumber"])
+        frames = []
+
+        self.video.set(cv2.CAP_PROP_POS_FRAMES, boundary_start)
+        current_frame_idx = boundary_start
+
+        for i in range(len(frame_numbers)):
+            frame_idx = int(frame_numbers[i])
 
             if frame_idx < 0 or frame_idx >= self.frame_count:
-                print(f"[WARN] Row {idx}: FrameNumber {frame_idx} out of range, skipping.")
+                print(f"[WARN] Row {i}: FrameNumber {frame_idx} out of range, skipping.")
                 continue
             
             if frame_idx < boundary_start or frame_idx > boundary_end:
                 continue
 
-            self.video.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+            # Advance sequentially
+            while current_frame_idx < frame_idx:
+                ret, _ = self.video.read()
+                current_frame_idx += 1
+                if not ret:
+                    break
+            
             ret, frame = self.video.read()
-            if not ret:
-                print(f"[WARN] Could not read frame {frame_idx}, stopping.")
-                break
+            current_frame_idx += 1
 
             # Side view force mapping: Fx horizontal, Fz vertical
-            raw_F1_Fx = float(row.get("FP1_Fx", 0.0) or 0.0)
-            raw_F1_Fz = float(row.get("FP1_Fz", 0.0) or 0.0)
-            raw_F2_Fx = float(row.get("FP2_Fx", 0.0) or 0.0)
-            raw_F2_Fz = float(row.get("FP2_Fz", 0.0) or 0.0)
+            raw_F1_Fx = float(F1_Fx[i] or 0.0)
+            raw_F1_Fz = float(F1_Fz[i] or 0.0)
+            raw_F2_Fx = float(F2_Fx[i] or 0.0)
+            raw_F2_Fz = float(F2_Fz[i] or 0.0)
 
             fx1 = raw_F1_Fx * scale_factor
             fy1 = raw_F1_Fz * scale_factor
@@ -908,10 +976,10 @@ class VectorOverlay:
             fy2 = raw_F2_Fz * scale_factor
 
             # Pressure mapping for side views
-            ax1 = float(row.get("FP1_Ax", 0.0) or 0.0)
-            ay1 = float(row.get("FP1_Ay", 0.0) or 0.0)
-            ax2 = float(row.get("FP2_Ax", 0.0) or 0.0)
-            ay2 = float(row.get("FP2_Ay", 0.0) or 0.0)
+            ax1 = float(Ax1[i] or 0.0)
+            ay1 = float(Ay1[i] or 0.0)
+            ax2 = float(Ax2[i] or 0.0)
+            ay2 = float(Ay2[i] or 0.0)
 
             pressure_x1 = np.clip((ax1 + 0.3) / 0.6, 0, 1)
             pressure_y1 = np.clip((ay1 + 0.45) / 0.9, 0, 1)
@@ -933,13 +1001,13 @@ class VectorOverlay:
             # Debug prints
             if processed < 10 or processed % 30 == 0:
                 video_t = frame_idx / self.fps if self.fps else 0.0
-                if force_time_array is not None and 0 <= idx < len(force_time_array):
-                    force_t = force_time_array[idx]
-                    print(
-                        f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
-                        f"video_t={video_t:.4f}s, {time_col_name}={force_t:.4f}s, Δ={force_t - video_t:.4f}s, "
-                        f"F1_Fx={raw_F1_Fx:.2f}, F1_Fz={raw_F1_Fz:.2f}"
-                    )
+                if force_time_array is not None and 0 <= i < len(force_time_array):
+                    force_t = force_time_array[i]
+                    # print(
+                    #     f"[DEBUG] row={idx:5d}, frame={frame_idx:5d}, "
+                    #     f"video_t={video_t:.4f}s, {time_col_name}={force_t:.4f}s, Δ={force_t - video_t:.4f}s, "
+                    #     f"F1_Fx={raw_F1_Fx:.2f}, F1_Fz={raw_F1_Fz:.2f}"
+                    # )
 
             # Draw arrows (use short=True for side view trapezoid mapping)
             self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2, short=True)
@@ -955,6 +1023,7 @@ class VectorOverlay:
                     break
 
             out.write(frame)
+            frames.append((ret, frame))
             processed += 1
 
         out.release()
@@ -963,6 +1032,7 @@ class VectorOverlay:
 
         print(f"Finished processing video; Total Frames written: {processed}")
         print(f"========== SideVectorOverlay ({'Side1' if is_side1 else 'Side2'}) END ==========\n")
+        return frames
         
     # def ShortVectorOverlay(self, df_aligned, outputName=None, show_preview=True,
     #                       lag=0, com_csv_path=None, show_landmarks=False,

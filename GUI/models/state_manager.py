@@ -33,6 +33,7 @@ class StateManager:
         self.boundary_end = None     # Last frame with significant force
         self.force_threshold = 50    # Threshold used for boundary detection (N)
         self.boundary_padding = 10   # Extra frames before/after boundaries
+        self.global_lag = 0
         
         # NEW: Processing metadata
         self.processing_metadata = {
