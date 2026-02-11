@@ -46,13 +46,13 @@ def saveCallback(self, video, view, frames):
         self._pop_up("Error: vector overlay video not found.")
         return
 
-    self.save_vector_path = vector_overlay_path
+    # self.save_vector_path = vector_overlay_path
     self.save_video_path = video.path
     df = self.state.df_trimmed.copy()
     # df = df.reset_index(drop=True)  # Ensure clean 0-based index
 
     print(f"[SAVE] Original video: {self.save_video_path}")
-    print(f"[SAVE] Vector overlay: {self.save_vector_path}")
+    # print(f"[SAVE] Vector overlay: {self.save_vector_path}")
     print(f"[SAVE] df_trimmed shape: {df.shape}")
     print(f"[SAVE] df_trimmed index range: {df.index.min()} to {df.index.max()}")
 
@@ -378,12 +378,12 @@ def saveCallback(self, video, view, frames):
         print(f"[SAVE] Static plot dimensions: {plot_static_1.shape}")
 
         # ========== OPEN VIDEO CAPTURES ==========
-        cam_vector = cv2.VideoCapture(self.save_vector_path)
+        # cam_vector = cv2.VideoCapture(self.save_vector_path)
 
-        if not cam_vector.isOpened():
-            self._pop_up("Error: Failed to open vector overlay video!")
-            # export_button.config(state=tk.NORMAL, text="Export Video")
-            return
+        # if not cam_vector.isOpened():
+        #     self._pop_up("Error: Failed to open vector overlay video!")
+        #     # export_button.config(state=tk.NORMAL, text="Export Video")
+        #     return
 
         # ========== SETUP VIDEO WRITER ==========
         # out_fps = max(1.0, self.Video.fps)
@@ -405,10 +405,10 @@ def saveCallback(self, video, view, frames):
         # ========== PROCESS EACH FRAME ==========
         processed_count = 0
         
-        line1 = ax1.axvline(time.iloc[0], color='blue',
-                     linestyle='--', linewidth=1.5, alpha=0.6) # Keep it blue bc it turns to red for
-        line2 = ax2.axvline(time.iloc[0], color='blue',
-                                linestyle='--', linewidth=1.5, alpha=0.6) # Keep it blue bc it turns to red bc BGR to RGB
+        # line1 = ax1.axvline(time.iloc[0], color='red',
+        #              linestyle='--', linewidth=1.5, alpha=0.6) # Keep it blue bc it turns to red for
+        # line2 = ax2.axvline(time.iloc[0], color='red',
+        #                         linestyle='--', linewidth=1.5, alpha=0.6) # Keep it blue bc it turns to red bc BGR to RGB
 
         cntr = 0
         for df_idx, row in dfw.iterrows():
@@ -437,8 +437,8 @@ def saveCallback(self, video, view, frames):
                 # ax1.cla()
                 # ax2.cla()
 
-                line1.set_xdata([current_time])
-                line2.set_xdata([current_time])
+                # line1.set_xdata([current_time])
+                # line2.set_xdata([current_time])
 
                 ax1.set_xlim([lower_x, upper_x])
                 ax2.set_xlim([lower_x, upper_x])
@@ -478,11 +478,12 @@ def saveCallback(self, video, view, frames):
                     (current_time - lower_x) / (upper_x - lower_x) * plot1.shape[1]
                 )
 
+                # Make sure looks dotted and within the height of the graph
                 cv2.line(
                     plot1,
                     (x1, 0),
                     (x1, plot1.shape[0]),
-                    (255, 0, 0),  # blue in BGR
+                    (0, 0, 255),  # red in BGR
                     2
                 )
 
@@ -490,7 +491,7 @@ def saveCallback(self, video, view, frames):
                     plot2,
                     (x1, 0),
                     (x1, plot2.shape[0]),
-                    (255, 0, 0),
+                    (0, 0, 255),
                     2
                 )
 
@@ -531,7 +532,7 @@ def saveCallback(self, video, view, frames):
         # ========== CLEANUP ==========
         plt.close(fig1)
         plt.close(fig2)
-        cam_vector.release()
+        # cam_vector.release()
         out.release()
 
         print(f"[SAVE] ===== EXPORT COMPLETE =====")
@@ -554,7 +555,7 @@ def saveCallback(self, video, view, frames):
             f.write(f"{'='*50}\n\n")
             f.write(f"Export date: {datetime.now()}\n")
             f.write(f"Original video: {self.save_video_path}\n")
-            f.write(f"Vector overlay: {self.save_vector_path}\n")
+            f.write(f"Vector overlay: {video.path}\n")
             f.write(f"Output file: {self.save_output_path}\n\n")
             f.write(f"Frame range (df_trimmed index): {start} to {end}\n")
             f.write(f"Frames exported: {processed_count}\n")

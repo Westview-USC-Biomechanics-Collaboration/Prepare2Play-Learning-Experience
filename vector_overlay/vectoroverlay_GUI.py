@@ -537,12 +537,12 @@ class VectorOverlay:
 
         # -------- 2. Prepare video writer --------
         self.video.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        out = cv.VideoWriter(
-            outputName,
-            cv.VideoWriter_fourcc(*'mp4v'),
-            self.fps,
-            (self.frame_width, self.frame_height)
-        )
+        # out = cv.VideoWriter(
+        #     outputName,
+        #     cv.VideoWriter_fourcc(*'mp4v'),
+        #     self.fps,
+        #     (self.frame_width, self.frame_height)
+        # )
 
         frames = []
 
@@ -684,11 +684,11 @@ class VectorOverlay:
                     break
             
             # Write to output video
-            out.write(frame)
+            # out.write(frame)
             frames.append((ret, frame))
             processed += 1
 
-        out.release()
+        # out.release()
         if show_preview:
             cv2.destroyAllWindows()
 
