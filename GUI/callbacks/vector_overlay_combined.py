@@ -21,11 +21,15 @@ FORCE_THRESHOLD = 50  # Minimum force in Newtons to include in processing
 BOUNDARY_PADDING = 10  # Extra frames before/after force threshold
 SHOW_LANDMARKS = False  # Show green landmark dots (set to True to enable)
 USE_DETECTION_SYSTEM = True  # Use new LED detection system (set to False for original method)
+DOWNSAMPLE_FACTOR = 2  # Process every Nth frame (2 = 120fps -> 60fps)
+ENABLE_MANUAL_LED_ADJUSTMENT = True  # Show manual LED position adjustment popup
 
 
 def vectorOverlayWithAlignmentCallback(self):
     def threadTarget():
         print("[INFO] Starting Vector Overlay with Alignment...")
+        print(f"[INFO] Frame processing: Every {DOWNSAMPLE_FACTOR} frame(s) for 60fps output")
+        
         parent_path = os.path.dirname(self.Video.path)
         video_file = os.path.basename(self.Video.path)
         force_file = os.path.basename(self.Force.path)
@@ -35,21 +39,23 @@ def vectorOverlayWithAlignmentCallback(self):
 
         selected = self.selected_view.get()
 
+        # Save first frame
         cap = cv2.VideoCapture(self.Video.path)
         cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
-        ret, frame  = cap.read()
+        ret, frame = cap.read()
         new_filename = "First_Frame_of_Video.PNG"
         cv2.imwrite(os.path.join(parent_path, new_filename), frame)
         cap.release()
 
-
         # ======================================================================
-        # STEP 1: ALIGN VIDEO AND FORCE DATA
+        # STEP 1: ALIGN VIDEO AND FORCE DATA (with downsampling)
         # ======================================================================
         print("\n[STEP 1] Aligning video and force data...")
         lag, df_aligned = new_led(
             self, selected, parent_path, video_file, force_file, 
-            use_detection_system=USE_DETECTION_SYSTEM
+            use_detection_system=USE_DETECTION_SYSTEM,
+            enable_manual_adjustment=ENABLE_MANUAL_LED_ADJUSTMENT,
+            downsample_factor=DOWNSAMPLE_FACTOR
         )
         print("Raw df_aligned columns from new_led:", df_aligned.columns.tolist())
 
@@ -67,15 +73,13 @@ def vectorOverlayWithAlignmentCallback(self):
         
         self.state.df_aligned = df_aligned
         
-        # with open("lag.txt", "w") as f:
-        #     f.write(str(lag))
-
-        print(f"Alignment complete. Lag: {lag} frames")
+        print(f"Alignment complete. Lag: {lag} frames (at 60fps)")
         print(f"df_aligned shape: {df_aligned.shape}")
         print(f"df_aligned columns: {list(df_aligned.columns)}")
         print("[DEBUG] Current Sex in globalVariable:", global_variable.globalVariable.sex)
+        
         # ======================================================================
-        # STEP 2: FIND FORCE BOUNDARIES (TRIMMING)
+        # STEP 2: FIND FORCE BOUNDARIES (TRIMMING) - adjusted for 60fps
         # ======================================================================
         print("\n[STEP 2] Finding force boundaries for trimming...")
         try:
@@ -89,17 +93,20 @@ def vectorOverlayWithAlignmentCallback(self):
             self.state.boundary_start = boundary_start
             self.state.boundary_end = boundary_end
             
-            print(f"Processing subset: frames {boundary_start} to {boundary_end}")
+            print(f"Processing subset: frames {boundary_start} to {boundary_end} (at 60fps)")
             
         except Exception as e:
             print(f"[ERROR] Failed to find force boundaries: {e}")
             print("[INFO] Using full frame range as fallback")
             boundary_start = int(df_aligned['FrameNumber'].min())
             boundary_end = int(df_aligned['FrameNumber'].max())
+            
         # ======================================================================
-        # STEP 3: RUN COM CALCULATION ON TRIMMED SUBSET
+        # STEP 3: RUN COM CALCULATION ON TRIMMED SUBSET (every Nth frame)
         # ======================================================================
         print("\n[STEP 3] Running COM calculation on trimmed subset...")
+        print(f"[INFO] Processing every {DOWNSAMPLE_FACTOR} frame(s) for efficiency")
+        
         com_csv_path = os.path.join(parent_path, "pose_landmarks.csv")
         
         try:
@@ -116,19 +123,26 @@ def vectorOverlayWithAlignmentCallback(self):
             print("Processor class:", Processor)
             print("SaveToTxt signature:", Processor.SaveToTxt.__code__.co_varnames) 
 
-            # Run COM calculation with boundaries
+            # Convert 60fps frame numbers to 120fps frame numbers for video processing
+            actual_start_frame = boundary_start * DOWNSAMPLE_FACTOR
+            actual_end_frame = boundary_end * DOWNSAMPLE_FACTOR
+            
+            print(f"[INFO] Converting 60fps boundaries to 120fps: {boundary_start}-{boundary_end} → {actual_start_frame}-{actual_end_frame}")
+
+            # Run COM calculation with actual video frame boundaries and downsampling
             processor.SaveToTxt(
                 sex=sex,
                 filename=com_csv_path,
                 confidencelevel=0.85,
                 displayCOM=True,
-                start_frame=boundary_start,
-                end_frame=boundary_end,
-                max_workers=MAX_COM_WORKERS
+                start_frame=actual_start_frame,
+                end_frame=actual_end_frame,
+                max_workers=MAX_COM_WORKERS,
+                frame_skip=DOWNSAMPLE_FACTOR  # Process every Nth frame
             )
             
             if com_csv_path and os.path.exists(com_csv_path):
-            # Update COM_helper to use the new CSV
+                # Update COM_helper to use the new CSV
                 from Util.COM_helper import COM_helper
                 self.COM_helper = COM_helper(com_csv_path)
                 print(f"[INFO] COM_helper updated with: {com_csv_path}")
@@ -175,7 +189,15 @@ def vectorOverlayWithAlignmentCallback(self):
             
             print("[COLUMNS BEFORE] LongVectorOverlay:", list(df_trimmed.columns))
             print("Path to COM CSV before VectorOverlay:", com_csv_path)
+            
+            # Calculate output FPS (60fps from 120fps)
+            original_fps = self.Video.cam.get(cv2.CAP_PROP_FPS)
+            output_fps = original_fps / DOWNSAMPLE_FACTOR
+            
+            print(f"[INFO] Output video will be {output_fps:.1f} fps")
+            
             # Run vector overlay with COM for the selected view
+            # Pass downsample_factor so overlay knows to skip frames
             if selected == "Long View":
                 v.LongVectorOverlay(
                     df_aligned=df_trimmed,
@@ -184,7 +206,9 @@ def vectorOverlayWithAlignmentCallback(self):
                     com_csv_path=com_csv_path,
                     show_landmarks=SHOW_LANDMARKS,
                     boundary_start=boundary_start,
-                    boundary_end=boundary_end
+                    boundary_end=boundary_end,
+                    downsample_factor=DOWNSAMPLE_FACTOR,
+                    output_fps=output_fps
                 )
             elif selected == "Side1 View":
                 v.SideVectorOverlay(
@@ -195,7 +219,9 @@ def vectorOverlayWithAlignmentCallback(self):
                     show_landmarks=SHOW_LANDMARKS,
                     boundary_start=boundary_start,
                     boundary_end=boundary_end,
-                    is_side1=True  # FP1 is near
+                    is_side1=True,  # FP1 is near
+                    downsample_factor=DOWNSAMPLE_FACTOR,
+                    output_fps=output_fps
                 )
             elif selected == "Side2 View":
                 v.SideVectorOverlay(
@@ -206,7 +232,9 @@ def vectorOverlayWithAlignmentCallback(self):
                     show_landmarks=SHOW_LANDMARKS,
                     boundary_start=boundary_start,
                     boundary_end=boundary_end,
-                    is_side1=False  # FP2 is near
+                    is_side1=False,  # FP2 is near
+                    downsample_factor=DOWNSAMPLE_FACTOR,
+                    output_fps=output_fps
                 )
             elif selected == "Top View":
                 v.TopVectorOverlay(
@@ -216,7 +244,9 @@ def vectorOverlayWithAlignmentCallback(self):
                     com_csv_path=com_csv_path,
                     show_landmarks=SHOW_LANDMARKS,
                     boundary_start=boundary_start,
-                    boundary_end=boundary_end
+                    boundary_end=boundary_end,
+                    downsample_factor=DOWNSAMPLE_FACTOR,
+                    output_fps=output_fps
                 )
             
             print(f"[INFO] Vector overlay complete: {temp_video}")
@@ -238,6 +268,7 @@ def vectorOverlayWithAlignmentCallback(self):
             
             self.state.vector_overlay_enabled = True
             print("[SUCCESS] All processing complete!")
+            print(f"[INFO] Output: {output_fps:.1f} fps (downsampled from {original_fps:.1f} fps)")
             
         except Exception as e:
             print(f"[ERROR] Vector overlay failed: {e}")
@@ -246,81 +277,3 @@ def vectorOverlayWithAlignmentCallback(self):
 
     # Launch in thread
     threading.Thread(target=threadTarget, daemon=True).start()
-##--------------------------OLD CODE UNDER---------------------------##
-# import threading
-# import os
-# import pandas as pd
-# from vector_overlay.vectoroverlay_GUI import VectorOverlay
-# from vector_overlay.COM_vectoroverlay import Processor
-# from GUI.callbacks.ledSyncing import run_led_syncing  # rename or move if needed
-# from GUI.callbacks.ledSyncing import new_led
-# from GUI.callbacks.global_variable import globalVariable
-# import cv2
-
-# def vectorOverlayWithAlignmentCallback(self):
-#     def threadTarget():
-#         print("[INFO] Running LED syncing and vector overlay...")
-#         parent_path = os.path.dirname(self.Video.path)
-#         video_file = os.path.basename(self.Video.path)
-#         force_file = os.path.basename(self.Force.path)
-
-#         print(f"Name of the video file: {video_file}")
-#         print(f"Name of the force file: {force_file}")
-
-#         selected = self.selected_view.get()
-
-#         # Step 1: Run syncing and get lag
-#         #lag = run_led_syncing(self, parent_path, video_file, force_file)
-#         lag, df_aligned = new_led(self, selected, parent_path, video_file, force_file)
-#         self.state.df_aligned = df_aligned
-        
-#         with open("lag.txt", "w") as f:
-#             f.write(str(lag))
-
-#         print(f"Detected lag: {lag} frames")
-
-#         force_analysis_filename = force_file.replace('.txt', '_Analysis_Force.csv')
-#         passed_force_file = os.path.join(parent_path, force_analysis_filename)
-
-#         print(f"Looking for force file at: {passed_force_file}")
-
-#         # Check if file exists
-#         if not os.path.exists(passed_force_file):
-#             print(f"Error: Force analysis file not found at {passed_force_file}")
-#             return
-
-#         force_data = pd.read_csv(passed_force_file)
-
-#         # Step 3: Run vector overlay with adjusted force data
-#         self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-
-#         temp_video = "vector_overlay_temp.mp4"
-
-#         v = VectorOverlay(data=force_data, video=self.Video.cam)
-#         # v = Processor(self.Video.path, self.Force.data, lag, temp_video)
-
-#         if selected == "Long View":
-#             v.check_corner("Long View")
-#             v.LongVectorOverlay(df_aligned, outputName=temp_video, lag=lag)
-#             # v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
-#         elif selected == "Short View":
-#             v.check_corner("Short View")
-#             v.ShortVectorOverlay(df_aligned, outputName=temp_video, lag=lag)
-#             # v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
-#         elif selected == "Top View":
-#             v.check_corner("Top View")
-#             v.TopVectorOverlay(df_aligned, outputName=temp_video, lag=lag)
-#             # v.SaveToTxt(sex=globalVariable.sex, filename="pose_landmarks.csv", confidencelevel=0.85, displayCOM=True)
-
-#         self.Video.vector_cam = cv2.VideoCapture(temp_video)
-#         self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-
-#         # Step 4: Display overlay result on 3rd canvas
-#         self.Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc)
-#         self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(camera=self.Video.vector_cam)
-#         self.canvasManager.canvas3.create_image(200, 150, image=self.canvasManager.photo_image3, anchor="center")
-
-#         self.state.vector_overlay_enabled = True
-
-#     # Launch in thread
-#     threading.Thread(target=threadTarget, daemon=True).start()
