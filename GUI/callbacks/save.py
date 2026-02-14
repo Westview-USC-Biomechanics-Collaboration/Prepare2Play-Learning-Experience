@@ -375,6 +375,33 @@ def saveCallback(self, video, view, frames):
         plot_static_2 = np.array(Image.open(buf2))[:, :, 0:3]
         buf2.close()
 
+        fig1.canvas.draw()
+        fig2.canvas.draw()
+
+        # Get axes bounding box in pixel coordinates
+        bbox1 = ax1.get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
+        bbox2 = ax2.get_window_extent().transformed(fig2.dpi_scale_trans.inverted())
+
+        # Convert inches → pixels
+        ax1_left   = int(bbox1.x0 * fig1.dpi)
+        ax1_right  = int(bbox1.x1 * fig1.dpi)
+        ax1_top    = int(bbox1.y1 * fig1.dpi)
+        ax1_bottom = int(bbox1.y0 * fig1.dpi)
+
+        ax2_left   = int(bbox2.x0 * fig2.dpi)
+        ax2_right  = int(bbox2.x1 * fig2.dpi)
+        ax2_top    = int(bbox2.y1 * fig2.dpi)
+        ax2_bottom = int(bbox2.y0 * fig2.dpi)
+
+        h1 = plot_static_1.shape[0]
+        h2 = plot_static_2.shape[0]
+
+        ax1_top_cv    = h1 - ax1_top
+        ax1_bottom_cv = h1 - ax1_bottom
+
+        ax2_top_cv    = h2 - ax2_top
+        ax2_bottom_cv = h2 - ax2_bottom
+
         print(f"[SAVE] Static plot dimensions: {plot_static_1.shape}")
 
         # ========== OPEN VIDEO CAPTURES ==========
@@ -410,15 +437,19 @@ def saveCallback(self, video, view, frames):
         # line2 = ax2.axvline(time.iloc[0], color='red',
         #                         linestyle='--', linewidth=1.5, alpha=0.6) # Keep it blue bc it turns to red bc BGR to RGB
 
+        time_tracker = dfw[time_col].to_numpy(dtype=float)
+        frame_numbers = dfw["FrameNumber"].to_numpy()
         cntr = 0
-        for df_idx, row in dfw.iterrows():
+        # for df_idx, row in dfw.iterrows():
+        for i in range(len(frame_numbers)):
             if cntr % 2 == 0:
                 # df_idx is the index in df_trimmed (0-based after reset)
                 # This directly maps to frame number in vector overlay video
                 
                 # cam_vector.set(cv2.CAP_PROP_POS_FRAMES, df_idx)
                 #ret, frame_vec = cam_vector.read()
-                ret, frame_vec = frames[df_idx]
+                df_idx = int(frame_numbers[i])
+                ret, frame_vec = frames[i]
 
                 if not ret:
                     print(f"[SAVE] Failed to read frame at df_idx={df_idx}")
@@ -431,7 +462,7 @@ def saveCallback(self, video, view, frames):
                 #     frame_vec = self.COM_helper.drawFigure(frame_vec, original_frame_num)
 
                 # ========== CREATE DYNAMIC LINE PLOT ==========
-                current_time = float(row[time_col])
+                current_time = float(time_tracker[i])
 
                 # Clear and redraw only the vertical line
                 # ax1.cla()
@@ -473,27 +504,27 @@ def saveCallback(self, video, view, frames):
                 plot1 = plot_static_1.copy()
                 plot2 = plot_static_2.copy()
 
-                # Map time → x pixel
+                # Map time → x pixel inside axes ONLY
                 x1 = int(
-                    (current_time - lower_x) / (upper_x - lower_x) * plot1.shape[1]
+                    ax1_left +
+                    (current_time - lower_x) /
+                    (upper_x - lower_x) *
+                    (ax1_right - ax1_left)
+                )
+
+                x2 = int(
+                    ax2_left +
+                    (current_time - lower_x) /
+                    (upper_x - lower_x) *
+                    (ax2_right - ax2_left)
                 )
 
                 # Make sure looks dotted and within the height of the graph
-                cv2.line(
-                    plot1,
-                    (x1, 0),
-                    (x1, plot1.shape[0]),
-                    (0, 0, 255),  # red in BGR
-                    2
-                )
+                for y in range(ax1_top_cv, ax1_bottom_cv, 6):
+                    cv2.line(plot1, (x1, y), (x1, y+2), (0,0,255), 2)
 
-                cv2.line(
-                    plot2,
-                    (x1, 0),
-                    (x1, plot2.shape[0]),
-                    (0, 0, 255),
-                    2
-                )
+                for y in range(ax1_top_cv, ax1_bottom_cv, 6):
+                    cv2.line(plot2, (x2, y), (x2, y+2), (0,0,255), 2)
 
                 # Combine plots horizontally
                 # gap_width = (video.frame_width - merged_1.shape[1] - merged_2.shape[1]) // 2
