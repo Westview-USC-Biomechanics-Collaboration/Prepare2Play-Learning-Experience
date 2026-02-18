@@ -6,6 +6,7 @@ import cv2
 from Util.ballDropDetect import ballDropDetect
 import subprocess, shutil, os
 from pathlib import Path
+from GUI.models.video_state import VideoState
 
 # In GUI/callbacks/upload_video.py
 
@@ -37,7 +38,7 @@ def uploadVideoCallback(self):
             elif selected_view == "Side2 View":
                 self.selected_view = tk.StringVar(value="Side2 View")
                 print("Side2 View selected (FP2 nearest to camera)")
-    
+     
     # Open a file dialog for video files
     view_popup = tk.Toplevel(self.master)
     view_popup.title("Select View")
@@ -55,20 +56,22 @@ def uploadVideoCallback(self):
     # Block the main window until the popup is closed
     self.master.wait_window(view_popup)
 
-    self.Video.path = tk.filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
-
     # if a video is selected, start a background thread
-    def threadTarget():
-        process(self, self.selected_view.get())
+    def threadTarget(newVideo):
+        process(self, self.selected_view.get(), newVideo)
         self.master.after(0, self._update_video_timeline)
-        
-    if self.Video.path:
-        uploadVideoThread = threading.Thread(target=threadTarget, daemon=True)
+    
+    newVideo = VideoState()
+    newVideo.path = tk.filedialog.askopenfilename(filetypes=[("Video Files", "*.mp4 *.avi *.mkv *.mov"), ("All Files", "*.*")])
+
+    if newVideo.path:
+        uploadVideoThread = threading.Thread(target=threadTarget, args=(newVideo,), daemon=True)
         uploadVideoThread.start()
 
 
-def process(self, view):
-        path = Path(self.Video.path)
+def process(self, view, newVideo):
+        print("Process is running!!!")
+        path = Path(newVideo.path)
         if not path.exists():
             print("[ERROR] File not found:", path)
             return
@@ -93,31 +96,31 @@ def process(self, view):
             return out
          
         # --- Convert and then open the resulting MOV file ---
-        if path.suffix.lower() != ".mov":
-            try:
-                mov_path = convert_mp4_to_mov(self.Video.path)
-            except Exception as e:
-                print(f"[ERROR] Failed to convert video: {e}")
-                return
-        else:
-            print("[INFO] Was originally a .mov file")
-            mov_path = self.Video.path    
+        # if path.suffix.lower() != ".mov":
+        #     try:
+        #         mov_path = convert_mp4_to_mov(self.Video.path)
+        #     except Exception as e:
+        #         print(f"[ERROR] Failed to convert video: {e}")
+        #         return
+        # else:
+        #     print("[INFO] Was originally a .mov file")
+        mov_path = newVideo.path    
         
         # --- Now open the (possibly converted) video normally ---
-        self.Video.cam = cv2.VideoCapture(mov_path)
-        if not self.Video.cam.isOpened():
+        newVideo.cam = cv2.VideoCapture(mov_path)
+        if not newVideo.cam.isOpened():
             print("[ERROR] Could not open video even after conversion.")
             return
-        self.Video.fps = int(self.Video.cam.get(cv2.CAP_PROP_FPS))
-        self.Video.frame_height = int(self.Video.cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        self.Video.frame_width = int(self.Video.cam.get(cv2.CAP_PROP_FRAME_WIDTH))
-        self.Video.total_frames = int(self.Video.cam.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.slider.config(to=self.Video.total_frames)   # ---> reconfigure slider value. The max value is the total number of frame in the video
-        self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc)
-        self.canvasManager.photo_image1 = self.frameConverter.cvToPillow(camera=self.Video.cam,width=self.Video.frame_width,height=self.Video.frame_height)
+        newVideo.fps = int(newVideo.cam.get(cv2.CAP_PROP_FPS))
+        newVideo.frame_height = int(newVideo.cam.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        newVideo.frame_width = int(newVideo.cam.get(cv2.CAP_PROP_FRAME_WIDTH))
+        newVideo.total_frames = int(newVideo.cam.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.slider.config(to=newVideo.total_frames)   # ---> reconfigure slider value. The max value is the total number of frame in the video
+        newVideo.cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc)
+        self.canvasManager.photo_image1 = self.frameConverter.cvToPillow(camera=newVideo.cam,width=newVideo.frame_width,height=newVideo.frame_height)
         self.canvasID_1 = self.canvasManager.canvas1.create_image(200, 150, image=self.canvasManager.photo_image1, anchor="center")
 
-        print(f"[DEBUG] FPS: {self.Video.fps}, Total Frames: {self.Video.total_frames}")
+        print(f"[DEBUG] FPS: {newVideo.fps}, Total Frames: {newVideo.total_frames}")
         
         # convert timeline image from cvFrame to pillow image
         self.timelineManager.timeline2 = timeline(0, 1)
@@ -131,6 +134,10 @@ def process(self, view):
         if self.timelineManager.timeline1 is not None:
             # Initialize if not exist
             self.timelineManager.timeline1.update_start_end(0, self.state.force_frame / self.slider['to'])
+        
+        self.VideoList.append(newVideo)
+        self.view_list.append(self.selected_view.get())
+        print(f"[INFO] There are {len(self.VideoList)} videos ready for processing and {len(self.view_list)} views")
 
         # Offload ballDropDetect to a thread
         def detect_and_finalize():

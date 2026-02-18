@@ -23,82 +23,88 @@ SHOW_LANDMARKS = False  # Show green landmark dots (set to True to enable)
 USE_DETECTION_SYSTEM = True  # Use new LED detection system (set to False for original method)
 
 
-def vectorOverlayWithAlignmentCallback(self):
-    def threadTarget():
-        print("[INFO] Starting Vector Overlay with Alignment...")
-        parent_path = os.path.dirname(self.Video.path)
-        video_file = os.path.basename(self.Video.path)
-        force_file = os.path.basename(self.Force.path)
+def vectorOverlayWithAlignmentCallback(self, video, view, num):
+    # def threadTarget():
+    print(f"[DEBUG] The view the vector overlay program is getting is {view}")
+    # selected = self.selected_view.get()
+    print("[INFO] Starting Vector Overlay with Alignment...")
+    parent_path = os.path.dirname(video.path)
+    video_file = os.path.basename(video.path)
+    force_file = os.path.basename(self.Force.path)
 
-        print(f"Video file: {video_file}")
-        print(f"Force file: {force_file}")
-
-        selected = self.selected_view.get()
-
-        cap = cv2.VideoCapture(self.Video.path)
-        cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
-        ret, frame  = cap.read()
-        new_filename = "First_Frame_of_Video.PNG"
-        cv2.imwrite(os.path.join(parent_path, new_filename), frame)
-        cap.release()
+    print(f"Video file: {video_file}")
+    print(f"Force file: {force_file}")
+    
+    cap = cv2.VideoCapture(video.path)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
+    ret, frame  = cap.read()
+    new_filename = "First_Frame_of_Video.PNG"
+    cv2.imwrite(os.path.join(parent_path, new_filename), frame)
+    cap.release()
 
 
-        # ======================================================================
-        # STEP 1: ALIGN VIDEO AND FORCE DATA
-        # ======================================================================
-        print("\n[STEP 1] Aligning video and force data...")
-        lag, df_aligned = new_led(
-            self, selected, parent_path, video_file, force_file, 
-            use_detection_system=USE_DETECTION_SYSTEM
+    # ======================================================================
+    # STEP 1: ALIGN VIDEO AND FORCE DATA
+    # ======================================================================
+    lag = 0
+    df_aligned = None
+    print("\n[STEP 1] Aligning video and force data...")
+    lag, df_aligned = new_led(
+        self, view, parent_path, video_file, force_file, 
+        use_detection_system=USE_DETECTION_SYSTEM
+    )
+    print("Raw df_aligned columns from new_led:", df_aligned.columns.tolist())
+
+    # Rename columns to match what VectorOverlay expects
+    column_rename = {
+        'Fx1': 'FP1_Fx', 'Fy1': 'FP1_Fy', 'Fz1': 'FP1_Fz', 'Ft1': 'FP1_|F|', 
+        'Ax1': 'FP1_Ax', 'Ay1': 'FP1_Ay',
+        'Fx2': 'FP2_Fx', 'Fy2': 'FP2_Fy', 'Fz2': 'FP2_Fz', 'Ft2': 'FP2_|F|', 
+        'Ax2': 'FP2_Ax', 'Ay2': 'FP2_Ay',
+        'Fx3': 'FP3_Fx', 'Fy3': 'FP3_Fy', 'Fz3': 'FP3_Fz', 'Ft3': 'FP3_|F|', 
+        'Ax3': 'FP3_Ax', 'Ay3': 'FP3_Ay',
+        'abs time (s)': 'Time(s)'  # Also ensure Time(s) column exists
+    }
+    df_aligned.rename(columns=column_rename, inplace=True)
+    
+    self.state.df_aligned = df_aligned
+    self.state.global_lag = lag
+    
+    # with open("lag.txt", "w") as f:
+    #     f.write(str(lag))
+
+    print(f"Alignment complete. Lag: {lag} frames")
+    print(f"df_aligned shape: {df_aligned.shape}")
+    print(f"df_aligned columns: {list(df_aligned.columns)}")
+    print("[DEBUG] Current Sex in globalVariable:", global_variable.globalVariable.sex)
+    # ======================================================================
+    # STEP 2: FIND FORCE BOUNDARIES (TRIMMING)
+    # ======================================================================
+    print("\n[STEP 2] Finding force boundaries for trimming...")
+    try:
+        boundary_start, boundary_end = find_force_boundaries(
+            df_aligned, 
+            threshold=FORCE_THRESHOLD,
+            padding_frames=BOUNDARY_PADDING
         )
-        print("Raw df_aligned columns from new_led:", df_aligned.columns.tolist())
-
-        # Rename columns to match what VectorOverlay expects
-        column_rename = {
-            'Fx1': 'FP1_Fx', 'Fy1': 'FP1_Fy', 'Fz1': 'FP1_Fz', 'Ft1': 'FP1_|F|', 
-            'Ax1': 'FP1_Ax', 'Ay1': 'FP1_Ay',
-            'Fx2': 'FP2_Fx', 'Fy2': 'FP2_Fy', 'Fz2': 'FP2_Fz', 'Ft2': 'FP2_|F|', 
-            'Ax2': 'FP2_Ax', 'Ay2': 'FP2_Ay',
-            'Fx3': 'FP3_Fx', 'Fy3': 'FP3_Fy', 'Fz3': 'FP3_Fz', 'Ft3': 'FP3_|F|', 
-            'Ax3': 'FP3_Ax', 'Ay3': 'FP3_Ay',
-            'abs time (s)': 'Time(s)'  # Also ensure Time(s) column exists
-        }
-        df_aligned.rename(columns=column_rename, inplace=True)
         
-        self.state.df_aligned = df_aligned
+        # Store boundaries in state for future reference
+        self.state.boundary_start = boundary_start
+        self.state.boundary_end = boundary_end
         
-        # with open("lag.txt", "w") as f:
-        #     f.write(str(lag))
-
-        print(f"Alignment complete. Lag: {lag} frames")
-        print(f"df_aligned shape: {df_aligned.shape}")
-        print(f"df_aligned columns: {list(df_aligned.columns)}")
-        print("[DEBUG] Current Sex in globalVariable:", global_variable.globalVariable.sex)
-        # ======================================================================
-        # STEP 2: FIND FORCE BOUNDARIES (TRIMMING)
-        # ======================================================================
-        print("\n[STEP 2] Finding force boundaries for trimming...")
-        try:
-            boundary_start, boundary_end = find_force_boundaries(
-                df_aligned, 
-                threshold=FORCE_THRESHOLD,
-                padding_frames=BOUNDARY_PADDING
-            )
-            
-            # Store boundaries in state for future reference
-            self.state.boundary_start = boundary_start
-            self.state.boundary_end = boundary_end
-            
-            print(f"Processing subset: frames {boundary_start} to {boundary_end}")
-            
-        except Exception as e:
-            print(f"[ERROR] Failed to find force boundaries: {e}")
-            print("[INFO] Using full frame range as fallback")
-            boundary_start = int(df_aligned['FrameNumber'].min())
-            boundary_end = int(df_aligned['FrameNumber'].max())
-        # ======================================================================
-        # STEP 3: RUN COM CALCULATION ON TRIMMED SUBSET
-        # ======================================================================
+        print(f"Processing subset: frames {boundary_start} to {boundary_end}")
+        
+    except Exception as e:
+        print(f"[ERROR] Failed to find force boundaries: {e}")
+        print("[INFO] Using full frame range as fallback")
+        boundary_start = int(df_aligned['FrameNumber'].min())
+        boundary_end = int(df_aligned['FrameNumber'].max())
+        
+        
+    # ======================================================================
+    # STEP 3: RUN COM CALCULATION ON TRIMMED SUBSET
+    # ======================================================================
+    if view != "Top View":
         print("\n[STEP 3] Running COM calculation on trimmed subset...")
         com_csv_path = os.path.join(parent_path, "pose_landmarks.csv")
         
@@ -111,7 +117,7 @@ def vectorOverlayWithAlignmentCallback(self):
                 print("[WARNING] Sex not set in globalVariable, defaulting to 'male'")
             
             # Create COM processor using BoundaryProcessor wrapper
-            processor = Processor(self.Video.path)
+            processor = Processor(video.path)
             
             print("Processor class:", Processor)
             print("SaveToTxt signature:", Processor.SaveToTxt.__code__.co_varnames) 
@@ -139,113 +145,115 @@ def vectorOverlayWithAlignmentCallback(self):
             traceback.print_exc()
             com_csv_path = None
 
-        # ======================================================================
-        # STEP 4: RUN VECTOR OVERLAY WITH COM ON TRIMMED SUBSET
-        # ======================================================================
-        print("\n[STEP 4] Running vector overlay with COM visualization...")
+    # ======================================================================
+    # STEP 4: RUN VECTOR OVERLAY WITH COM ON TRIMMED SUBSET
+    # ======================================================================
+    print("\n[STEP 4] Running vector overlay with COM visualization...")
+    
+    # Get trimmed force data
+    df_trimmed = get_trimmed_subset(self.state.df_aligned, self.state.boundary_start, self.state.boundary_end)
+    
+    # Prepare output filename
+    temp_video = "vector_overlay_temp.mp4"
+    
+    try:
+        # Reset video to start
+        video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
         
-        # Get trimmed force data
-        df_trimmed = get_trimmed_subset(df_aligned, boundary_start, boundary_end)
+        # Create VectorOverlay instance
+        v = VectorOverlay(data=df_trimmed, video=video.cam, view=view)
         
-        # Prepare output filename
-        temp_video = "vector_overlay_temp.mp4"
+        # Detect corners for the selected view
+        v.check_corner(view)
+                    
+        # Rename columns in df_trimmed to match VectorOverlay expectations
+        column_rename = {
+            'Fx1': 'FP1_Fx', 'Fy1': 'FP1_Fy', 'Fz1': 'FP1_Fz', 'Ft1': 'FP1_|F|', 
+            'Ax1': 'FP1_Ax', 'Ay1': 'FP1_Ay',
+            'Fx2': 'FP2_Fx', 'Fy2': 'FP2_Fy', 'Fz2': 'FP2_Fz', 'Ft2': 'FP2_|F|', 
+            'Ax2': 'FP2_Ax', 'Ay2': 'FP2_Ay',
+            'Fx3': 'FP3_Fx', 'Fy3': 'FP3_Fy', 'Fz3': 'FP3_Fz', 'Ft3': 'FP3_|F|', 
+            'Ax3': 'FP3_Ax', 'Ay3': 'FP3_Ay',
+            'abs time (s)': 'Time(s)'  # ensure time column is consistent
+        }
+        df_trimmed.rename(columns=column_rename, inplace=True)
+        self.state.df_trimmed = df_trimmed.reset_index(drop=True)
         
-        try:
-            # Reset video to start
-            self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            
-            # Create VectorOverlay instance
-            v = VectorOverlay(data=df_trimmed, video=self.Video.cam, view=selected)
-            
-            # Detect corners for the selected view
-            v.check_corner(selected)
-                        
-            # Rename columns in df_trimmed to match VectorOverlay expectations
-            column_rename = {
-                'Fx1': 'FP1_Fx', 'Fy1': 'FP1_Fy', 'Fz1': 'FP1_Fz', 'Ft1': 'FP1_|F|', 
-                'Ax1': 'FP1_Ax', 'Ay1': 'FP1_Ay',
-                'Fx2': 'FP2_Fx', 'Fy2': 'FP2_Fy', 'Fz2': 'FP2_Fz', 'Ft2': 'FP2_|F|', 
-                'Ax2': 'FP2_Ax', 'Ay2': 'FP2_Ay',
-                'Fx3': 'FP3_Fx', 'Fy3': 'FP3_Fy', 'Fz3': 'FP3_Fz', 'Ft3': 'FP3_|F|', 
-                'Ax3': 'FP3_Ax', 'Ay3': 'FP3_Ay',
-                'abs time (s)': 'Time(s)'  # ensure time column is consistent
-            }
-            df_trimmed.rename(columns=column_rename, inplace=True)
-            self.state.df_trimmed = df_trimmed.reset_index(drop=True)
-            
-            print("[COLUMNS BEFORE] LongVectorOverlay:", list(df_trimmed.columns))
-            print("Path to COM CSV before VectorOverlay:", com_csv_path)
-            # Run vector overlay with COM for the selected view
-            if selected == "Long View":
-                v.LongVectorOverlay(
-                    df_aligned=df_trimmed,
-                    outputName=temp_video,
-                    lag=lag,
-                    com_csv_path=com_csv_path,
-                    show_landmarks=SHOW_LANDMARKS,
-                    boundary_start=boundary_start,
-                    boundary_end=boundary_end
-                )
-            elif selected == "Side1 View":
-                v.SideVectorOverlay(
-                    df_aligned=df_trimmed,
-                    outputName=temp_video,
-                    lag=lag,
-                    com_csv_path=com_csv_path,
-                    show_landmarks=SHOW_LANDMARKS,
-                    boundary_start=boundary_start,
-                    boundary_end=boundary_end,
-                    is_side1=True  # FP1 is near
-                )
-            elif selected == "Side2 View":
-                v.SideVectorOverlay(
-                    df_aligned=df_trimmed,
-                    outputName=temp_video,
-                    lag=lag,
-                    com_csv_path=com_csv_path,
-                    show_landmarks=SHOW_LANDMARKS,
-                    boundary_start=boundary_start,
-                    boundary_end=boundary_end,
-                    is_side1=False  # FP2 is near
-                )
-            elif selected == "Top View":
-                v.TopVectorOverlay(
-                    df_aligned=df_trimmed,
-                    outputName=temp_video,
-                    lag=lag,
-                    com_csv_path=com_csv_path,
-                    show_landmarks=SHOW_LANDMARKS,
-                    boundary_start=boundary_start,
-                    boundary_end=boundary_end
-                )
-            
-            print(f"[INFO] Vector overlay complete: {temp_video}")
-            
-            # Load the result video
-            self.Video.vector_cam = cv2.VideoCapture(temp_video)
-            self.Video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            
-            # Display on canvas 3
-            self.Video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc)
-            self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(
-                camera=self.Video.vector_cam
+        print("[COLUMNS BEFORE] LongVectorOverlay:", list(df_trimmed.columns))
+        # print("Path to COM CSV before VectorOverlay:", com_csv_path)
+        frames = []
+        # Run vector overlay with COM for the selected view
+        if view == "Long View":
+            frames = v.LongVectorOverlay(
+                df_aligned=df_trimmed,
+                outputName=temp_video,
+                lag=lag,
+                com_csv_path=com_csv_path,
+                show_landmarks=SHOW_LANDMARKS,
+                boundary_start=self.state.boundary_start,
+                boundary_end=self.state.boundary_end
             )
-            self.canvasManager.canvas3.create_image(
-                200, 150, 
-                image=self.canvasManager.photo_image3, 
-                anchor="center"
+        elif view == "Side1 View":
+            frames = v.SideVectorOverlay(
+                df_aligned=df_trimmed,
+                outputName=temp_video,
+                lag=lag,
+                com_csv_path=com_csv_path,
+                show_landmarks=SHOW_LANDMARKS,
+                boundary_start=self.state.boundary_start,
+                boundary_end=self.state.boundary_end,
+                is_side1=True  # FP1 is near
             )
-            
-            self.state.vector_overlay_enabled = True
-            print("[SUCCESS] All processing complete!")
-            
-        except Exception as e:
-            print(f"[ERROR] Vector overlay failed: {e}")
-            import traceback
-            traceback.print_exc()
+        elif view == "Side2 View":
+            frames = v.SideVectorOverlay(
+                df_aligned=df_trimmed,
+                outputName=temp_video,
+                lag=lag,
+                com_csv_path=com_csv_path,
+                show_landmarks=SHOW_LANDMARKS,
+                boundary_start=self.state.boundary_start,
+                boundary_end=self.state.boundary_end,
+                is_side1=False  # FP2 is near
+            )
+        elif view == "Top View":
+            frames = v.TopVectorOverlay(
+                df_aligned=df_trimmed,
+                outputName=temp_video,
+                lag=lag,
+                com_csv_path=None,
+                show_landmarks=SHOW_LANDMARKS,
+                boundary_start=self.state.boundary_start,
+                boundary_end=self.state.boundary_end
+            )
+        
+        print(f"[INFO] Vector overlay complete: {temp_video}")
+        
+        # Load the result video
+        video.vector_cam = cv2.VideoCapture(temp_video)
+        video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        
+        # Display on canvas 3
+        video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc)
+        self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(
+            camera=video.vector_cam
+        )
+        self.canvasManager.canvas3.create_image(
+            200, 150, 
+            image=self.canvasManager.photo_image3, 
+            anchor="center"
+        )
+        
+        self.state.vector_overlay_enabled = True
+        print("[SUCCESS] All processing complete!")
+        return frames
+        
+    except Exception as e:
+        print(f"[ERROR] Vector overlay failed: {e}")
+        import traceback
+        traceback.print_exc()
 
     # Launch in thread
-    threading.Thread(target=threadTarget, daemon=True).start()
+    # threading.Thread(target=threadTarget, daemon=True).start()
 ##--------------------------OLD CODE UNDER---------------------------##
 # import threading
 # import os

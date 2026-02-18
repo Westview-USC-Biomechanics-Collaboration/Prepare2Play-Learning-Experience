@@ -12,12 +12,14 @@ from PIL import Image, ImageTk
 import os
 from datetime import datetime
 import warnings
+import threading
+import time
 
 warnings.filterwarnings('ignore', category=UserWarning, module='google.protobuf.symbol_database')
 
 from Util.COM_helper import COM_helper
 
-def saveCallback(self):
+def saveCallback(self, video, view, frames):
     """
     Save window for exporting a trimmed + aligned vector overlay video with force graphs.
 
@@ -33,6 +35,8 @@ def saveCallback(self):
     # VALIDATION
     # ============================================================
 
+    start = time.perf_counter()
+
     if not hasattr(self.state, "df_trimmed") or self.state.df_trimmed is None:
         self._pop_up("Error: df_trimmed not found. Run vector overlay first.")
         return
@@ -42,13 +46,13 @@ def saveCallback(self):
         self._pop_up("Error: vector overlay video not found.")
         return
 
-    self.save_vector_path = vector_overlay_path
-    self.save_video_path = self.Video.path
+    # self.save_vector_path = vector_overlay_path
+    self.save_video_path = video.path
     df = self.state.df_trimmed.copy()
     # df = df.reset_index(drop=True)  # Ensure clean 0-based index
 
     print(f"[SAVE] Original video: {self.save_video_path}")
-    print(f"[SAVE] Vector overlay: {self.save_vector_path}")
+    # print(f"[SAVE] Vector overlay: {self.save_vector_path}")
     print(f"[SAVE] df_trimmed shape: {df.shape}")
     print(f"[SAVE] df_trimmed index range: {df.index.min()} to {df.index.max()}")
 
@@ -78,136 +82,166 @@ def saveCallback(self):
     if not hasattr(self, "COM_helper") or self.COM_helper is None:
         self.COM_helper = COM_helper()
 
-    # ============================================================
-    # GUI
-    # ============================================================
+    # frames = []
+    # cap = cv2.VideoCapture(self.save_vector_path)
+    # while True:
+    #     ret, frame = cap.read()
+    #     if not ret:
+    #         break
+    #     frames.append((ret, frame))
+    # cap.release()
 
-    self.save_window = tk.Toplevel(self.master)
-    self.save_window.title("Save Video")
-    self.save_window.geometry("420x800")
+    # def threadTarget():
 
-    self.save_view_canvas = tk.Canvas(
-        self.save_window,
-        width=400,
-        height=300,
-        bg="black"
-    )
-    self.save_view_canvas.grid(row=0, column=0, columnspan=3, pady=10)
+        # ============================================================
+        # GUI
+        # ============================================================
 
-    # ============================================================
-    # PREVIEW FRAME FUNCTION
-    # ============================================================
+        # self.save_window = tk.Toplevel(self.master)
+        # self.save_window.title("Save Video")
+        # self.save_window.geometry("420x800")
 
-    def show_frame(idx):
-        """Show preview of vector overlay at given index"""
-        cap = cv2.VideoCapture(self.save_vector_path)
-        cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
-        ret, frame = cap.read()
-        cap.release()
+        # self.save_view_canvas = tk.Canvas(
+        #     self.save_window,
+        #     width=400,
+        #     height=300,
+        #     bg="black"
+        # )
+        # self.save_view_canvas.grid(row=0, column=0, columnspan=3, pady=10)
 
-        if not ret:
-            print(f"[SAVE] Failed to read frame {idx}")
-            return
+        # ============================================================
+        # PREVIEW FRAME FUNCTION
+        # ============================================================
 
-        frame = cv2.resize(frame, (400, 300))
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        img = Image.fromarray(frame)
+        # def show_frame(idx):
+        #     """Show preview of vector overlay at given index"""
+        #     cap = cv2.VideoCapture(self.save_vector_path)
+        #     cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
+        #     ret, frame = cap.read()
+        #     cap.release()
 
-        self.save_photoImage = ImageTk.PhotoImage(img)
-        self.save_view_canvas.delete("frame")
-        self.save_view_canvas.create_image(
-            0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame"
-        )
+        #     if not ret:
+        #         print(f"[SAVE] Failed to read frame {idx}")
+        #         return
 
-    show_frame(0)
+        #     frame = cv2.resize(frame, (400, 300))
+        #     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        #     img = Image.fromarray(frame)
 
-    # ============================================================
-    # SLIDER
-    # ============================================================
+        #     self.save_photoImage = ImageTk.PhotoImage(img)
+        #     self.save_view_canvas.delete("frame")
+        #     self.save_view_canvas.create_image(
+        #         0, 0, image=self.save_photoImage, anchor=tk.NW, tags="frame"
+        #     )
 
-    def on_slider(value):
-        idx = int(value)
-        self.save_loc = idx
-        show_frame(idx)
+        # show_frame(0)
 
-    self.save_slider = tk.Scale(
-        self.save_window,
-        from_=0,
-        to=len(df) - 1,
-        orient="horizontal",
-        label="Select frame",
-        command=on_slider
-    )
-    self.save_slider.grid(row=1, column=0, columnspan=3, sticky="ew", padx=10)
+        # ============================================================
+        # SLIDER
+        # ============================================================
 
-    # ============================================================
-    # LABEL BUTTONS
-    # ============================================================
+        # def on_slider(value):
+        #     idx = int(value)
+        #     self.save_loc = idx
+        #     show_frame(idx)
 
-    def label_start():
-        self.save_start = self.save_loc
-        start_label.config(text=f"Start: {self.save_start}")
-        print(f"[SAVE] Start set to {self.save_start}")
+        # self.save_slider = tk.Scale(
+        #     self.save_window,
+        #     from_=0,
+        #     to=len(df) - 1,
+        #     orient="horizontal",
+        #     label="Select frame",
+        #     command=on_slider
+        # )
+        # self.save_slider.grid(row=1, column=0, columnspan=3, sticky="ew", padx=10)
 
-    def label_end():
-        self.save_end = self.save_loc
-        end_label.config(text=f"End: {self.save_end}")
-        print(f"[SAVE] End set to {self.save_end}")
+        # ============================================================
+        # LABEL BUTTONS
+        # ============================================================
 
-    start_label = tk.Label(self.save_window, text=f"Start: {self.save_start}")
-    start_label.grid(row=2, column=0, padx=10, pady=5)
+        # def label_start():
+        #     self.save_start = self.save_loc
+        #     start_label.config(text=f"Start: {self.save_start}")
+        #     print(f"[SAVE] Start set to {self.save_start}")
 
-    end_label = tk.Label(self.save_window, text=f"End: {self.save_end}")
-    end_label.grid(row=2, column=2, padx=10, pady=5)
+        # def label_end():
+        #     self.save_end = self.save_loc
+        #     end_label.config(text=f"End: {self.save_end}")
+        #     print(f"[SAVE] End set to {self.save_end}")
 
-    tk.Button(
-        self.save_window,
-        text="Set Start",
-        command=label_start
-    ).grid(row=3, column=0, pady=5)
+        # start_label = tk.Label(self.save_window, text=f"Start: {self.save_start}")
+        # start_label.grid(row=2, column=0, padx=10, pady=5)
 
-    tk.Button(
-        self.save_window,
-        text="Set End",
-        command=label_end
-    ).grid(row=3, column=2, pady=5)
+        # end_label = tk.Label(self.save_window, text=f"End: {self.save_end}")
+        # end_label.grid(row=2, column=2, padx=10, pady=5)
 
-    # ============================================================
-    # COM CHECKBOX
-    # ============================================================
+        # tk.Button(
+        #     self.save_window,
+        #     text="Set Start",
+        #     command=label_start
+        # ).grid(row=3, column=0, pady=5)
 
-    self.COM_checkbox = tk.Checkbutton(
-        self.save_window,
-        text="Enable COM overlay",
-        variable=self.COM_intVar
-    )
-    self.COM_checkbox.grid(row=4, column=0, columnspan=3, pady=10)
+        # tk.Button(
+        #     self.save_window,
+        #     text="Set End",
+        #     command=label_end
+        # ).grid(row=3, column=2, pady=5)
 
-    # ============================================================
-    # EXPORT (WITH GRAPHS)
-    # ============================================================
+        # ============================================================
+        # COM CHECKBOX
+        # ============================================================
+
+        # self.COM_checkbox = tk.Checkbutton(
+        #     self.save_window,
+        #     text="Enable COM overlay",
+        #     variable=self.COM_intVar
+        # )
+        # self.COM_checkbox.grid(row=4, column=0, columnspan=3, pady=10)
+
+        # ============================================================
+        # EXPORT (WITH GRAPHS)
+        # ============================================================
+        
+
+        # ============================================================
+        # EXPORT BUTTON
+        # ============================================================
+
+        # export_button = tk.Button(
+        #     self.save_window,
+        #     text="Export Video",
+        #     command=export_thread,
+        #     bg="green",
+        #     fg="white",
+        #     font=("Arial", 12, "bold"),
+        #     height=2
+        # )
+        # export_button.grid(row=5, column=0, columnspan=3, pady=20, padx=20, sticky="ew")
+
+        # self.save_window.lift()
     def export_video():
         """Export video with synchronized force graphs"""
+
+        print(f"[DEBUG] Saving final video has started!")
         
         # Disable export button during processing
-        export_button.config(state=tk.DISABLED, text="Processing...")
-        self.save_window.update()
+        # export_button.config(state=tk.DISABLED, text="Processing...")
+        # self.save_window.update()
         
         start = min(self.save_start, self.save_end)
         end = max(self.save_start, self.save_end)
 
         dfw = df.iloc[start:end + 1].copy()
 
+        comEnabled = "Top" not in view
+
         print(f"\n[SAVE] ===== EXPORT STARTING =====")
         print(f"[SAVE] Exporting indices {start} → {end}")
         print(f"[SAVE] Rows to export: {len(dfw)}")
-        print(f"[SAVE] COM enabled: {self.COM_intVar.get() == 1}")
-
-        # ========== VIDEO SLOWDOWN FACTOR ==========
-        SLOW_FACTOR = 2.0
+        print(f"[SAVE] COM enabled: {comEnabled}")
         
         # Get view-specific force labels and colors
-        view = self.selected_view.get()
+        # view = self.selected_view.get()
         if view == "Long View":
             label1_1, label1_2 = "FP1_Fy", "FP1_Fz"
             label2_1, label2_2 = "FP2_Fy", "FP2_Fz"
@@ -261,7 +295,6 @@ def saveCallback(self):
 
         print(f"[SAVE] Time range: {lower_x:.2f} to {upper_x:.2f} seconds")
         print(f"[SAVE] Force range: {ymin:.2f} to {ymax:.2f} N")
-        print(f"[SAVE] Slowdown factor: {SLOW_FACTOR}x")
 
         # ========== CREATE STATIC PLOTS (ONCE) ==========
         # Create properly sized plots (not stretched)
@@ -342,23 +375,50 @@ def saveCallback(self):
         plot_static_2 = np.array(Image.open(buf2))[:, :, 0:3]
         buf2.close()
 
+        fig1.canvas.draw()
+        fig2.canvas.draw()
+
+        # Get axes bounding box in pixel coordinates
+        bbox1 = ax1.get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
+        bbox2 = ax2.get_window_extent().transformed(fig2.dpi_scale_trans.inverted())
+
+        # Convert inches → pixels
+        ax1_left   = int(bbox1.x0 * fig1.dpi)
+        ax1_right  = int(bbox1.x1 * fig1.dpi)
+        ax1_top    = int(bbox1.y1 * fig1.dpi)
+        ax1_bottom = int(bbox1.y0 * fig1.dpi)
+
+        ax2_left   = int(bbox2.x0 * fig2.dpi)
+        ax2_right  = int(bbox2.x1 * fig2.dpi)
+        ax2_top    = int(bbox2.y1 * fig2.dpi)
+        ax2_bottom = int(bbox2.y0 * fig2.dpi)
+
+        h1 = plot_static_1.shape[0]
+        h2 = plot_static_2.shape[0]
+
+        ax1_top_cv    = h1 - ax1_top
+        ax1_bottom_cv = h1 - ax1_bottom
+
+        ax2_top_cv    = h2 - ax2_top
+        ax2_bottom_cv = h2 - ax2_bottom
+
         print(f"[SAVE] Static plot dimensions: {plot_static_1.shape}")
 
         # ========== OPEN VIDEO CAPTURES ==========
-        cam_vector = cv2.VideoCapture(self.save_vector_path)
+        # cam_vector = cv2.VideoCapture(self.save_vector_path)
 
-        if not cam_vector.isOpened():
-            self._pop_up("Error: Failed to open vector overlay video!")
-            export_button.config(state=tk.NORMAL, text="Export Video")
-            return
+        # if not cam_vector.isOpened():
+        #     self._pop_up("Error: Failed to open vector overlay video!")
+        #     # export_button.config(state=tk.NORMAL, text="Export Video")
+        #     return
 
         # ========== SETUP VIDEO WRITER ==========
         # out_fps = max(1.0, self.Video.fps)
         out_fps = 60.0
         
         # Video on top, graphs on bottom
-        out_height = self.Video.frame_height + plot_static_1.shape[0]
-        out_size = (self.Video.frame_width, out_height)
+        out_height = video.frame_height + plot_static_1.shape[0]
+        out_size = (video.frame_width, out_height)
 
         out = cv2.VideoWriter(
             self.save_output_path,
@@ -372,108 +432,152 @@ def saveCallback(self):
         # ========== PROCESS EACH FRAME ==========
         processed_count = 0
         
-        # vline1 = ax1.axvline(time.iloc[0], color='blue',
+        # line1 = ax1.axvline(time.iloc[0], color='red',
         #              linestyle='--', linewidth=1.5, alpha=0.6) # Keep it blue bc it turns to red for
-        # vline2 = ax2.axvline(time.iloc[0], color='blue',
+        # line2 = ax2.axvline(time.iloc[0], color='red',
         #                         linestyle='--', linewidth=1.5, alpha=0.6) # Keep it blue bc it turns to red bc BGR to RGB
 
-        for df_idx, row in dfw.iterrows():
-            # df_idx is the index in df_trimmed (0-based after reset)
-            # This directly maps to frame number in vector overlay video
-            
-            cam_vector.set(cv2.CAP_PROP_POS_FRAMES, df_idx)
-            ret, frame_vec = cam_vector.read()
+        time_tracker = dfw[time_col].to_numpy(dtype=float)
+        frame_numbers = dfw["FrameNumber"].to_numpy()
+        cntr = 0
+        # for df_idx, row in dfw.iterrows():
+        for i in range(len(frame_numbers)):
+            if cntr % 2 == 0:
+                # df_idx is the index in df_trimmed (0-based after reset)
+                # This directly maps to frame number in vector overlay video
+                
+                # cam_vector.set(cv2.CAP_PROP_POS_FRAMES, df_idx)
+                #ret, frame_vec = cam_vector.read()
+                df_idx = int(frame_numbers[i])
+                ret, frame_vec = frames[i]
 
-            if not ret:
-                print(f"[SAVE] Failed to read frame at df_idx={df_idx}")
-                break
+                if not ret:
+                    print(f"[SAVE] Failed to read frame at df_idx={df_idx}")
+                    break
 
-            # Apply COM overlay if enabled
-            if self.COM_intVar.get() == 1 and hasattr(row, 'FrameNumber'):
-                # Use the ORIGINAL frame number for COM lookup
-                original_frame_num = int(row['FrameNumber'])
-                frame_vec = self.COM_helper.drawFigure(frame_vec, original_frame_num)
+                # # Apply COM overlay if enabled
+                # if "Top" not in view and hasattr(row, 'FrameNumber'):
+                #     # Use the ORIGINAL frame number for COM lookup
+                #     original_frame_num = int(row['FrameNumber'])
+                #     frame_vec = self.COM_helper.drawFigure(frame_vec, original_frame_num)
 
-            # ========== CREATE DYNAMIC LINE PLOT ==========
-            current_time = float(row[time_col])
+                # ========== CREATE DYNAMIC LINE PLOT ==========
+                current_time = float(time_tracker[i])
 
-            # Clear and redraw only the vertical line
-            ax1.cla()
-            ax2.cla()
+                # Clear and redraw only the vertical line
+                # ax1.cla()
+                # ax2.cla()
 
-            ax1.set_xlim([lower_x, upper_x])
-            ax2.set_xlim([lower_x, upper_x])
-            if view == "Top View":
-                ax1.set_ylim([0, ymax * 1.2])
-                ax2.set_ylim([0, ymax * 1.2])
-            else:
-                ax1.set_ylim([ymin, ymax * 1.2])
-                ax2.set_ylim([ymin, ymax * 1.2])
-            ax1.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
-            ax2.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
-            # vline1.set_xdata([current_time])
-            # vline2.set_xdata([current_time])
+                # line1.set_xdata([current_time])
+                # line2.set_xdata([current_time])
 
-            # Convert to numpy
-            buf1 = BytesIO()
-            fig1.savefig(buf1, format='png')
-            buf1.seek(0)
-            plot_line_1 = np.array(Image.open(buf1))[:, :, 0:3]
-            buf1.close()
+                ax1.set_xlim([lower_x, upper_x])
+                ax2.set_xlim([lower_x, upper_x])
+                if view == "Top View":
+                    ax1.set_ylim([0, ymax * 1.2])
+                    ax2.set_ylim([0, ymax * 1.2])
+                else:
+                    ax1.set_ylim([ymin, ymax * 1.2])
+                    ax2.set_ylim([ymin, ymax * 1.2])
+                # ax1.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
+                # ax2.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
+                # vline1.set_xdata([current_time])
+                # vline2.set_xdata([current_time])
 
-            buf2 = BytesIO()
-            fig2.savefig(buf2, format='png')
-            buf2.seek(0)
-            plot_line_2 = np.array(Image.open(buf2))[:, :, 0:3]
-            buf2.close()
+                # Convert to numpy
+                # buf1 = BytesIO()
+                # fig1.savefig(buf1, format='png')
+                # buf1.seek(0)
+                # plot_line_1 = np.array(Image.open(buf1))[:, :, 0:3]
+                # buf1.close()
 
-            # Merge static + dynamic
-            merged_1 = np.minimum(plot_static_1, plot_line_1)
-            merged_2 = np.minimum(plot_static_2, plot_line_2)
+                # buf2 = BytesIO()
+                # fig2.savefig(buf2, format='png')
+                # buf2.seek(0)
+                # plot_line_2 = np.array(Image.open(buf2))[:, :, 0:3]
+                # buf2.close()
 
-            # Combine plots horizontally
-            gap_width = (self.Video.frame_width - merged_1.shape[1] - merged_2.shape[1]) // 2
-            if gap_width > 0:
-                gap = np.full((merged_1.shape[0], gap_width, 3), 255, dtype=np.uint8)
-                graphs = cv2.hconcat([gap, merged_1, merged_2, gap])
-            else:
-                graphs = cv2.hconcat([merged_1, merged_2])
+                # # Merge static + dynamic
+                # merged_1 = np.minimum(plot_static_1, plot_line_1)
+                # merged_2 = np.minimum(plot_static_2, plot_line_2)
 
-            # Ensure graphs match video width
-            if graphs.shape[1] != self.Video.frame_width:
-                graphs = cv2.resize(graphs, (self.Video.frame_width, graphs.shape[0]))
+                plot1 = plot_static_1.copy()
+                plot2 = plot_static_2.copy()
 
-            # Stack video on top, graphs on bottom
-            combined = cv2.vconcat([frame_vec, graphs])
+                # Map time → x pixel inside axes ONLY
+                x1 = int(
+                    ax1_left +
+                    (current_time - lower_x) /
+                    (upper_x - lower_x) *
+                    (ax1_right - ax1_left)
+                )
 
-            # Write frame
-            out.write(combined)
-            processed_count += 1
+                x2 = int(
+                    ax2_left +
+                    (current_time - lower_x) /
+                    (upper_x - lower_x) *
+                    (ax2_right - ax2_left)
+                )
 
-            # Progress update
-            if processed_count % 30 == 0:
-                print(f"[SAVE] Processed {processed_count}/{len(dfw)} frames")
-                # Update GUI to prevent "not responding"
-                self.save_window.update()
+                # Make sure looks dotted and within the height of the graph
+                for y in range(ax1_top_cv, ax1_bottom_cv, 6):
+                    cv2.line(plot1, (x1, y), (x1, y+2), (0,0,255), 2)
+
+                for y in range(ax1_top_cv, ax1_bottom_cv, 6):
+                    cv2.line(plot2, (x2, y), (x2, y+2), (0,0,255), 2)
+
+                # Combine plots horizontally
+                # gap_width = (video.frame_width - merged_1.shape[1] - merged_2.shape[1]) // 2
+                # if gap_width > 0:
+                #     gap = np.full((merged_1.shape[0], gap_width, 3), 255, dtype=np.uint8)
+                #     graphs = cv2.hconcat([gap, merged_1, merged_2, gap])
+                # else:
+                #     graphs = cv2.hconcat([merged_1, merged_2])
+
+                # # Ensure graphs match video width
+                # if graphs.shape[1] != video.frame_width:
+                #     graphs = cv2.resize(graphs, (video.frame_width, graphs.shape[0]))
+
+                gap_width = (video.frame_width - plot1.shape[1] - plot2.shape[1]) // 2
+
+                if gap_width > 0:
+                    gap = np.full((plot1.shape[0], gap_width, 3), 255, dtype=np.uint8)
+                    graphs = cv2.hconcat([gap, plot1, plot2, gap])
+                else:
+                    graphs = cv2.hconcat([plot1, plot2])
+
+                # Stack video on top, graphs on bottom
+                combined = cv2.vconcat([frame_vec, graphs])
+
+                # Write frame
+                out.write(combined)
+                processed_count += 1
+
+                # Progress update
+                if processed_count % 30 == 0:
+                    print(f"[SAVE] Processed {processed_count}/{len(dfw)} frames")
+                    # Update GUI to prevent "not responding"
+                    # self.save_window.update()
+            cntr += 1
 
         # ========== CLEANUP ==========
         plt.close(fig1)
         plt.close(fig2)
-        cam_vector.release()
+        # cam_vector.release()
         out.release()
 
         print(f"[SAVE] ===== EXPORT COMPLETE =====")
         print(f"[SAVE] Successfully saved {processed_count} frames")
 
         # Re-enable export button
-        export_button.config(state=tk.NORMAL, text="Export Video")
+        # export_button.config(state=tk.NORMAL, text="Export Video")
 
-        self._pop_up(
-            f"Video saved successfully!\n\n"
-            f"Frames exported: {processed_count}\n"
-            f"Output FPS: {out_fps:.1f}\n\n"
-            f"{self.save_output_path}"
-        )
+        # self._pop_up(
+        #     f"Video saved successfully!\n\n"
+        #     f"Frames exported: {processed_count}\n"
+        #     f"Output FPS: {out_fps:.1f}\n\n"
+        #     f"{self.save_output_path}"
+        # )
 
         # Save metadata
         metadata_path = self.save_output_path[:-4] + "_metadata.txt"
@@ -482,13 +586,13 @@ def saveCallback(self):
             f.write(f"{'='*50}\n\n")
             f.write(f"Export date: {datetime.now()}\n")
             f.write(f"Original video: {self.save_video_path}\n")
-            f.write(f"Vector overlay: {self.save_vector_path}\n")
+            f.write(f"Vector overlay: {video.path}\n")
             f.write(f"Output file: {self.save_output_path}\n\n")
             f.write(f"Frame range (df_trimmed index): {start} to {end}\n")
             f.write(f"Frames exported: {processed_count}\n")
-            f.write(f"Original FPS: {self.Video.fps}\n")
+            f.write(f"Original FPS: {video.fps}\n")
             f.write(f"Export FPS: {out_fps:.1f}\n")
-            f.write(f"View: {self.selected_view.get()}\n")
+            f.write(f"View: {view}\n")
             f.write(f"COM overlay enabled: {self.COM_intVar.get() == 1}\n\n")
             f.write(f"Force data path: {self.Force.path}\n")
             f.write(f"Time range: {lower_x:.3f} to {upper_x:.3f} seconds\n")
@@ -496,24 +600,8 @@ def saveCallback(self):
             f.write(f"All rights reserved by Westview PUSD\n")
 
         print(f"[SAVE] Metadata saved to: {metadata_path}")
-
-    # ============================================================
-    # EXPORT BUTTON
-    # ============================================================
-
-    export_button = tk.Button(
-        self.save_window,
-        text="Export Video",
-        command=export_video,
-        bg="green",
-        fg="white",
-        font=("Arial", 12, "bold"),
-        height=2
-    )
-    export_button.grid(row=5, column=0, columnspan=3, pady=20, padx=20, sticky="ew")
-
-    self.save_window.lift()
-
+    threading.Thread(target=export_video, daemon=False).start()
+    print(f"Saving time took about {time.perf_counter() - start} seconds")
 
 ###-----------------------------OLD CODE-----------------------------###
 # import tkinter as tk

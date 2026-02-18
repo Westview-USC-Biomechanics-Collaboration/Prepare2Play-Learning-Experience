@@ -113,8 +113,46 @@ class LEDConfig:
         Returns:
             np.ndarray: Processed grayscale image ready for template matching
         """
-        blue_channel = crop[:, :, 0]
-        green_channel = crop[:, :, 1]
+        # blue_channel = crop[:, :, 0]
+        # green_channel = crop[:, :, 1]
+        
+        # # Subtract green from blue - LED appears bright, background dark
+        # blue_minus_green = cv2.subtract(blue_channel, green_channel)
+        
+        # # Apply blur to reduce noise and make template matching more robust
+        # processed = cv2.blur(blue_minus_green, (10, 10))
+        
+        # return processed
+
+        lab = cv2.cvtColor(crop, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+
+        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+        cl = clahe.apply(l)
+
+        limg = cv2.merge((cl, a, b))
+        enhanced_img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+        # hsv = cv2.cvtColor(enhanced_img, cv2.COLOR_BGR2HSV)
+
+        # lower_blue = np.array([100, 50, 50])
+        # upper_blue = np.array([130, 255, 255])
+
+        # lower_green = np.array([40, 70, 50])
+        # upper_green = np.array([80, 255, 255])
+
+        # blue_mask = cv2.inRange(hsv, lower_blue, upper_blue)
+
+        # r1_mask = cv2.inRange(hsv, lower_red1, upper_red1)
+        # r2_mask = cv2.inRange(hsv, lower_red2, upper_red2)
+        # red_mask = cv2.bitwise_or(r1_mask, r2_mask)
+
+        # green_mask = cv2.inRange(hsv, lower_green, upper_green)
+
+
+        # clean_blue = cv2.bitwise_and(blue_mask, cv2.bitwise_not(green_mask))
+
+        blue_channel = enhanced_img[:, :, 0]
+        green_channel = enhanced_img[:, :, 1]
         
         # Subtract green from blue - LED appears bright, background dark
         blue_minus_green = cv2.subtract(blue_channel, green_channel)
@@ -143,7 +181,7 @@ class LongViewLEDConfig(LEDConfig):
             led_crop_y0=950,
             led_crop_y1=1080,
             template_center_offset_x=45,
-            template_center_offset_y=47,
+            template_center_offset_y=55,
             plate_swap=False  # Long view: left=FP1, right=FP2 (standard)
         )
     
@@ -240,7 +278,7 @@ class Side1ViewLEDConfig(LEDConfig):
             frame_width=1920,
             frame_height=1080,
             led_crop_x0=100,
-            led_crop_x1=1500,
+            led_crop_x1=1700,
             led_crop_y0=600,
             led_crop_y1=1000,
             template_center_offset_x=45,
@@ -286,8 +324,8 @@ class Side2ViewLEDConfig(LEDConfig):
             led_crop_x1=900,
             led_crop_y0=600,
             led_crop_y1=800,
-            template_center_offset_x=45,
-            template_center_offset_y=47,
+            template_center_offset_x=40,
+            template_center_offset_y=50,
             plate_swap=False  # No swap needed - FP2 is near
         )
     
