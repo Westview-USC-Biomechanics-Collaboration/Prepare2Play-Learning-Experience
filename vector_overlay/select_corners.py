@@ -771,7 +771,7 @@ def select_points(self, cap, view):
         output[4], output[5], output[6], output[7] = coords[5], coords[2], coords[3], coords[7]
 
     # Draw final corners
-    for i, out in enumerate(coords):
+    for i, out in enumerate(output):
         color = (0, 255, 255) if i < 4 else (0, 0, 255)  # Yellow for FP1, Red for FP2
         cv2.circle(frame, (int(out[0]), int(out[1])), 5, color, -1)
         cv2.putText(frame, str(i), (int(out[0])+10, int(out[1])-10),
