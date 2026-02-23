@@ -95,7 +95,16 @@ class LEDConfig:
         Returns:
             np.ndarray: Cropped region where LED is expected
         """
-        return frame[self.led_crop_y0:self.led_crop_y1, 
+        lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+
+        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+        cl = clahe.apply(l)
+
+        limg = cv2.merge((cl, a, b))
+        enhanced_img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+
+        return enhanced_img[self.led_crop_y0:self.led_crop_y1, 
                     self.led_crop_x0:self.led_crop_x1, :]
     
     def process_crop_for_matching(self, crop: np.ndarray) -> np.ndarray:
@@ -124,14 +133,14 @@ class LEDConfig:
         
         # return processed
 
-        lab = cv2.cvtColor(crop, cv2.COLOR_BGR2LAB)
-        l, a, b = cv2.split(lab)
+        # lab = cv2.cvtColor(crop, cv2.COLOR_BGR2LAB)
+        # l, a, b = cv2.split(lab)
 
-        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
-        cl = clahe.apply(l)
+        # clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+        # cl = clahe.apply(l)
 
-        limg = cv2.merge((cl, a, b))
-        enhanced_img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+        # limg = cv2.merge((cl, a, b))
+        # enhanced_img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
         # hsv = cv2.cvtColor(enhanced_img, cv2.COLOR_BGR2HSV)
 
         # lower_blue = np.array([100, 50, 50])
@@ -151,8 +160,8 @@ class LEDConfig:
 
         # clean_blue = cv2.bitwise_and(blue_mask, cv2.bitwise_not(green_mask))
 
-        blue_channel = enhanced_img[:, :, 0]
-        green_channel = enhanced_img[:, :, 1]
+        blue_channel = crop[:, :, 0]
+        green_channel = crop[:, :, 1]
         
         # Subtract green from blue - LED appears bright, background dark
         blue_minus_green = cv2.subtract(blue_channel, green_channel)
@@ -232,9 +241,9 @@ class TopViewLEDConfig(LEDConfig):
             frame_height=1080,
             # Scale crop region for 4K resolution (2x the 1080p values)
             led_crop_x0=700,
-            led_crop_x1=1000,
+            led_crop_x1=1200,
             led_crop_y0=80,
-            led_crop_y1=1000,
+            led_crop_y1=1000,  
             template_center_offset_x=45,
             template_center_offset_y=44,
             plate_swap=False  # Top view: swap FP1/FP2 to match Long View orientation
@@ -719,12 +728,14 @@ class LEDDetector:
         print(f"\nExtracting LED signal from {self.config.view_name}...")
         
         while cap.isOpened():
-            ret, frame = cap.read()
+            ret, f = cap.read()
             if not ret:
                 break
             
             if frame_counter % 100 == 0:
                 print(f"  Processing frame {frame_counter}...")
+
+            frame = cv2.convertScaleAbs(f, alpha=1.5, beta=0)
             
             # Extract red channel around LED center
             red_region = frame[
