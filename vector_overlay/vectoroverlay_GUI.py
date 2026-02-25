@@ -808,10 +808,12 @@ class VectorOverlay:
             raw_F2_Fx = float(F2_Fx[i] or 0.0)
             raw_F2_Fy = float(F2_Fy[i] or 0.0)
 
-            fx1 = -raw_F1_Fy * scale_factor
-            fx2 = -raw_F2_Fy * scale_factor
-            fy1 = -raw_F1_Fx * scale_factor
-            fy2 = -raw_F2_Fx * scale_factor
+            flipFactor = -1
+
+            fx1 = flipFactor * raw_F1_Fy * scale_factor
+            fx2 = flipFactor * raw_F2_Fy * scale_factor
+            fy1 = flipFactor * raw_F1_Fx * scale_factor
+            fy2 = flipFactor * raw_F2_Fx * scale_factor
 
 
             # ----- TOP VIEW pressure mapping (match your working version) -----

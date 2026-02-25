@@ -98,6 +98,7 @@ class LEDConfig:
         lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
         l, a, b = cv2.split(lab)
 
+        # clip limit might be based on the environment and time of day
         clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
         cl = clahe.apply(l)
 
@@ -561,9 +562,7 @@ class LEDDetector:
                 crop, processed, center_x_crop, center_y_crop, frame_idx
             )
             diagnostic_images.append(diagnostic)
-        
-        cap.release()
-        
+                
         # Calculate median location (robust to outliers)
         median_x = int(locations_df['CenterX_Full'].median())
         median_y = int(locations_df['CenterY_Full'].median())
@@ -587,6 +586,52 @@ class LEDDetector:
             median_x, median_y, span_x, span_y
         )
         
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        ret, testFrame = cap.read()
+
+        # Save clean frame BEFORE drawing anything
+        base_frame = testFrame.copy()
+
+        # Draw initial median dot on display image
+        img = base_frame.copy()
+        cv2.circle(img, (int(median_x), int(median_y)), 5, (0, 0, 255), -1)
+
+        state = {'img': img.copy(), 'clicked_points': []}
+
+        def click_event(event, x, y, flags, param):
+            if event == cv2.EVENT_LBUTTONDOWN:
+                # Always start from clean frame - no old dot
+                state['img'] = base_frame.copy()
+                state['clicked_points'] = [(x, y)]
+                
+                print(f"Point Selected: ({x}, {y})")
+                
+                cv2.circle(state['img'], (x, y), 5, (0, 0, 255), -1)
+                cv2.putText(state['img'], f"{x},{y}", (x+10, y), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
+
+        cv2.namedWindow('LED Location', cv2.WINDOW_NORMAL)
+        cv2.setMouseCallback('LED Location', click_event)
+
+        while True:
+            cv2.imshow('LED Location', state['img'])
+            key = cv2.waitKey(1) & 0xFF
+            
+            if key == ord('q'):
+                break
+            elif key == ord('c'):
+                # Reset to median dot
+                state['img'] = base_frame.copy()
+                cv2.circle(state['img'], (int(median_x), int(median_y)), 5, (0, 0, 255), -1)
+                state['clicked_points'] = []
+
+        cv2.destroyAllWindows()
+
+        print("All selected points:", state['clicked_points'])
+
+        cap.release()
+        if state['clicked_points']:
+            return state['clicked_points'][0]
         return median_x, median_y
     
     def _create_diagnostic_image(
@@ -728,14 +773,12 @@ class LEDDetector:
         print(f"\nExtracting LED signal from {self.config.view_name}...")
         
         while cap.isOpened():
-            ret, f = cap.read()
+            ret, frame = cap.read()
             if not ret:
                 break
             
             if frame_counter % 100 == 0:
                 print(f"  Processing frame {frame_counter}...")
-
-            frame = cv2.convertScaleAbs(f, alpha=1.5, beta=0)
             
             # Extract red channel around LED center
             red_region = frame[
