@@ -608,16 +608,17 @@ class LEDDetector:
                 
                 cv2.circle(state['img'], (x, y), 5, (0, 0, 255), -1)
                 cv2.putText(state['img'], f"{x},{y}", (x+10, y), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 2, cv2.LINE_AA)
 
         cv2.namedWindow('LED Location', cv2.WINDOW_NORMAL)
+        cv2.setWindowProperty('LED Location', cv2.WND_PROP_TOPMOST, 1) 
         cv2.setMouseCallback('LED Location', click_event)
 
         while True:
             cv2.imshow('LED Location', state['img'])
             key = cv2.waitKey(1) & 0xFF
             
-            if key == ord('q'):
+            if key == 13:
                 break
             elif key == ord('c'):
                 # Reset to median dot
