@@ -187,8 +187,8 @@ class LongViewLEDConfig(LEDConfig):
             frame_width=1920,
             frame_height=1080,
             led_crop_x0=850,
-            led_crop_x1=1050,
-            led_crop_y0=950,
+            led_crop_x1=1200, #1050
+            led_crop_y0=0, #950
             led_crop_y1=1080,
             template_center_offset_x=45,
             template_center_offset_y=55,

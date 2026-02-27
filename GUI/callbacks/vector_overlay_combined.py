@@ -8,6 +8,9 @@ from GUI.callbacks import global_variable
 from Util.force_boundary_finder import find_force_boundaries, get_trimmed_subset
 from vector_overlay.com_processor_modified import BoundaryProcessor as Processor
 import warnings
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+from GUI.callbacks.manual_alignment import AlignmentGUI
 
 # Suppress specific deprecation warnings
 warnings.filterwarnings(
@@ -24,6 +27,7 @@ USE_DETECTION_SYSTEM = True  # Use new LED detection system (set to False for or
 
 
 def vectorOverlayWithAlignmentCallback(self, video, view, num):
+
     # def threadTarget():
     print(f"[DEBUG] The view the vector overlay program is getting is {view}")
     # selected = self.selected_view.get()
@@ -31,6 +35,10 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
     parent_path = os.path.dirname(video.path)
     video_file = os.path.basename(video.path)
     force_file = os.path.basename(self.Force.path)
+
+    root = tk.Tk()
+    app = AlignmentGUI(root, video, self.Force)
+    root.mainloop()
 
     print(f"Video file: {video_file}")
     print(f"Force file: {force_file}")
