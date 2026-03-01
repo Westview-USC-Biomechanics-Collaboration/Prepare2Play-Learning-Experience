@@ -35,25 +35,21 @@ FORCE_STEP   = FORCE_HZ // VIDEO_FPS   # = 10  (subsample step matching new_led'
 #            FrameNumber = lag + row_index  (1:1 with video frames)
 
 
-def _build_df_aligned_from_manual(force_data, lag_video_frames):
+def _trim_and_build_df_aligned(force_data, force_start_time, video_start_frame):
     """
-    Reproduce the same df_aligned structure that new_led produces,
-    using a manually specified lag (in VIDEO FRAMES) instead of cross-correlation.
+    Build df_aligned by trimming both signals at the user-chosen start points.
 
-    new_led subsamples force at ::10 (1200 Hz → 120 Hz = video fps),
-    then sets FrameNumber = range(lag, lag + len(subset)).
-    After subsampling, 1 force row = 1 video frame, so FrameNumbers map 1:1.
+    - Trim force to force_start_time  (app.offset from AlignmentGUI)
+    - Subsample ::10 so 1 row = 1 video frame  (1200/10 = 120 Hz)
+    - FrameNumber starts at video_start_frame and increments by 1
+    - Video will be seeked to video_start_frame before rendering
 
-    Parameters
-    ----------
-    force_data        : raw self.Force.data DataFrame (already numeric)
-    lag_video_frames  : int — video frame index where force t=0 should land
-                        = round(offset_seconds * VIDEO_FPS)
+    No lag mapping needed — the two signals are just cut to start together.
     """
     df = force_data.copy()
 
-    # ── Rename columns to match new_led output ────────────────────────────
-    force_dict = {
+    # Rename all known column name variants to FP1_*/FP2_* style
+    rename = {
         'abs time (s)': 'Time(s)',
         'Fx':     'FP1_Fx',  'Fy':     'FP1_Fy',  'Fz':     'FP1_Fz',
         '|Ft|':   'FP1_|F|', 'Ax':     'FP1_Ax',  'Ay':     'FP1_Ay',
@@ -61,37 +57,36 @@ def _build_df_aligned_from_manual(force_data, lag_video_frames):
         '|Ft|.1': 'FP2_|F|', 'Ax.1':   'FP2_Ax',  'Ay.1':   'FP2_Ay',
         'Fx.2':   'FP3_Fx',  'Fy.2':   'FP3_Fy',  'Fz.2':   'FP3_Fz',
         '|Ft|.2': 'FP3_|F|', 'Ax.2':   'FP3_Ax',  'Ay.2':   'FP3_Ay',
-    }
-    rename_map = {k: v for k, v in force_dict.items() if k in df.columns}
-    df.rename(columns=rename_map, inplace=True)
-
-    # Also handle Fx1/Fz1 style names (your app's fileReader output)
-    force_dict2 = {
         'Fx1': 'FP1_Fx', 'Fy1': 'FP1_Fy', 'Fz1': 'FP1_Fz', '|Ft1|': 'FP1_|F|',
         'Ax1': 'FP1_Ax', 'Ay1': 'FP1_Ay',
         'Fx2': 'FP2_Fx', 'Fy2': 'FP2_Fy', 'Fz2': 'FP2_Fz', '|Ft2|': 'FP2_|F|',
         'Ax2': 'FP2_Ax', 'Ay2': 'FP2_Ay',
     }
-    rename_map2 = {k: v for k, v in force_dict2.items() if k in df.columns}
-    df.rename(columns=rename_map2, inplace=True)
+    df.rename(columns={k: v for k, v in rename.items() if k in df.columns}, inplace=True)
 
-    # ── Subsample ×10 — matches new_led's df_force.iloc[::10] ────────────
-    # 1200 Hz / 10 = 120 Hz = video fps → 1 row per video frame
-    df_subset = df.iloc[::FORCE_STEP].reset_index(drop=True)
+    # Trim force to the user-selected start time
+    time_col = next((c for c in ['Time(s)', 'time', 'Time'] if c in df.columns), None)
+    if time_col:
+        time_arr  = pd.to_numeric(df[time_col], errors='coerce').to_numpy()
+        start_idx = int(np.argmin(np.abs(time_arr - force_start_time)))
+        print(f"[trim] Force trimmed at row {start_idx} (t={time_arr[start_idx]:.4f}s)")
+    else:
+        start_idx = int(round(force_start_time * FORCE_HZ))
+        print(f"[trim] No time column, trimmed at row {start_idx}")
 
-    # ── LED signal column (matches new_led) ───────────────────────────────
-    if 'FP3_Fz' in df_subset.columns:
-        df_subset['FP_LED_Signal'] = np.sign(df_subset['FP3_Fz'])
+    df = df.iloc[start_idx:].reset_index(drop=True)
 
-    # ── FrameNumber: 1 force row = 1 video frame after subsampling ────────
-    # new_led: df_force_subset['FrameNumber'] = range(lag, lag + len(subset))
-    n = len(df_subset)
-    df_subset['FrameNumber'] = list(range(lag_video_frames, lag_video_frames + n))
+    # Subsample to match video fps
+    df = df.iloc[::FORCE_STEP].reset_index(drop=True)
 
-    print(f"[_build_df_aligned] lag={lag_video_frames} video frames, "
-          f"rows={n}, FrameNumbers {lag_video_frames}–{lag_video_frames + n - 1}")
+    # FrameNumbers map 1:1 to video frames starting at video_start_frame
+    df['FrameNumber'] = range(video_start_frame, video_start_frame + len(df))
 
-    return df_subset
+    if 'FP3_Fz' in df.columns:
+        df['FP_LED_Signal'] = np.sign(df['FP3_Fz'])
+
+    print(f"[trim] rows={len(df)}, FrameNumbers {video_start_frame}-{video_start_frame + len(df) - 1}")
+    return df, video_start_frame
 
 
 def vectorOverlayWithAlignmentCallback(self, video, view, num):
@@ -109,78 +104,77 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
     cap.release()
 
     # ======================================================================
-    # STEP 1: ALIGN VIDEO AND FORCE DATA
+    # STEP 1: ALIGNMENT
     # ======================================================================
-    lag = 0
-    df_aligned = None
-    alignment_source = "none"
     print("\n[STEP 1] Aligning video and force data...")
 
+    auto_succeeded  = False
+    auto_lag        = 0
+    df_aligned_auto = None
+    use_manual      = False
+    video_start_frame = 0
+
     try:
-        lag, df_aligned = new_led(
+        auto_lag, df_aligned_auto = new_led(
             self, view, parent_path, video_file, force_file,
             use_detection_system=USE_DETECTION_SYSTEM
         )
-        alignment_source = "auto"
-        print(f"[INFO] LED auto-alignment succeeded. Lag: {lag} frames")
+        auto_succeeded = True
+        print(f"[INFO] LED auto-alignment succeeded. Lag: {auto_lag} frames")
     except Exception as e:
         print(f"[WARNING] LED auto-alignment failed: {e}")
+
+    if auto_succeeded:
+        use_manual = messagebox.askyesno(
+            "Alignment",
+            f"Auto-alignment detected a lag of {auto_lag} frames "
+            f"({auto_lag / VIDEO_FPS:.3f}s).\n\n"
+            "Open manual alignment to verify or override?",
+            parent=self.master
+        )
+    else:
         messagebox.showwarning(
             "Auto-Alignment Failed",
             "LED auto-alignment could not determine the lag.\n"
             "Please align manually using the next window.",
             parent=self.master
         )
-
-    # ── Ask user whether to accept auto result or align manually ──────────
-    use_manual = False
-    if alignment_source == "auto":
-        lag_seconds = lag / VIDEO_FPS
-        answer = messagebox.askyesno(
-            "Alignment",
-            f"Auto-alignment detected a lag of {lag} frames ({lag_seconds:.3f}s).\n\n"
-            "Open manual alignment to verify or override?",
-            parent=self.master
-        )
-        use_manual = answer
-    else:
         use_manual = True
 
-    # ── Manual alignment popup ────────────────────────────────────────────
     if use_manual:
         print("[INFO] Opening manual alignment window...")
         alignment_root = tk.Toplevel(self.master)
         app = AlignmentGUI(alignment_root, video, self.Force)
-        self.master.wait_window(alignment_root)  # blocks until Confirm & Close
+        self.master.wait_window(alignment_root)
 
-        manual_offset_seconds = app.offset
+        video_start_frame = app.current_frame
+        force_start_time  = app.offset
 
-        # offset_seconds × VIDEO_FPS = lag in video frames (1:1 with FrameNumber)
-        lag = round(manual_offset_seconds * VIDEO_FPS)
-        alignment_source = "manual"
+        print(f"[INFO] video_start_frame={video_start_frame}, force_start_time={force_start_time:.4f}s")
 
-        print(f"[INFO] Manual offset: {manual_offset_seconds:.4f}s = {lag} video frames")
+        df_aligned, lag = _trim_and_build_df_aligned(
+            self.Force.data.copy(),
+            force_start_time=force_start_time,
+            video_start_frame=video_start_frame
+        )
+    else:
+        df_aligned = df_aligned_auto
+        lag = auto_lag
 
-        df_aligned = _build_df_aligned_from_manual(self.Force.data.copy(), lag)
-        print(f"[INFO] df_aligned: {df_aligned.shape}, "
-              f"FrameNumbers {df_aligned['FrameNumber'].min()}–{df_aligned['FrameNumber'].max()}")
-
-    print(f"[INFO] Final lag: {lag} frames (source: {alignment_source})")
-    print(f"Video file: {video_file}")
-    print(f"Force file: {force_file}")
-
-    # ── Column rename (guard for any remaining old-style names) ───────────
-    column_rename = {
+    # Column rename guard
+    col_rename = {
         'Fx1': 'FP1_Fx', 'Fy1': 'FP1_Fy', 'Fz1': 'FP1_Fz', 'Ft1': 'FP1_|F|',
         'Ax1': 'FP1_Ax', 'Ay1': 'FP1_Ay',
         'Fx2': 'FP2_Fx', 'Fy2': 'FP2_Fy', 'Fz2': 'FP2_Fz', 'Ft2': 'FP2_|F|',
         'Ax2': 'FP2_Ax', 'Ay2': 'FP2_Ay',
-        'Fx3': 'FP3_Fx', 'Fy3': 'FP3_Fy', 'Fz3': 'FP3_Fz', 'Ft3': 'FP3_|F|',
-        'Ax3': 'FP3_Ax', 'Ay3': 'FP3_Ay',
         'abs time (s)': 'Time(s)'
     }
-    df_aligned.rename(columns={k: v for k, v in column_rename.items()
+    df_aligned.rename(columns={k: v for k, v in col_rename.items()
                                 if k in df_aligned.columns}, inplace=True)
+
+    
+    print(f"Video file: {video_file}")
+    print(f"Force file: {force_file}")
 
     self.state.df_aligned = df_aligned
     self.state.global_lag = lag

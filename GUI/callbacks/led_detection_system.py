@@ -70,6 +70,12 @@ class LEDConfig:
     
     # Force plate orientation flag
     plate_swap: bool = False
+
+    # Adding blur
+    blur_kernel: int = 10
+
+    # Switching between old indoor LED and new outdoor LED
+    indoor: bool = True
     
     def __post_init__(self):
         """Create the LED template after initialization"""
@@ -95,17 +101,17 @@ class LEDConfig:
         Returns:
             np.ndarray: Cropped region where LED is expected
         """
-        lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
-        l, a, b = cv2.split(lab)
+        # lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+        # l, a, b = cv2.split(lab)
 
-        # clip limit might be based on the environment and time of day
-        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
-        cl = clahe.apply(l)
+        # # clip limit might be based on the environment and time of day
+        # clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+        # cl = clahe.apply(l)
 
-        limg = cv2.merge((cl, a, b))
-        enhanced_img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+        # limg = cv2.merge((cl, a, b))
+        # enhanced_img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
 
-        return enhanced_img[self.led_crop_y0:self.led_crop_y1, 
+        return frame[self.led_crop_y0:self.led_crop_y1, 
                     self.led_crop_x0:self.led_crop_x1, :]
     
     def process_crop_for_matching(self, crop: np.ndarray) -> np.ndarray:
@@ -161,15 +167,43 @@ class LEDConfig:
 
         # clean_blue = cv2.bitwise_and(blue_mask, cv2.bitwise_not(green_mask))
 
+        # blue_channel = crop[:, :, 0]
+        # green_channel = crop[:, :, 1]
+        
+        # # Subtract green from blue - LED appears bright, background dark
+        # blue_minus_green = cv2.subtract(blue_channel, green_channel)
+        
+        # # Apply blur to reduce noise and make template matching more robust
+        # processed = cv2.blur(blue_minus_green, (10, 10))
+        
+        # return processed
+
         blue_channel = crop[:, :, 0]
         green_channel = crop[:, :, 1]
-        
-        # Subtract green from blue - LED appears bright, background dark
+        red_channel = crop[:, :, 2]
+
+        # --- Shadow rejection ---
+        # Shadows are dim overall; the LED is bright. Compute luminance to mask dark regions.
+        luminance = (0.114 * blue_channel.astype(float) +
+                    0.587 * green_channel.astype(float) +
+                    0.299 * red_channel.astype(float))
+        brightness_mask = (luminance > 100).astype(np.uint8)  # tune threshold as needed
+
+        # --- Blue dominance ---
+        # Subtract BOTH green and red so shadow blue tinge (which lifts all channels equally)
+        # cancels out, while the LED's pure blue remains strong.
         blue_minus_green = cv2.subtract(blue_channel, green_channel)
-        
+        blue_minus_red   = cv2.subtract(blue_channel, red_channel)
+
+        # Combine: pixel must beat both green and red
+        blue_dominant = cv2.min(blue_minus_green, blue_minus_red)
+
+        # --- Mask out dark regions (shadows) ---
+        # blue_dominant = cv2.multiply(blue_dominant, brightness_mask)
+
         # Apply blur to reduce noise and make template matching more robust
-        processed = cv2.blur(blue_minus_green, (10, 10))
-        
+        processed = cv2.blur(blue_dominant, (self.blur_kernel, self.blur_kernel))
+
         return processed
 
 
@@ -181,20 +215,22 @@ class LongViewLEDConfig(LEDConfig):
     Force plate orientation: Left = FP1, Right = FP2 (standard, no swap needed)
     LED location: Bottom-center of frame
     """
+
     def __init__(self):
         super().__init__(
             view_name="Long View",
             frame_width=1920,
             frame_height=1080,
-            led_crop_x0=850,
-            led_crop_x1=1200, #1050
-            led_crop_y0=0, #950
-            led_crop_y1=1080,
-            template_center_offset_x=45,
-            template_center_offset_y=55,
+            led_crop_x0=850, #850
+            led_crop_x1=1050, #1050
+            led_crop_y0=950, #950
+            led_crop_y1=1080, #1080
+            template_center_offset_x=45, #45
+            template_center_offset_y=55, #55
             plate_swap=False  # Long view: left=FP1, right=FP2 (standard)
         )
-    
+
+
     def create_led_template(self) -> np.ndarray:
         """
         Create template for Long View LED.
@@ -210,19 +246,37 @@ class LongViewLEDConfig(LEDConfig):
         Returns:
             np.ndarray: LED template image
         """
-        template = np.zeros((71, 91), dtype=np.uint8)
-        
-        # Main bright rectangle (outer LED block)
-        cv2.rectangle(template, (20, 27), (71, 68), 200, -1)
-        
-        # Dark center (where actual LEDs are - brighter in green channel)
-        cv2.rectangle(template, (42, 30), (49, 45), 10, -1)
-        
-        # Blur to match processed images
-        template = cv2.blur(template, (5, 5))
-        
-        return template
+        if self.indoor:
+            template = np.zeros((71, 91), dtype=np.uint8)
+            
+            # Main bright rectangle (outer LED block)
+            cv2.rectangle(template, (20, 27), (71, 68), 200, -1)
+            
+            # Dark center (where actual LEDs are - brighter in green channel)
+            cv2.rectangle(template, (42, 30), (49, 45), 10, -1)
+            
+            # Blur to match processed images
+            template = cv2.blur(template, (5, 5))
+            
+            return template
+        else:
+            template = np.zeros((31, 31), dtype=np.uint8)  # small, tight template
 
+            center = (15, 15)
+
+            # Outer soft glow - LED light bleeds outward
+            cv2.circle(template, center, 10, 60, -1)
+
+            # Mid glow
+            cv2.circle(template, center, 6, 150, -1)
+
+            # Bright core - the actual dot
+            cv2.circle(template, center, 3, 255, -1)
+
+            # Blur to match your processed frames
+            template = cv2.blur(template, (5, 5))
+
+            return template
 
 class TopViewLEDConfig(LEDConfig):
     """
@@ -260,19 +314,37 @@ class TopViewLEDConfig(LEDConfig):
         Returns:
             np.ndarray: LED template image
         """
-        template = np.zeros((77, 91), dtype=np.uint8)
-        
-        # Main bright rectangle
-        cv2.rectangle(template, (20, 20), (71, 57), 200, -1)
-        
-        # Dark center where LEDs are
-        cv2.rectangle(template, (43, 27), (47, 32), 10, -1)
-        
-        # Blur to match processed images
-        template = cv2.blur(template, (5, 5))
-        
-        return template
+        if self.indoor:
+            template = np.zeros((71, 91), dtype=np.uint8)
+            
+            # Main bright rectangle (outer LED block)
+            cv2.rectangle(template, (20, 27), (71, 68), 200, -1)
+            
+            # Dark center (where actual LEDs are - brighter in green channel)
+            cv2.rectangle(template, (42, 30), (49, 45), 10, -1)
+            
+            # Blur to match processed images
+            template = cv2.blur(template, (5, 5))
+            
+            return template
+        else:
+            template = np.zeros((31, 31), dtype=np.uint8)  # small, tight template
 
+            center = (15, 15)
+
+            # Outer soft glow - LED light bleeds outward
+            cv2.circle(template, center, 10, 60, -1)
+
+            # Mid glow
+            cv2.circle(template, center, 6, 150, -1)
+
+            # Bright core - the actual dot
+            cv2.circle(template, center, 3, 255, -1)
+
+            # Blur to match your processed frames
+            template = cv2.blur(template, (5, 5))
+
+            return template
 
 class Side1ViewLEDConfig(LEDConfig):
     """
@@ -293,28 +365,48 @@ class Side1ViewLEDConfig(LEDConfig):
             led_crop_y1=1000,
             template_center_offset_x=45,
             template_center_offset_y=47,
-            plate_swap=False  # No swap needed - FP1 is near
+            plate_swap=False,  # No swap needed - FP1 is near
+            blur_kernel=5
         )
     
     def create_led_template(self) -> np.ndarray:
-        """
-        Create template for Side1 View LED.
+    #     """
+    #     Create template for Side1 View LED.
         
-        Returns:
-            np.ndarray: LED template image
-        """
-        template = np.zeros((71, 91), dtype=np.uint8)
-        
-        # Main bright rectangle
-        cv2.rectangle(template, (20, 27), (71, 68), 200, -1)
-        
-        # Dark center where LEDs are
-        cv2.rectangle(template, (42, 30), (49, 45), 10, -1)
-        
-        # Blur to match processed images
-        template = cv2.blur(template, (5, 5))
-        
-        return template
+    #     Returns:
+    #         np.ndarray: LED template image
+    #     """
+        if self.indoor:
+            template = np.zeros((71, 91), dtype=np.uint8)
+            
+            # Main bright rectangle (outer LED block)
+            cv2.rectangle(template, (20, 27), (71, 68), 200, -1)
+            
+            # Dark center (where actual LEDs are - brighter in green channel)
+            cv2.rectangle(template, (42, 30), (49, 45), 10, -1)
+            
+            # Blur to match processed images
+            template = cv2.blur(template, (5, 5))
+            
+            return template
+        else:
+            template = np.zeros((31, 31), dtype=np.uint8)  # small, tight template
+
+            center = (15, 15)
+
+            # Outer soft glow - LED light bleeds outward
+            cv2.circle(template, center, 10, 60, -1)
+
+            # Mid glow
+            cv2.circle(template, center, 6, 150, -1)
+
+            # Bright core - the actual dot
+            cv2.circle(template, center, 3, 255, -1)
+
+            # Blur to match your processed frames
+            template = cv2.blur(template, (5, 5))
+
+            return template
 
 
 class Side2ViewLEDConfig(LEDConfig):
@@ -331,12 +423,13 @@ class Side2ViewLEDConfig(LEDConfig):
             frame_width=1920,
             frame_height=1080,
             led_crop_x0=600,
-            led_crop_x1=900,
+            led_crop_x1=700, #900
             led_crop_y0=600,
             led_crop_y1=800,
-            template_center_offset_x=40,
-            template_center_offset_y=50,
-            plate_swap=False  # No swap needed - FP2 is near
+            template_center_offset_x=15, #40
+            template_center_offset_y=15, #50
+            plate_swap=False,  # No swap needed - FP2 is near
+            blur_kernel=5
         )
     
     def create_led_template(self) -> np.ndarray:
@@ -346,110 +439,106 @@ class Side2ViewLEDConfig(LEDConfig):
         Returns:
             np.ndarray: LED template image
         """
-        template = np.zeros((71, 91), dtype=np.uint8)
-        
-        # Main bright rectangle
-        cv2.rectangle(template, (20, 27), (71, 68), 200, -1)
-        
-        # Dark center where LEDs are
-        cv2.rectangle(template, (42, 30), (49, 45), 10, -1)
-        
-        # Blur to match processed images
-        template = cv2.blur(template, (5, 5))
-        
-        return template
+        if self.indoor:
+            template = np.zeros((71, 91), dtype=np.uint8)
+            
+            # Main bright rectangle (outer LED block)
+            cv2.rectangle(template, (20, 27), (71, 68), 200, -1)
+            
+            # Dark center (where actual LEDs are - brighter in green channel)
+            cv2.rectangle(template, (42, 30), (49, 45), 10, -1)
+            
+            # Blur to match processed images
+            template = cv2.blur(template, (5, 5))
+            
+            return template
+        else:
+            template = np.zeros((31, 31), dtype=np.uint8)  # small, tight template
+
+            center = (15, 15)
+
+            # Outer soft glow - LED light bleeds outward
+            cv2.circle(template, center, 10, 60, -1)
+
+            # Mid glow
+            cv2.circle(template, center, 6, 150, -1)
+
+            # Bright core - the actual dot
+            cv2.circle(template, center, 3, 255, -1)
+
+            # Blur to match your processed frames
+            template = cv2.blur(template, (5, 5))
+
+            return template
 
 
-    def create_led_template(self) -> np.ndarray:
-        """
-        Create template for Side View LED.
+# def auto_detect_side_view(video_path: str) -> LEDConfig:
+#     """
+#     Automatically detect if a side view video is Side1 or Side2 based on LED position.
+    
+#     Process:
+#     1. Open video and read first frame
+#     2. Search for LED in left third of frame
+#     3. Search for LED in right third of frame
+#     4. Compare signal strengths to determine which side has the LED
+#     5. Return appropriate SideViewLEDConfig
+    
+#     Args:
+#         video_path: Path to side view video file
         
-        Uses similar structure to Long View template.
+#     Returns:
+#         LEDConfig: Either Side1ViewLEDConfig or Side2ViewLEDConfig
         
-        Returns:
-            np.ndarray: LED template image
-        """
-        template = np.zeros((71, 91), dtype=np.uint8)
-        
-        # Main bright rectangle
-        cv2.rectangle(template, (20, 27), (71, 68), 200, -1)
-        
-        # Dark center where LEDs are
-        cv2.rectangle(template, (42, 30), (49, 45), 10, -1)
-        
-        # Blur to match processed images
-        template = cv2.blur(template, (5, 5))
-        
-        return template
-
-
-def auto_detect_side_view(video_path: str) -> LEDConfig:
-    """
-    Automatically detect if a side view video is Side1 or Side2 based on LED position.
+#     Raises:
+#         ValueError: If LED cannot be detected in either side
+#     """
+#     cap = cv2.VideoCapture(video_path)
+#     if not cap.isOpened():
+#         raise ValueError(f"Cannot open video: {video_path}")
     
-    Process:
-    1. Open video and read first frame
-    2. Search for LED in left third of frame
-    3. Search for LED in right third of frame
-    4. Compare signal strengths to determine which side has the LED
-    5. Return appropriate SideViewLEDConfig
+#     ret, frame = cap.read()
+#     cap.release()
     
-    Args:
-        video_path: Path to side view video file
-        
-    Returns:
-        LEDConfig: Either Side1ViewLEDConfig or Side2ViewLEDConfig
-        
-    Raises:
-        ValueError: If LED cannot be detected in either side
-    """
-    cap = cv2.VideoCapture(video_path)
-    if not cap.isOpened():
-        raise ValueError(f"Cannot open video: {video_path}")
+#     if not ret:
+#         raise ValueError(f"Cannot read first frame from: {video_path}")
     
-    ret, frame = cap.read()
-    cap.release()
+#     h, w = frame.shape[:2]
     
-    if not ret:
-        raise ValueError(f"Cannot read first frame from: {video_path}")
+#     # Define search regions for left and right sides
+#     # Left third of frame
+#     left_crop = frame[h//3:2*h//3, 0:w//3, :]
+#     # Right third of frame
+#     right_crop = frame[h//3:2*h//3, 2*w//3:w, :]
     
-    h, w = frame.shape[:2]
+#     # Process both crops using Blue-Green subtraction
+#     def get_led_signal(crop):
+#         """Calculate average LED signal strength in crop"""
+#         blue = crop[:, :, 0].astype(float)
+#         green = crop[:, :, 1].astype(float)
+#         blue_minus_green = np.clip(blue - green, 0, 255)
+#         # Return 95th percentile (robust to outliers)
+#         return np.percentile(blue_minus_green, 95)
     
-    # Define search regions for left and right sides
-    # Left third of frame
-    left_crop = frame[h//3:2*h//3, 0:w//3, :]
-    # Right third of frame
-    right_crop = frame[h//3:2*h//3, 2*w//3:w, :]
+#     left_signal = get_led_signal(left_crop)
+#     right_signal = get_led_signal(right_crop)
     
-    # Process both crops using Blue-Green subtraction
-    def get_led_signal(crop):
-        """Calculate average LED signal strength in crop"""
-        blue = crop[:, :, 0].astype(float)
-        green = crop[:, :, 1].astype(float)
-        blue_minus_green = np.clip(blue - green, 0, 255)
-        # Return 95th percentile (robust to outliers)
-        return np.percentile(blue_minus_green, 95)
+#     print(f"\nSide View Auto-Detection:")
+#     print(f"  Left side signal strength: {left_signal:.1f}")
+#     print(f"  Right side signal strength: {right_signal:.1f}")
     
-    left_signal = get_led_signal(left_crop)
-    right_signal = get_led_signal(right_crop)
-    
-    print(f"\nSide View Auto-Detection:")
-    print(f"  Left side signal strength: {left_signal:.1f}")
-    print(f"  Right side signal strength: {right_signal:.1f}")
-    
-    # Threshold: LED side should have significantly higher signal
-    # Require at least 50 units difference to be confident
-    if left_signal > right_signal + 50:
-        print(f"  → Detected as Side1 View (LED on left)")
-        return SideViewLEDConfig(is_side1=True)
-    elif right_signal > left_signal + 50:
-        print(f"  → Detected as Side2 View (LED on right)")
-        return SideViewLEDConfig(is_side1=False)
-    else:
-        # If signals are too close, default to Side1 and warn user
-        print(f"  ⚠ WARNING: Cannot confidently determine side (signals too similar)")
-        print(f"  → Defaulting to Side1 View")
-        return SideViewLEDConfig(is_side1=True)
+#     # Threshold: LED side should have significantly higher signal
+#     # Require at least 50 units difference to be confident
+#     if left_signal > right_signal + 50:
+#         print(f"  → Detected as Side1 View (LED on left)")
+#         return SideViewLEDConfig(is_side1=True)
+#     elif right_signal > left_signal + 50:
+#         print(f"  → Detected as Side2 View (LED on right)")
+#         return SideViewLEDConfig(is_side1=False)
+#     else:
+#         # If signals are too close, default to Side1 and warn user
+#         print(f"  ⚠ WARNING: Cannot confidently determine side (signals too similar)")
+#         print(f"  → Defaulting to Side1 View")
+#         return SideViewLEDConfig(is_side1=True)
 
 
 class LEDDetector:
@@ -533,14 +622,23 @@ class LEDDetector:
             result = cv2.matchTemplate(
                 processed, 
                 self.config.led_template, 
-                cv2.TM_SQDIFF  # Minimize squared difference
+                #cv2.TM_SQDIFF  # Minimize squared difference
+                cv2.TM_CCOEFF_NORMED
             )
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
             
             # Calculate center in crop coordinates
-            center_x_crop = min_loc[0] + self.config.template_center_offset_x
-            center_y_crop = min_loc[1] + self.config.template_center_offset_y
+            # center_x_crop = min_loc[0] + self.config.template_center_offset_x
+            # center_y_crop = min_loc[1] + self.config.template_center_offset_y
             
+            MATCH_THRESHOLD = 0.3
+            if max_val < MATCH_THRESHOLD:
+                print(f"  Frame {frame_idx}: Low confidence ({max_val:.2f}), skipping")
+                continue
+
+            center_x_crop = max_loc[0] + self.config.template_center_offset_x
+            center_y_crop = max_loc[1] + self.config.template_center_offset_y
+
             # Convert to full frame coordinates
             center_x_full = center_x_crop + self.config.led_crop_x0
             center_y_full = center_y_crop + self.config.led_crop_y0
