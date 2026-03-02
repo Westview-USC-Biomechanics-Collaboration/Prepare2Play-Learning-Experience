@@ -8,7 +8,7 @@ class FileFormatter:
                  "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "COM px2", "COM py2", "COM pz2"]
         """
         self.columns = ["abs time (s)", "Fx1", "Fy1", "Fz1", "|Ft1|", "Ax1", "Ay1", "COM px1", "COM py1", "COM pz1",
-                        "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "COM px2", "COM py2", "COM pz2"]
+                        "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "COM px2", "COM py2", "COM pz2", "Fx3", "Fy3", "Fz3", "|Ft3|", "Ax3", "Ay3", "COM px3", "COM py3", "COM pz3"]
         
         self.alternativeColumns = ["abs time (s)", "Fx1", "Fy1", "Fz1", "|Ft1|", "Ax1", "Ay1",
                         "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2"]

@@ -41,6 +41,9 @@ def process(self):
 
     # Takes out any data type that is not numeric by replacing it with NaN and making the entire col. float values
     self.Force.data = self.Force.data.apply(pd.to_numeric, errors='coerce')
+    com_cols = [c for c in self.Force.data.columns if 'COM' in str(c)]
+    if com_cols:
+        self.Force.data.drop(columns=com_cols, inplace=True)
     self.Force.rows = self.Force.data.shape[0]
 
     if(self.state.step_size is None):
