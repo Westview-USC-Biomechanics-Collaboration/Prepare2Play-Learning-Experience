@@ -75,7 +75,7 @@ class LEDConfig:
     blur_kernel: int = 10
 
     # Switching between old indoor LED and new outdoor LED
-    indoor: bool = True
+    indoor: bool = False
     
     def __post_init__(self):
         """Create the LED template after initialization"""

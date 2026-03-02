@@ -1,54 +1,49 @@
-import threading
 import os
 import pandas as pd
 import numpy as np
 import cv2
 from vector_overlay.vectoroverlay_GUI import VectorOverlay
-from GUI.callbacks.ledSyncing_with_detection_system import new_led  
+from GUI.callbacks.ledSyncing_with_detection_system import new_led
 from GUI.callbacks import global_variable
 from Util.force_boundary_finder import find_force_boundaries, get_trimmed_subset
 from vector_overlay.com_processor_modified import BoundaryProcessor as Processor
 import warnings
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import messagebox
 from GUI.callbacks.manual_alignment import AlignmentGUI
 
-# Suppress specific deprecation warnings
-warnings.filterwarnings(
-    "ignore", 
-    message="SymbolDatabase.GetPrototype() is deprecated.*"
-)
+warnings.filterwarnings("ignore", message="SymbolDatabase.GetPrototype() is deprecated.*")
 
-# Configurable settings
-MAX_COM_WORKERS = 6  # Easily adjustable number of workers for COM calculation
-FORCE_THRESHOLD = 50  # Minimum force in Newtons to include in processing
-BOUNDARY_PADDING = 10  # Extra frames before/after force threshold
-SHOW_LANDMARKS = False  # Show green landmark dots (set to True to enable)
-USE_DETECTION_SYSTEM = True  # Use new LED detection system (set to False for original method)
+MAX_COM_WORKERS  = 6
+FORCE_THRESHOLD  = 50
+BOUNDARY_PADDING = 10
+SHOW_LANDMARKS   = False
+USE_DETECTION_SYSTEM = True
 
-# Fixed rates — video is always 120 fps, force is always 1200 Hz
-VIDEO_FPS    = 120
-FORCE_HZ     = 1200
-FORCE_STEP   = FORCE_HZ // VIDEO_FPS   # = 10  (subsample step matching new_led's iloc[::10])
-# After subsampling, force has VIDEO_FPS rows/second, so 1 force row = 1 video frame.
-# Therefore: lag in video frames = round(offset_seconds * VIDEO_FPS)
-#            FrameNumber = lag + row_index  (1:1 with video frames)
+FORCE_HZ = 1200
 
 
-def _trim_and_build_df_aligned(force_data, force_start_time, video_start_frame):
+def _apply_alignment(force_df, force_align, video_align, step_size):
     """
-    Build df_aligned by trimming both signals at the user-chosen start points.
+    Replicate alignCallback logic exactly:
 
-    - Trim force to force_start_time  (app.offset from AlignmentGUI)
-    - Subsample ::10 so 1 row = 1 video frame  (1200/10 = 120 Hz)
-    - FrameNumber starts at video_start_frame and increments by 1
-    - Video will be seeked to video_start_frame before rendering
+        offset = force_align - video_align
+        if offset > 0:  trim front of force data by offset * step_size rows
+        if offset < 0:  pad front with NaN rows
 
-    No lag mapping needed — the two signals are just cut to start together.
+    Then assign FrameNumber = 0, 1, 2, ... so it maps 1:1 with video frames
+    starting from frame 0 (video is also seeked to 0 after trimming).
+
+    Parameters
+    ----------
+    force_df     : raw self.Force.data DataFrame
+    force_align  : float — force time (s) the user marked  (app.force_align)
+    video_align  : int   — video frame the user marked      (app.video_align)
+    step_size    : int   — force rows per video frame = round(FORCE_HZ / video_fps)
     """
-    df = force_data.copy()
+    df = force_df.copy()
 
-    # Rename all known column name variants to FP1_*/FP2_* style
+    # Rename columns
     rename = {
         'abs time (s)': 'Time(s)',
         'Fx':     'FP1_Fx',  'Fy':     'FP1_Fy',  'Fz':     'FP1_Fz',
@@ -64,39 +59,46 @@ def _trim_and_build_df_aligned(force_data, force_start_time, video_start_frame):
     }
     df.rename(columns={k: v for k, v in rename.items() if k in df.columns}, inplace=True)
 
-    # Trim force to the user-selected start time
-    time_col = next((c for c in ['Time(s)', 'time', 'Time'] if c in df.columns), None)
-    if time_col:
-        time_arr  = pd.to_numeric(df[time_col], errors='coerce').to_numpy()
-        start_idx = int(np.argmin(np.abs(time_arr - force_start_time)))
-        print(f"[trim] Force trimmed at row {start_idx} (t={time_arr[start_idx]:.4f}s)")
-    else:
-        start_idx = int(round(force_start_time * FORCE_HZ))
-        print(f"[trim] No time column, trimmed at row {start_idx}")
+    # Exact alignCallback logic
+    offset = force_align - video_align
+    print(f"[align] force_align={force_align}, video_align={video_align}, "
+          f"offset={offset}, step_size={step_size}")
 
-    df = df.iloc[start_idx:].reset_index(drop=True)
+    if offset > 0:
+        # Force starts later than video — trim front of force
+        rows_to_drop = int(offset * step_size)
+        df = df.iloc[rows_to_drop:].reset_index(drop=True)
+        print(f"[align] Trimmed {rows_to_drop} rows from front of force data")
+    elif offset < 0:
+        # Force starts earlier than video — pad front with NaN
+        rows_to_add = int(-offset * step_size)
+        nan_rows = pd.DataFrame(np.nan, index=range(rows_to_add), columns=df.columns)
+        df = pd.concat([nan_rows, df], ignore_index=True)
+        print(f"[align] Padded {rows_to_add} NaN rows at front of force data")
 
-    # Subsample to match video fps
-    df = df.iloc[::FORCE_STEP].reset_index(drop=True)
+    # Subsample to 1 row per video frame
+    df = df.iloc[::step_size].reset_index(drop=True)
 
-    # FrameNumbers map 1:1 to video frames starting at video_start_frame
-    df['FrameNumber'] = range(video_start_frame, video_start_frame + len(df))
+    # FrameNumbers start at 0 — they index into the trimmed/output video,
+    # not the original. The video is seeked to video_start_frame separately.
+    df['FrameNumber'] = range(len(df))
 
     if 'FP3_Fz' in df.columns:
-        df['FP_LED_Signal'] = np.sign(df['FP3_Fz'])
+        df['FP_LED_Signal'] = np.sign(df['FP3_Fz'].fillna(0))
 
-    print(f"[trim] rows={len(df)}, FrameNumbers {video_start_frame}-{video_start_frame + len(df) - 1}")
-    return df, video_start_frame
+    print(f"[align] df rows={len(df)}, FrameNumbers 0-{len(df)-1}")
+    return df
 
 
 def vectorOverlayWithAlignmentCallback(self, video, view, num):
 
-    print(f"[DEBUG] The view the vector overlay program is getting is {view}")
+    print(f"[DEBUG] View: {view}")
     print("[INFO] Starting Vector Overlay with Alignment...")
     parent_path = os.path.dirname(video.path)
-    video_file = os.path.basename(video.path)
-    force_file = os.path.basename(self.Force.path)
+    video_file  = os.path.basename(video.path)
+    force_file  = os.path.basename(self.Force.path)
 
+    # Write first frame for corner detection
     cap = cv2.VideoCapture(video.path)
     cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
     ret, frame = cap.read()
@@ -112,7 +114,6 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
     auto_lag        = 0
     df_aligned_auto = None
     use_manual      = False
-    video_start_frame = 0
 
     try:
         auto_lag, df_aligned_auto = new_led(
@@ -127,8 +128,7 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
     if auto_succeeded:
         use_manual = messagebox.askyesno(
             "Alignment",
-            f"Auto-alignment detected a lag of {auto_lag} frames "
-            f"({auto_lag / VIDEO_FPS:.3f}s).\n\n"
+            f"Auto-alignment detected a lag of {auto_lag} frames.\n\n"
             "Open manual alignment to verify or override?",
             parent=self.master
         )
@@ -147,16 +147,40 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
         app = AlignmentGUI(alignment_root, video, self.Force)
         self.master.wait_window(alignment_root)
 
-        video_start_frame = app.current_frame
-        force_start_time  = app.offset
+        video_fps  = app.video_fps if app.video_fps else 59
+        step_size  = round(FORCE_HZ / video_fps)  # force rows per video frame
 
-        print(f"[INFO] video_start_frame={video_start_frame}, force_start_time={force_start_time:.4f}s")
+        # Both are FRAME NUMBERS — exact same units as original alignCallback.
+        # offset = force_align - video_align  (frames)
+        # rows_to_drop = offset * step_size   (force rows)
+        force_align       = app.force_align   # frame number where force was marked
+        video_align       = app.video_align   # frame number where video was marked
+        print(f"[INFO] video_fps={video_fps}, step_size={step_size}")
+        print(f"[INFO] video_align={video_align} frames, force_align={force_align} frames")
+        print(f"[INFO] offset={force_align - video_align} frames")
 
-        df_aligned, lag = _trim_and_build_df_aligned(
+        df_aligned = _apply_alignment(
             self.Force.data.copy(),
-            force_start_time=force_start_time,
-            video_start_frame=video_start_frame
+            force_align=force_align,
+            video_align=video_align,
+            step_size=step_size
         )
+
+        # Apply plate swap for this view if needed
+        try:
+            from GUI.callbacks.led_detection_system import config_map
+            config = config_map[view]()
+            if config.plate_swap:
+                print(f"[INFO] Applying plate swap for {view}")
+                for c1, c2 in [('FP1_Fx','FP2_Fx'),('FP1_Fy','FP2_Fy'),('FP1_Fz','FP2_Fz'),
+                                ('FP1_|F|','FP2_|F|'),('FP1_Ax','FP2_Ax'),('FP1_Ay','FP2_Ay')]:
+                    if c1 in df_aligned.columns and c2 in df_aligned.columns:
+                        df_aligned[c1], df_aligned[c2] = df_aligned[c2].copy(), df_aligned[c1].copy()
+        except Exception as e:
+            print(f"[WARNING] Plate swap check failed: {e}")
+
+        lag = 0  # video is seeked to frame 0 since force is trimmed to match
+
     else:
         df_aligned = df_aligned_auto
         lag = auto_lag
@@ -172,57 +196,40 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
     df_aligned.rename(columns={k: v for k, v in col_rename.items()
                                 if k in df_aligned.columns}, inplace=True)
 
-    
-    print(f"Video file: {video_file}")
-    print(f"Force file: {force_file}")
-
     self.state.df_aligned = df_aligned
     self.state.global_lag = lag
 
-    print(f"Alignment complete. Lag: {lag} frames")
-    print(f"df_aligned shape: {df_aligned.shape}")
-    print(f"df_aligned columns: {list(df_aligned.columns)}")
-    print("[DEBUG] Current Sex in globalVariable:", global_variable.globalVariable.sex)
+    print(f"[INFO] df_aligned: {df_aligned.shape}, cols: {list(df_aligned.columns)}")
+    print(f"[INFO] FrameNumbers: {df_aligned['FrameNumber'].min()}-{df_aligned['FrameNumber'].max()}")
 
     # ======================================================================
-    # STEP 2: FIND FORCE BOUNDARIES (TRIMMING)
+    # STEP 2: FORCE BOUNDARIES
     # ======================================================================
-    print("\n[STEP 2] Finding force boundaries for trimming...")
+    print("\n[STEP 2] Finding force boundaries...")
     try:
         boundary_start, boundary_end = find_force_boundaries(
-            df_aligned,
-            threshold=FORCE_THRESHOLD,
-            padding_frames=BOUNDARY_PADDING
+            df_aligned, threshold=FORCE_THRESHOLD, padding_frames=BOUNDARY_PADDING
         )
         self.state.boundary_start = boundary_start
-        self.state.boundary_end = boundary_end
-        print(f"Processing subset: frames {boundary_start} to {boundary_end}")
-
+        self.state.boundary_end   = boundary_end
+        print(f"[INFO] Boundaries: {boundary_start}-{boundary_end}")
     except Exception as e:
-        print(f"[ERROR] Failed to find force boundaries: {e}")
-        print("[INFO] Using full frame range as fallback")
+        print(f"[ERROR] Boundary detection failed: {e}")
         boundary_start = int(df_aligned['FrameNumber'].min())
-        boundary_end = int(df_aligned['FrameNumber'].max())
+        boundary_end   = int(df_aligned['FrameNumber'].max())
+        self.state.boundary_start = boundary_start
+        self.state.boundary_end   = boundary_end
 
     # ======================================================================
-    # STEP 3: RUN COM CALCULATION ON TRIMMED SUBSET
+    # STEP 3: COM CALCULATION
     # ======================================================================
     com_csv_path = None
     if view != "Top View":
-        print("\n[STEP 3] Running COM calculation on trimmed subset...")
+        print("\n[STEP 3] Running COM calculation...")
         com_csv_path = os.path.join(parent_path, "pose_landmarks.csv")
-
         try:
-            print("[DEBUG] Current Sex in globalVariable:", global_variable.globalVariable.sex)
-            sex = global_variable.globalVariable.sex if global_variable.globalVariable.sex else 'm'
-
-            if not global_variable.globalVariable.sex:
-                print("[WARNING] Sex not set in globalVariable, defaulting to 'male'")
-
+            sex = global_variable.globalVariable.sex or 'm'
             processor = Processor(video.path)
-            print("Processor class:", Processor)
-            print("SaveToTxt signature:", Processor.SaveToTxt.__code__.co_varnames)
-
             processor.SaveToTxt(
                 sex=sex,
                 filename=com_csv_path,
@@ -232,111 +239,84 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
                 end_frame=boundary_end,
                 max_workers=MAX_COM_WORKERS
             )
-
-            if com_csv_path and os.path.exists(com_csv_path):
+            if os.path.exists(com_csv_path):
                 from Util.COM_helper import COM_helper
                 self.COM_helper = COM_helper(com_csv_path)
-                print(f"[INFO] COM_helper updated with: {com_csv_path}")
-
+                print(f"[INFO] COM updated: {com_csv_path}")
         except Exception as e:
-            print(f"[ERROR] COM calculation failed: {e}")
-            import traceback
-            traceback.print_exc()
+            print(f"[ERROR] COM failed: {e}")
+            import traceback; traceback.print_exc()
             com_csv_path = None
 
     # ======================================================================
-    # STEP 4: RUN VECTOR OVERLAY WITH COM ON TRIMMED SUBSET
+    # STEP 4: VECTOR OVERLAY
+    # Video is seeked to frame 0 (manual) or lag (auto) since force data
+    # has already been trimmed/padded to start in sync with the video.
     # ======================================================================
-    print("\n[STEP 4] Running vector overlay with COM visualization...")
-
-    df_trimmed = get_trimmed_subset(self.state.df_aligned, self.state.boundary_start, self.state.boundary_end)
+    print("\n[STEP 4] Running vector overlay...")
+    df_trimmed = get_trimmed_subset(
+        self.state.df_aligned, self.state.boundary_start, self.state.boundary_end
+    )
     temp_video = "vector_overlay_temp.mp4"
 
     try:
-        video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        # For manual alignment: seek to the frame the user chose.
+        # lag=0 after manual trim, but we seek to current_frame so the
+        # vector overlay starts rendering from the right place in the video.
+        seek_to = app.current_frame if use_manual else lag
+        print(f"[INFO] Seeking video to frame {seek_to}")
+        video.cam.set(cv2.CAP_PROP_POS_FRAMES, seek_to)
 
         v = VectorOverlay(data=df_trimmed, video=video.cam, view=view)
         v.check_corner(view)
 
-        column_rename2 = {
+        col_rename2 = {
             'Fx1': 'FP1_Fx', 'Fy1': 'FP1_Fy', 'Fz1': 'FP1_Fz', 'Ft1': 'FP1_|F|',
             'Ax1': 'FP1_Ax', 'Ay1': 'FP1_Ay',
             'Fx2': 'FP2_Fx', 'Fy2': 'FP2_Fy', 'Fz2': 'FP2_Fz', 'Ft2': 'FP2_|F|',
             'Ax2': 'FP2_Ax', 'Ay2': 'FP2_Ay',
-            'Fx3': 'FP3_Fx', 'Fy3': 'FP3_Fy', 'Fz3': 'FP3_Fz', 'Ft3': 'FP3_|F|',
-            'Ax3': 'FP3_Ax', 'Ay3': 'FP3_Ay',
             'abs time (s)': 'Time(s)'
         }
-        df_trimmed.rename(columns={k: v for k, v in column_rename2.items()
+        df_trimmed.rename(columns={k: v for k, v in col_rename2.items()
                                     if k in df_trimmed.columns}, inplace=True)
         self.state.df_trimmed = df_trimmed.reset_index(drop=True)
 
-        print("[COLUMNS BEFORE] LongVectorOverlay:", list(df_trimmed.columns))
+        print("[COLUMNS] VectorOverlay:", list(df_trimmed.columns))
+
+        overlay_kwargs = dict(
+            df_aligned=df_trimmed,
+            outputName=temp_video,
+            lag=lag,
+            com_csv_path=com_csv_path,
+            show_landmarks=SHOW_LANDMARKS,
+            boundary_start=self.state.boundary_start,
+            boundary_end=self.state.boundary_end
+        )
 
         frames = []
         if view == "Long View":
-            frames = v.LongVectorOverlay(
-                df_aligned=df_trimmed,
-                outputName=temp_video,
-                lag=lag,
-                com_csv_path=com_csv_path,
-                show_landmarks=SHOW_LANDMARKS,
-                boundary_start=self.state.boundary_start,
-                boundary_end=self.state.boundary_end
-            )
+            frames = v.LongVectorOverlay(**overlay_kwargs)
         elif view == "Side1 View":
-            frames = v.SideVectorOverlay(
-                df_aligned=df_trimmed,
-                outputName=temp_video,
-                lag=lag,
-                com_csv_path=com_csv_path,
-                show_landmarks=SHOW_LANDMARKS,
-                boundary_start=self.state.boundary_start,
-                boundary_end=self.state.boundary_end,
-                is_side1=True
-            )
+            frames = v.SideVectorOverlay(**overlay_kwargs, is_side1=True)
         elif view == "Side2 View":
-            frames = v.SideVectorOverlay(
-                df_aligned=df_trimmed,
-                outputName=temp_video,
-                lag=lag,
-                com_csv_path=com_csv_path,
-                show_landmarks=SHOW_LANDMARKS,
-                boundary_start=self.state.boundary_start,
-                boundary_end=self.state.boundary_end,
-                is_side1=False
-            )
+            frames = v.SideVectorOverlay(**overlay_kwargs, is_side1=False)
         elif view == "Top View":
-            frames = v.TopVectorOverlay(
-                df_aligned=df_trimmed,
-                outputName=temp_video,
-                lag=lag,
-                com_csv_path=None,
-                show_landmarks=SHOW_LANDMARKS,
-                boundary_start=self.state.boundary_start,
-                boundary_end=self.state.boundary_end
-            )
+            frames = v.TopVectorOverlay(**{**overlay_kwargs, 'com_csv_path': None})
 
         print(f"[INFO] Vector overlay complete: {temp_video}")
 
         video.vector_cam = cv2.VideoCapture(temp_video)
         video.cam.set(cv2.CAP_PROP_POS_FRAMES, 0)
-
         video.vector_cam.set(cv2.CAP_PROP_POS_FRAMES, self.state.loc)
-        self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(
-            camera=video.vector_cam
-        )
-        self.canvasManager.canvas3.create_image(
-            200, 150,
-            image=self.canvasManager.photo_image3,
-            anchor="center"
-        )
 
+        self.canvasManager.photo_image3 = self.frameConverter.cvToPillow(camera=video.vector_cam)
+        self.canvasManager.canvas3.create_image(200, 150,
+                                                image=self.canvasManager.photo_image3,
+                                                anchor="center")
         self.state.vector_overlay_enabled = True
         print("[SUCCESS] All processing complete!")
         return frames
 
     except Exception as e:
         print(f"[ERROR] Vector overlay failed: {e}")
-        import traceback
-        traceback.print_exc()
+        import traceback; traceback.print_exc()

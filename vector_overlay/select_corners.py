@@ -622,7 +622,7 @@ def select_points(self, cap, view):
     elif view == "Side1 View":
         # Side1: FP1 is near (left), FP2 is far (right)
         y1, y2 = int(0.6 * h), int(0.95 * h)
-        x1, x2 = int(0.3 * w), int(0.65 * w)
+        x1, x2 = int(0.2 * w), int(0.5 * w)
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
     elif view == "Side2 View":

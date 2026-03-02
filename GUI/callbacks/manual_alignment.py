@@ -32,6 +32,8 @@ class AlignmentGUI:
         self.force_fp2  = None          # FP2 vertical force (Fz)
         self.force_df   = None          # full force DataFrame for column lookup
         self.offset = 0.0
+        self.video_align  = 0     # frame number set by "Mark Video" button
+        self.force_align  = 0     # frame number set by "Mark Force" button
         self._vline       = None        # matplotlib vline reference for fast update
         self._vline_label = None        # legend entry for the vline
         self.selected_plate = None      # set in _build_ui
@@ -123,45 +125,27 @@ class AlignmentGUI:
         tk.Button(row0, text="⏸ Pause", command=self.pause, width=8).pack(side="left", padx=2)
         tk.Button(row0, text="+1 ▶",   command=lambda: self.step_frame(+1), width=5).pack(side="left", padx=2)
 
-        # Row 1 — offset slider (fast coarse adjustment)
+        # Row 1 — Mark Video / Mark Force buttons (original alignCallback style)
         row1 = tk.Frame(ctrl)
-        row1.pack(fill="x", pady=2)
+        row1.pack(fill="x", pady=4)
 
-        tk.Label(row1, text="Force Offset (s):").pack(side="left")
-        self.offset_var = tk.DoubleVar(value=0.0)
+        tk.Button(row1, text="📍 Mark Video", bg="#4a90d9", fg="white",
+                  font=("Arial", 10, "bold"), width=14,
+                  command=self.mark_video).pack(side="left", padx=8)
+        self.video_mark_label = tk.Label(row1, text="Video mark: not set",
+                                          fg="#4a90d9", width=22, anchor="w")
+        self.video_mark_label.pack(side="left", padx=4)
 
-        self.offset_range = tk.IntVar(value=30)
-        self.offset_slider = tk.Scale(
-            row1, variable=self.offset_var, from_=-30, to=30,
-            orient="horizontal", resolution=0.01, length=400,
-            command=lambda v: self.on_offset_change()
-        )
-        self.offset_slider.pack(side="left", padx=6)
+        tk.Button(row1, text="📍 Mark Force", bg="#e07b39", fg="white",
+                  font=("Arial", 10, "bold"), width=14,
+                  command=self.mark_force).pack(side="left", padx=8)
+        self.force_mark_label = tk.Label(row1, text="Force mark: not set",
+                                          fg="#e07b39", width=22, anchor="w")
+        self.force_mark_label.pack(side="left", padx=4)
 
-        # Range selector — widens/narrows the slider range
-        tk.Label(row1, text="Range:").pack(side="left")
-        for r in (5, 30, 120):
-            tk.Button(row1, text=f"±{r}s", width=5,
-                      command=lambda v=r: self._set_offset_range(v)).pack(side="left", padx=1)
-
-        # Row 2 — fine-tune spinbox + nudge buttons
-        row2 = tk.Frame(ctrl)
-        row2.pack(fill="x", pady=2)
-
-        tk.Label(row2, text="Fine tune:").pack(side="left")
-        offset_spin = tk.Spinbox(
-            row2, textvariable=self.offset_var,
-            from_=-9999, to=9999, increment=0.01, width=9
-        )
-        offset_spin.pack(side="left", padx=6)
-        offset_spin.bind("<Return>",   lambda e: self.on_offset_change())
-        offset_spin.bind("<FocusOut>", lambda e: self.on_offset_change())
-
-        for label, delta in [("◀◀ -0.1s", -0.1), ("◀ -0.01s", -0.01),
-                              ("▶ +0.01s", +0.01), ("▶▶ +0.1s", +0.1)]:
-            tk.Button(row2, text=label, command=lambda d=delta: self.nudge(d), width=9).pack(side="left", padx=2)
-
-        tk.Label(row2, text="  positive = shift force data later", fg="gray").pack(side="left", padx=8)
+        self.align_status_label = tk.Label(row1, text="", fg="green",
+                                            font=("Arial", 9))
+        self.align_status_label.pack(side="left", padx=8)
 
         # Row 3 — graph channel selector (matches graphOptionCallback style)
         row3 = tk.Frame(ctrl)
@@ -275,11 +259,12 @@ class AlignmentGUI:
             self.force_fp2  = self.force_fp2[valid]
 
             # ── Subsample to match video fps (1200 Hz / 120 fps = every 10th row)
+            # Video is always 120 fps, so step = 1200 / 120 = 10.
             # This means 1 force sample = 1 video frame, so the red line
             # moves exactly in sync with the force data during playback.
             force_hz  = 1200.0
-            video_fps = self.video_fps if self.video_fps else 120.0
-            step = max(1, round(force_hz / video_fps))  # = 10 for 120fps video
+            video_fps = 120.0  # video is always 120 fps
+            step = 10          # 1200 / 120 = 10
             self.force_time = self.force_time[::step]
             self.force_fp1  = self.force_fp1[::step]
             self.force_fp2  = self.force_fp2[::step]
@@ -400,21 +385,7 @@ class AlignmentGUI:
         self.root.after(int(1000 / self.video_fps), self._play_loop)
 
     # ── Alignment ─────────────────────────────────────────────────────────
-    def _set_offset_range(self, r):
-        """Widen or narrow the offset slider range without losing the current value."""
-        self.offset_slider.config(from_=-r, to=r)
 
-    def on_offset_change(self):
-        try:
-            self.offset = float(self.offset_var.get())
-        except ValueError:
-            pass
-        self.update_plot()
-
-    def nudge(self, delta):
-        self.offset = round(self.offset + delta, 4)
-        self.offset_var.set(self.offset)  # updates both spinbox and slider
-        self.update_plot()
 
     def _get_force_column(self, plate_label, component):
         """
@@ -429,25 +400,25 @@ class AlignmentGUI:
         # Map (plate, component) → candidate column names in priority order
         # Covers: Fz1/Fz2 style (your app), FP1_Fz/FP2_Fz (pipeline renamed), Fz/Fz.1 (raw BioWare)
         col_map = {
-            ("Force Plate 1", "Fx"): ["Fx2", "FP2_Fx", "Fx.1"],
-            ("Force Plate 1", "Fy"): ["Fy2", "FP2_Fy", "Fy.1"],
-            ("Force Plate 1", "Fz"): ["Fz2", "FP2_Fz", "Fz.1"],
-            ("Force Plate 1", "Ax"): ["Ax2", "FP2_Ax", "Ax.1"],
-            ("Force Plate 1", "Ay"): ["Ay2", "FP2_Ay", "Ay.1"],
-            ("Force Plate 2", "Fx"): ["Fx1", "FP1_Fx", "Fx"],
-            ("Force Plate 2", "Fy"): ["Fy1", "FP1_Fy", "Fy"],
-            ("Force Plate 2", "Fz"): ["Fz1", "FP1_Fz", "Fz"],
-            ("Force Plate 2", "Ax"): ["Ax1", "FP1_Ax", "Ax"],
-            ("Force Plate 2", "Ay"): ["Ay1", "FP1_Ay", "Ay"],
+            ("Force Plate 1", "Fx"): ["Fx1", "FP1_Fx", "Fx"],
+            ("Force Plate 1", "Fy"): ["Fy1", "FP1_Fy", "Fy"],
+            ("Force Plate 1", "Fz"): ["Fz1", "FP1_Fz", "Fz"],
+            ("Force Plate 1", "Ax"): ["Ax1", "FP1_Ax", "Ax"],
+            ("Force Plate 1", "Ay"): ["Ay1", "FP1_Ay", "Ay"],
+            ("Force Plate 2", "Fx"): ["Fx2", "FP2_Fx", "Fx.1"],
+            ("Force Plate 2", "Fy"): ["Fy2", "FP2_Fy", "Fy.1"],
+            ("Force Plate 2", "Fz"): ["Fz2", "FP2_Fz", "Fz.1"],
+            ("Force Plate 2", "Ax"): ["Ax2", "FP2_Ax", "Ax.1"],
+            ("Force Plate 2", "Ay"): ["Ay2", "FP2_Ay", "Ay.1"],
         }
         candidates = col_map.get((plate_label, component), [])
-        # print(f"[_get_force_column] plate={plate_label}, comp={component}, trying: {candidates}")
-        # print(f"[_get_force_column] available cols: {list(self.force_df.columns)}")
+        print(f"[_get_force_column] plate={plate_label}, comp={component}, trying: {candidates}")
+        print(f"[_get_force_column] available cols: {list(self.force_df.columns)}")
         for col in candidates:
             if col in self.force_df.columns:
-                # print(f"[_get_force_column] found column: {col}")
+                print(f"[_get_force_column] found column: {col}")
                 return self.force_df[col].to_numpy(dtype=float)
-        # print(f"[_get_force_column] NO matching column found")
+        print(f"[_get_force_column] NO matching column found")
         return None
 
     def update_plot(self):
@@ -488,7 +459,46 @@ class AlignmentGUI:
         self.canvas.draw()
 
     # ── Export ────────────────────────────────────────────────────────────
+    def mark_video(self):
+        """Mark current video frame as the alignment point — replicates label_video()."""
+        self.video_align = self.current_frame
+        self.video_mark_label.config(text=f"Video mark: frame {self.video_align}")
+        self._update_align_status()
+        print(f"[AlignmentGUI] Video marked at frame {self.video_align}")
+
+    def mark_force(self):
+        """
+        Mark current force position as the alignment point — replicates label_force().
+        Force position = current_frame (same slider drives both), since the force
+        plot's red line is at current_frame / video_fps in time.
+        We store it as a frame number matching the original alignCallback convention.
+        """
+        self.force_align = self.current_frame
+        self.force_mark_label.config(text=f"Force mark: frame {self.force_align}")
+        self._update_align_status()
+        print(f"[AlignmentGUI] Force marked at frame {self.force_align}")
+
+    def _update_align_status(self):
+        """Show computed offset once both marks are set."""
+        if self.video_align != 0 or self.force_align != 0:
+            offset = self.force_align - self.video_align
+            self.align_status_label.config(
+                text=f"offset = {offset} frames  "
+                     f"({offset / self.video_fps:.3f}s)"
+            )
+
     def export_alignment(self):
-        """Close the window — offset is read from app.offset by the caller."""
+        """Confirm and close — video_align and force_align are read by the caller."""
+        if self.video_align == 0 and self.force_align == 0:
+            from tkinter import messagebox
+            if not messagebox.askyesno("No marks set",
+                    "Neither Video nor Force has been marked."
+                    "Confirm with offset = 0 (no alignment)?",
+                parent=self.root):
+                return
         self.playing = False
+        print(f"[AlignmentGUI] Confirmed: "
+              f"video_align={self.video_align} frames, "
+              f"force_align={self.force_align} frames, "
+              f"offset={self.force_align - self.video_align} frames")
         self.root.destroy()
