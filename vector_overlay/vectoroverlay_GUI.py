@@ -9,38 +9,67 @@ import os
 from Util.COM_helper import COM_helper
 
 
-def rect_to_trapezoid(x, y, rect_width, rect_height, trapezoid_coords, short=False):
-    """
-    Maps points from a rectangle to a trapezoid, simulating parallax distortion.
-    """
-    # Ensure input coordinates are within the rectangle
-    x = np.clip(x, 0, rect_width)
-    y = np.clip(y, 0, rect_height)
+def plate_matrix_transformation(x1, y1, x2, y2, trapezoid_coords, view):
+    # """
+    # Maps points from a rectangle to a trapezoid, simulating parallax distortion.
+    # """
+    # # Ensure input coordinates are within the rectangle
+    # x = np.clip(x, 0, rect_width)
+    # y = np.clip(y, 0, rect_height)
 
-    # Extract trapezoid coordinates
+    # # Extract trapezoid coordinates
     (tl_x, tl_y), (tr_x, tr_y), (br_x, br_y), (bl_x, bl_y) = trapezoid_coords
 
-    # Calculate the left and right edge positions for the current y
-    left_x = bl_x + (tl_x - bl_x) * y
-    right_x = br_x + (tr_x - br_x) * y
+    # # Calculate the left and right edge positions for the current y
+    # left_x = bl_x + (tl_x - bl_x) * y
+    # right_x = br_x + (tr_x - br_x) * y
 
-    # Calculate the width of the trapezoid at the current y
-    trapezoid_width = right_x - left_x
+    # # Calculate the width of the trapezoid at the current y
+    # trapezoid_width = right_x - left_x
 
-    # Map x-coordinate
-    new_x = left_x + x * trapezoid_width
+    # # Map x-coordinate
+    # new_x = left_x + x * trapezoid_width
 
-    # Calculate the top and bottom y positions of the trapezoid
-    top_y = (tl_y + tr_y) / 2
-    bottom_y = (bl_y + br_y) / 2
+    # # Calculate the top and bottom y positions of the trapezoid
+    # top_y = (tl_y + tr_y) / 2
+    # bottom_y = (bl_y + br_y) / 2
 
-    # Map y-coordinate
-    # if short:
-    #     new_y = bottom_y + y * (top_y - bottom_y)
-    # else:
-    new_y = top_y + y * (bottom_y - top_y)
+    # # Map y-coordinate
+    # # if short:
+    # #     new_y = bottom_y + y * (top_y - bottom_y)
+    # # else:
+    # new_y = top_y + y * (bottom_y - top_y)
 
-    return (int(new_x), int(new_y))
+    # return (int(new_x), int(new_y))
+
+    # in meters
+    if view == "Side1 View":
+        delta_x = 0.300
+        delta_y = 0.902
+        pts_plates = np.float32([[delta_x, delta_y], [-delta_x, delta_y], [-delta_x, -delta_y], [delta_x, -delta_y]])
+    elif view == "Side2 View":
+        delta_x = 0.300
+        delta_y = 0.902
+        pts_plates = np.float32([[-delta_x, -delta_y], [delta_x, -delta_y], [delta_x, delta_y], [-delta_x, delta_y]])
+    else:
+        delta_x = 0.902
+        delta_y = 0.300
+        pts_plates = np.float32([[-delta_x, delta_y], [delta_x, delta_y], [delta_x, -delta_y], [-delta_x, -delta_y]])
+
+    pts_video = np.float32([[tl_x, tl_y], [tr_x, tr_y], [br_x, br_y], [bl_x, bl_y]])
+
+    matrix = cv2.getPerspectiveTransform(pts_plates, pts_video)
+
+    video_coords = []
+
+    cop_point1 = np.array([[[x1, y1]]], dtype=np.float32)
+    cop_point2 = np.array([[[x2, y2]]], dtype=np.float32)
+    video_coords.append(cv2.perspectiveTransform(cop_point1, matrix).round().astype(np.int32)[0][0])
+    video_coords.append(cv2.perspectiveTransform(cop_point2, matrix).round().astype(np.int32)[0][0])
+
+    return video_coords[0], video_coords[1]
+
+
 
 class VectorOverlay:
 
@@ -451,18 +480,22 @@ class VectorOverlay:
         print("readData finished: built force arrays with length:", len(self.fx1))
         print("=====================================\n")
 
-    def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, px2, py1, py2, short=False):
+    def drawArrows(self, frame, xf1, xf2, yf1, yf2, px1, py1, px2, py2, short=False):
         """Draw force arrows on frame"""
-        if short:
-            point_pair1 = rect_to_trapezoid(px1, py1, 1, 1,
-                                           [self.corners[0], self.corners[1], self.corners[2], self.corners[3]], short=True)
-            point_pair2 = rect_to_trapezoid(px2, py2, 1, 1,
-                                           [self.corners[4], self.corners[5], self.corners[6], self.corners[7]], short=True)
-        else:
-            point_pair1 = rect_to_trapezoid(px1, py1, 1, 1,
-                                           [self.corners[0], self.corners[1], self.corners[2], self.corners[3]])
-            point_pair2 = rect_to_trapezoid(px2, py2, 1, 1,
-                                           [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
+        # if short:
+        #     point_pair1 = rect_to_trapezoid(px1, py1, 1, 1,
+        #                                    [self.corners[0], self.corners[1], self.corners[2], self.corners[3]], short=True)
+        #     point_pair2 = rect_to_trapezoid(px2, py2, 1, 1,
+        #                                    [self.corners[4], self.corners[5], self.corners[6], self.corners[7]], short=True)
+        # else:
+        #     point_pair1 = rect_to_trapezoid(px1, py1, 1, 1,
+        #                                    [self.corners[0], self.corners[1], self.corners[2], self.corners[3]])
+        #     point_pair2 = rect_to_trapezoid(px2, py2, 1, 1,
+        #                                    [self.corners[4], self.corners[5], self.corners[6], self.corners[7]])
+
+        point_pair1, point_pair2 = plate_matrix_transformation(px1, py1, px2, py2, [self.corners[0], self.corners[1], self.corners[2], self.corners[3]], self.view)
+
+        # point_pair2 = rect_to_trapezoid(px2, py2, [self.corners[4], self.corners[5], self.corners[6], self.corners[7]], self.view)
 
         end_point_1 = (int(point_pair1[0] + xf1), int(point_pair1[1] - yf1))
         end_point_2 = (int(point_pair2[0] + xf2), int(point_pair2[1] - yf2))
@@ -563,9 +596,14 @@ class VectorOverlay:
         F2_Fy = df_aligned["FP2_Fy"].to_numpy(dtype=float)
         F2_Fz = df_aligned["FP2_Fz"].to_numpy(dtype=float)
         Ax1 = df_aligned["FP1_Ax"].to_numpy(dtype=float)
-        Ay1 = df_aligned["FP1_Ay"].to_numpy(dtype=float)
+        Ay1 = df_aligned["FP1_Ay"].to_numpy(dtype=float) - 0.452
         Ax2 = df_aligned["FP2_Ax"].to_numpy(dtype=float)
-        Ay2 = df_aligned["FP2_Ay"].to_numpy(dtype=float)
+        Ay2 = df_aligned["FP2_Ay"].to_numpy(dtype=float) + 0.452
+
+        # Ax1 = pd.Series(Ax1).rolling(5, center=True).mean().to_numpy()
+        # Ay1 = pd.Series(Ay1).rolling(5, center=True).mean().to_numpy()
+        # Ax2 = pd.Series(Ax2).rolling(5, center=True).mean().to_numpy()
+        # Ay2 = pd.Series(Ay2).rolling(5, center=True).mean().to_numpy()
 
         # -------- 3. Main loop: row-by-row using FrameNumber --------
         processed = 0
@@ -624,26 +662,32 @@ class VectorOverlay:
             # but since we are using df_aligned *before* that rename,
             # we read directly from 'FP1_Ax', 'FP1_Ay', etc.
              # ----- Pressure coordinates → normalized 0–1 as in readData(), THEN SWAP -----
+
             ax1 = float(Ax1[i] or 0.0)
             ay1 = float(Ay1[i] or 0.0)
             ax2 = float(Ax2[i] or 0.0)
             ay2 = float(Ay2[i] or 0.0)
 
             # Same normalization as readData()
-            pressure_x1 = np.clip((ax1 + 0.3) / 0.6, 0, 1)
-            pressure_y1 = np.clip((ay1 + 0.45) / 0.9, 0, 1)
-            pressure_x2 = np.clip((ax2 + 0.3) / 0.6, 0, 1)
-            pressure_y2 = np.clip((ay2 + 0.45) / 0.9, 0, 1)
+            # pressure_x1 = np.clip((ax1 + 0.3) / 0.6, 0, 1)
+            # pressure_y1 = np.clip((ay1 + 0.45) / 0.9, 0, 1)
+            # pressure_x2 = np.clip((ax2 + 0.3) / 0.6, 0, 1)
+            # pressure_y2 = np.clip((ay2 + 0.45) / 0.9, 0, 1)
 
             # IMPORTANT: mimic original LongVectorOverlay mapping:
             #   px1 = self.py1[force_idx]
             #   py1 = self.px1[force_idx]
             # i.e., swap x/y before rect_to_trapezoid
 
-            px1 = pressure_y1
-            py1 = 1.0 - pressure_x1
-            px2 = pressure_y2
-            py2 = 1.0 - pressure_x2
+            # px1 = pressure_y1
+            # py1 = 1.0 - pressure_x1
+            # px2 = pressure_y2
+            # py2 = 1.0 - pressure_x2
+
+            px1 = ay1
+            py1 = ax1
+            px2 = ay2
+            py2 = ax2
 
             # ----- Debug prints (similar style to your previous logs) -----
             if processed < 10 or processed % 30 == 0:
@@ -664,7 +708,8 @@ class VectorOverlay:
                     # )
 
             # ----- Draw arrows exactly the same way as original -----
-            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
+            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, py1, px2, py2)
+            # self.drawArrows(frame, fx1, fx2, fy1, fy2, ax1, ay1, ax2, ay2)
 
             # ----- Optionally draw landmarks -----
             debug_com = (processed < 10)
@@ -771,9 +816,9 @@ class VectorOverlay:
         F2_Fx = df_aligned["FP2_Fx"].to_numpy(dtype=float)
         F2_Fy = df_aligned["FP2_Fy"].to_numpy(dtype=float)
         Ax1 = df_aligned["FP1_Ax"].to_numpy(dtype=float)
-        Ay1 = df_aligned["FP1_Ay"].to_numpy(dtype=float)
+        Ay1 = df_aligned["FP1_Ay"].to_numpy(dtype=float) - 0.452
         Ax2 = df_aligned["FP2_Ax"].to_numpy(dtype=float)
-        Ay2 = df_aligned["FP2_Ay"].to_numpy(dtype=float)
+        Ay2 = df_aligned["FP2_Ay"].to_numpy(dtype=float) + 0.452
 
         # -------- 3) Main loop: row-by-row using FrameNumber --------
         processed = 0
@@ -808,12 +853,10 @@ class VectorOverlay:
             raw_F2_Fx = float(F2_Fx[i] or 0.0)
             raw_F2_Fy = float(F2_Fy[i] or 0.0)
 
-            flipFactor = -1
-
-            fx1 = flipFactor * raw_F1_Fy * scale_factor
-            fx2 = flipFactor * raw_F2_Fy * scale_factor
-            fy1 = flipFactor * raw_F1_Fx * scale_factor
-            fy2 = flipFactor * raw_F2_Fx * scale_factor
+            fx1 = -raw_F1_Fy * scale_factor
+            fx2 = -raw_F2_Fy * scale_factor
+            fy1 = -raw_F1_Fx * scale_factor
+            fy2 = -raw_F2_Fx * scale_factor
 
 
             # ----- TOP VIEW pressure mapping (match your working version) -----
@@ -822,18 +865,23 @@ class VectorOverlay:
             ax2 = float(Ax2[i] or 0.0)
             ay2 = float(Ay2[i] or 0.0)
 
-            pressure_x1 = np.clip((ax1 + 0.3) / 0.6, 0, 1)
-            pressure_y1 = np.clip((ay1 + 0.45) / 0.9, 0, 1)
-            pressure_x2 = np.clip((ax2 + 0.3) / 0.6, 0, 1)
-            pressure_y2 = np.clip((ay2 + 0.45) / 0.9, 0, 1)
+            # pressure_x1 = np.clip((ax1 + 0.3) / 0.6, 0, 1)
+            # pressure_y1 = np.clip((ay1 + 0.45) / 0.9, 0, 1)
+            # pressure_x2 = np.clip((ax2 + 0.3) / 0.6, 0, 1)
+            # pressure_y2 = np.clip((ay2 + 0.45) / 0.9, 0, 1)
 
             # match:
             #   px = self.py
             #   py = 1 - self.px
-            px1 = pressure_y1
-            py1 = 1.0 - pressure_x1
-            px2 = pressure_y2
-            py2 = 1.0 - pressure_x2
+            # px1 = pressure_y1
+            # py1 = 1.0 - pressure_x1
+            # px2 = pressure_y2
+            # py2 = 1.0 - pressure_x2
+
+            px1 = ay1
+            py1 = ax1
+            px2 = ay2
+            py2 = ax2
 
             # Debug prints
             if processed < 10 or processed % 30 == 0:
@@ -853,7 +901,7 @@ class VectorOverlay:
                 #     )
 
             # Draw arrows using your trapezoid mapping (unchanged)
-            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2)
+            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, py1, px2, py2)
 
             if show_preview:
                 preview_frame = cv2.resize(frame, (self.frame_width // 2, self.frame_height // 2))
@@ -936,9 +984,9 @@ class VectorOverlay:
         F2_Fx = df_aligned["FP2_Fx"].to_numpy(dtype=float)
         F2_Fz = df_aligned["FP2_Fz"].to_numpy(dtype=float)
         Ax1 = df_aligned["FP1_Ax"].to_numpy(dtype=float)
-        Ay1 = df_aligned["FP1_Ay"].to_numpy(dtype=float)
+        Ay1 = df_aligned["FP1_Ay"].to_numpy(dtype=float) - 0.452
         Ax2 = df_aligned["FP2_Ax"].to_numpy(dtype=float)
-        Ay2 = df_aligned["FP2_Ay"].to_numpy(dtype=float)
+        Ay2 = df_aligned["FP2_Ay"].to_numpy(dtype=float) + 0.452
 
         processed = 0
         frames = []
@@ -983,22 +1031,27 @@ class VectorOverlay:
             ax2 = float(Ax2[i] or 0.0)
             ay2 = float(Ay2[i] or 0.0)
 
-            pressure_x1 = np.clip((ax1 + 0.3) / 0.6, 0, 1)
-            pressure_y1 = np.clip((ay1 + 0.45) / 0.9, 0, 1)
-            pressure_x2 = np.clip((ax2 + 0.3) / 0.6, 0, 1)
-            pressure_y2 = np.clip((ay2 + 0.45) / 0.9, 0, 1)
+            # pressure_x1 = np.clip((ax1 + 0.3) / 0.6, 0, 1)
+            # pressure_y1 = np.clip((ay1 + 0.45) / 0.9, 0, 1)
+            # pressure_x2 = np.clip((ax2 + 0.3) / 0.6, 0, 1)
+            # pressure_y2 = np.clip((ay2 + 0.45) / 0.9, 0, 1)
 
             # For side views, map pressure coordinates
-            if self.view == "Side1 View":
-                px1 = 1.0 - pressure_x1
-                py1 = 1.0 - pressure_y1
-                px2 = 1.0 - pressure_x2
-                py2 = 1.0 - pressure_y2
-            else:
-                px1 = pressure_x1
-                py1 = pressure_y1
-                px2 = pressure_x2
-                py2 = pressure_y2
+            # if self.view == "Side1 View":
+            #     px1 = 1.0 - pressure_x1
+            #     py1 = 1.0 - pressure_y1
+            #     px2 = 1.0 - pressure_x2
+            #     py2 = 1.0 - pressure_y2
+            # else:
+            #     px1 = pressure_x1
+            #     py1 = pressure_y1
+            #     px2 = pressure_x2
+            #     py2 = pressure_y2
+
+            px1 = ax1
+            py1 = ay1
+            px2 = ax2
+            py2 = ay2
 
             # Debug prints
             if processed < 10 or processed % 30 == 0:
@@ -1012,7 +1065,7 @@ class VectorOverlay:
                     # )
 
             # Draw arrows (use short=True for side view trapezoid mapping)
-            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, px2, py1, py2, short=True)
+            self.drawArrows(frame, fx1, fx2, fy1, fy2, px1, py1, px2, py2, short=True)
 
             # Draw COM if helper exists
             if self.com_helper is not None:

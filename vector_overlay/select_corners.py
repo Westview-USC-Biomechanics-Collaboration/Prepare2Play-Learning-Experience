@@ -567,8 +567,13 @@ def select_points(self, cap, view):
     import numpy as np
 
     # Define yellow color range in HSV
-    lower_yellow = np.array([18, 80, 50])
-    upper_yellow = np.array([38, 255, 255])
+    # lower_yellow = np.array([18, 80, 50])
+    # upper_yellow = np.array([38, 255, 255])
+
+
+    # outdoor setup
+    lower_yellow = np.array([10, 20, 10])
+    upper_yellow = np.array([45, 255, 255])
 
     # Open the video
     ret, frame = cap.read()
@@ -622,7 +627,7 @@ def select_points(self, cap, view):
     elif view == "Side1 View":
         # Side1: FP1 is near (left), FP2 is far (right)
         y1, y2 = int(0.6 * h), int(0.95 * h)
-        x1, x2 = int(0.2 * w), int(0.5 * w)
+        x1, x2 = int(0.3 * w), int(0.5 * w)
         offset_x, offset_y = x1, y1
         roi = mask[y1:y2, x1:x2]
     elif view == "Side2 View":
@@ -694,107 +699,110 @@ def select_points(self, cap, view):
         # Plate 1 placeholders (Left side)
         p1 = [[int(w*0.2), int(h*0.4)], [int(w*0.4), int(h*0.4)], 
                 [int(w*0.4), int(h*0.6)], [int(w*0.2), int(h*0.6)]]
-        # Plate 2 placeholders (Right side)
-        p2 = [[int(w*0.6), int(h*0.4)], [int(w*0.8), int(h*0.4)], 
-                [int(w*0.8), int(h*0.6)], [int(w*0.6), int(h*0.6)]]
+        # # Plate 2 placeholders (Right side)
+        # p2 = [[int(w*0.6), int(h*0.4)], [int(w*0.8), int(h*0.4)], 
+        #         [int(w*0.8), int(h*0.6)], [int(w*0.6), int(h*0.6)]]
         
-        return p1 + p2
+        return p1
 
 
     # Create output array for 8 corners (TL, TR, BR, BL for each plate)
-    output = [[0, 0] for _ in range(8)]
+    output = [[0, 0] for _ in range(4)]
 
-    # Arrange corners based on view
-    if view in ["Side1 View", "Side2 View"]:
-        # For side views, plates are front-to-back, not left-to-right
-        # coords_one = near plate, coords_two = far plate
-
-        coords.append([(coords[2][0] + coords[3][0])/2, (coords[2][1] + coords[3][1])/2 - 25])
-        coords.append([(coords[2][0] + coords[3][0])/2, (coords[2][1] + coords[3][1])/2])
-        coords.append([(coords[0][0] + coords[1][0])/2, (coords[0][1] + coords[1][1])/2 - 25])
-        coords.append([(coords[0][0] + coords[1][0])/2, (coords[0][1] + coords[1][1])/2])
-        
-        if view == "Side1 View":
-            # Side1: FP1 is near (left in video), FP2 is far (right in video)
-            # Plate 1 (near/left): TL, TR, BR, BL
-            # output[0] = coords_one[0]                                    # TL
-            # output[1] = [(coords_one[0][0] + coords_two[0][0])/2,      # TR (middle)
-            #             (coords_one[0][1] + coords_two[0][1])/2]
-            # output[2] = [(coords_one[1][0] + coords_two[1][0])/2,      # BR (middle)
-            #             (coords_one[1][1] + coords_two[1][1])/2]
-            # output[3] = coords_one[1]                                    # BL
-            
-            # # Plate 2 (far/right): TL, TR, BR, BL
-            # output[4] = [(coords_one[0][0] + coords_two[0][0])/2,      # TL (middle)
-            #             (coords_one[0][1] + coords_two[0][1])/2]
-            # output[5] = coords_two[0]                                    # TR
-            # output[6] = coords_two[1]                                    # BR
-            # output[7] = [(coords_one[1][0] + coords_two[1][0])/2,      # BL (middle)
-            #             (coords_one[1][1] + coords_two[1][1])/2]
-            output[0], output[1], output[2], output[3] = coords[7], coords[5], coords[3], coords[1] 
-            output[4], output[5], output[6], output[7] = coords[0], coords[2], coords[4], coords[6]
-        
-        else:  # Side2 View
-            # Side2: FP2 is near (left in video), FP1 is far (right in video)
-            # Plate 1 (far/right): TL, TR, BR, BL
-            # output[0] = [(coords_one[0][0] + coords_two[0][0])/2,      # TL (middle)
-            #             (coords_one[0][1] + coords_two[0][1])/2]
-            # output[1] = coords_two[0]                                    # TR
-            # output[2] = coords_two[1]                                    # BR
-            # output[3] = [(coords_one[1][0] + coords_two[1][0])/2,      # BL (middle)
-            #             (coords_one[1][1] + coords_two[1][1])/2]
-            
-            # # Plate 2 (near/left): TL, TR, BR, BL
-            # output[4] = coords_one[0]                                    # TL
-            # output[5] = [(coords_one[0][0] + coords_two[0][0])/2,      # TR (middle)
-            #             (coords_one[0][1] + coords_two[0][1])/2]
-            # output[6] = [(coords_one[1][0] + coords_two[1][0])/2,      # BR (middle)
-            #             (coords_one[1][1] + coords_two[1][1])/2]
-            # output[7] = coords_one[1]                                    # BL
-
-            output[0], output[1], output[2], output[3] = coords[0], coords[2], coords[4], coords[6]
-            output[4], output[5], output[6], output[7] = coords[7], coords[5], coords[3], coords[1]
-    
-    else:
-        # Long View, Top View, or legacy Short View
-        
-
-        coords.append([(coords[0][0] + coords[2][0])/2 - 10, (coords[0][1] + coords[2][1])/2])
-        coords.append([(coords[0][0] + coords[2][0])/2 + 10, (coords[0][1] + coords[2][1])/2])
-        coords.append([(coords[1][0] + coords[3][0])/2 - 10, (coords[1][1] + coords[3][1])/2])
-        coords.append([(coords[1][0] + coords[3][0])/2 + 10, (coords[1][1] + coords[3][1])/2])
-
-        # order plate 1
-        output[0], output[1], output[2], output[3] = coords[0], coords[4], coords[6], coords[1]
-
-        # order plate 2
-        output[4], output[5], output[6], output[7] = coords[5], coords[2], coords[3], coords[7]
-
-    # Draw final corners
-    for i, out in enumerate(output):
-        color = (0, 255, 255) if i < 4 else (0, 0, 255)  # Yellow for FP1, Red for FP2
-        cv2.circle(frame, (int(out[0]), int(out[1])), 5, color, -1)
-        cv2.putText(frame, str(i), (int(out[0])+10, int(out[1])-10),
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
-
-    # Save coordinates
-    with open("selected_points.txt", "w") as f:
-        for x, y in output:
-            f.write(f"{x},{y}\n")
-
-    print(f"{len(output)} coordinates saved to file.")
-    print(f"Plate 1 corners: {output[0:4]}")
-    print(f"Plate 2 corners: {output[4:8]}")
-
-    # Show result
-    cv2.namedWindow("Detected Rectangles", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("Detected Rectangles", 800, 600)
-    cv2.imshow("Detected Rectangles", frame)
-
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
+    output[0], output[1], output[2], output[3] = coords[0], coords[2], coords[3], coords[1]
     return output
+
+    # # Arrange corners based on view
+    # if view in ["Side1 View", "Side2 View"]:
+    #     # For side views, plates are front-to-back, not left-to-right
+    #     # coords_one = near plate, coords_two = far plate
+
+    #     # coords.append([(coords[2][0] + coords[3][0])/2, (coords[2][1] + coords[3][1])/2 - 25])
+    #     # coords.append([(coords[2][0] + coords[3][0])/2, (coords[2][1] + coords[3][1])/2])
+    #     # coords.append([(coords[0][0] + coords[1][0])/2, (coords[0][1] + coords[1][1])/2 - 25])
+    #     # coords.append([(coords[0][0] + coords[1][0])/2, (coords[0][1] + coords[1][1])/2])
+        
+    #     if view == "Side1 View":
+    #         # Side1: FP1 is near (left in video), FP2 is far (right in video)
+    #         # Plate 1 (near/left): TL, TR, BR, BL
+    #         # output[0] = coords_one[0]                                    # TL
+    #         # output[1] = [(coords_one[0][0] + coords_two[0][0])/2,      # TR (middle)
+    #         #             (coords_one[0][1] + coords_two[0][1])/2]
+    #         # output[2] = [(coords_one[1][0] + coords_two[1][0])/2,      # BR (middle)
+    #         #             (coords_one[1][1] + coords_two[1][1])/2]
+    #         # output[3] = coords_one[1]                                    # BL
+            
+    #         # # Plate 2 (far/right): TL, TR, BR, BL
+    #         # output[4] = [(coords_one[0][0] + coords_two[0][0])/2,      # TL (middle)
+    #         #             (coords_one[0][1] + coords_two[0][1])/2]
+    #         # output[5] = coords_two[0]                                    # TR
+    #         # output[6] = coords_two[1]                                    # BR
+    #         # output[7] = [(coords_one[1][0] + coords_two[1][0])/2,      # BL (middle)
+    #         #             (coords_one[1][1] + coords_two[1][1])/2]
+    #         output[0], output[1], output[2], output[3] = coords[7], coords[5], coords[3], coords[1] 
+    #         output[4], output[5], output[6], output[7] = coords[0], coords[2], coords[4], coords[6]
+        
+    #     else:  # Side2 View
+    #         # Side2: FP2 is near (left in video), FP1 is far (right in video)
+    #         # Plate 1 (far/right): TL, TR, BR, BL
+    #         # output[0] = [(coords_one[0][0] + coords_two[0][0])/2,      # TL (middle)
+    #         #             (coords_one[0][1] + coords_two[0][1])/2]
+    #         # output[1] = coords_two[0]                                    # TR
+    #         # output[2] = coords_two[1]                                    # BR
+    #         # output[3] = [(coords_one[1][0] + coords_two[1][0])/2,      # BL (middle)
+    #         #             (coords_one[1][1] + coords_two[1][1])/2]
+            
+    #         # # Plate 2 (near/left): TL, TR, BR, BL
+    #         # output[4] = coords_one[0]                                    # TL
+    #         # output[5] = [(coords_one[0][0] + coords_two[0][0])/2,      # TR (middle)
+    #         #             (coords_one[0][1] + coords_two[0][1])/2]
+    #         # output[6] = [(coords_one[1][0] + coords_two[1][0])/2,      # BR (middle)
+    #         #             (coords_one[1][1] + coords_two[1][1])/2]
+    #         # output[7] = coords_one[1]                                    # BL
+
+    #         output[0], output[1], output[2], output[3] = coords[0], coords[2], coords[4], coords[6]
+    #         output[4], output[5], output[6], output[7] = coords[7], coords[5], coords[3], coords[1]
+    
+    # else:
+    #     # Long View, Top View, or legacy Short View
+        
+
+    #     coords.append([(coords[0][0] + coords[2][0])/2, (coords[0][1] + coords[2][1])/2])
+    #     coords.append([(coords[0][0] + coords[2][0])/2, (coords[0][1] + coords[2][1])/2])
+    #     coords.append([(coords[1][0] + coords[3][0])/2, (coords[1][1] + coords[3][1])/2])
+    #     coords.append([(coords[1][0] + coords[3][0])/2, (coords[1][1] + coords[3][1])/2])
+
+    #     # order plate 1
+    #     output[0], output[1], output[2], output[3] = coords[0], coords[4], coords[6], coords[1]
+
+    #     # order plate 2
+    #     output[4], output[5], output[6], output[7] = coords[5], coords[2], coords[3], coords[7]
+
+    # # Draw final corners
+    # for i, out in enumerate(output):
+    #     color = (0, 255, 255) if i < 4 else (0, 0, 255)  # Yellow for FP1, Red for FP2
+    #     cv2.circle(frame, (int(out[0]), int(out[1])), 5, color, -1)
+    #     cv2.putText(frame, str(i), (int(out[0])+10, int(out[1])-10),
+    #                cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+
+    # # Save coordinates
+    # with open("selected_points.txt", "w") as f:
+    #     for x, y in output:
+    #         f.write(f"{x},{y}\n")
+
+    # print(f"{len(output)} coordinates saved to file.")
+    # print(f"Plate 1 corners: {output[0:4]}")
+    # print(f"Plate 2 corners: {output[4:8]}")
+
+    # # Show result
+    # cv2.namedWindow("Detected Rectangles", cv2.WINDOW_NORMAL)
+    # cv2.resizeWindow("Detected Rectangles", 800, 600)
+    # cv2.imshow("Detected Rectangles", frame)
+
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    # return output
 
 def manual_corner_adjustment(frame, initial_corners, view):
     """
@@ -817,7 +825,7 @@ def manual_corner_adjustment(frame, initial_corners, view):
     cv2.resizeWindow(window_name, 1200, 800)
     
     # Colors for plate 1 (yellow) and plate 2 (red)
-    colors = [(0, 255, 255)] * 4 + [(0, 0, 255)] * 4  # Yellow for plate1, Red for plate2
+    colors = [(0, 0, 255)] * 4  # Yellow for plate1, Red for plate2
     
     def mouse_callback(event, x, y, flags, param):
         nonlocal selected_corner, dragging, corners
@@ -875,11 +883,11 @@ def manual_corner_adjustment(frame, initial_corners, view):
                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
         
         # Draw rectangles for each plate
-        plate1_pts = np.array([corners[0], corners[1], corners[2], corners[3]], dtype=np.int32)
-        plate2_pts = np.array([corners[4], corners[5], corners[6], corners[7]], dtype=np.int32)
+        plate_pts = np.array([corners[0], corners[1], corners[2], corners[3]], dtype=np.int32)
+        # plate2_pts = np.array([corners[4], corners[5], corners[6], corners[7]], dtype=np.int32)
         
-        cv2.polylines(display_frame, [plate1_pts], True, (0, 255, 255), 2)  # Yellow
-        cv2.polylines(display_frame, [plate2_pts], True, (0, 0, 255), 2)    # Red
+        #cv2.polylines(display_frame, [plate1_pts], True, (0, 255, 255), 2)  # Yellow
+        cv2.polylines(display_frame, [plate_pts], True, (0, 0, 255), 2)    # Red
         
         # Instructions overlay
         cv2.putText(display_frame, "Drag corners to adjust | 'r' reset | Enter to confirm",
@@ -907,12 +915,12 @@ def manual_corner_adjustment(frame, initial_corners, view):
     
     # Print final coordinates
     print("\nFinal Corner Coordinates:")
-    print("Plate 1 (Yellow):")
+    print("Both Plates (Red):")
     for i in range(4):
         print(f"  Corner {i}: ({corners[i][0]}, {corners[i][1]})")
-    print("Plate 2 (Red):")
-    for i in range(4, 8):
-        print(f"  Corner {i}: ({corners[i][0]}, {corners[i][1]})")
+    # print("Plate 2 (Red):")
+    # for i in range(4, 8):
+    #     print(f"  Corner {i}: ({corners[i][0]}, {corners[i][1]})")
     
     return corners
 
