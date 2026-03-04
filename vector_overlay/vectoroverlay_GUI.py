@@ -9,7 +9,7 @@ import os
 from Util.COM_helper import COM_helper
 
 
-def plate_matrix_transformation(x1, y1, x2, y2, trapezoid_coords, view):
+def plate_matrix_transformation(x1, y1, x2, y2, video_corners, view):
     # """
     # Maps points from a rectangle to a trapezoid, simulating parallax distortion.
     # """
@@ -18,7 +18,7 @@ def plate_matrix_transformation(x1, y1, x2, y2, trapezoid_coords, view):
     # y = np.clip(y, 0, rect_height)
 
     # # Extract trapezoid coordinates
-    (tl_x, tl_y), (tr_x, tr_y), (br_x, br_y), (bl_x, bl_y) = trapezoid_coords
+    (tl_x, tl_y), (tr_x, tr_y), (br_x, br_y), (bl_x, bl_y) = video_corners
 
     # # Calculate the left and right edge positions for the current y
     # left_x = bl_x + (tl_x - bl_x) * y

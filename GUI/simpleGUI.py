@@ -59,6 +59,7 @@ class DisplayApp:
 
         self.VideoList = []
         self.Video = VideoState()
+        self.LED_Video = VideoState()
         self.Force = ForceState()
         self.state = StateManager()
         self.canvasManager = CanvasManager(self)

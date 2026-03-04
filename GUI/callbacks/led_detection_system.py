@@ -75,7 +75,7 @@ class LEDConfig:
     blur_kernel: int = 10
 
     # Switching between old indoor LED and new outdoor LED
-    indoor: bool = False
+    indoor: bool = True
     
     def __post_init__(self):
         """Create the LED template after initialization"""
@@ -359,12 +359,12 @@ class Side1ViewLEDConfig(LEDConfig):
             view_name="Side1 View",
             frame_width=1920,
             frame_height=1080,
-            led_crop_x0=100,
+            led_crop_x0=400,
             led_crop_x1=1700,
-            led_crop_y0=600,
-            led_crop_y1=1000,
-            template_center_offset_x=45,
-            template_center_offset_y=47,
+            led_crop_y0=1000,
+            led_crop_y1=2000,
+            template_center_offset_x=15,
+            template_center_offset_y=15,
             plate_swap=False,  # No swap needed - FP1 is near
             blur_kernel=5
         )

@@ -471,7 +471,7 @@ def new_led(self, view, parent_path, video_file, force_file, use_detection_syste
         print(f"[INFO] LED sync complete. Time: {time.time() - startTime:.2f}s")
         print(f"[INFO] Plate swap applied: {should_swap}")
         
-        return lag, df_aligned
+        return lag, df_aligned, relative_score
     
     else:
         # Use original detection method (no plate swap)

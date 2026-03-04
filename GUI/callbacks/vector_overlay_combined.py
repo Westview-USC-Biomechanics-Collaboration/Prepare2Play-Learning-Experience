@@ -98,6 +98,8 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
     video_file  = os.path.basename(video.path)
     force_file  = os.path.basename(self.Force.path)
 
+    LED_video_file = os.path.basename(self.LED_Video.path) if self.LED_Video and self.LED_Video.path else None
+
     # Write first frame for corner detection
     cap = cv2.VideoCapture(video.path)
     cap.set(cv2.CAP_PROP_POS_FRAMES, 1)
@@ -116,7 +118,7 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
     use_manual      = False
 
     try:
-        auto_lag, df_aligned_auto = new_led(
+        auto_lag, df_aligned_auto, auto_relative_score = new_led(
             self, view, parent_path, video_file, force_file,
             use_detection_system=USE_DETECTION_SYSTEM
         )
@@ -128,7 +130,7 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
     if auto_succeeded:
         use_manual = messagebox.askyesno(
             "Alignment",
-            f"Auto-alignment detected a lag of {auto_lag} frames.\n\n"
+            f"Auto-alignment detected a lag of {auto_lag} frames and a relative score of {auto_relative_score:.4f}.\n\n"
             "Open manual alignment to verify or override?",
             parent=self.master
         )
