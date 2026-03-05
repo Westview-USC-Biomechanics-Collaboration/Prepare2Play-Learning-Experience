@@ -111,7 +111,7 @@ def new_led_with_detection_system(self, view, parent_path, video_file, force_fil
     
     # ========================================================================
     # STEP 2: GET TRANSFORMATION MATRIX FOR FORCE PLATE CORNERS
-    # ========================================================================
+    # ==============================    ==========================================
     print("\n[STEP 2] Finding force plate corners in video...")
     
     try:
