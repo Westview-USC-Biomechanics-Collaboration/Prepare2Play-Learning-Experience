@@ -567,13 +567,13 @@ def select_points(self, cap, view):
     import numpy as np
 
     # Define yellow color range in HSV
-    # lower_yellow = np.array([18, 80, 50])
-    # upper_yellow = np.array([38, 255, 255])
+    lower_yellow = np.array([18, 80, 50])
+    upper_yellow = np.array([38, 255, 255])
 
 
     # outdoor setup
-    lower_yellow = np.array([10, 20, 10])
-    upper_yellow = np.array([45, 255, 255])
+    # lower_yellow = np.array([10, 20, 10])
+    # upper_yellow = np.array([45, 255, 255])
 
     # Open the video
     ret, frame = cap.read()
