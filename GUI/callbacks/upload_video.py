@@ -38,6 +38,9 @@ def uploadVideoCallback(self):
             elif selected_view == "Side2 View":
                 self.selected_view = tk.StringVar(value="Side2 View")
                 print("Side2 View selected (FP2 nearest to camera)")
+            elif selected_view == "LED Video":
+                self.selected_view = tk.StringVar(value="LED Video")
+
      
     # Open a file dialog for video files
     view_popup = tk.Toplevel(self.master)
@@ -48,6 +51,7 @@ def uploadVideoCallback(self):
     tk.Radiobutton(view_popup, text="Top View", variable=self.selected_view, value="Top View").pack(anchor=tk.W)
     tk.Radiobutton(view_popup, text="Side1 View (FP1 near camera)", variable=self.selected_view, value="Side1 View").pack(anchor=tk.W)
     tk.Radiobutton(view_popup, text="Side2 View (FP2 near camera)", variable=self.selected_view, value="Side2 View").pack(anchor=tk.W)
+    tk.Radiobutton(view_popup, text="LED Video View", variable=self.selected_view, value="LED Video").pack(anchor=tk.W)
 
     # Create a button to confirm the selection
     confirm_button = tk.Button(view_popup, text="Confirm", command=lambda: _upload_video_with_view(self, view_popup))
@@ -134,10 +138,14 @@ def process(self, view, newVideo):
         if self.timelineManager.timeline1 is not None:
             # Initialize if not exist
             self.timelineManager.timeline1.update_start_end(0, self.state.force_frame / self.slider['to'])
-        
-        self.VideoList.append(newVideo)
-        self.view_list.append(self.selected_view.get())
-        print(f"[INFO] There are {len(self.VideoList)} videos ready for processing and {len(self.view_list)} views")
+
+        if self.selected_view.get() != "LED Video":
+            self.VideoList.append(newVideo)
+            self.view_list.append(self.selected_view.get())
+            print(f"[INFO] There are {len(self.VideoList)} videos ready for processing and {len(self.view_list)} views")
+        else:
+            self.LED_Video = newVideo
+            print(f"[INFO] LED video loaded with path: {self.LED_Video.path}")
 
         # Offload ballDropDetect to a thread
         def detect_and_finalize():

@@ -111,7 +111,7 @@ def new_led_with_detection_system(self, view, parent_path, video_file, force_fil
     
     # ========================================================================
     # STEP 2: GET TRANSFORMATION MATRIX FOR FORCE PLATE CORNERS
-    # ========================================================================
+    # ==============================    ==========================================
     print("\n[STEP 2] Finding force plate corners in video...")
     
     try:
@@ -471,7 +471,7 @@ def new_led(self, view, parent_path, video_file, force_file, use_detection_syste
         print(f"[INFO] LED sync complete. Time: {time.time() - startTime:.2f}s")
         print(f"[INFO] Plate swap applied: {should_swap}")
         
-        return lag, df_aligned
+        return lag, df_aligned, relative_score
     
     else:
         # Use original detection method (no plate swap)

@@ -442,122 +442,122 @@ def saveCallback(self, video, view, frames):
         cntr = 0
         # for df_idx, row in dfw.iterrows():
         for i in range(len(frame_numbers)):
-            if cntr % 2 == 0:
-                # df_idx is the index in df_trimmed (0-based after reset)
-                # This directly maps to frame number in vector overlay video
-                
-                # cam_vector.set(cv2.CAP_PROP_POS_FRAMES, df_idx)
-                #ret, frame_vec = cam_vector.read()
-                df_idx = int(frame_numbers[i])
-                ret, frame_vec = frames[i]
+            # if cntr % 2 == 0:
+            # df_idx is the index in df_trimmed (0-based after reset)
+            # This directly maps to frame number in vector overlay video
+            
+            # cam_vector.set(cv2.CAP_PROP_POS_FRAMES, df_idx)
+            #ret, frame_vec = cam_vector.read()
+            df_idx = int(frame_numbers[i])
+            ret, frame_vec = frames[i]
 
-                if not ret:
-                    print(f"[SAVE] Failed to read frame at df_idx={df_idx}")
-                    break
+            if not ret:
+                print(f"[SAVE] Failed to read frame at df_idx={df_idx}")
+                break
 
-                # # Apply COM overlay if enabled
-                # if "Top" not in view and hasattr(row, 'FrameNumber'):
-                #     # Use the ORIGINAL frame number for COM lookup
-                #     original_frame_num = int(row['FrameNumber'])
-                #     frame_vec = self.COM_helper.drawFigure(frame_vec, original_frame_num)
+            # # Apply COM overlay if enabled
+            # if "Top" not in view and hasattr(row, 'FrameNumber'):
+            #     # Use the ORIGINAL frame number for COM lookup
+            #     original_frame_num = int(row['FrameNumber'])
+            #     frame_vec = self.COM_helper.drawFigure(frame_vec, original_frame_num)
 
-                # ========== CREATE DYNAMIC LINE PLOT ==========
-                current_time = float(time_tracker[i])
+            # ========== CREATE DYNAMIC LINE PLOT ==========
+            current_time = float(time_tracker[i])
 
-                # Clear and redraw only the vertical line
-                # ax1.cla()
-                # ax2.cla()
+            # Clear and redraw only the vertical line
+            # ax1.cla()
+            # ax2.cla()
 
-                # line1.set_xdata([current_time])
-                # line2.set_xdata([current_time])
+            # line1.set_xdata([current_time])
+            # line2.set_xdata([current_time])
 
-                ax1.set_xlim([lower_x, upper_x])
-                ax2.set_xlim([lower_x, upper_x])
-                if view == "Top View":
-                    ax1.set_ylim([0, ymax * 1.2])
-                    ax2.set_ylim([0, ymax * 1.2])
-                else:
-                    ax1.set_ylim([ymin, ymax * 1.2])
-                    ax2.set_ylim([ymin, ymax * 1.2])
-                # ax1.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
-                # ax2.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
-                # vline1.set_xdata([current_time])
-                # vline2.set_xdata([current_time])
+            ax1.set_xlim([lower_x, upper_x])
+            ax2.set_xlim([lower_x, upper_x])
+            if view == "Top View":
+                ax1.set_ylim([0, ymax * 1.2])
+                ax2.set_ylim([0, ymax * 1.2])
+            else:
+                ax1.set_ylim([ymin, ymax * 1.2])
+                ax2.set_ylim([ymin, ymax * 1.2])
+            # ax1.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
+            # ax2.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
+            # vline1.set_xdata([current_time])
+            # vline2.set_xdata([current_time])
 
-                # Convert to numpy
-                # buf1 = BytesIO()
-                # fig1.savefig(buf1, format='png')
-                # buf1.seek(0)
-                # plot_line_1 = np.array(Image.open(buf1))[:, :, 0:3]
-                # buf1.close()
+            # Convert to numpy
+            # buf1 = BytesIO()
+            # fig1.savefig(buf1, format='png')
+            # buf1.seek(0)
+            # plot_line_1 = np.array(Image.open(buf1))[:, :, 0:3]
+            # buf1.close()
 
-                # buf2 = BytesIO()
-                # fig2.savefig(buf2, format='png')
-                # buf2.seek(0)
-                # plot_line_2 = np.array(Image.open(buf2))[:, :, 0:3]
-                # buf2.close()
+            # buf2 = BytesIO()
+            # fig2.savefig(buf2, format='png')
+            # buf2.seek(0)
+            # plot_line_2 = np.array(Image.open(buf2))[:, :, 0:3]
+            # buf2.close()
 
-                # # Merge static + dynamic
-                # merged_1 = np.minimum(plot_static_1, plot_line_1)
-                # merged_2 = np.minimum(plot_static_2, plot_line_2)
+            # # Merge static + dynamic
+            # merged_1 = np.minimum(plot_static_1, plot_line_1)
+            # merged_2 = np.minimum(plot_static_2, plot_line_2)
 
-                plot1 = plot_static_1.copy()
-                plot2 = plot_static_2.copy()
+            plot1 = plot_static_1.copy()
+            plot2 = plot_static_2.copy()
 
-                # Map time → x pixel inside axes ONLY
-                x1 = int(
-                    ax1_left +
-                    (current_time - lower_x) /
-                    (upper_x - lower_x) *
-                    (ax1_right - ax1_left)
-                )
+            # Map time → x pixel inside axes ONLY
+            x1 = int(
+                ax1_left +
+                (current_time - lower_x) /
+                (upper_x - lower_x) *
+                (ax1_right - ax1_left)
+            )
 
-                x2 = int(
-                    ax2_left +
-                    (current_time - lower_x) /
-                    (upper_x - lower_x) *
-                    (ax2_right - ax2_left)
-                )
+            x2 = int(
+                ax2_left +
+                (current_time - lower_x) /
+                (upper_x - lower_x) *
+                (ax2_right - ax2_left)
+            )
 
-                # Make sure looks dotted and within the height of the graph
-                for y in range(ax1_top_cv, ax1_bottom_cv, 6):
-                    cv2.line(plot1, (x1, y), (x1, y+2), (0,0,255), 2)
+            # Make sure looks dotted and within the height of the graph
+            for y in range(ax1_top_cv, ax1_bottom_cv, 6):
+                cv2.line(plot1, (x1, y), (x1, y+2), (0,0,255), 2)
 
-                for y in range(ax1_top_cv, ax1_bottom_cv, 6):
-                    cv2.line(plot2, (x2, y), (x2, y+2), (0,0,255), 2)
+            for y in range(ax1_top_cv, ax1_bottom_cv, 6):
+                cv2.line(plot2, (x2, y), (x2, y+2), (0,0,255), 2)
 
-                # Combine plots horizontally
-                # gap_width = (video.frame_width - merged_1.shape[1] - merged_2.shape[1]) // 2
-                # if gap_width > 0:
-                #     gap = np.full((merged_1.shape[0], gap_width, 3), 255, dtype=np.uint8)
-                #     graphs = cv2.hconcat([gap, merged_1, merged_2, gap])
-                # else:
-                #     graphs = cv2.hconcat([merged_1, merged_2])
+            # Combine plots horizontally
+            # gap_width = (video.frame_width - merged_1.shape[1] - merged_2.shape[1]) // 2
+            # if gap_width > 0:
+            #     gap = np.full((merged_1.shape[0], gap_width, 3), 255, dtype=np.uint8)
+            #     graphs = cv2.hconcat([gap, merged_1, merged_2, gap])
+            # else:
+            #     graphs = cv2.hconcat([merged_1, merged_2])
 
-                # # Ensure graphs match video width
-                # if graphs.shape[1] != video.frame_width:
-                #     graphs = cv2.resize(graphs, (video.frame_width, graphs.shape[0]))
+            # # Ensure graphs match video width
+            # if graphs.shape[1] != video.frame_width:
+            #     graphs = cv2.resize(graphs, (video.frame_width, graphs.shape[0]))
 
-                gap_width = (video.frame_width - plot1.shape[1] - plot2.shape[1]) // 2
+            gap_width = (video.frame_width - plot1.shape[1] - plot2.shape[1]) // 2
 
-                if gap_width > 0:
-                    gap = np.full((plot1.shape[0], gap_width, 3), 255, dtype=np.uint8)
-                    graphs = cv2.hconcat([gap, plot1, plot2, gap])
-                else:
-                    graphs = cv2.hconcat([plot1, plot2])
+            if gap_width > 0:
+                gap = np.full((plot1.shape[0], gap_width, 3), 255, dtype=np.uint8)
+                graphs = cv2.hconcat([gap, plot1, plot2, gap])
+            else:
+                graphs = cv2.hconcat([plot1, plot2])
 
-                # Stack video on top, graphs on bottom
-                combined = cv2.vconcat([frame_vec, graphs])
+            # Stack video on top, graphs on bottom
+            combined = cv2.vconcat([frame_vec, graphs])
 
-                # Write frame
-                out.write(combined)
-                processed_count += 1
+            # Write frame
+            out.write(combined)
+            processed_count += 1
 
-                # Progress update
-                if processed_count % 30 == 0:
-                    print(f"[SAVE] Processed {processed_count}/{len(dfw)} frames")
-                    # Update GUI to prevent "not responding"
-                    # self.save_window.update()
+            # Progress update
+            if processed_count % 30 == 0:
+                print(f"[SAVE] Processed {processed_count}/{len(dfw)} frames")
+                # Update GUI to prevent "not responding"
+                # self.save_window.update()
             cntr += 1
 
         # ========== CLEANUP ==========
