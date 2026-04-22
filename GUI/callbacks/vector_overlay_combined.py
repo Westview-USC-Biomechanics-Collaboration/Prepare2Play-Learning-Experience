@@ -117,15 +117,15 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
     df_aligned_auto = None
     use_manual      = False
 
-    try:
-        auto_lag, df_aligned_auto, auto_relative_score = new_led(
-            self, view, parent_path, video_file, force_file,
-            use_detection_system=USE_DETECTION_SYSTEM
-        )
-        auto_succeeded = True
-        print(f"[INFO] LED auto-alignment succeeded. Lag: {auto_lag} frames")
-    except Exception as e:
-        print(f"[WARNING] LED auto-alignment failed: {e}")
+    # try:
+    auto_lag, df_aligned_auto, auto_relative_score = new_led(
+        self, view, parent_path, video_file, force_file,
+        use_detection_system=USE_DETECTION_SYSTEM
+    )
+    auto_succeeded = True
+    print(f"[INFO] LED auto-alignment succeeded. Lag: {auto_lag} frames")
+    # except Exception as e:
+    #     print(f"[WARNING] LED auto-alignment failed: {e}")
 
     if auto_succeeded:
         use_manual = messagebox.askyesno(

@@ -662,27 +662,45 @@ class LEDDetector:
             diagnostic_images.append(diagnostic)
                 
         # Calculate median location (robust to outliers)
-        median_x = int(locations_df['CenterX_Full'].median())
-        median_y = int(locations_df['CenterY_Full'].median())
-        
-        # Calculate span to check consistency
-        span_x = int(locations_df['CenterX_Full'].max() - locations_df['CenterX_Full'].min())
-        span_y = int(locations_df['CenterY_Full'].max() - locations_df['CenterY_Full'].min())
-        
-        print(f"\n{self.config.view_name} LED Detection Results:")
-        print(f"  Median location: ({median_x}, {median_y})")
-        print(f"  X span: {span_x} pixels, Y span: {span_y} pixels")
-        print(f"  Force plate swap: {'YES (FP1 ↔ FP2)' if self.config.plate_swap else 'NO (standard)'}")
-        
-        if span_x > 40 or span_y > 40:  # Adjusted threshold for 4K resolution
-            print(f"  ⚠ WARNING: Large variation in detected location!")
-            print(f"  This may indicate detection issues. Check diagnostic images.")
+        try:
+            median_x = int(locations_df['CenterX_Full'].median())
+            median_y = int(locations_df['CenterY_Full'].median())
+            
+            # Calculate span to check consistency
+            span_x = int(locations_df['CenterX_Full'].max() - locations_df['CenterX_Full'].min())
+            span_y = int(locations_df['CenterY_Full'].max() - locations_df['CenterY_Full'].min())
+            
+            print(f"\n{self.config.view_name} LED Detection Results:")
+            print(f"  Median location: ({median_x}, {median_y})")
+            print(f"  X span: {span_x} pixels, Y span: {span_y} pixels")
+            print(f"  Force plate swap: {'YES (FP1 ↔ FP2)' if self.config.plate_swap else 'NO (standard)'}")
+            
+            if span_x > 40 or span_y > 40:  # Adjusted threshold for 4K resolution
+                print(f"  ⚠ WARNING: Large variation in detected location!")
+                print(f"  This may indicate detection issues. Check diagnostic images.")
+            
+            self._save_detection_results(
+                locations_df, diagnostic_images, output_path, 
+                median_x, median_y, span_x, span_y
+            )
+            
+
+        except Exception as e:
+            print(e)
+            median_x = 100
+            median_y = 100
+            span_x = 0
+            span_y = 0
+            # self._save_detection_results(
+            #     locations_df, diagnostic_images, output_path, 
+            #     median_x, median_y, span_x, span_y
+            # )
         
         # Save results
-        self._save_detection_results(
-            locations_df, diagnostic_images, output_path, 
-            median_x, median_y, span_x, span_y
-        )
+        # self._save_detection_results(
+        #     locations_df, diagnostic_images, output_path, 
+        #     median_x, median_y, span_x, span_y
+        # )
         
         cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
         ret, testFrame = cap.read()
@@ -692,6 +710,7 @@ class LEDDetector:
 
         # Draw initial median dot on display image
         img = base_frame.copy()
+
         cv2.circle(img, (int(median_x), int(median_y)), 5, (0, 0, 255), -1)
 
         state = {'img': img.copy(), 'clicked_points': []}
