@@ -634,7 +634,7 @@ class LEDDetector:
             MATCH_THRESHOLD = 0.3
             if max_val < MATCH_THRESHOLD:
                 print(f"  Frame {frame_idx}: Low confidence ({max_val:.2f}), skipping")
-                continue
+                # continue
 
             center_x_crop = max_loc[0] + self.config.template_center_offset_x
             center_y_crop = max_loc[1] + self.config.template_center_offset_y
@@ -691,10 +691,10 @@ class LEDDetector:
             median_y = 100
             span_x = 0
             span_y = 0
-            # self._save_detection_results(
-            #     locations_df, diagnostic_images, output_path, 
-            #     median_x, median_y, span_x, span_y
-            # )
+            self._save_detection_results(
+                locations_df, diagnostic_images, output_path, 
+                median_x, median_y, span_x, span_y
+            )
         
         # Save results
         # self._save_detection_results(
