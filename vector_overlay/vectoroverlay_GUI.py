@@ -19,6 +19,7 @@ def plate_matrix_transformation(x1, y1, x2, y2, video_corners, view):
 
     # # Extract trapezoid coordinates
     (tl_x, tl_y), (tr_x, tr_y), (br_x, br_y), (bl_x, bl_y) = video_corners
+    print(f"Video corners: TL({tl_x}, {tl_y}), TR({tr_x}, {tr_y}), BR({br_x}, {br_y}), BL({bl_x}, {bl_y})")
 
     # # Calculate the left and right edge positions for the current y
     # left_x = bl_x + (tl_x - bl_x) * y
@@ -47,16 +48,20 @@ def plate_matrix_transformation(x1, y1, x2, y2, video_corners, view):
         delta_x = 0.300
         delta_y = 0.902
         pts_plates = np.float32([[delta_x, delta_y], [-delta_x, delta_y], [-delta_x, -delta_y], [delta_x, -delta_y]])
+        print(pts_plates)
     elif view == "Side2 View":
         delta_x = 0.300
         delta_y = 0.902
         pts_plates = np.float32([[-delta_x, -delta_y], [delta_x, -delta_y], [delta_x, delta_y], [-delta_x, delta_y]])
+        print(pts_plates)
     else:
         delta_x = 0.902
         delta_y = 0.300
         pts_plates = np.float32([[-delta_x, delta_y], [delta_x, delta_y], [delta_x, -delta_y], [-delta_x, -delta_y]])
+        print(pts_plates)
 
     pts_video = np.float32([[tl_x, tl_y], [tr_x, tr_y], [br_x, br_y], [bl_x, bl_y]])
+    print(pts_video)
 
     matrix = cv2.getPerspectiveTransform(pts_plates, pts_video)
 
@@ -66,6 +71,8 @@ def plate_matrix_transformation(x1, y1, x2, y2, video_corners, view):
     cop_point2 = np.array([[[x2, y2]]], dtype=np.float32)
     video_coords.append(cv2.perspectiveTransform(cop_point1, matrix).round().astype(np.int32)[0][0])
     video_coords.append(cv2.perspectiveTransform(cop_point2, matrix).round().astype(np.int32)[0][0])
+
+    print(f"Mapped plate coords ({x1:.2f}, {y1:.2f}), ({x2:.2f}, {y2:.2f}) to video coords {video_coords}")
 
     return video_coords[0], video_coords[1]
 
