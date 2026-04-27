@@ -4,10 +4,27 @@ from tkinter import filedialog, messagebox
 import cv2
 from PIL import Image, ImageTk
 import numpy as np
+import numpy
+import pandas as pd
 import matplotlib
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+
+# Raw BioWare column names for .txt files (13-column alternative format)
+BIOWARE_COLUMNS_ALT = [
+    "abs time (s)",
+    "Fx", "Fy", "Fz", "|Ft|", "Ax", "Ay",
+    "Fx.1", "Fy.1", "Fz.1", "|Ft|.1", "Ax.1", "Ay.1"
+]
+
+# Full BioWare column names including COM columns (19-column format)
+BIOWARE_COLUMNS_FULL = [
+    "abs time (s)",
+    "Fx", "Fy", "Fz", "|Ft|", "Ax", "Ay", "COM px", "COM py", "COM pz",
+    "Fx.1", "Fy.1", "Fz.1", "|Ft|.1", "Ax.1", "Ay.1", "COM px.1", "COM py.1", "COM pz.1"
+]
 
 
 class AlignmentGUI:
@@ -17,7 +34,7 @@ class AlignmentGUI:
         ----------
         video  : VideoState object (has .path, .cam, .fps, .total_frames)
                  or a plain path string
-        force  : Force object (has .data as a pandas DataFrame)
+        force  : ForceState object (has .data as a pandas DataFrame and .path)
                  or a plain path string
         """
         self.root = root
@@ -38,7 +55,7 @@ class AlignmentGUI:
         self._vline_label = None        # legend entry for the vline
         self.selected_plate = None      # set in _build_ui
         self.selected_component = None  # set in _build_ui
-        self.video_fps = 30
+        self.video_fps = 120.0          # always 120 fps for this pipeline
         self.current_frame = 0
         self.playing = False
 
@@ -59,7 +76,8 @@ class AlignmentGUI:
             # Reuse the already-open VideoCapture from VideoState
             self.cap = video.cam
             self._owns_cap = False
-            self.video_fps = video.fps if hasattr(video, "fps") and video.fps else 30
+            # Always use 120.0 for force alignment math regardless of actual camera fps
+            self.video_fps = 120.0
             total = video.total_frames if hasattr(video, "total_frames") else int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         else:
             # Fall back to opening by path
@@ -69,7 +87,7 @@ class AlignmentGUI:
                 return
             self.cap = cv2.VideoCapture(path)
             self._owns_cap = True
-            self.video_fps = self.cap.get(cv2.CAP_PROP_FPS) or 30
+            self.video_fps = 120.0
             total = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         self.frame_slider.config(to=max(total - 1, 1))
@@ -84,13 +102,20 @@ class AlignmentGUI:
         self.root.after(100, lambda: self.show_frame(0))
 
     def _init_force(self, force):
-        """Accept a Force object (with .data DataFrame) or a plain path string."""
-        if hasattr(force, "data") and force.data is not None:
-            self._load_force_from_dataframe(force.data)
-        elif hasattr(force, "path") and force.path:
+        """
+        Accept a ForceState object (with .path) or a plain path string.
+        Always reads from the raw file on disk — same as new_led() — so that
+        column names are raw BioWare names (Fz, Fz.1) and FP2 data is intact.
+        """
+        if hasattr(force, "path") and force.path:
             self._load_force_from_path(force.path)
+        elif isinstance(force, str) and os.path.exists(force):
+            self._load_force_from_path(force)
+        elif hasattr(force, "data") and force.data is not None:
+            # Fallback only — prefer path-based loading
+            self._load_force_from_dataframe(force.data)
         else:
-            self._load_force_from_path(str(force))
+            messagebox.showerror("Force Error", "Could not determine force file path.")
 
     # ── UI Layout ─────────────────────────────────────────────────────────
     def _build_ui(self):
@@ -98,8 +123,8 @@ class AlignmentGUI:
         btn_frame = tk.Frame(self.root, pady=6, padx=6)
         btn_frame.pack(side="top", fill="x")
 
-        tk.Button(btn_frame, text="Load Video",       command=self.load_video,       width=14).pack(side="left", padx=4)
-        tk.Button(btn_frame, text="Load Force Data",  command=self.load_force,       width=14).pack(side="left", padx=4)
+        tk.Button(btn_frame, text="Load Video",        command=self.load_video,       width=14).pack(side="left", padx=4)
+        tk.Button(btn_frame, text="Load Force Data",   command=self.load_force,       width=14).pack(side="left", padx=4)
         tk.Button(btn_frame, text="✓ Confirm & Close", command=self.export_alignment, width=16).pack(side="right", padx=4)
 
         # Bottom controls — packed BEFORE content so they're never clipped
@@ -120,12 +145,12 @@ class AlignmentGUI:
         self.frame_slider.pack(side="left", padx=6)
         self.frame_label = tk.Label(row0, text="0 / 0", width=12)
         self.frame_label.pack(side="left")
-        tk.Button(row0, text="◀ -1",   command=lambda: self.step_frame(-1), width=5).pack(side="left", padx=2)
-        tk.Button(row0, text="▶ Play",  command=self.play,  width=8).pack(side="left", padx=2)
-        tk.Button(row0, text="⏸ Pause", command=self.pause, width=8).pack(side="left", padx=2)
-        tk.Button(row0, text="+1 ▶",   command=lambda: self.step_frame(+1), width=5).pack(side="left", padx=2)
+        tk.Button(row0, text="◀ -1",    command=lambda: self.step_frame(-1), width=5).pack(side="left", padx=2)
+        tk.Button(row0, text="▶ Play",   command=self.play,  width=8).pack(side="left", padx=2)
+        tk.Button(row0, text="⏸ Pause",  command=self.pause, width=8).pack(side="left", padx=2)
+        tk.Button(row0, text="+1 ▶",    command=lambda: self.step_frame(+1), width=5).pack(side="left", padx=2)
 
-        # Row 1 — Mark Video / Mark Force buttons (original alignCallback style)
+        # Row 1 — Mark Video / Mark Force buttons
         row1 = tk.Frame(ctrl)
         row1.pack(fill="x", pady=4)
 
@@ -133,34 +158,34 @@ class AlignmentGUI:
                   font=("Arial", 10, "bold"), width=14,
                   command=self.mark_video).pack(side="left", padx=8)
         self.video_mark_label = tk.Label(row1, text="Video mark: not set",
-                                          fg="#4a90d9", width=22, anchor="w")
+                                         fg="#4a90d9", width=22, anchor="w")
         self.video_mark_label.pack(side="left", padx=4)
 
         tk.Button(row1, text="📍 Mark Force", bg="#e07b39", fg="white",
                   font=("Arial", 10, "bold"), width=14,
                   command=self.mark_force).pack(side="left", padx=8)
         self.force_mark_label = tk.Label(row1, text="Force mark: not set",
-                                          fg="#e07b39", width=22, anchor="w")
+                                         fg="#e07b39", width=22, anchor="w")
         self.force_mark_label.pack(side="left", padx=4)
 
         self.align_status_label = tk.Label(row1, text="", fg="green",
-                                            font=("Arial", 9))
+                                           font=("Arial", 9))
         self.align_status_label.pack(side="left", padx=8)
 
-        # Row 3 — graph channel selector (matches graphOptionCallback style)
-        row3 = tk.Frame(ctrl)
-        row3.pack(fill="x", pady=2)
+        # Row 2 — graph channel selector
+        row2 = tk.Frame(ctrl)
+        row2.pack(fill="x", pady=2)
 
-        tk.Label(row3, text="Force Plate:").pack(side="left")
+        tk.Label(row2, text="Force Plate:").pack(side="left")
         self.selected_plate = tk.StringVar(value="Both")
         for text, val in [("Both", "Both"), ("FP1", "Force Plate 1"), ("FP2", "Force Plate 2")]:
-            tk.Radiobutton(row3, text=text, variable=self.selected_plate, value=val,
+            tk.Radiobutton(row2, text=text, variable=self.selected_plate, value=val,
                            command=self.update_plot).pack(side="left", padx=4)
 
-        tk.Label(row3, text="   Component:").pack(side="left")
+        tk.Label(row2, text="   Component:").pack(side="left")
         self.selected_component = tk.StringVar(value="Fz")
         for comp in ("Fx", "Fy", "Fz", "Ax", "Ay"):
-            tk.Radiobutton(row3, text=comp, variable=self.selected_component, value=comp,
+            tk.Radiobutton(row2, text=comp, variable=self.selected_component, value=comp,
                            command=self.update_plot).pack(side="left", padx=3)
 
         # Middle: video (fixed width) + force plot (expands)
@@ -216,59 +241,104 @@ class AlignmentGUI:
             self.cap.release()
         self.cap = cv2.VideoCapture(path)
         self._owns_cap = True
-        self.video_fps = self.cap.get(cv2.CAP_PROP_FPS) or 30
+        self.video_fps = 120.0
         total = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         self.frame_slider.config(to=max(total - 1, 1))
         self.frame_var.set(0)
         self.root.title(f"Alignment Tool — {os.path.basename(path)}")
         self.show_frame(0)
 
+    def _load_force_from_path(self, path):
+        """
+        Load force data directly from disk — same approach as new_led() — so that
+        raw BioWare column names are preserved and FP2 data is never corrupted by
+        FileFormatter's column assignment logic.
+        """
+        if not path or not os.path.exists(path):
+            messagebox.showerror("File Not Found", f"Force file not found:\n{path}")
+            return
+        try:
+            ext = os.path.splitext(path)[1].lower()
+
+            if ext in (".xlsx", ".xls"):
+                # Excel: try skiprows=18 first (BioWare export format)
+                df = pd.read_excel(path, skiprows=18)
+                df = df.apply(pd.to_numeric, errors="coerce")
+
+            elif ext == ".csv":
+                # CSV: try skiprows=19 to match BioWare text format
+                try:
+                    df = pd.read_csv(path, skiprows=19)
+                except Exception:
+                    df = pd.read_csv(path)
+                df = df.apply(pd.to_numeric, errors="coerce")
+
+            else:
+                # Raw BioWare .txt — use numpy.loadtxt with skiprows=19
+                # exactly like new_led() does
+                raw = numpy.loadtxt(path, skiprows=19)
+                n_cols = raw.shape[1]
+
+                if n_cols == len(BIOWARE_COLUMNS_FULL):
+                    cols = BIOWARE_COLUMNS_FULL
+                elif n_cols == len(BIOWARE_COLUMNS_ALT):
+                    cols = BIOWARE_COLUMNS_ALT
+                else:
+                    # Best effort: use as many column names as we have
+                    cols = BIOWARE_COLUMNS_FULL[:n_cols] if n_cols <= len(BIOWARE_COLUMNS_FULL) else \
+                           [f"col_{i}" for i in range(n_cols)]
+                    print(f"[AlignmentGUI] Unexpected column count {n_cols}, using fallback names")
+
+                df = pd.DataFrame(raw, columns=cols)
+
+            print(f"[AlignmentGUI] Loaded force file: {os.path.basename(path)}")
+            print(f"[AlignmentGUI] Columns ({len(df.columns)}): {list(df.columns)}")
+
+            self._load_force_from_dataframe(df)
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            messagebox.showerror("Load Error", f"Could not parse force file:\n{path}\n\n{e}")
+
     def _load_force_from_dataframe(self, df):
         """
-        Extract time, FP1 Fz, and FP2 Fz from the force DataFrame.
-
-        Supports both raw column names from the BioWare text file
-        (Fz at position index 3, Fz.1 at position index 9) and the
-        already-renamed FP1_Fz / FP2_Fz names used elsewhere in the pipeline.
+        Extract time, FP1 Fz, and FP2 Fz from a force DataFrame.
+        Supports both raw BioWare names (Fz, Fz.1) and pipeline names (Fz1, Fz2, FP1_Fz, FP2_Fz).
         """
         try:
+            df = df.copy()
+
             # ── Time axis ────────────────────────────────────────────────
             time_candidates = ['abs time (s)', 'Time(s)', 'time', 'Time']
             time_col = next((c for c in time_candidates if c in df.columns), None)
             if time_col:
                 self.force_time = df[time_col].to_numpy(dtype=float)
             else:
-                # Fall back to row index converted to seconds at 1200 Hz
                 self.force_time = np.arange(len(df)) / 1200.0
 
             # ── FP1 vertical force (Fz) ──────────────────────────────────
-            fp1_candidates = ['Fz1', 'FP1_Fz', 'Fz']
+            fp1_candidates = ['Fz', 'Fz1', 'FP1_Fz']
             fp1_col = next((c for c in fp1_candidates if c in df.columns), None)
             self.force_fp1 = df[fp1_col].to_numpy(dtype=float) if fp1_col else np.zeros(len(df))
 
             # ── FP2 vertical force (Fz) ──────────────────────────────────
-            fp2_candidates = ['Fz2', 'FP2_Fz', 'Fz.1']
+            fp2_candidates = ['Fz.1', 'Fz2', 'FP2_Fz']
             fp2_col = next((c for c in fp2_candidates if c in df.columns), None)
             self.force_fp2 = df[fp2_col].to_numpy(dtype=float) if fp2_col else np.zeros(len(df))
 
-            # ── Drop rows where time is NaN ───────────────────────────────
-            valid = ~np.isnan(self.force_time)
-            df_valid = df.reset_index(drop=True).loc[valid].reset_index(drop=True)
-            self.force_time = self.force_time[valid]
-            self.force_fp1  = self.force_fp1[valid]
-            self.force_fp2  = self.force_fp2[valid]
+            print(f"[AlignmentGUI] FP1 col: {fp1_col}, max={self.force_fp1.max():.2f}")
+            print(f"[AlignmentGUI] FP2 col: {fp2_col}, max={self.force_fp2.max():.2f}")
 
-            # ── Subsample to match video fps (1200 Hz / 120 fps = every 10th row)
-            # Video is always 120 fps, so step = 1200 / 120 = 10.
-            # This means 1 force sample = 1 video frame, so the red line
-            # moves exactly in sync with the force data during playback.
+            # ── Subsample to 1 row per video frame (1200 Hz / 120 fps = step 10) ──
             force_hz  = 1200.0
-            video_fps = 120.0  # video is always 120 fps
-            step = 10          # 1200 / 120 = 10
+            video_fps = 120.0
+            step      = 10        # always 10 for this pipeline
+
             self.force_time = self.force_time[::step]
             self.force_fp1  = self.force_fp1[::step]
             self.force_fp2  = self.force_fp2[::step]
-            self.force_df   = df_valid.iloc[::step].reset_index(drop=True)
+            self.force_df   = df.iloc[::step].reset_index(drop=True)
 
             # Keep force_data pointing to FP1 for backward compatibility
             self.force_data = self.force_fp1
@@ -278,38 +348,30 @@ class AlignmentGUI:
             print(f"[AlignmentGUI] force_df columns: {list(self.force_df.columns)}")
 
             self.update_plot()
+            self._auto_zoom_to_activity()
+
         except Exception as e:
             import traceback
             traceback.print_exc()
             messagebox.showerror("Force Data Error", f"Could not read force DataFrame:\n{e}")
 
-    def _load_force_from_path(self, path):
-        """Fallback: parse force file from disk using the same formats your app supports."""
-        if not path or not os.path.exists(path):
-            messagebox.showerror("File Not Found", f"Force file not found:\n{path}")
+    def _auto_zoom_to_activity(self):
+        """After loading force data, zoom plot to where FP1 force activity begins."""
+        if self.force_time is None or self.force_fp1 is None:
             return
-        try:
-            import pandas as pd
-            if path.endswith(".xlsx") or path.endswith(".xls"):
-                df = pd.read_excel(path)
-            elif path.endswith(".csv"):
-                df = pd.read_csv(path)
-            else:
-                df = None
-                for sep in (",", "\t", r"\s+"):
-                    try:
-                        candidate = pd.read_csv(path, sep=sep, engine="python")
-                        if candidate.shape[1] > 1:
-                            df = candidate
-                            break
-                    except Exception:
-                        continue
-                if df is None:
-                    raise ValueError("Could not parse with comma, tab, or whitespace delimiters.")
-            df = df.apply(pd.to_numeric, errors="coerce")
-            self._load_force_from_dataframe(df)
-        except Exception as e:
-            messagebox.showerror("Load Error", f"Could not parse force file:\n{path}\n\n{e}")
+
+        threshold = 50  # N
+        active = np.abs(self.force_fp1) > threshold
+
+        if not active.any():
+            return
+
+        first_active_idx = int(np.argmax(active))
+        t_start = self.force_time[max(0, first_active_idx - 50)]
+        t_end   = self.force_time[min(len(self.force_time) - 1, first_active_idx + 500)]
+
+        self.ax.set_xlim(t_start, t_end)
+        self.canvas.draw()
 
     # ── Playback ──────────────────────────────────────────────────────────
     def _render_video_frame(self, frame_idx):
@@ -332,20 +394,19 @@ class AlignmentGUI:
 
     def _update_vline(self):
         """During playback, just move the red vertical line without full redraw."""
-        if self.force_time is None or not hasattr(self, "_vline"):
+        if self.force_time is None or self._vline is None:
             return
         t = self.current_frame / self.video_fps
-        if self._vline is not None:
-            self._vline.set_xdata([t, t])
-            self._vline_label.set_text(f"Video t={t:.3f}s")
-            self.canvas.draw_idle()  # lightweight — only redraws what changed
+        self._vline.set_xdata([t, t])
+        self._vline_label.set_text(f"Video t={t:.3f}s")
+        self.canvas.draw_idle()
 
     def show_frame(self, frame_idx):
         """Full update: render video frame + redraw entire plot."""
         if self.cap is None:
             return
         self._render_video_frame(frame_idx)
-        self.update_plot()  # full redraw including vline
+        self.update_plot()
 
     def _show_frame_fast(self, frame_idx):
         """Fast update for playback: render video frame + move vline only."""
@@ -380,47 +441,43 @@ class AlignmentGUI:
             self.playing = False
             return
         self.frame_var.set(next_frame)
-        # During playback only move the vline — skip full redraw for performance
         self._show_frame_fast(next_frame)
         self.root.after(int(1000 / self.video_fps), self._play_loop)
 
-    # ── Alignment ─────────────────────────────────────────────────────────
-
-
+    # ── Force column lookup ───────────────────────────────────────────────
     def _get_force_column(self, plate_label, component):
         """
         Return a numpy array for the requested plate + component combination.
-        Checks renamed pipeline names (FP1_Fz) then raw BioWare names (Fz, Fz.1).
-        force_df is already filtered to the same valid rows as force_time.
+        Checks raw BioWare names first (Fz, Fz.1), then FileFormatter names
+        (Fz1, Fz2), then pipeline renamed names (FP1_Fz, FP2_Fz).
         """
         if self.force_df is None:
-            print(f"[_get_force_column] force_df is None")
             return None
 
-        # Map (plate, component) → candidate column names in priority order
-        # Covers: Fz1/Fz2 style (your app), FP1_Fz/FP2_Fz (pipeline renamed), Fz/Fz.1 (raw BioWare)
+        # Priority: raw BioWare → FileFormatter → pipeline renamed
         col_map = {
-            ("Force Plate 1", "Fx"): ["Fx1", "FP1_Fx", "Fx"],
-            ("Force Plate 1", "Fy"): ["Fy1", "FP1_Fy", "Fy"],
-            ("Force Plate 1", "Fz"): ["Fz1", "FP1_Fz", "Fz"],
-            ("Force Plate 1", "Ax"): ["Ax1", "FP1_Ax", "Ax"],
-            ("Force Plate 1", "Ay"): ["Ay1", "FP1_Ay", "Ay"],
-            ("Force Plate 2", "Fx"): ["Fx2", "FP2_Fx", "Fx.1"],
-            ("Force Plate 2", "Fy"): ["Fy2", "FP2_Fy", "Fy.1"],
-            ("Force Plate 2", "Fz"): ["Fz2", "FP2_Fz", "Fz.1"],
-            ("Force Plate 2", "Ax"): ["Ax2", "FP2_Ax", "Ax.1"],
-            ("Force Plate 2", "Ay"): ["Ay2", "FP2_Ay", "Ay.1"],
+            ("Force Plate 1", "Fx"): ["Fx",   "Fx1",   "FP1_Fx"],
+            ("Force Plate 1", "Fy"): ["Fy",   "Fy1",   "FP1_Fy"],
+            ("Force Plate 1", "Fz"): ["Fz",   "Fz1",   "FP1_Fz"],
+            ("Force Plate 1", "Ax"): ["Ax",   "Ax1",   "FP1_Ax"],
+            ("Force Plate 1", "Ay"): ["Ay",   "Ay1",   "FP1_Ay"],
+            ("Force Plate 2", "Fx"): ["Fx.1", "Fx2",   "FP2_Fx"],
+            ("Force Plate 2", "Fy"): ["Fy.1", "Fy2",   "FP2_Fy"],
+            ("Force Plate 2", "Fz"): ["Fz.1", "Fz2",   "FP2_Fz"],
+            ("Force Plate 2", "Ax"): ["Ax.1", "Ax2",   "FP2_Ax"],
+            ("Force Plate 2", "Ay"): ["Ay.1", "Ay2",   "FP2_Ay"],
         }
+
         candidates = col_map.get((plate_label, component), [])
-        print(f"[_get_force_column] plate={plate_label}, comp={component}, trying: {candidates}")
-        print(f"[_get_force_column] available cols: {list(self.force_df.columns)}")
         for col in candidates:
             if col in self.force_df.columns:
-                print(f"[_get_force_column] found column: {col}")
                 return self.force_df[col].to_numpy(dtype=float)
-        print(f"[_get_force_column] NO matching column found")
+
+        print(f"[_get_force_column] No match for ({plate_label}, {component}). "
+              f"Available: {list(self.force_df.columns)}")
         return None
 
+    # ── Plot ──────────────────────────────────────────────────────────────
     def update_plot(self):
         if self.force_time is None:
             return
@@ -432,11 +489,7 @@ class AlignmentGUI:
         comp_sel  = self.selected_component.get() if self.selected_component else "Fz"
 
         colors = {"Force Plate 1": "steelblue", "Force Plate 2": "darkorange"}
-
-        if plate_sel == "Both":
-            plates = ["Force Plate 1", "Force Plate 2"]
-        else:
-            plates = [plate_sel]
+        plates = ["Force Plate 1", "Force Plate 2"] if plate_sel == "Both" else [plate_sel]
 
         for plate in plates:
             arr = self._get_force_column(plate, comp_sel)
@@ -444,11 +497,11 @@ class AlignmentGUI:
                 label = f"FP1 {comp_sel}" if plate == "Force Plate 1" else f"FP2 {comp_sel}"
                 self.ax.plot(shifted_time, arr, color=colors[plate], linewidth=1, label=label)
 
-        # Red vertical line at current video timestamp — store reference for fast updates
+        # Red vertical line at current video timestamp
         if self.cap is not None:
             t = self.current_frame / self.video_fps
-            self._vline = self.ax.axvline(x=t, color="red", linestyle="--", linewidth=1.5, label=f"Video t={t:.3f}s")
-            # Keep a handle to the legend text so _update_vline can update it
+            self._vline = self.ax.axvline(x=t, color="red", linestyle="--",
+                                          linewidth=1.5, label=f"Video t={t:.3f}s")
             self._vline_label = self._vline
 
         self.ax.set_xlabel("Time (s)")
@@ -458,9 +511,9 @@ class AlignmentGUI:
         self.fig.tight_layout(pad=2)
         self.canvas.draw()
 
-    # ── Export ────────────────────────────────────────────────────────────
+    # ── Alignment marks ───────────────────────────────────────────────────
     def mark_video(self):
-        """Mark current video frame as the alignment point — replicates label_video()."""
+        """Mark current video frame as the alignment point."""
         self.video_align = self.current_frame
         self.video_mark_label.config(text=f"Video mark: frame {self.video_align}")
         self._update_align_status()
@@ -468,10 +521,10 @@ class AlignmentGUI:
 
     def mark_force(self):
         """
-        Mark current force position as the alignment point — replicates label_force().
-        Force position = current_frame (same slider drives both), since the force
-        plot's red line is at current_frame / video_fps in time.
-        We store it as a frame number matching the original alignCallback convention.
+        Mark current force position as the alignment point.
+        Stored as a frame number (current_frame) since the force plot's red line
+        is at current_frame / video_fps in time, and 1 frame = 1 force sample
+        after the step-10 subsampling.
         """
         self.force_align = self.current_frame
         self.force_mark_label.config(text=f"Force mark: frame {self.force_align}")
@@ -483,18 +536,19 @@ class AlignmentGUI:
         if self.video_align != 0 or self.force_align != 0:
             offset = self.force_align - self.video_align
             self.align_status_label.config(
-                text=f"offset = {offset} frames  "
-                     f"({offset / self.video_fps:.3f}s)"
+                text=f"offset = {offset} frames  ({offset / self.video_fps:.3f}s)"
             )
 
+    # ── Export ────────────────────────────────────────────────────────────
     def export_alignment(self):
         """Confirm and close — video_align and force_align are read by the caller."""
         if self.video_align == 0 and self.force_align == 0:
-            from tkinter import messagebox
-            if not messagebox.askyesno("No marks set",
-                    "Neither Video nor Force has been marked."
-                    "Confirm with offset = 0 (no alignment)?",
-                parent=self.root):
+            if not messagebox.askyesno(
+                "No marks set",
+                "Neither Video nor Force has been marked.\n"
+                "Confirm with offset = 0 (no alignment)?",
+                parent=self.root
+            ):
                 return
         self.playing = False
         print(f"[AlignmentGUI] Confirmed: "

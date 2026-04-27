@@ -143,6 +143,9 @@ def process(self, view, newVideo):
             self.VideoList.append(newVideo)
             self.view_list.append(self.selected_view.get())
             print(f"[INFO] There are {len(self.VideoList)} videos ready for processing and {len(self.view_list)} views")
+            # Read rotation metadata that OpenCV ignores
+            rotation = int(newVideo.cam.get(cv2.CAP_PROP_ORIENTATION_META))
+            print(f"[VideoState] Rotation metadata: {rotation}°")
         else:
             self.LED_Video = newVideo
             print(f"[INFO] LED video loaded with path: {self.LED_Video.path}")

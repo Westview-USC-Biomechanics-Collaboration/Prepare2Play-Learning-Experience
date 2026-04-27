@@ -22,6 +22,12 @@ USE_DETECTION_SYSTEM = True
 
 FORCE_HZ = 1200
 
+class ForceProxy:
+    """Lightweight wrapper so AlignmentGUI gets a copy of Force.data, not the original."""
+    def __init__(self, force):
+        self.data = force.data.copy()
+        self.path = force.path
+
 
 def _apply_alignment(force_df, force_align, video_align, step_size):
     """
@@ -143,13 +149,16 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
         )
         use_manual = True
 
+    print(f"[DEBUG] self.Force.data['Fz2'] max: {self.Force.data['Fz2'].max()}")
+    print(f"[DEBUG] self.Force.data['Fz2'] mean: {self.Force.data['Fz2'].mean()}") 
+
     if use_manual:
         print("[INFO] Opening manual alignment window...")
         alignment_root = tk.Toplevel(self.master)
-        app = AlignmentGUI(alignment_root, video, self.Force)
+        app = AlignmentGUI(alignment_root, video, self.Force.path)
         self.master.wait_window(alignment_root)
 
-        video_fps  = app.video_fps if app.video_fps else 59
+        video_fps  = 120.0
         step_size  = round(FORCE_HZ / video_fps)  # force rows per video frame
 
         # Both are FRAME NUMBERS — exact same units as original alignCallback.
@@ -160,6 +169,9 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
         print(f"[INFO] video_fps={video_fps}, step_size={step_size}")
         print(f"[INFO] video_align={video_align} frames, force_align={force_align} frames")
         print(f"[INFO] offset={force_align - video_align} frames")
+
+        print(f"[DEBUG] self.Force.data['Fz2'] max: {self.Force.data['Fz2'].max()}")
+        print(f"[DEBUG] self.Force.data['Fz2'] mean: {self.Force.data['Fz2'].mean()}")      
 
         df_aligned = _apply_alignment(
             self.Force.data.copy(),
@@ -221,6 +233,16 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
         boundary_end   = int(df_aligned['FrameNumber'].max())
         self.state.boundary_start = boundary_start
         self.state.boundary_end   = boundary_end
+    
+    print(f"[DEBUG] FP2_Fz in boundary region ({boundary_start}-{boundary_end}):")
+    subset = df_aligned[(df_aligned['FrameNumber'] >= boundary_start) & (df_aligned['FrameNumber'] <= boundary_end)]
+    print(subset['FP2_Fz'].describe())
+    print(f"NaN count: {subset['FP2_Fz'].isna().sum()} / {len(subset)}")
+
+    print(f"[DEBUG] FP2_Fz max across ENTIRE df_aligned: {df_aligned['FP2_Fz'].max()}")
+    print(f"[DEBUG] FP2_Fz max frame: {df_aligned.loc[df_aligned['FP2_Fz'].idxmax(), 'FrameNumber']}")
+    print(f"[DEBUG] Boundary window: {boundary_start}-{boundary_end}")
+    print(f"[DEBUG] Auto lag was: {auto_lag} frames")
 
     # ======================================================================
     # STEP 3: COM CALCULATION

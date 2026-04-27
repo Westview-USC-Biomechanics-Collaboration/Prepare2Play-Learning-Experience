@@ -19,7 +19,7 @@ def plate_matrix_transformation(x1, y1, x2, y2, video_corners, view):
 
     # # Extract trapezoid coordinates
     (tl_x, tl_y), (tr_x, tr_y), (br_x, br_y), (bl_x, bl_y) = video_corners
-    print(f"Video corners: TL({tl_x}, {tl_y}), TR({tr_x}, {tr_y}), BR({br_x}, {br_y}), BL({bl_x}, {bl_y})")
+    # print(f"Video corners: TL({tl_x}, {tl_y}), TR({tr_x}, {tr_y}), BR({br_x}, {br_y}), BL({bl_x}, {bl_y})")
 
     # # Calculate the left and right edge positions for the current y
     # left_x = bl_x + (tl_x - bl_x) * y
@@ -48,20 +48,20 @@ def plate_matrix_transformation(x1, y1, x2, y2, video_corners, view):
         delta_x = 0.300
         delta_y = 0.902
         pts_plates = np.float32([[delta_x, delta_y], [-delta_x, delta_y], [-delta_x, -delta_y], [delta_x, -delta_y]])
-        print(pts_plates)
+        # print(pts_plates)
     elif view == "Side2 View":
         delta_x = 0.300
         delta_y = 0.902
         pts_plates = np.float32([[-delta_x, -delta_y], [delta_x, -delta_y], [delta_x, delta_y], [-delta_x, delta_y]])
-        print(pts_plates)
+        # print(pts_plates)
     else:
         delta_x = 0.902
         delta_y = 0.300
         pts_plates = np.float32([[-delta_x, delta_y], [delta_x, delta_y], [delta_x, -delta_y], [-delta_x, -delta_y]])
-        print(pts_plates)
+        # print(pts_plates)
 
     pts_video = np.float32([[tl_x, tl_y], [tr_x, tr_y], [br_x, br_y], [bl_x, bl_y]])
-    print(pts_video)
+    # print(pts_video)
 
     matrix = cv2.getPerspectiveTransform(pts_plates, pts_video)
 
@@ -72,7 +72,7 @@ def plate_matrix_transformation(x1, y1, x2, y2, video_corners, view):
     video_coords.append(cv2.perspectiveTransform(cop_point1, matrix).round().astype(np.int32)[0][0])
     video_coords.append(cv2.perspectiveTransform(cop_point2, matrix).round().astype(np.int32)[0][0])
 
-    print(f"Mapped plate coords ({x1:.2f}, {y1:.2f}), ({x2:.2f}, {y2:.2f}) to video coords {video_coords}")
+    # print(f"Mapped plate coords ({x1:.2f}, {y1:.2f}), ({x2:.2f}, {y2:.2f}) to video coords {video_coords}")
 
     return video_coords[0], video_coords[1]
 
@@ -860,10 +860,12 @@ class VectorOverlay:
             raw_F2_Fx = float(F2_Fx[i] or 0.0)
             raw_F2_Fy = float(F2_Fy[i] or 0.0)
 
-            fx1 = -raw_F1_Fy * scale_factor
-            fx2 = -raw_F2_Fy * scale_factor
-            fy1 = -raw_F1_Fx * scale_factor
-            fy2 = -raw_F2_Fx * scale_factor
+            flip_factor = -1 # originally negative one when led on bottom of frame
+
+            fx1 = flip_factor * raw_F1_Fy * scale_factor
+            fx2 = flip_factor * raw_F2_Fy * scale_factor
+            fy1 = flip_factor * raw_F1_Fx * scale_factor
+            fy2 = flip_factor * raw_F2_Fx * scale_factor
 
 
             # ----- TOP VIEW pressure mapping (match your working version) -----
@@ -1027,10 +1029,16 @@ class VectorOverlay:
             raw_F2_Fx = float(F2_Fx[i] or 0.0)
             raw_F2_Fz = float(F2_Fz[i] or 0.0)
 
-            fx1 = raw_F1_Fx * scale_factor
-            fy1 = raw_F1_Fz * scale_factor
-            fx2 = raw_F2_Fx * scale_factor
-            fy2 = raw_F2_Fz * scale_factor
+            if self.view == "Side2 View":
+                fx1 = -raw_F1_Fx * scale_factor
+                fy1 = raw_F1_Fz * scale_factor
+                fx2 = -raw_F2_Fx * scale_factor
+                fy2 = raw_F2_Fz * scale_factor
+            else:
+                fx1 = raw_F1_Fx * scale_factor
+                fy1 = raw_F1_Fz * scale_factor
+                fx2 = raw_F2_Fx * scale_factor
+                fy2 = raw_F2_Fz * scale_factor
 
             # Pressure mapping for side views
             ax1 = float(Ax1[i] or 0.0)
