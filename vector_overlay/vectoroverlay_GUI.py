@@ -508,11 +508,11 @@ class VectorOverlay:
         end_point_2 = (int(point_pair2[0] + xf2), int(point_pair2[1] - yf2))
 
         # Draw arrows with different colors for each plate
-        cv.arrowedLine(frame, point_pair1, end_point_1, (0, 255, 0), 4)  # Green for plate 1 
-        cv.arrowedLine(frame, point_pair2, end_point_2, (255, 0, 0), 4)  # Blue for plate 2
+        cv.arrowedLine(frame, point_pair1, end_point_1, (0, 255, 0), 8)  # Green for plate 1 
+        cv.arrowedLine(frame, point_pair2, end_point_2, (255, 255, 0), 8)  # Light Blue for plate 2
         if self.view == "Top View":
-            cv.arrowedLine(frame, point_pair1, end_point_1, (255, 0 ,200), 4)  # Purple for plate 1
-            cv.arrowedLine(frame, point_pair2, end_point_2, (0, 165, 255), 4)  # Orange for plate 2
+            cv.arrowedLine(frame, point_pair1, end_point_1, (255, 0 ,200), 12)  # Purple for plate 1
+            cv.arrowedLine(frame, point_pair2, end_point_2, (0, 165, 255), 12)  # Orange for plate 2
 
     def scale_factor(self, x1, x2, y1, y2):
         max_force = max(
@@ -860,7 +860,7 @@ class VectorOverlay:
             raw_F2_Fx = float(F2_Fx[i] or 0.0)
             raw_F2_Fy = float(F2_Fy[i] or 0.0)
 
-            flip_factor = -1 # originally negative one when led on bottom of frame
+            flip_factor = 1 # originally negative one when led on bottom of frame
 
             fx1 = flip_factor * raw_F1_Fy * scale_factor
             fx2 = flip_factor * raw_F2_Fy * scale_factor

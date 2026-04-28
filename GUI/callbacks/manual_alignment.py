@@ -12,19 +12,14 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
-# Raw BioWare column names for .txt files (13-column alternative format)
-BIOWARE_COLUMNS_ALT = [
-    "abs time (s)",
-    "Fx", "Fy", "Fz", "|Ft|", "Ax", "Ay",
-    "Fx.1", "Fy.1", "Fz.1", "|Ft|.1", "Ax.1", "Ay.1"
-]
+# New text file format
+BIOWARE_COLUMNS_ALT = ["abs time (s)", "Fx1", "Fy1", "Fz1", "|Ft1|", "Ax1", "Ay1",
+                        "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "Fx3", "Fy3", "Fz3", "|Ft3|", "Ax3", "Ay3"]
 
-# Full BioWare column names including COM columns (19-column format)
-BIOWARE_COLUMNS_FULL = [
-    "abs time (s)",
-    "Fx", "Fy", "Fz", "|Ft|", "Ax", "Ay", "COM px", "COM py", "COM pz",
-    "Fx.1", "Fy.1", "Fz.1", "|Ft|.1", "Ax.1", "Ay.1", "COM px.1", "COM py.1", "COM pz.1"
-]
+# Full BioWare column names including COM columns 
+BIOWARE_COLUMNS_FULL = ["abs time (s)", "Fx1", "Fy1", "Fz1", "|Ft1|", "Ax1", "Ay1", "COM px1", "COM py1", "COM pz1",
+                        "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "COM px2", "COM py2", "COM pz2", "Fx3", "Fy3", "Fz3", "|Ft3|", "Ax3", "Ay3", "COM px3", "COM py3", "COM pz3"]
+        
 
 
 class AlignmentGUI:
@@ -309,6 +304,16 @@ class AlignmentGUI:
         try:
             df = df.copy()
 
+            # ── Diagnostic: show all columns and their max values ────────
+            print(f"[AlignmentGUI DEBUG] All columns: {list(df.columns)}")
+            print(f"[AlignmentGUI DEBUG] Max values per column:")
+            for col in df.columns:
+                try:
+                    max_val = df[col].max()
+                    print(f"  {col}: {max_val}")
+                except:
+                    pass
+
             # ── Time axis ────────────────────────────────────────────────
             time_candidates = ['abs time (s)', 'Time(s)', 'time', 'Time']
             time_col = next((c for c in time_candidates if c in df.columns), None)
@@ -326,6 +331,12 @@ class AlignmentGUI:
             fp2_candidates = ['Fz.1', 'Fz2', 'FP2_Fz']
             fp2_col = next((c for c in fp2_candidates if c in df.columns), None)
             self.force_fp2 = df[fp2_col].to_numpy(dtype=float) if fp2_col else np.zeros(len(df))
+
+            if fp2_col:
+                print(f"[AlignmentGUI DEBUG] FP2 column '{fp2_col}' raw data stats:")
+                print(f"  mean: {df[fp2_col].mean():.2f}, std: {df[fp2_col].std():.2f}")
+                print(f"  min: {df[fp2_col].min():.2f}, first 5 values: {list(df[fp2_col].head())}")
+
 
             print(f"[AlignmentGUI] FP1 col: {fp1_col}, max={self.force_fp1.max():.2f}")
             print(f"[AlignmentGUI] FP2 col: {fp2_col}, max={self.force_fp2.max():.2f}")
@@ -472,6 +483,7 @@ class AlignmentGUI:
         for col in candidates:
             if col in self.force_df.columns:
                 return self.force_df[col].to_numpy(dtype=float)
+            
 
         print(f"[_get_force_column] No match for ({plate_label}, {component}). "
               f"Available: {list(self.force_df.columns)}")

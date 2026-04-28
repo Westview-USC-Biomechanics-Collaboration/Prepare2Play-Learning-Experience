@@ -41,11 +41,6 @@ def saveCallback(self, video, view, frames):
         self._pop_up("Error: df_trimmed not found. Run vector overlay first.")
         return
 
-    vector_overlay_path = os.path.join(os.getcwd(), "vector_overlay_temp.mp4")
-    if not os.path.exists(vector_overlay_path):
-        self._pop_up("Error: vector overlay video not found.")
-        return
-
     # self.save_vector_path = vector_overlay_path
     self.save_video_path = video.path
     df = self.state.df_trimmed.copy()

@@ -78,9 +78,8 @@ def _apply_alignment(force_df, force_align, video_align, step_size):
     elif offset < 0:
         # Force starts earlier than video — pad front with NaN
         rows_to_add = int(-offset * step_size)
-        nan_rows = pd.DataFrame(np.nan, index=range(rows_to_add), columns=df.columns)
-        df = pd.concat([nan_rows, df], ignore_index=True)
-        print(f"[align] Padded {rows_to_add} NaN rows at front of force data")
+        zero_rows = pd.DataFrame(0, index=range(rows_to_add), columns=df.columns)
+        df = pd.concat([zero_rows, df], ignore_index=True)
 
     # Subsample to 1 row per video frame
     df = df.iloc[::step_size].reset_index(drop=True)

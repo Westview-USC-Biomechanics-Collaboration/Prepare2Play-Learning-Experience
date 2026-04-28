@@ -15,10 +15,10 @@ class FileFormatter:
         #                 "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "Fx3", "Fy3", "Fz3", "|Ft3|", "Ax3", "Ay3"]
 
         self.columns = ["abs time (s)", "Fx1", "Fy1", "Fz1", "|Ft1|", "Ax1", "Ay1", "COM px1", "COM py1", "COM pz1",
-                        "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "COM px2", "COM py2", "COM pz2"]
+                        "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "COM px2", "COM py2", "COM pz2", "Fx3", "Fy3", "Fz3", "|Ft3|", "Ax3", "Ay3", "COM px3", "COM py3", "COM pz3"]
         
         self.alternativeColumns = ["abs time (s)", "Fx1", "Fy1", "Fz1", "|Ft1|", "Ax1", "Ay1",
-                        "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2"]
+                        "Fx2", "Fy2", "Fz2", "|Ft2|", "Ax2", "Ay2", "Fx3", "Fy3", "Fz3", "|Ft3|", "Ax3", "Ay3"]
 
     def __columnchecker(self, df: pandas.DataFrame):
         """
@@ -49,14 +49,23 @@ class FileFormatter:
         :param filePath: path to the txt file
         :return: pandas dataframe
         """
+
+        usable_cols = self.columns
+
         data = numpy.loadtxt(filePath, skiprows=19)
-        df = pandas.DataFrame(data, columns=self.columns)
+        rows, cols = data.shape
+
+        if cols != len(self.columns):
+            if cols == len(self.alternativeColumns):
+                usable_cols = self.alternativeColumns
+
+        df = pandas.DataFrame(data, columns=usable_cols)
         hz = 1 / (df['abs time (s)'].diff().mean())
         self.hz = hz
         print(f"[DEBUG] Approximate sampling rate: {hz:.2f} Hz")
-        if not self.__columnchecker(df):
-            print("The columns are not correct")
-            raise ValueError("The columns are not correct")
+        # if not self.__columnchecker(df):
+        #     print("The columns are not correct")
+        #     raise ValueError("The columns are not correct")
         return df
     
     def readCsv(self, filePath: str):
