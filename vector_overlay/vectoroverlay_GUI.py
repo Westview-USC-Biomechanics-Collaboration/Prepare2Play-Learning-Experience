@@ -860,7 +860,7 @@ class VectorOverlay:
             raw_F2_Fx = float(F2_Fx[i] or 0.0)
             raw_F2_Fy = float(F2_Fy[i] or 0.0)
 
-            flip_factor = 1 # originally negative one when led on bottom of frame
+            flip_factor = -1 # originally negative one when led on bottom of frame
 
             fx1 = flip_factor * raw_F1_Fy * scale_factor
             fx2 = flip_factor * raw_F2_Fy * scale_factor
