@@ -49,22 +49,6 @@ def _apply_alignment(force_df, force_align, video_align, step_size):
     """
     df = force_df.copy()
 
-    # Rename columns
-    rename = {
-        'abs time (s)': 'Time(s)',
-        'Fx':     'FP1_Fx',  'Fy':     'FP1_Fy',  'Fz':     'FP1_Fz',
-        '|Ft|':   'FP1_|F|', 'Ax':     'FP1_Ax',  'Ay':     'FP1_Ay',
-        'Fx.1':   'FP2_Fx',  'Fy.1':   'FP2_Fy',  'Fz.1':   'FP2_Fz',
-        '|Ft|.1': 'FP2_|F|', 'Ax.1':   'FP2_Ax',  'Ay.1':   'FP2_Ay',
-        'Fx.2':   'FP3_Fx',  'Fy.2':   'FP3_Fy',  'Fz.2':   'FP3_Fz',
-        '|Ft|.2': 'FP3_|F|', 'Ax.2':   'FP3_Ax',  'Ay.2':   'FP3_Ay',
-        'Fx1': 'FP1_Fx', 'Fy1': 'FP1_Fy', 'Fz1': 'FP1_Fz', '|Ft1|': 'FP1_|F|',
-        'Ax1': 'FP1_Ax', 'Ay1': 'FP1_Ay',
-        'Fx2': 'FP2_Fx', 'Fy2': 'FP2_Fy', 'Fz2': 'FP2_Fz', '|Ft2|': 'FP2_|F|',
-        'Ax2': 'FP2_Ax', 'Ay2': 'FP2_Ay',
-    }
-    df.rename(columns={k: v for k, v in rename.items() if k in df.columns}, inplace=True)
-
     # Exact alignCallback logic
     offset = force_align - video_align
     print(f"[align] force_align={force_align}, video_align={video_align}, "

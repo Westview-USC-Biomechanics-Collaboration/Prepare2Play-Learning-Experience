@@ -225,8 +225,8 @@ class LongViewLEDConfig(LEDConfig):
             led_crop_x1=1050, #1050
             led_crop_y0=950, #950
             led_crop_y1=1080, #1080
-            template_center_offset_x=45, #45
-            template_center_offset_y=55, #55
+            template_center_offset_x=40, #45
+            template_center_offset_y=50, #55
             plate_swap=False  # Long view: left=FP1, right=FP2 (standard)
         )
 
