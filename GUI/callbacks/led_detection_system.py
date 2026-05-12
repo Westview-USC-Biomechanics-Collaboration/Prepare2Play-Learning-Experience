@@ -587,25 +587,36 @@ class LEDDetector:
             raise ValueError(f"Cannot open video: {video_path}")
         
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        
+
         # Storage for detected locations
         locations_df = pd.DataFrame(
             columns=['FrameNumber', 'CenterX_Crop', 'CenterY_Crop', 
                     'CenterX_Full', 'CenterY_Full']
         )
-        
+
         # Storage for diagnostic images
         diagnostic_images = []
-        
-        # Sample frames evenly across video
+
+        # For Top View, skip the first ~60 frames (GoPro stabilization / shaky startup).
+        # We use read-and-discard instead of CAP_PROP_POS_FRAMES for reliability.
+        start_frame = 0
+        if self.config.view_name == "Top View":
+            start_frame = 60
+            print(f"[TopView] Skipping first {start_frame} frames (GoPro stabilization)")
+            for _ in range(start_frame):
+                cap.read()  # discard — advances the internal position reliably
+
+        # Sample frames evenly across the usable portion of the video
         frame_indices = np.linspace(
-            0, total_frames - 1, 
-            self.config.num_frames_to_check, 
+            start_frame, total_frames - 1,
+            self.config.num_frames_to_check,
             dtype=int
         )
         
         for frame_idx in frame_indices:
-            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+            frames_to_skip = frame_idx - int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+            for _ in range(max(0, frames_to_skip - 1)):
+                cap.read()  # discard
             ret, frame = cap.read()
             
             if not ret:
