@@ -129,16 +129,16 @@ class LEDConfig:
         Returns:
             np.ndarray: Processed grayscale image ready for template matching
         """
-        # blue_channel = crop[:, :, 0]
-        # green_channel = crop[:, :, 1]
+        blue_channel = crop[:, :, 0]
+        green_channel = crop[:, :, 1]
         
-        # # Subtract green from blue - LED appears bright, background dark
-        # blue_minus_green = cv2.subtract(blue_channel, green_channel)
+        # Subtract green from blue - LED appears bright, background dark
+        blue_minus_green = cv2.subtract(blue_channel, green_channel)
         
-        # # Apply blur to reduce noise and make template matching more robust
-        # processed = cv2.blur(blue_minus_green, (10, 10))
+        # Apply blur to reduce noise and make template matching more robust
+        processed = cv2.blur(blue_minus_green, (10, 10))
         
-        # return processed
+        return processed
 
         # lab = cv2.cvtColor(crop, cv2.COLOR_BGR2LAB)
         # l, a, b = cv2.split(lab)
@@ -178,33 +178,33 @@ class LEDConfig:
         
         # return processed
 
-        blue_channel = crop[:, :, 0]
-        green_channel = crop[:, :, 1]
-        red_channel = crop[:, :, 2]
+        # blue_channel = crop[:, :, 0]
+        # green_channel = crop[:, :, 1]
+        # red_channel = crop[:, :, 2]
 
-        # --- Shadow rejection ---
-        # Shadows are dim overall; the LED is bright. Compute luminance to mask dark regions.
-        luminance = (0.114 * blue_channel.astype(float) +
-                    0.587 * green_channel.astype(float) +
-                    0.299 * red_channel.astype(float))
-        brightness_mask = (luminance > 100).astype(np.uint8)  # tune threshold as needed
+        # # --- Shadow rejection ---
+        # # Shadows are dim overall; the LED is bright. Compute luminance to mask dark regions.
+        # luminance = (0.114 * blue_channel.astype(float) +
+        #             0.587 * green_channel.astype(float) +
+        #             0.299 * red_channel.astype(float))
+        # brightness_mask = (luminance > 100).astype(np.uint8)  # tune threshold as needed
 
-        # --- Blue dominance ---
-        # Subtract BOTH green and red so shadow blue tinge (which lifts all channels equally)
-        # cancels out, while the LED's pure blue remains strong.
-        blue_minus_green = cv2.subtract(blue_channel, green_channel)
-        blue_minus_red   = cv2.subtract(blue_channel, red_channel)
+        # # --- Blue dominance ---
+        # # Subtract BOTH green and red so shadow blue tinge (which lifts all channels equally)
+        # # cancels out, while the LED's pure blue remains strong.
+        # blue_minus_green = cv2.subtract(blue_channel, green_channel)
+        # blue_minus_red   = cv2.subtract(blue_channel, red_channel)
 
-        # Combine: pixel must beat both green and red
-        blue_dominant = cv2.min(blue_minus_green, blue_minus_red)
+        # # Combine: pixel must beat both green and red
+        # blue_dominant = cv2.min(blue_minus_green, blue_minus_red)
 
-        # --- Mask out dark regions (shadows) ---
-        # blue_dominant = cv2.multiply(blue_dominant, brightness_mask)
+        # # --- Mask out dark regions (shadows) ---
+        # # blue_dominant = cv2.multiply(blue_dominant, brightness_mask)
 
-        # Apply blur to reduce noise and make template matching more robust
-        processed = cv2.blur(blue_dominant, (self.blur_kernel, self.blur_kernel))
+        # # Apply blur to reduce noise and make template matching more robust
+        # processed = cv2.blur(blue_dominant, (self.blur_kernel, self.blur_kernel))
 
-        return processed
+        # return processed
 
 
 class LongViewLEDConfig(LEDConfig):
@@ -295,12 +295,12 @@ class TopViewLEDConfig(LEDConfig):
             frame_width=1920,
             frame_height=1080,
             # Scale crop region for 4K resolution (2x the 1080p values)
-            led_crop_x0=700,
-            led_crop_x1=1200,
-            led_crop_y0=80,
+            led_crop_x0=800,
+            led_crop_x1=1100,
+            led_crop_y0=700,
             led_crop_y1=1000,  
-            template_center_offset_x=45,
-            template_center_offset_y=44,
+            template_center_offset_x=35,
+            template_center_offset_y=45,
             plate_swap=False  # Top view: swap FP1/FP2 to match Long View orientation
         )
     
@@ -603,7 +603,7 @@ class LEDDetector:
         if self.config.view_name == "Top View":
             start_frame = 60
             print(f"[TopView] Skipping first {start_frame} frames (GoPro stabilization)")
-            for _ in range(start_frame):
+            for x in range(start_frame):
                 cap.read()  # discard — advances the internal position reliably
 
         # Sample frames evenly across the usable portion of the video
@@ -615,7 +615,7 @@ class LEDDetector:
         
         for frame_idx in frame_indices:
             frames_to_skip = frame_idx - int(cap.get(cv2.CAP_PROP_POS_FRAMES))
-            for _ in range(max(0, frames_to_skip - 1)):
+            for x in range(max(0, frames_to_skip - 1)):
                 cap.read()  # discard
             ret, frame = cap.read()
             
@@ -713,7 +713,7 @@ class LEDDetector:
         #     median_x, median_y, span_x, span_y
         # )
         
-        cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 60)
         ret, testFrame = cap.read()
 
         # Save clean frame BEFORE drawing anything
