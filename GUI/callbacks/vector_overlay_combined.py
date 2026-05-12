@@ -22,6 +22,12 @@ USE_DETECTION_SYSTEM = True
 
 FORCE_HZ = 1200
 
+class ForceProxy:
+    """Lightweight wrapper so AlignmentGUI gets a copy of Force.data, not the original."""
+    def __init__(self, force):
+        self.data = force.data.copy()
+        self.path = force.path
+
 
 def _apply_alignment(force_df, force_align, video_align, step_size):
     """
@@ -43,22 +49,6 @@ def _apply_alignment(force_df, force_align, video_align, step_size):
     """
     df = force_df.copy()
 
-    # Rename columns
-    rename = {
-        'abs time (s)': 'Time(s)',
-        'Fx':     'FP1_Fx',  'Fy':     'FP1_Fy',  'Fz':     'FP1_Fz',
-        '|Ft|':   'FP1_|F|', 'Ax':     'FP1_Ax',  'Ay':     'FP1_Ay',
-        'Fx.1':   'FP2_Fx',  'Fy.1':   'FP2_Fy',  'Fz.1':   'FP2_Fz',
-        '|Ft|.1': 'FP2_|F|', 'Ax.1':   'FP2_Ax',  'Ay.1':   'FP2_Ay',
-        'Fx.2':   'FP3_Fx',  'Fy.2':   'FP3_Fy',  'Fz.2':   'FP3_Fz',
-        '|Ft|.2': 'FP3_|F|', 'Ax.2':   'FP3_Ax',  'Ay.2':   'FP3_Ay',
-        'Fx1': 'FP1_Fx', 'Fy1': 'FP1_Fy', 'Fz1': 'FP1_Fz', '|Ft1|': 'FP1_|F|',
-        'Ax1': 'FP1_Ax', 'Ay1': 'FP1_Ay',
-        'Fx2': 'FP2_Fx', 'Fy2': 'FP2_Fy', 'Fz2': 'FP2_Fz', '|Ft2|': 'FP2_|F|',
-        'Ax2': 'FP2_Ax', 'Ay2': 'FP2_Ay',
-    }
-    df.rename(columns={k: v for k, v in rename.items() if k in df.columns}, inplace=True)
-
     # Exact alignCallback logic
     offset = force_align - video_align
     print(f"[align] force_align={force_align}, video_align={video_align}, "
@@ -72,9 +62,8 @@ def _apply_alignment(force_df, force_align, video_align, step_size):
     elif offset < 0:
         # Force starts earlier than video — pad front with NaN
         rows_to_add = int(-offset * step_size)
-        nan_rows = pd.DataFrame(np.nan, index=range(rows_to_add), columns=df.columns)
-        df = pd.concat([nan_rows, df], ignore_index=True)
-        print(f"[align] Padded {rows_to_add} NaN rows at front of force data")
+        zero_rows = pd.DataFrame(0, index=range(rows_to_add), columns=df.columns)
+        df = pd.concat([zero_rows, df], ignore_index=True)
 
     # Subsample to 1 row per video frame
     df = df.iloc[::step_size].reset_index(drop=True)
@@ -117,15 +106,15 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
     df_aligned_auto = None
     use_manual      = False
 
-    try:
-        auto_lag, df_aligned_auto, auto_relative_score = new_led(
-            self, view, parent_path, video_file, force_file,
-            use_detection_system=USE_DETECTION_SYSTEM
-        )
-        auto_succeeded = True
-        print(f"[INFO] LED auto-alignment succeeded. Lag: {auto_lag} frames")
-    except Exception as e:
-        print(f"[WARNING] LED auto-alignment failed: {e}")
+    # try:
+    auto_lag, df_aligned_auto, auto_relative_score = new_led(
+        self, view, parent_path, video_file, force_file,
+        use_detection_system=USE_DETECTION_SYSTEM
+    )
+    auto_succeeded = True
+    print(f"[INFO] LED auto-alignment succeeded. Lag: {auto_lag} frames")
+    # except Exception as e:
+    #     print(f"[WARNING] LED auto-alignment failed: {e}")
 
     if auto_succeeded:
         use_manual = messagebox.askyesno(
@@ -143,13 +132,16 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
         )
         use_manual = True
 
+    print(f"[DEBUG] self.Force.data['Fz2'] max: {self.Force.data['Fz2'].max()}")
+    print(f"[DEBUG] self.Force.data['Fz2'] mean: {self.Force.data['Fz2'].mean()}") 
+
     if use_manual:
         print("[INFO] Opening manual alignment window...")
         alignment_root = tk.Toplevel(self.master)
-        app = AlignmentGUI(alignment_root, video, self.Force)
+        app = AlignmentGUI(alignment_root, video, self.Force.path)
         self.master.wait_window(alignment_root)
 
-        video_fps  = app.video_fps if app.video_fps else 59
+        video_fps  = 120.0
         step_size  = round(FORCE_HZ / video_fps)  # force rows per video frame
 
         # Both are FRAME NUMBERS — exact same units as original alignCallback.
@@ -160,6 +152,9 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
         print(f"[INFO] video_fps={video_fps}, step_size={step_size}")
         print(f"[INFO] video_align={video_align} frames, force_align={force_align} frames")
         print(f"[INFO] offset={force_align - video_align} frames")
+
+        print(f"[DEBUG] self.Force.data['Fz2'] max: {self.Force.data['Fz2'].max()}")
+        print(f"[DEBUG] self.Force.data['Fz2'] mean: {self.Force.data['Fz2'].mean()}")      
 
         df_aligned = _apply_alignment(
             self.Force.data.copy(),
@@ -221,6 +216,16 @@ def vectorOverlayWithAlignmentCallback(self, video, view, num):
         boundary_end   = int(df_aligned['FrameNumber'].max())
         self.state.boundary_start = boundary_start
         self.state.boundary_end   = boundary_end
+    
+    print(f"[DEBUG] FP2_Fz in boundary region ({boundary_start}-{boundary_end}):")
+    subset = df_aligned[(df_aligned['FrameNumber'] >= boundary_start) & (df_aligned['FrameNumber'] <= boundary_end)]
+    print(subset['FP2_Fz'].describe())
+    print(f"NaN count: {subset['FP2_Fz'].isna().sum()} / {len(subset)}")
+
+    print(f"[DEBUG] FP2_Fz max across ENTIRE df_aligned: {df_aligned['FP2_Fz'].max()}")
+    print(f"[DEBUG] FP2_Fz max frame: {df_aligned.loc[df_aligned['FP2_Fz'].idxmax(), 'FrameNumber']}")
+    print(f"[DEBUG] Boundary window: {boundary_start}-{boundary_end}")
+    print(f"[DEBUG] Auto lag was: {auto_lag} frames")
 
     # ======================================================================
     # STEP 3: COM CALCULATION

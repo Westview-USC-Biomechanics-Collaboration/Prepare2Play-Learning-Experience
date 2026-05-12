@@ -576,6 +576,9 @@ def select_points(self, cap, view):
     # upper_yellow = np.array([45, 255, 255])
 
     # Open the video
+    if(view == "Top View"):
+        for x in range(60):
+            cap.read()
     ret, frame = cap.read()
 
     if not cap.isOpened():
@@ -933,7 +936,13 @@ def select_points_with_manual_adjustment(self, cap, view):
     auto_corners = select_points(self, cap, view)
 
     # Get first frame for display
-    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
+
+    if(view == "Top View"):
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 60)
+    else: 
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
     ret, frame = cap.read()
     if not ret:
         print("Error: Could not read frame for manual adjustment")

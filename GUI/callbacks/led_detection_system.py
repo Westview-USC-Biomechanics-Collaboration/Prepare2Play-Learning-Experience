@@ -129,16 +129,16 @@ class LEDConfig:
         Returns:
             np.ndarray: Processed grayscale image ready for template matching
         """
-        # blue_channel = crop[:, :, 0]
-        # green_channel = crop[:, :, 1]
+        blue_channel = crop[:, :, 0]
+        green_channel = crop[:, :, 1]
         
-        # # Subtract green from blue - LED appears bright, background dark
-        # blue_minus_green = cv2.subtract(blue_channel, green_channel)
+        # Subtract green from blue - LED appears bright, background dark
+        blue_minus_green = cv2.subtract(blue_channel, green_channel)
         
-        # # Apply blur to reduce noise and make template matching more robust
-        # processed = cv2.blur(blue_minus_green, (10, 10))
+        # Apply blur to reduce noise and make template matching more robust
+        processed = cv2.blur(blue_minus_green, (10, 10))
         
-        # return processed
+        return processed
 
         # lab = cv2.cvtColor(crop, cv2.COLOR_BGR2LAB)
         # l, a, b = cv2.split(lab)
@@ -178,33 +178,33 @@ class LEDConfig:
         
         # return processed
 
-        blue_channel = crop[:, :, 0]
-        green_channel = crop[:, :, 1]
-        red_channel = crop[:, :, 2]
+        # blue_channel = crop[:, :, 0]
+        # green_channel = crop[:, :, 1]
+        # red_channel = crop[:, :, 2]
 
-        # --- Shadow rejection ---
-        # Shadows are dim overall; the LED is bright. Compute luminance to mask dark regions.
-        luminance = (0.114 * blue_channel.astype(float) +
-                    0.587 * green_channel.astype(float) +
-                    0.299 * red_channel.astype(float))
-        brightness_mask = (luminance > 100).astype(np.uint8)  # tune threshold as needed
+        # # --- Shadow rejection ---
+        # # Shadows are dim overall; the LED is bright. Compute luminance to mask dark regions.
+        # luminance = (0.114 * blue_channel.astype(float) +
+        #             0.587 * green_channel.astype(float) +
+        #             0.299 * red_channel.astype(float))
+        # brightness_mask = (luminance > 100).astype(np.uint8)  # tune threshold as needed
 
-        # --- Blue dominance ---
-        # Subtract BOTH green and red so shadow blue tinge (which lifts all channels equally)
-        # cancels out, while the LED's pure blue remains strong.
-        blue_minus_green = cv2.subtract(blue_channel, green_channel)
-        blue_minus_red   = cv2.subtract(blue_channel, red_channel)
+        # # --- Blue dominance ---
+        # # Subtract BOTH green and red so shadow blue tinge (which lifts all channels equally)
+        # # cancels out, while the LED's pure blue remains strong.
+        # blue_minus_green = cv2.subtract(blue_channel, green_channel)
+        # blue_minus_red   = cv2.subtract(blue_channel, red_channel)
 
-        # Combine: pixel must beat both green and red
-        blue_dominant = cv2.min(blue_minus_green, blue_minus_red)
+        # # Combine: pixel must beat both green and red
+        # blue_dominant = cv2.min(blue_minus_green, blue_minus_red)
 
-        # --- Mask out dark regions (shadows) ---
-        # blue_dominant = cv2.multiply(blue_dominant, brightness_mask)
+        # # --- Mask out dark regions (shadows) ---
+        # # blue_dominant = cv2.multiply(blue_dominant, brightness_mask)
 
-        # Apply blur to reduce noise and make template matching more robust
-        processed = cv2.blur(blue_dominant, (self.blur_kernel, self.blur_kernel))
+        # # Apply blur to reduce noise and make template matching more robust
+        # processed = cv2.blur(blue_dominant, (self.blur_kernel, self.blur_kernel))
 
-        return processed
+        # return processed
 
 
 class LongViewLEDConfig(LEDConfig):
@@ -225,8 +225,8 @@ class LongViewLEDConfig(LEDConfig):
             led_crop_x1=1050, #1050
             led_crop_y0=950, #950
             led_crop_y1=1080, #1080
-            template_center_offset_x=45, #45
-            template_center_offset_y=55, #55
+            template_center_offset_x=40, #45
+            template_center_offset_y=50, #55
             plate_swap=False  # Long view: left=FP1, right=FP2 (standard)
         )
 
@@ -295,12 +295,12 @@ class TopViewLEDConfig(LEDConfig):
             frame_width=1920,
             frame_height=1080,
             # Scale crop region for 4K resolution (2x the 1080p values)
-            led_crop_x0=700,
-            led_crop_x1=1200,
-            led_crop_y0=80,
+            led_crop_x0=800,
+            led_crop_x1=1100,
+            led_crop_y0=700,
             led_crop_y1=1000,  
-            template_center_offset_x=45,
-            template_center_offset_y=44,
+            template_center_offset_x=35,
+            template_center_offset_y=45,
             plate_swap=False  # Top view: swap FP1/FP2 to match Long View orientation
         )
     
@@ -587,25 +587,36 @@ class LEDDetector:
             raise ValueError(f"Cannot open video: {video_path}")
         
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        
+
         # Storage for detected locations
         locations_df = pd.DataFrame(
             columns=['FrameNumber', 'CenterX_Crop', 'CenterY_Crop', 
                     'CenterX_Full', 'CenterY_Full']
         )
-        
+
         # Storage for diagnostic images
         diagnostic_images = []
-        
-        # Sample frames evenly across video
+
+        # For Top View, skip the first ~60 frames (GoPro stabilization / shaky startup).
+        # We use read-and-discard instead of CAP_PROP_POS_FRAMES for reliability.
+        start_frame = 0
+        if self.config.view_name == "Top View":
+            start_frame = 60
+            print(f"[TopView] Skipping first {start_frame} frames (GoPro stabilization)")
+            for x in range(start_frame):
+                cap.read()  # discard — advances the internal position reliably
+
+        # Sample frames evenly across the usable portion of the video
         frame_indices = np.linspace(
-            0, total_frames - 1, 
-            self.config.num_frames_to_check, 
+            start_frame, total_frames - 1,
+            self.config.num_frames_to_check,
             dtype=int
         )
         
         for frame_idx in frame_indices:
-            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+            frames_to_skip = frame_idx - int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+            for x in range(max(0, frames_to_skip - 1)):
+                cap.read()  # discard
             ret, frame = cap.read()
             
             if not ret:
@@ -634,7 +645,7 @@ class LEDDetector:
             MATCH_THRESHOLD = 0.3
             if max_val < MATCH_THRESHOLD:
                 print(f"  Frame {frame_idx}: Low confidence ({max_val:.2f}), skipping")
-                continue
+                # continue
 
             center_x_crop = max_loc[0] + self.config.template_center_offset_x
             center_y_crop = max_loc[1] + self.config.template_center_offset_y
@@ -662,29 +673,47 @@ class LEDDetector:
             diagnostic_images.append(diagnostic)
                 
         # Calculate median location (robust to outliers)
-        median_x = int(locations_df['CenterX_Full'].median())
-        median_y = int(locations_df['CenterY_Full'].median())
-        
-        # Calculate span to check consistency
-        span_x = int(locations_df['CenterX_Full'].max() - locations_df['CenterX_Full'].min())
-        span_y = int(locations_df['CenterY_Full'].max() - locations_df['CenterY_Full'].min())
-        
-        print(f"\n{self.config.view_name} LED Detection Results:")
-        print(f"  Median location: ({median_x}, {median_y})")
-        print(f"  X span: {span_x} pixels, Y span: {span_y} pixels")
-        print(f"  Force plate swap: {'YES (FP1 ↔ FP2)' if self.config.plate_swap else 'NO (standard)'}")
-        
-        if span_x > 40 or span_y > 40:  # Adjusted threshold for 4K resolution
-            print(f"  ⚠ WARNING: Large variation in detected location!")
-            print(f"  This may indicate detection issues. Check diagnostic images.")
+        try:
+            median_x = int(locations_df['CenterX_Full'].median())
+            median_y = int(locations_df['CenterY_Full'].median())
+            
+            # Calculate span to check consistency
+            span_x = int(locations_df['CenterX_Full'].max() - locations_df['CenterX_Full'].min())
+            span_y = int(locations_df['CenterY_Full'].max() - locations_df['CenterY_Full'].min())
+            
+            print(f"\n{self.config.view_name} LED Detection Results:")
+            print(f"  Median location: ({median_x}, {median_y})")
+            print(f"  X span: {span_x} pixels, Y span: {span_y} pixels")
+            print(f"  Force plate swap: {'YES (FP1 ↔ FP2)' if self.config.plate_swap else 'NO (standard)'}")
+            
+            if span_x > 40 or span_y > 40:  # Adjusted threshold for 4K resolution
+                print(f"  ⚠ WARNING: Large variation in detected location!")
+                print(f"  This may indicate detection issues. Check diagnostic images.")
+            
+            self._save_detection_results(
+                locations_df, diagnostic_images, output_path, 
+                median_x, median_y, span_x, span_y
+            )
+            
+
+        except Exception as e:
+            print(e)
+            median_x = 100
+            median_y = 100
+            span_x = 0
+            span_y = 0
+            self._save_detection_results(
+                locations_df, diagnostic_images, output_path, 
+                median_x, median_y, span_x, span_y
+            )
         
         # Save results
-        self._save_detection_results(
-            locations_df, diagnostic_images, output_path, 
-            median_x, median_y, span_x, span_y
-        )
+        # self._save_detection_results(
+        #     locations_df, diagnostic_images, output_path, 
+        #     median_x, median_y, span_x, span_y
+        # )
         
-        cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 60)
         ret, testFrame = cap.read()
 
         # Save clean frame BEFORE drawing anything
@@ -692,6 +721,7 @@ class LEDDetector:
 
         # Draw initial median dot on display image
         img = base_frame.copy()
+
         cv2.circle(img, (int(median_x), int(median_y)), 5, (0, 0, 255), -1)
 
         state = {'img': img.copy(), 'clicked_points': []}

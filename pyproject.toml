@@ -1,0 +1,16 @@
+[project]
+name = "prepare2play-learning-experience"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "matplotlib~=3.8.4",
+    "mediapipe~=0.10.14",
+    "numpy~=1.26.1",
+    "opencv-python~=4.10.0.84",
+    "openpyxl~=3.1.5",
+    "pandas~=2.2.2",
+    "pillow~=10.3.0",
+    "scipy>=1.15.3",
+]
