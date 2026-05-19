@@ -504,6 +504,18 @@ class VectorOverlay:
 
         # point_pair2 = rect_to_trapezoid(px2, py2, [self.corners[4], self.corners[5], self.corners[6], self.corners[7]], self.view)
 
+        weighting = 0.3
+
+        oldxf1 = xf1
+        oldxf2 = xf2
+        oldyf1 = yf1
+        oldyf2 = yf2
+
+        xf1 = (xf1 * (1-weighting)) + (oldxf1 * weighting)
+        yf1 = (yf1 * (1-weighting)) + (oldyf1 * weighting)
+        xf2 = (xf2 * (1-weighting)) + (oldxf2 * weighting)
+        yf2 = (yf2 * (1-weighting)) + (oldyf2 * weighting)
+        
         end_point_1 = (int(point_pair1[0] + xf1), int(point_pair1[1] - yf1))
         end_point_2 = (int(point_pair2[0] + xf2), int(point_pair2[1] - yf2))
 
