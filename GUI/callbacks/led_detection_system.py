@@ -284,7 +284,7 @@ class TopViewLEDConfig(LEDConfig):
     
     Resolution: 1920x1080 (GoPro 4K)
     Force plate orientation: When LED is at top-center:
-    - Physical left (in video) = FP2
+    - Physical left (in video) = FP2gf
     - Physical right (in video) = FP1
     So we SWAP to match Long View convention
     LED location: Top-center of frame (when camera looks down)
