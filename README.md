@@ -1,18 +1,50 @@
-# Project Title
+# Prepare To Play
+# Installation
+## Windows
+> [!NOTE]  
+> Most of the steps are for a first time install.
+> If you have already completed this process and are trying to restart the program, skip to the final step.
+### Install UV for Windows.
+* Press WIN+R to open the RUN dialog.
+* In the RUN dialog enter the following command.
+```ps1
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+### Install Python 3.12.
+* Press WIN+R to open the RUN dialog.
+* In the RUN dialog enter the following command.
+```ps1
+uv python install 3.12
+```
+### Install Git for Windows. 
+* Press WIN+R to open the RUN dialog.
+* In the popup paste the following command.
+```ps1
+winget install -e --id Git.Git
+```
+### Clone the repository.
+* Open file explorer and navigate to the folder you would like to use.
+* Right click and click open in powershell.
+* In the powershell window enter the following command.
+```ps1
+git clone "https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience.git"
+```
+### Install Program Packages
+* Close powershell and reopen it in the same way to restart powershell (needed after installing something).
+* Enter the following command
+```ps1
+uv sync
+```
+### Running the Program
+* Open powershell in the directory the program is installed in and enter the following command:
+```ps1
+uv run GUI/simpleGUI.py
+```
 
-## 🛠️ Installation
-
-1. Download Python 3.10.11 from: https://www.python.org/downloads/  
-2. Download Git from: https://git-scm.com/download/  
-3. Clone the repository and open the folder in your preferred IDE or terminal.
-4. Run the program and select **"create .venv file"**, choosing the correct Python version installed on your system.
-5. Open your terminal and run:
-   ```bash
-   pip install -r requirements.txt
-6. Open terminal and run: winget install --id Gyan.FFmpeg -e
+### MacOS
 
 
-
+<!--
 # Changes
 ## Nishk - Date: 12/30/2025
 - Graphs colors are "opposite" so "red" as the input will display blue in the graph
@@ -37,4 +69,4 @@
 ## Nishk - Date 1/1/2025
 - Vectors colors for TOP VIEW are NOT hardcoded anymore
 - TOP VIEW graph axis are drawn properly 
-- Deleted old buttons (label force and label video) and added new ones for user selection of Male or Female COM
+- Deleted old buttons (label force and label video) and added new ones for user selection of Male or Female COM -->

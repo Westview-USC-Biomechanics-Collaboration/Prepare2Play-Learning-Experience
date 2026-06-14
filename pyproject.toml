@@ -3,7 +3,7 @@ name = "prepare2play-learning-experience"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.13"
 dependencies = [
     "matplotlib~=3.8.4",
     "mediapipe~=0.10.14",
