@@ -1,4 +1,8 @@
 # Prepare To Play
+# Table of Contents
+* [Installation](#installation)
+  * [Windows](#windows)
+  * [MacOs](#macos)
 # Installation
 ## Windows
 > [!NOTE]  
@@ -25,9 +29,11 @@ winget install -e --id Git.Git
 ### Clone the repository.
 * Open file explorer and navigate to the folder you would like to use.
 * Right click and click open in powershell.
-* In the powershell window enter the following command.
+* In the powershell window enter the following commands separately.
 ```ps1
 git clone "https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience.git"
+
+cd Prepare2Play-Learning-Experience
 ```
 ### Install Program Packages
 * Close powershell and reopen it in the same way to restart powershell (needed after installing something).
@@ -40,9 +46,46 @@ uv sync
 ```ps1
 uv run GUI/simpleGUI.py
 ```
-
 ### MacOS
+#### Open Terminal
+* Click the Launchpad icon, in the Dock, type Terminal in the search field, then click Terminal.
+#### Install UV
+* In the terminal enter the following command.
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+#### Restart the Terminal
+* Close and reopen the terminal.
 
+### Install Python 3.12.
+* In the terminal enter the following command.
+```bash
+uv python install 3.12
+```
+### Install Git for MacOS. 
+* In the terminal enter the following command.
+```bash
+brew install git
+```
+### Clone the repository.
+* Open finder and navigate to the folder you would like to use.
+* Click Finder in the top menu bar. Select Services > Services Settings > Files and Folders > Check "New Terminal at Folder" 
+* Enter the following commands separately.
+```bash
+git clone "https://github.com/Westview-USC-Biomechanics-Collaboration/Prepare2Play-Learning-Experience.git"
+
+cd Prepare2Play-Learning-Experience
+```
+### Install Program Packages
+* Enter the following command
+```bash
+uv sync
+```
+### Running the Program
+* Open terminal in the directory the program is installed in and enter the following command:
+```bash
+uv run GUI/simpleGUI.py
+```
 
 <!--
 # Changes
