@@ -65,7 +65,8 @@ uv python install 3.12
 ### Install Git for MacOS. 
 * In the terminal enter the following command.
 ```bash
-brew install git
+xcode-select --install
+
 ```
 ### Clone the repository.
 * Open finder and navigate to the folder you would like to use.
