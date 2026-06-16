@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10,<3.13"
 dependencies = [
     "matplotlib~=3.8.4",
-    "mediapipe~=0.10.14",
+    "mediapipe==0.10.14",
     "numpy~=1.26.1",
     "opencv-python~=4.10.0.84",
     "openpyxl~=3.1.5",
