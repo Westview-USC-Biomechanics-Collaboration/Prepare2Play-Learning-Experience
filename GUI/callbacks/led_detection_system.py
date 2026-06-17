@@ -49,13 +49,14 @@ class LEDConfig:
     frame_width: int = 1920
     frame_height: int = 1080
     
-    # Crop region for LED search
+    # Crop region for LED search, sets variables
     led_crop_x0: int = 0
     led_crop_x1: int = 0
     led_crop_y0: int = 0
     led_crop_y1: int = 0
     
     # Template for matching
+    # Image stored as array template, template not loaded yet. led_template set as array template.
     led_template: Optional[np.ndarray] = None
     
     # Offset from template top-left corner to LED center (in pixels)
@@ -87,7 +88,7 @@ class LEDConfig:
         Create LED template for this view. Override in subclasses.
         
         Returns:
-            np.ndarray: Template image for LED detection
+            np.ndarray: Template image for LED detection. Image used to detect whether LED is present in otehr frames
         """
         raise NotImplementedError("Subclass must implement create_led_template")
     
@@ -95,11 +96,11 @@ class LEDConfig:
         """
         Extract the crop region from a frame.
         
-        Args:
+        Arguments:
             frame: Full video frame
             
         Returns:
-            np.ndarray: Cropped region where LED is expected
+            np.ndarray: Cropped region where LED is expected. Uses led_cropx0, led_cropy0, led_cropx1, led_cropy1 to determine crop region.
         """
         # lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
         # l, a, b = cv2.split(lab)
