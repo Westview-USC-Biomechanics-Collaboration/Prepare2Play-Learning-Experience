@@ -129,6 +129,25 @@ class LEDConfig:
         Returns:
             np.ndarray: Processed grayscale image ready for template matching
         """
+
+        ''' This starts by converting BGR video to HSV, 
+        makes upper and lower blue values for what LED 
+        could be, then makes a mask that filters out all 
+        other colors so that only the colors within the blue
+        LED range are ignored'''
+        
+        
+        # hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+        
+        # lower_blue = np.array([value, value, value])
+        # upper_blue = np.array([value, value, value])
+
+        # mask = cv2.inRange(hsv, lower_blue, upper_blue)
+
+        # processed = cv2.blur(mask, (10, 10))
+
+        
+        
         blue_channel = crop[:, :, 0]
         green_channel = crop[:, :, 1]
         
