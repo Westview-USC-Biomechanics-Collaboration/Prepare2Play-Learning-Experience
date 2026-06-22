@@ -357,6 +357,7 @@ class DisplayApp:
             print(f"Clicked at: x={event.xdata}, y={event.ydata}")
     
     def plot_force_data(self):
+
         print("[INFO] plotting force data")
         # Clear previous figure on canvas2
         for widget in self.canvasManager.canvas2.winfo_children():
@@ -366,7 +367,7 @@ class DisplayApp:
         canvas_height = self.canvasManager.canvas2.winfo_height()
 
         # Create a new figure and plot
-        self.fig, self.ax = plt.subplots(figsize=(canvas_width / 100, canvas_height / 100), dpi=600)
+        self.fig, self.ax = plt.subplots(figsize=(canvas_width/100, canvas_height/100), dpi=100)
 
         # Read data based on plate and force
         plate_number = "1" if self.backgroundManager.plate.get() == "Force Plate 1" else "2"
@@ -375,14 +376,14 @@ class DisplayApp:
             self.Force.data.loc[int(self.state.loc * self.state.step_size + self.state.zoom_pos), f"{self.backgroundManager.option.get()}{plate_number}"])
 
         # Limit Y scale to specific scale
-        plt.ylim(-150, 1500)
+        plt.ylim(-100, 1500)
         
         # Set x and y
         self.x = self.Force.data.iloc[:, 0]
         self.y = self.Force.data.loc[:, f"{self.backgroundManager.option.get()}{plate_number}"]
 
         # Plot data
-        self.ax.plot(self.x, self.y, linestyle='-', color='blue', linewidth=0.5)
+        self.ax.plot(self.x, self.y , linestyle='-', color='blue', linewidth=0.5)
         self.ax.set_title("Force vs. Time")
         self.ax.set_xlabel("Time (s.)")
         self.ax.set_ylabel("Force (N.)")

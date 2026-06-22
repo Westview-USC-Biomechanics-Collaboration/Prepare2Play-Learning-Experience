@@ -294,78 +294,95 @@ def saveCallback(self, video, view, frames):
         # ========== CREATE STATIC PLOTS (ONCE) ==========
         # Create properly sized plots (not stretched)
         # Use standard matplotlib figure size for good proportions
-        fig_width = 8  # inches (will create ~960px width at 100 dpi)
-        fig_height = 4.8  # inches (will create ~480px height at 100 dpi)
+        fig_width = 5.44  # inches (will create ~960px width at 100 dpi)
+        fig_height = 2.72  # inches (will create ~480px height at 100 dpi)
         
         if view == "Top View":
-            fig1, ax1 = plt.subplots(figsize=(fig_width, fig_height), dpi=100)
+
+            #Set y_lim to variable, which is used in all of the graphs as the y-maximum
+            #ymax will be the same for all graphs so that they can be compared
+            y_lim = ymax*1.2
+
+            fig1, ax1 = plt.subplots(figsize=(fig_width, fig_height), dpi=300)
             fig1.subplots_adjust(bottom=0.15, left=0.1, right=0.95, top=0.92)
         
             horizontal_resultant_force_1 = np.sqrt(y1**2 + y2**2)
             horizontal_resultant_force_2 = np.sqrt(y3**2 + y4**2)
 
+            plt.xticks(fontsize=4)
+            plt.yticks(fontsize=4)
+
             ax1.plot(time, horizontal_resultant_force_1, linestyle='-', color=color1_1, linewidth=1.5, label=label1_1_name)
             ax1.plot(time, y5, linestyle='-', color=color1_3, linewidth=1.5, label=label1_2_name)
             ax1.set_xlim([lower_x, upper_x])
-            ax1.set_ylim([0, ymax * 1.2])
-            ax1.set_title('Force-Time Graph for Plate 1', fontsize=12, fontweight='bold')
-            ax1.set_xlabel("Time (s)", fontsize=10)
-            ax1.set_ylabel("Forces (N)", fontsize=10)
-            ax1.legend(loc='upper left', fontsize=9)
+            ax1.set_ylim([0, y_lim])
+            ax1.set_title('Force-Time Graph for Plate 1', fontsize=6, fontweight='bold')
+            ax1.set_xlabel("Time (s)", fontsize=4.95)
+            ax1.set_ylabel("Forces (N)", fontsize=4.95)
+            ax1.legend(loc='upper left', fontsize=4.5)
             ax1.grid(True, alpha=0.3)
 
-            fig2, ax2 = plt.subplots(figsize=(fig_width, fig_height), dpi=100)
+            fig2, ax2 = plt.subplots(figsize=(fig_width, fig_height), dpi=300)
             fig2.subplots_adjust(bottom=0.15, left=0.1, right=0.95, top=0.92)
+
+            plt.xticks(fontsize=4)
+            plt.yticks(fontsize=4)
 
             ax2.plot(time, horizontal_resultant_force_2, linestyle='-', color=color2_1, linewidth=1.5, label=label2_1_name)
             ax2.plot(time, y6, linestyle='-', color=color2_3, linewidth=1.5, label=label2_2_name)
             ax2.set_xlim([lower_x, upper_x])
-            ax2.set_ylim([0, ymax * 1.2])
-            ax2.set_title('Force-Time Graph for Plate 2', fontsize=12, fontweight='bold')
-            ax2.set_xlabel("Time (s)", fontsize=10)
-            ax2.set_ylabel("Forces (N)", fontsize=10)
-            ax2.legend(loc='upper left', fontsize=9)
+            ax2.set_ylim([0, y_lim])
+            ax2.set_title('Force-Time Graph for Plate 2', fontsize=6, fontweight='bold')
+            ax2.set_xlabel("Time (s)", fontsize=4.95)
+            ax2.set_ylabel("Forces (N)", fontsize=4.95)
+            ax2.legend(loc='upper left', fontsize=4.5)
             ax2.grid(True, alpha=0.3)
 
         if view != "Top View":
-            fig1, ax1 = plt.subplots(figsize=(fig_width, fig_height), dpi=100)
+            fig1, ax1 = plt.subplots(figsize=(fig_width, fig_height), dpi=300)
             fig1.subplots_adjust(bottom=0.15, left=0.1, right=0.95, top=0.92)
+
+            plt.xticks(fontsize=4)
+            plt.yticks(fontsize=4)
             
             ax1.plot(time, y1, linestyle='-', color=color1_1, linewidth=1.5, label=label1_1_name)
             ax1.plot(time, y2, linestyle='-', color=color1_2, linewidth=1.5, label=label1_2_name)
             ax1.set_xlim([lower_x, upper_x])
-            ax1.set_ylim([ymin, ymax * 1.2])
+            ax1.set_ylim([ymin, y_lim])
             ax1.axhline(0, color='black', linewidth=2.0, linestyle='--')
-            ax1.set_title('Force-Time Graph for Plate 1', fontsize=12, fontweight='bold')
-            ax1.set_xlabel("Time (s)", fontsize=10)
-            ax1.set_ylabel("Forces (N)", fontsize=10)
-            ax1.legend(loc='upper left', fontsize=9)
+            ax1.set_title('Force-Time Graph for Plate 1', fontsize=6, fontweight='bold')
+            ax1.set_xlabel("Time (s)", fontsize=4.95)
+            ax1.set_ylabel("Forces (N)", fontsize=4.95)
+            ax1.legend(loc='upper left', fontsize=4.5)
             ax1.grid(True, alpha=0.3)
 
             # Figure 2: Force Plate 2
-            fig2, ax2 = plt.subplots(figsize=(fig_width, fig_height), dpi=100)
+            fig2, ax2 = plt.subplots(figsize=(fig_width, fig_height), dpi=300)
             fig2.subplots_adjust(bottom=0.15, left=0.1, right=0.95, top=0.92)
+
+            plt.xticks(fontsize=4)
+            plt.yticks(fontsize=4)
             
             ax2.plot(time, y3, linestyle='-', color=color2_1, linewidth=1.5, label=label2_1_name)
             ax2.plot(time, y4, linestyle='-', color=color2_2, linewidth=1.5, label=label2_2_name)
             ax2.set_xlim([lower_x, upper_x])
-            ax2.set_ylim([ymin, ymax * 1.2])
+            ax2.set_ylim([ymin, y_lim])
             ax2.axhline(0, color='black', linewidth=2.0, linestyle='--')
-            ax2.set_title('Force-Time Graph for Plate 2', fontsize=12, fontweight='bold')
-            ax2.set_xlabel("Time (s)", fontsize=10)
-            ax2.set_ylabel("Forces (N)", fontsize=10)
-            ax2.legend(loc='upper left', fontsize=9)
+            ax2.set_title('Force-Time Graph for Plate 2', fontsize=6, fontweight='bold')
+            ax2.set_xlabel("Time (s)", fontsize=4.95)
+            ax2.set_ylabel("Forces (N)", fontsize=4.95)
+            ax2.legend(loc='upper left', fontsize=4.5)
             ax2.grid(True, alpha=0.3)
 
         # Convert static plots to numpy arrays
         buf1 = BytesIO()
-        fig1.savefig(buf1, format='png', dpi=100)
+        fig1.savefig(buf1, format='png', dpi=300)
         buf1.seek(0)
         plot_static_1 = np.array(Image.open(buf1))[:, :, 0:3]
         buf1.close()
 
         buf2 = BytesIO()
-        fig2.savefig(buf2, format='png', dpi=100)
+        fig2.savefig(buf2, format='png', dpi=300)
         buf2.seek(0)
         plot_static_2 = np.array(Image.open(buf2))[:, :, 0:3]
         buf2.close()
@@ -469,11 +486,11 @@ def saveCallback(self, video, view, frames):
             ax1.set_xlim([lower_x, upper_x])
             ax2.set_xlim([lower_x, upper_x])
             if view == "Top View":
-                ax1.set_ylim([0, ymax * 1.2])
-                ax2.set_ylim([0, ymax * 1.2])
+                ax1.set_ylim([0, y_lim])
+                ax2.set_ylim([0, y_lim])
             else:
-                ax1.set_ylim([ymin, ymax * 1.2])
-                ax2.set_ylim([ymin, ymax * 1.2])
+                ax1.set_ylim([ymin, y_lim])
+                ax2.set_ylim([ymin, y_lim])
             # ax1.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
             # ax2.axvline(x=current_time, color='blue', linestyle='--', linewidth=1.5, alpha=0.5)
             # vline1.set_xdata([current_time])
@@ -541,8 +558,36 @@ def saveCallback(self, video, view, frames):
             else:
                 graphs = cv2.hconcat([plot1, plot2])
 
+            if graphs.shape[1] != video.frame_width:
+                graphs = cv2.resize(graphs, (video.frame_width, graphs.shape[0]))
+
             # Stack video on top, graphs on bottom
-            combined = cv2.vconcat([frame_vec, graphs])
+             # 1. Combine the two plots side-by-side (using your existing logic)
+            gap_width = (video.frame_width - plot1.shape[1] - plot2.shape[1]) // 2
+            if gap_width > 0:
+                gap = np.full((plot1.shape[0], gap_width, 3), 255, dtype=np.uint8)
+                graphs = cv2.hconcat([gap, plot1, plot2, gap])
+            else:
+                graphs = cv2.hconcat([plot1, plot2])
+
+            # 2. Ensure graphs match video width horizontally without stretching
+            if graphs.shape[1] != video.frame_width:
+                graphs = cv2.resize(graphs, (video.frame_width, graphs.shape[0]))
+
+            # 3. Stack video and graphs together at their natural aspect ratios
+            combined_natural = cv2.vconcat([frame_vec, graphs])
+
+            # 4. Create a blank, unstretched canvas matching your exact VideoWriter dimensions
+            # (out_size[1] is the target height, out_size[0] is the target width)
+            canvas = np.full((out_size[1], out_size[0], 3), 0, dtype=np.uint8) # 255 for white padding, 0 for black
+
+            # 5. Place the unstretched video+graphs onto the canvas starting from the top
+            # This leaves clean, solid padding at the bottom instead of stretching the visuals
+            h_natural, w_natural = combined_natural.shape[:2]
+            canvas[0:h_natural, 0:w_natural] = combined_natural
+
+            # 6. Assign the padded canvas back to combined so it writes cleanly
+            combined = canvas
 
             # Write frame
             out.write(combined)
