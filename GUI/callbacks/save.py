@@ -342,6 +342,12 @@ def saveCallback(self, video, view, frames):
             fig1, ax1 = plt.subplots(figsize=(fig_width, fig_height), dpi=300)
             fig1.subplots_adjust(bottom=0.15, left=0.1, right=0.95, top=0.92)
 
+            ymin = min(y1.min(), y2.min(), y3.min(), y4.min(), y5.min(), y6.min())
+
+            ymax = max(y1.max(), y2.max(), y3.max(), y4.max(), y5.max(), y6.max())
+
+            y_lim = ymax*1.2
+
             plt.xticks(fontsize=4)
             plt.yticks(fontsize=4)
             
