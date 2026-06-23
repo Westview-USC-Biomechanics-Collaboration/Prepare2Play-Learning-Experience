@@ -295,10 +295,10 @@ class TopViewLEDConfig(LEDConfig):
             frame_width=1920,
             frame_height=1080,
             # Scale crop region for 4K resolution (2x the 1080p values)
-            led_crop_x0=800,
-            led_crop_x1=1100,
+            led_crop_x0=850,
+            led_crop_x1=1070,
             led_crop_y0=700,
-            led_crop_y1=1000,  
+            led_crop_y1=1080,  
             template_center_offset_x=35,
             template_center_offset_y=45,
             plate_swap=False  # Top view: swap FP1/FP2 to match Long View orientation
