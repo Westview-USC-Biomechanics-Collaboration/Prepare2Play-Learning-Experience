@@ -543,7 +543,7 @@ class Processor:
         #total_rows = len(self.data) #Not working with VSCode reading
 
 
-        samples_per_frame = 10  # Default to 5 samples per frame for 1200 Hz data, 10 samples per frame for 2400 hz data
+        samples_per_frame = 120  # Default to 5 samples per frame for 1200 Hz data, 10 samples per frame for 2400 hz data
 
 
         print(f"# of total samples: {len(self.data)}")
@@ -843,3 +843,8 @@ class Processor:
 
 #     # Save landmarks to CSV with zeros for no detection
 #     processor.SaveToTxt(sex='male', filename='pose_landmarks.csv', confidencelevel=0.85, displayCOM=True)
+# Ryan, 
+# Hello ryan this is shane
+# Erik & Kiana
+# Amy
+# Fathina
