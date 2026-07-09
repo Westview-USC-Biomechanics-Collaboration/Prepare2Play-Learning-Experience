@@ -19,7 +19,250 @@ warnings.filterwarnings('ignore', category=UserWarning, module='google.protobuf.
 
 from Util.COM_helper import COM_helper
 
-def saveCallback(self, video, view, frames):
+
+def export_video_with_selected_force_data(self, video, view, frames):
+    """
+    Export a video that stacks the supplied frames with a force-time plot
+    built from the currently selected force series in the GUI, mirroring the
+    data-collection logic used by plot_force_data in simpleGUI.py.
+    """
+    if not hasattr(self, "Force") or self.Force is None:
+        self._pop_up("Error: force data is not available for export.")
+        return
+
+    if getattr(self.Force, "data", None) is None or self.Force.data.empty:
+        self._pop_up("Error: no force data loaded. Upload force data before exporting.")
+        return
+
+    if not frames:
+        self._pop_up("Error: no video frames were supplied for export.")
+        return
+
+    output_path = getattr(self, "save_output_path", None)
+    if not output_path:
+        output_path = filedialog.asksaveasfilename(
+            defaultextension=".mp4",
+            filetypes=[("MP4 files", "*.mp4"), ("All files", "*.*")]
+        )
+        if not output_path:
+            return
+        self.save_output_path = output_path
+
+    option_widget = getattr(self.backgroundManager, "option", None)
+    option_name = option_widget.get() if option_widget is not None else "Fx"
+
+    time_series = pd.to_numeric(self.Force.data.iloc[:, 0], errors="coerce").fillna(0.0)
+
+    def _get_series(columns, preferred_names):
+        for name in preferred_names:
+            if name in columns:
+                return pd.to_numeric(self.Force.data[name], errors="coerce").fillna(0.0)
+        return pd.Series(0.0, index=self.Force.data.index)
+
+    if view == "Long View":
+        plate1_names = ["Fy1", "FP1_Fy", "Fy_1", "FP1_Fy"]
+        plate1_names_2 = ["Fz1", "FP1_Fz", "Fz_1", "FP1_Fz"]
+        plate2_names = ["Fy2", "FP2_Fy", "Fy_2", "FP2_Fy"]
+        plate2_names_2 = ["Fz2", "FP2_Fz", "Fz_2", "FP2_Fz"]
+        title1 = "Force Plate 1"
+        title2 = "Force Plate 2"
+        color1_1, color1_2 = "purple", "green"
+        color2_1, color2_2 = "blue", "red"
+    elif view in {"Side1 View", "Side2 View"}:
+        plate1_names = ["Fx1", "FP1_Fx", "Fx_1", "FP1_Fx"]
+        plate1_names_2 = ["Fz1", "FP1_Fz", "Fz_1", "FP1_Fz"]
+        plate2_names = ["Fx2", "FP2_Fx", "Fx_2", "FP2_Fx"]
+        plate2_names_2 = ["Fz2", "FP2_Fz", "Fz_2", "FP2_Fz"]
+        title1 = "Force Plate 1"
+        title2 = "Force Plate 2"
+        color1_1, color1_2 = "purple", "green"
+        color2_1, color2_2 = "blue", "red"
+    else:
+        plate1_names = ["Fy1", "FP1_Fy", "Fy_1", "FP1_Fy"]
+        plate1_names_2 = ["Fx1", "FP1_Fx", "Fx_1", "FP1_Fx"]
+        plate2_names = ["Fy2", "FP2_Fy", "Fy_2", "FP2_Fy"]
+        plate2_names_2 = ["Fx2", "FP2_Fx", "Fx_2", "FP2_Fx"]
+        title1 = "Force Plate 1"
+        title2 = "Force Plate 2"
+        color1_1, color1_2 = "purple", "green"
+        color2_1, color2_2 = "blue", "red"
+
+    force_series_plate1_a = _get_series(self.Force.data.columns, plate1_names)
+    force_series_plate1_b = _get_series(self.Force.data.columns, plate1_names_2)
+    force_series_plate2_a = _get_series(self.Force.data.columns, plate2_names)
+    force_series_plate2_b = _get_series(self.Force.data.columns, plate2_names_2)
+
+    if time_series.empty or force_series_plate1_a.empty or force_series_plate1_b.empty or force_series_plate2_a.empty or force_series_plate2_b.empty:
+        self._pop_up("Error: the selected force series is empty.")
+        return
+
+    current_index = int(getattr(self.state, "loc", 0) * getattr(self.state, "step_size", 1) + getattr(self.state, "zoom_pos", 0))
+    current_index = max(0, min(current_index, len(force_series_plate1_a) - 1))
+    current_time = float(time_series.iloc[current_index]) if len(time_series) > current_index else float(time_series.iloc[-1])
+
+    # Calculate x-axis range based on actual frame-to-time mapping from df_trimmed
+    min_x = current_time
+    max_x = current_time
+    
+    # Try to use df_trimmed for accurate frame-to-time mapping
+    if hasattr(self.state, "df_trimmed") and self.state.df_trimmed is not None and not self.state.df_trimmed.empty:
+        df_trimmed = self.state.df_trimmed
+        
+        # Find the time column in df_trimmed
+        time_col_trimmed = None
+        for col_name in ["Time(s)", "abs time (s)"]:
+            if col_name in df_trimmed.columns:
+                time_col_trimmed = col_name
+                break
+        
+        if time_col_trimmed is not None:
+            # Get time values for first and last exported frames
+            if len(frames) > 0 and len(df_trimmed) > 0:
+                # First frame maps to df_trimmed.iloc[0]
+                try:
+                    first_time = float(df_trimmed[time_col_trimmed].iloc[0])
+                    # Last frame maps to df_trimmed.iloc[len(frames)-1]
+                    last_frame_idx = min(len(frames) - 1, len(df_trimmed) - 1)
+                    last_time = float(df_trimmed[time_col_trimmed].iloc[last_frame_idx])
+                    
+                    if last_time > first_time:
+                        min_x = first_time
+                        max_x = last_time
+                        print(f"[SAVE] Frame-to-time mapping: frames 0-{last_frame_idx} → {first_time:.4f}s-{last_time:.4f}s (from df_trimmed)")
+                    else:
+                        print(f"[SAVE] Warning: df_trimmed times not monotonic ({first_time:.4f}s → {last_time:.4f}s), using fallback")
+                except (ValueError, TypeError) as e:
+                    print(f"[SAVE] Warning: Could not extract times from df_trimmed: {e}, using fallback")
+            else:
+                print(f"[SAVE] Warning: No frames or df_trimmed data, using fallback")
+        else:
+            print(f"[SAVE] Warning: No time column found in df_trimmed, using fallback")
+    else:
+        print(f"[SAVE] Warning: df_trimmed not available, using fallback to duration-based scaling")
+    
+    # Fallback: use frame duration if df_trimmed mapping didn't work
+    if min_x == current_time and max_x == current_time:
+        video_fps = max(1.0, getattr(video, "fps", 30.0))
+        num_frames = len(frames)
+        frame_duration = num_frames / video_fps
+        min_x = current_time
+        max_x = current_time + frame_duration
+        print(f"[SAVE] Using fallback duration-based scaling: {min_x:.3f}s - {max_x:.3f}s ({num_frames} frames @ {video_fps:.1f} fps)")
+    
+    # Ensure the range fits within available data
+    time_min_available = float(time_series.min()) if len(time_series) > 0 else 0.0
+    time_max_available = float(time_series.max()) if len(time_series) > 0 else 1.0
+    
+    if min_x < time_min_available:
+        min_x = time_min_available
+    if max_x > time_max_available:
+        max_x = time_max_available
+    
+    if max_x <= min_x:
+        max_x = min_x + 1.0
+    
+    print(f"[SAVE] Final x-axis range: {min_x:.4f}s - {max_x:.4f}s")
+
+    def _plot_range(series):
+        finite_force = series.to_numpy(dtype=float)
+        finite_force = finite_force[np.isfinite(finite_force)]
+        if finite_force.size == 0:
+            finite_force = np.array([0.0])
+        ymin = float(np.min(finite_force))
+        ymax = float(np.max(finite_force))
+        padding = max(1.0, (ymax - ymin) * 0.1 if ymax != ymin else 10.0)
+        return ymin, ymax, padding
+
+    ymin1_a, ymax1_a, padding1_a = _plot_range(force_series_plate1_a)
+    ymin1_b, ymax1_b, padding1_b = _plot_range(force_series_plate1_b)
+    ymin2_a, ymax2_a, padding2_a = _plot_range(force_series_plate2_a)
+    ymin2_b, ymax2_b, padding2_b = _plot_range(force_series_plate2_b)
+
+    overall_ymin = min(ymin1_a, ymin1_b, ymin2_a, ymin2_b)
+    overall_ymax = max(ymax1_a, ymax1_b, ymax2_a, ymax2_b)
+    overall_padding = max(padding1_a, padding1_b, padding2_a, padding2_b)
+
+    fig1, ax1 = plt.subplots(figsize=(5.44, 2.72), dpi=300)
+    fig1.subplots_adjust(left=0.12, right=0.98, top=0.90, bottom=0.18)
+    ax1.plot(time_series, force_series_plate1_a, linestyle='-', color=color1_1, linewidth=0.5, label=plate1_names[0])
+    ax1.plot(time_series, force_series_plate1_b, linestyle='-', color=color1_2, linewidth=0.5, label=plate1_names_2[0])
+    ax1.set_xlim([min_x, max_x])
+    ax1.set_ylim([overall_ymin - overall_padding, overall_ymax + overall_padding])
+    ax1.axhline(0, color='black', linewidth=2.0, linestyle='--')
+    ax1.set_title(title1, fontsize=6, fontweight='bold')
+    ax1.set_xlabel("Time (s)", fontsize=4.95)
+    ax1.set_ylabel("Forces (N)", fontsize=4.95)
+    ax1.legend(loc='upper left', fontsize=4.5)
+    ax1.grid(True, alpha=0.3)
+    ax1.axvline(current_time, color='red', linestyle='--', linewidth=1.0)
+
+    fig2, ax2 = plt.subplots(figsize=(5.44, 2.72), dpi=300)
+    fig2.subplots_adjust(left=0.12, right=0.98, top=0.90, bottom=0.18)
+    ax2.plot(time_series, force_series_plate2_a, linestyle='-', color=color2_1, linewidth=0.5, label=plate2_names[0])
+    print(time_series)
+    print(force_series_plate2_b)
+    ax2.plot(time_series, force_series_plate2_b, linestyle='-', color=color2_2, linewidth=0.5, label=plate2_names_2[0])
+    ax2.set_xlim([min_x, max_x])
+    ax2.set_ylim([overall_ymin - overall_padding, overall_ymax + overall_padding])
+    ax2.axhline(0, color='black', linewidth=2.0, linestyle='--')
+    ax2.set_title(title2, fontsize=6, fontweight='bold')
+    ax2.set_xlabel("Time (s)", fontsize=4.95)
+    ax2.set_ylabel("Forces (N)", fontsize=4.95)
+    ax2.legend(loc='upper left', fontsize=4.5)
+    ax2.grid(True, alpha=0.3)
+    ax2.axvline(current_time, color='red', linestyle='--', linewidth=1.0)
+
+    buf1 = BytesIO()
+    fig1.savefig(buf1, format='png', dpi=300)
+    buf1.seek(0)
+    plot_plate1 = np.array(Image.open(buf1))[:, :, 0:3]
+    buf1.close()
+
+    buf2 = BytesIO()
+    fig2.savefig(buf2, format='png', dpi=300)
+    buf2.seek(0)
+    plot_plate2 = np.array(Image.open(buf2))[:, :, 0:3]
+    buf2.close()
+
+    plt.close(fig1)
+    plt.close(fig2)
+
+    plot_plate1 = cv2.cvtColor(plot_plate1, cv2.COLOR_RGB2BGR)
+    plot_plate2 = cv2.cvtColor(plot_plate2, cv2.COLOR_RGB2BGR)
+
+    graph_height = max(260, int(video.frame_height * 0.45))
+    plot_plate1 = cv2.resize(plot_plate1, (video.frame_width // 2, graph_height))
+    plot_plate2 = cv2.resize(plot_plate2, (video.frame_width // 2, graph_height))
+    plot_image = cv2.hconcat([plot_plate1, plot_plate2])
+
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    output_fps = max(1.0, getattr(video, "fps", 30.0) / 2.0)
+    out = cv2.VideoWriter(output_path, fourcc, output_fps, (video.frame_width, video.frame_height + graph_height))
+
+    print(f"[SAVE] Exporting force-based video to {output_path} at {output_fps:.2f} fps")
+
+    processed_count = 0
+    for frame_index, frame_data in enumerate(frames):
+        ret, frame = frame_data
+        if not ret:
+            break
+
+        if frame is None:
+            continue
+
+        frame_display = frame.copy()
+        if frame_display.ndim == 3 and frame_display.shape[2] == 4:
+            frame_display = cv2.cvtColor(frame_display, cv2.COLOR_RGBA2BGR)
+        frame_display = cv2.resize(frame_display, (video.frame_width, video.frame_height))
+        combined = cv2.vconcat([frame_display, plot_image])
+        out.write(combined)
+        processed_count += 1
+
+    out.release()
+    print(f"[SAVE] Exported {processed_count} frames with selected force data")
+
+
+def saveCallback(self, video=None, view=None, frames=None):
     """
     Save window for exporting a trimmed + aligned vector overlay video with force graphs.
 
@@ -64,6 +307,10 @@ def saveCallback(self, video, view, frames):
         return
 
     self.save_output_path = output_path
+
+    if getattr(self, "Force", None) is not None and hasattr(self.Force, "data") and not self.Force.data.empty:
+        export_video_with_selected_force_data(self, video, view, frames)
+        return
 
     # ============================================================
     # STATE
@@ -351,21 +598,14 @@ def saveCallback(self, video, view, frames):
             fig1, ax1 = plt.subplots(figsize=(fig_width, fig_height), dpi=300)
             fig1.subplots_adjust(bottom=0.15, left=0.1, right=0.95, top=0.92)
 
-<<<<<<< HEAD
             ymax = max(y1.max(), y2.max(), y3.max(), y4.max(), y5.max(), y6.max())
             ymin = min(y1.min(), y2.min(), y3.min(), y4.min(), y5.min(), y6.min())
 
-=======
-            ymin = min(y1.min(), y2.min(), y3.min(), y4.min(), y5.min(), y6.min())
-
-            ymax = max(y1.max(), y2.max(), y3.max(), y4.max(), y5.max(), y6.max())
-
->>>>>>> 39f26ed8874e8db3ddef8ec3bd45a307d684c36c
-            y_lim = ymax*1.2
+            y_lim = ymax * 1.2
 
             plt.xticks(fontsize=4)
             plt.yticks(fontsize=4)
-            
+
             ax1.plot(time, y1, linestyle='-', color=color1_1, linewidth=1.5, label=label1_1_name)
             ax1.plot(time, y2, linestyle='-', color=color1_2, linewidth=1.5, label=label1_2_name)
             ax1.set_xlim([lower_x, upper_x])
@@ -384,11 +624,11 @@ def saveCallback(self, video, view, frames):
             ymax = max(y1.max(), y2.max(), y3.max(), y4.max(), y5.max(), y6.max())
             ymin = min(y1.min(), y2.min(), y3.min(), y4.min(), y5.min(), y6.min())
 
-            y_lim = ymax*1.2
+            y_lim = ymax * 1.2
 
             plt.xticks(fontsize=4)
             plt.yticks(fontsize=4)
-            
+
             ax2.plot(time, y3, linestyle='-', color=color2_1, linewidth=1.5, label=label2_1_name)
             ax2.plot(time, y4, linestyle='-', color=color2_2, linewidth=1.5, label=label2_2_name)
             ax2.set_xlim([lower_x, upper_x])
@@ -400,7 +640,6 @@ def saveCallback(self, video, view, frames):
             ax2.legend(loc='upper left', fontsize=4.5)
             ax2.grid(True, alpha=0.3)
 
-        # Convert static plots to numpy arrays
         buf1 = BytesIO()
         fig1.savefig(buf1, format='png', dpi=300)
         buf1.seek(0)
