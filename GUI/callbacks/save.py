@@ -182,6 +182,8 @@ def export_video_with_selected_force_data(self, video, view, frames):
     overall_ymax = max(ymax1_a, ymax1_b, ymax2_a, ymax2_b)
     overall_padding = max(padding1_a, padding1_b, padding2_a, padding2_b)
 
+    graph_height = max(260, int(video.frame_height * 0.45))
+
     fig1, ax1 = plt.subplots(figsize=(5.44, 2.72), dpi=300)
     fig1.subplots_adjust(left=0.12, right=0.98, top=0.90, bottom=0.18)
     ax1.plot(time_series, force_series_plate1_a, linestyle='-', color=color1_1, linewidth=0.5, label=plate1_names[0])
@@ -212,28 +214,30 @@ def export_video_with_selected_force_data(self, video, view, frames):
     ax2.grid(True, alpha=0.3)
     ax2.axvline(current_time, color='red', linestyle='--', linewidth=1.0)
 
-    buf1 = BytesIO()
-    fig1.savefig(buf1, format='png', dpi=300)
-    buf1.seek(0)
-    plot_plate1 = np.array(Image.open(buf1))[:, :, 0:3]
-    buf1.close()
+    def _build_plot_image(current_time):
+        fig, ax = plt.subplots(figsize=(5.44, 2.72), dpi=300)
+        fig.subplots_adjust(left=0.12, right=0.98, top=0.90, bottom=0.18)
+        ax.plot(time_series, force_series_plate1_a, linestyle='-', color=color1_1, linewidth=0.5, label=plate1_names[0])
+        ax.plot(time_series, force_series_plate1_b, linestyle='-', color=color1_2, linewidth=0.5, label=plate1_names_2[0])
+        ax.set_xlim([min_x, max_x])
+        ax.set_ylim([overall_ymin - overall_padding, overall_ymax + overall_padding])
+        ax.axhline(0, color='black', linewidth=2.0, linestyle='--')
+        ax.set_title(title1, fontsize=6, fontweight='bold')
+        ax.set_xlabel("Time (s)", fontsize=4.95)
+        ax.set_ylabel("Forces (N)", fontsize=4.95)
+        ax.legend(loc='upper left', fontsize=4.5)
+        ax.grid(True, alpha=0.3)
+        ax.axvline(current_time, color='red', linestyle='--', linewidth=1.0)
 
-    buf2 = BytesIO()
-    fig2.savefig(buf2, format='png', dpi=300)
-    buf2.seek(0)
-    plot_plate2 = np.array(Image.open(buf2))[:, :, 0:3]
-    buf2.close()
+        buf = BytesIO()
+        fig.savefig(buf, format='png', dpi=300)
+        buf.seek(0)
+        plot_plate = np.array(Image.open(buf))[:, :, 0:3]
+        buf.close()
+        plt.close(fig)
 
-    plt.close(fig1)
-    plt.close(fig2)
-
-    plot_plate1 = cv2.cvtColor(plot_plate1, cv2.COLOR_RGB2BGR)
-    plot_plate2 = cv2.cvtColor(plot_plate2, cv2.COLOR_RGB2BGR)
-
-    graph_height = max(260, int(video.frame_height * 0.45))
-    plot_plate1 = cv2.resize(plot_plate1, (video.frame_width // 2, graph_height))
-    plot_plate2 = cv2.resize(plot_plate2, (video.frame_width // 2, graph_height))
-    plot_image = cv2.hconcat([plot_plate1, plot_plate2])
+        plot_plate = cv2.cvtColor(plot_plate, cv2.COLOR_RGB2BGR)
+        return cv2.resize(plot_plate, (video.frame_width, graph_height))
 
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     output_fps = max(1.0, getattr(video, "fps", 30.0) / 2.0)
@@ -249,6 +253,17 @@ def export_video_with_selected_force_data(self, video, view, frames):
 
         if frame is None:
             continue
+
+        if hasattr(self.state, "df_trimmed") and self.state.df_trimmed is not None and not self.state.df_trimmed.empty:
+            df_trimmed = self.state.df_trimmed
+            time_col_trimmed = next((col for col in ["Time(s)", "abs time (s)"] if col in df_trimmed.columns), None)
+            if time_col_trimmed is not None and len(df_trimmed) > frame_index:
+                current_time = float(df_trimmed[time_col_trimmed].iloc[frame_index])
+            else:
+                current_time = float(time_series.iloc[min(frame_index, len(time_series) - 1)]) if len(time_series) > 0 else 0.0
+        else:
+            current_time = float(time_series.iloc[min(frame_index, len(time_series) - 1)]) if len(time_series) > 0 else 0.0
+        plot_image = _build_plot_image(current_time)
 
         frame_display = frame.copy()
         if frame_display.ndim == 3 and frame_display.shape[2] == 4:
@@ -280,12 +295,27 @@ def saveCallback(self, video=None, view=None, frames=None):
 
     start = time.perf_counter()
 
+    if video is None:
+        video = getattr(self, "Video", None)
+        if video is None and getattr(self, "VideoList", None):
+            video = self.VideoList[-1]
+
+    if view is None:
+        view = self.selected_view.get() if hasattr(self, "selected_view") else "Long View"
+
+    if frames is None:
+        frames = []
+
     if not hasattr(self.state, "df_trimmed") or self.state.df_trimmed is None:
         self._pop_up("Error: df_trimmed not found. Run vector overlay first.")
         return
 
+    if video is None:
+        self._pop_up("Error: no video is available to export.")
+        return
+
     # self.save_vector_path = vector_overlay_path
-    self.save_video_path = video.path
+    self.save_video_path = getattr(video, "path", None)
     df = self.state.df_trimmed.copy()
     # df = df.reset_index(drop=True)  # Ensure clean 0-based index
 
