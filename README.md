@@ -1,4 +1,8 @@
-# Project Title
+# Vector Overlay Processing Software V1
+
+This is the first version of student created vector overlay software that has been in development from Summer 2022 to Summer 2026. This code works and has been used to process vector overlays for HPOE final projects : Spring 2025, Fall 2025, Spring 2026.  There are some problems with this version that have not been fixed.  1) Force data on the Force time graph is undersampled (only plotting 120fps).  2)body segment end points determined by Media Pipe are delayd, resulting in inaccurate COM positions for fast movements  3)
+
+This code is difficult to follow, has been passed onto a number of software students without documentation, and is difficult to trubleshoot.  There is no clear flow.  Variable names are outdated or are used in multiple scenarios with no clear definitions.  The GUI is outdated and creates user input errors that can be eliminated.
 
 ## 🛠️ Installation
 
