@@ -172,6 +172,24 @@ def vectorOverlayWithAlignmentCallback(self):
             }
             df_trimmed.rename(columns=column_rename, inplace=True)
             self.state.df_trimmed = df_trimmed.reset_index(drop=True)
+
+            # Same trim applied to the full-rate (1200 Hz) force data. The
+            # vector overlay needs one row per video frame, but the force-time
+            # graph in the export should be drawn at the force plate's native
+            # rate, not the decimated 120 Hz version.
+            df_aligned_full = getattr(self.state, "df_aligned_full", None)
+            if df_aligned_full is not None:
+                df_trimmed_full = get_trimmed_subset(
+                    df_aligned_full, boundary_start, boundary_end
+                )
+                df_trimmed_full.rename(columns=column_rename, inplace=True)
+                self.state.df_trimmed_full = df_trimmed_full.reset_index(drop=True)
+                print(f"[INFO] df_trimmed_full rows (full-rate): {len(df_trimmed_full)} "
+                      f"vs df_trimmed rows (per-frame): {len(df_trimmed)}")
+            else:
+                self.state.df_trimmed_full = None
+                print("[WARN] No full-rate force data available; "
+                      "graphs will fall back to the per-frame data.")
             
             print("[COLUMNS BEFORE] LongVectorOverlay:", list(df_trimmed.columns))
             print("Path to COM CSV before VectorOverlay:", com_csv_path)

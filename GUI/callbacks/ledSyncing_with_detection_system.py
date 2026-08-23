@@ -26,6 +26,10 @@ from GUI.callbacks.ledSyncing import (
     align_data
 )
 
+# Force data is recorded at 1200 Hz; video runs at 120 fps.
+# Every FORCE_DECIMATION-th force row therefore lines up with one video frame.
+FORCE_DECIMATION = 10
+
 def swap_force_plates(df: pd.DataFrame) -> pd.DataFrame:
     """
     Swap FP1 and FP2 data in the dataframe.
@@ -313,7 +317,7 @@ def new_led(self, view, parent_path, video_file, force_file, use_detection_syste
         df_force['FP_LED_Signal'] = np.sign(df_force['FP3_Fz'])
         
         # Align
-        df_force_subset = df_force.iloc[::10].reset_index(drop=True)
+        df_force_subset = df_force.iloc[::FORCE_DECIMATION].reset_index(drop=True)
         signal_force = df_force_subset['FP_LED_Signal']
         signal_video = df_video['Video_LED_Signal']
         
@@ -421,7 +425,7 @@ def new_led(self, view, parent_path, video_file, force_file, use_detection_syste
         df_force['FP_LED_Signal'] = np.sign(df_force['FP3_Fz'])
         
         # Align force and video (same logic as original)
-        df_force_subset = df_force.iloc[::10].reset_index(drop=True)
+        df_force_subset = df_force.iloc[::FORCE_DECIMATION].reset_index(drop=True)
         signal_force = df_force_subset['FP_LED_Signal']
         signal_video = df_video['Video_LED_Signal']
         
@@ -451,6 +455,23 @@ def new_led(self, view, parent_path, video_file, force_file, use_detection_syste
             print(f"[SWAP] Applying force plate swap for {view}")
             print(f"{'='*60}")
             df_aligned = swap_force_plates(df_aligned)
+        
+        # ------------------------------------------------------------------
+        # FULL-RATE (1200 Hz) ALIGNED COPY
+        # df_aligned above is decimated to one row per video frame (120 Hz) so
+        # it can drive the vector overlay frame-by-frame. Plotting force vs.
+        # time from it throws away 9 of every 10 samples, so keep an
+        # undecimated copy carrying the same alignment. FrameNumber here is
+        # fractional: row i sits at lag + i / FORCE_DECIMATION video frames.
+        # ------------------------------------------------------------------
+        df_force_full = df_force.reset_index(drop=True).copy()
+        df_force_full['FrameNumber'] = lag + df_force_full.index / FORCE_DECIMATION
+        if should_swap:
+            df_force_full = swap_force_plates(df_force_full)
+        if hasattr(self, 'state'):
+            self.state.df_aligned_full = df_force_full
+        print(f"[INFO] Full-rate force rows kept for plotting: {len(df_force_full)} "
+              f"(decimated to {len(df_aligned)})")
         
         # Save results
         max_corr = float(np.max(correlation))

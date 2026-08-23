@@ -22,6 +22,8 @@ class StateManager:
         self.force_align = None      # Force alignment frame
         self.df_aligned = None       # Aligned force and video data
         self.df_trimmed = None      # Trimmed force data subset (uses renamed version of columns - e.g. FP1_fy or something like this)
+        self.df_aligned_full = None  # Aligned force data at the raw force-plate rate (1200 Hz, not decimated to video frames)
+        self.df_trimmed_full = None  # Trimmed subset of df_aligned_full - used for the force-time graphs in the export
         
 
         # State variables - video

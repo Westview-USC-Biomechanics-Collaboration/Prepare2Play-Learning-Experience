@@ -240,15 +240,44 @@ def saveCallback(self):
 
         # Get time column
         time_col = "abs time (s)" if "abs time (s)" in dfw.columns else "Time(s)"
-        time = pd.to_numeric(dfw[time_col], errors="coerce")
+        cursor_time = pd.to_numeric(dfw[time_col], errors="coerce")
+
+        # ========== PICK THE DATA THE CURVES ARE DRAWN FROM ==========
+        # dfw is decimated to one row per video frame (120 Hz) because the
+        # export walks it frame-by-frame. The force plate records at 1200 Hz,
+        # so draw the curves from the undecimated data when it is available and
+        # keep dfw only for the moving time cursor.
+        df_full = getattr(self.state, "df_trimmed_full", None)
+        if df_full is not None and len(df_full):
+            full_time_col = "abs time (s)" if "abs time (s)" in df_full.columns else "Time(s)"
+            full_t = pd.to_numeric(df_full[full_time_col], errors="coerce")
+            # Restrict to the same window the user selected in dfw
+            mask = (full_t >= cursor_time.min()) & (full_t <= cursor_time.max())
+            dfp = df_full.loc[mask]
+            plot_time_col = full_time_col
+        else:
+            dfp = dfw
+            plot_time_col = time_col
+
+        if dfp is dfw:
+            print("[SAVE] Graph sampling: per-frame force data "
+                  f"({len(dfp)} samples)")
+        else:
+            span = float(pd.to_numeric(dfp[plot_time_col], errors="coerce").max()
+                         - pd.to_numeric(dfp[plot_time_col], errors="coerce").min())
+            rate = (len(dfp) - 1) / span if span > 0 else float("nan")
+            print(f"[SAVE] Graph sampling: full-rate force data "
+                  f"({len(dfp)} samples, ~{rate:.0f} Hz vs {len(dfw)} video frames)")
+
+        time = pd.to_numeric(dfp[plot_time_col], errors="coerce")
 
         # Extract force data
-        y1 = dfw[label1_1].fillna(0)
-        y2 = dfw[label1_2].fillna(0)
-        y3 = dfw[label2_1].fillna(0)
-        y4 = dfw[label2_2].fillna(0)
-        y5 = dfw["FP1_Fz"].fillna(0) #TODO: replace with the labels under the top view configs
-        y6 = dfw["FP2_Fz"].fillna(0)
+        y1 = dfp[label1_1].fillna(0)
+        y2 = dfp[label1_2].fillna(0)
+        y3 = dfp[label2_1].fillna(0)
+        y4 = dfp[label2_2].fillna(0)
+        y5 = dfp["FP1_Fz"].fillna(0) #TODO: replace with the labels under the top view configs
+        y6 = dfp["FP2_Fz"].fillna(0)
 
         horizontal_resultant_force_1 = 0  
         horizontal_resultant_force_2 = 0
