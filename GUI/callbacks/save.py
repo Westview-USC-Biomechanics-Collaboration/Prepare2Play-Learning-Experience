@@ -246,18 +246,26 @@ def saveCallback(self):
         # dfw is decimated to one row per video frame (120 Hz) because the
         # export walks it frame-by-frame. The force plate records at 1200 Hz,
         # so draw the curves from the undecimated data when it is available and
-        # keep dfw only for the moving time cursor.
+        # keep dfw only for the moving time cursor. Default to the per-frame
+        # data and only upgrade if the full-rate data is actually usable -- an
+        # empty selection would make ymin/ymax NaN and blow up ax.set_ylim()
+        # half way through the export.
+        dfp = dfw
+        plot_time_col = time_col
+
         df_full = getattr(self.state, "df_trimmed_full", None)
         if df_full is not None and len(df_full):
             full_time_col = "abs time (s)" if "abs time (s)" in df_full.columns else "Time(s)"
             full_t = pd.to_numeric(df_full[full_time_col], errors="coerce")
             # Restrict to the same window the user selected in dfw
             mask = (full_t >= cursor_time.min()) & (full_t <= cursor_time.max())
-            dfp = df_full.loc[mask]
-            plot_time_col = full_time_col
-        else:
-            dfp = dfw
-            plot_time_col = time_col
+            candidate = df_full.loc[mask]
+            if len(candidate):
+                dfp = candidate
+                plot_time_col = full_time_col
+            else:
+                print("[SAVE] Full-rate force data does not overlap the selected "
+                      "time window; falling back to per-frame data.")
 
         if dfp is dfw:
             print("[SAVE] Graph sampling: per-frame force data "

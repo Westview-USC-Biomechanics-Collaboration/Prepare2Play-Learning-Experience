@@ -26,6 +26,12 @@ USE_DETECTION_SYSTEM = True  # Use new LED detection system (set to False for or
 def vectorOverlayWithAlignmentCallback(self):
     def threadTarget():
         print("[INFO] Starting Vector Overlay with Alignment...")
+
+        # Clear full-rate force data from any previous run. If this run fails
+        # before repopulating them, the export must fall back to the per-frame
+        # data rather than plot a different capture's force curves.
+        self.state.df_aligned_full = None
+        self.state.df_trimmed_full = None
         parent_path = os.path.dirname(self.Video.path)
         video_file = os.path.basename(self.Video.path)
         force_file = os.path.basename(self.Force.path)
