@@ -296,6 +296,24 @@ def saveCallback(self):
         lower_x = time.min()
         upper_x = time.max()
 
+        ONSET_THRESHOLD_N = 20.0   # ignore baseline noise / unloaded drift
+        ONSET_PAD_S = 0.1          # breathing room before the first contact
+        onset_times = []
+        for series in (y1, y2, y3, y4, y5, y6):
+            active = time[series.abs() > ONSET_THRESHOLD_N]
+            if len(active):
+                onset_times.append(float(active.min()))
+        if onset_times:
+            onset = min(onset_times) - ONSET_PAD_S
+            # Never crop past the end of the window, and never extend before it.
+            if lower_x < onset < upper_x:
+                lower_x = onset
+                print(f"[SAVE] Force onset at {onset + ONSET_PAD_S:.3f}s; "
+                      f"graphs start at {lower_x:.3f}s")
+        else:
+            print("[SAVE] No sample exceeded the onset threshold; "
+                  "graphs use the full selected window.")
+
         print(f"[SAVE] Time range: {lower_x:.2f} to {upper_x:.2f} seconds")
         print(f"[SAVE] Force range: {ymin:.2f} to {ymax:.2f} N")
         print(f"[SAVE] Slowdown factor: {SLOW_FACTOR}x")
@@ -305,10 +323,13 @@ def saveCallback(self):
         # Use standard matplotlib figure size for good proportions
         fig_width = 8  # inches (will create ~960px width at 100 dpi)
         fig_height = 4.8  # inches (will create ~480px height at 100 dpi)
+
+        plt.rcParams['xtick.labelsize'] = 16
+        plt.rcParams['ytick.labelsize'] = 16
         
         if view == "Top View":
             fig1, ax1 = plt.subplots(figsize=(fig_width, fig_height), dpi=100)
-            fig1.subplots_adjust(bottom=0.15, left=0.1, right=0.95, top=0.92)
+            fig1.subplots_adjust(bottom=0.20, left=0.15, right=0.97, top=0.88)
         
             horizontal_resultant_force_1 = np.sqrt(y1**2 + y2**2)
             horizontal_resultant_force_2 = np.sqrt(y3**2 + y4**2)
@@ -317,53 +338,53 @@ def saveCallback(self):
             ax1.plot(time, y5, linestyle='-', color=color1_3, linewidth=1.5, label=label1_2_name)
             ax1.set_xlim([lower_x, upper_x])
             ax1.set_ylim([0, ymax * 1.2])
-            ax1.set_title('Force-Time Graph for Plate 1', fontsize=12, fontweight='bold')
-            ax1.set_xlabel("Time (s)", fontsize=10)
-            ax1.set_ylabel("Forces (N)", fontsize=10)
-            ax1.legend(loc='upper left', fontsize=9)
+            ax1.set_title('Force-Time Graph for Plate 1', fontsize=22, fontweight='bold')
+            ax1.set_xlabel("Time (s)", fontsize=20)
+            ax1.set_ylabel("Forces (N)", fontsize=20)
+            ax1.legend(loc='upper left', fontsize=18)
             ax1.grid(True, alpha=0.3)
 
             fig2, ax2 = plt.subplots(figsize=(fig_width, fig_height), dpi=100)
-            fig2.subplots_adjust(bottom=0.15, left=0.1, right=0.95, top=0.92)
+            fig2.subplots_adjust(bottom=0.20, left=0.15, right=0.97, top=0.88)
 
             ax2.plot(time, horizontal_resultant_force_2, linestyle='-', color=color2_1, linewidth=1.5, label=label2_1_name)
             ax2.plot(time, y6, linestyle='-', color=color2_3, linewidth=1.5, label=label2_2_name)
             ax2.set_xlim([lower_x, upper_x])
             ax2.set_ylim([0, ymax * 1.2])
-            ax2.set_title('Force-Time Graph for Plate 2', fontsize=12, fontweight='bold')
-            ax2.set_xlabel("Time (s)", fontsize=10)
-            ax2.set_ylabel("Forces (N)", fontsize=10)
-            ax2.legend(loc='upper left', fontsize=9)
+            ax2.set_title('Force-Time Graph for Plate 2', fontsize=22, fontweight='bold')
+            ax2.set_xlabel("Time (s)", fontsize=20)
+            ax2.set_ylabel("Forces (N)", fontsize=20)
+            ax2.legend(loc='upper left', fontsize=18)
             ax2.grid(True, alpha=0.3)
 
         if view != "Top View":
             fig1, ax1 = plt.subplots(figsize=(fig_width, fig_height), dpi=100)
-            fig1.subplots_adjust(bottom=0.15, left=0.1, right=0.95, top=0.92)
+            fig1.subplots_adjust(bottom=0.20, left=0.15, right=0.97, top=0.88)
             
             ax1.plot(time, y1, linestyle='-', color=color1_1, linewidth=1.5, label=label1_1_name)
             ax1.plot(time, y2, linestyle='-', color=color1_2, linewidth=1.5, label=label1_2_name)
             ax1.set_xlim([lower_x, upper_x])
             ax1.set_ylim([ymin, ymax * 1.2])
             ax1.axhline(0, color='black', linewidth=2.0, linestyle='--')
-            ax1.set_title('Force-Time Graph for Plate 1', fontsize=12, fontweight='bold')
-            ax1.set_xlabel("Time (s)", fontsize=10)
-            ax1.set_ylabel("Forces (N)", fontsize=10)
-            ax1.legend(loc='upper left', fontsize=9)
+            ax1.set_title('Force-Time Graph for Plate 1', fontsize=22, fontweight='bold')
+            ax1.set_xlabel("Time (s)", fontsize=20)
+            ax1.set_ylabel("Forces (N)", fontsize=20)
+            ax1.legend(loc='upper left', fontsize=18)
             ax1.grid(True, alpha=0.3)
 
             # Figure 2: Force Plate 2
             fig2, ax2 = plt.subplots(figsize=(fig_width, fig_height), dpi=100)
-            fig2.subplots_adjust(bottom=0.15, left=0.1, right=0.95, top=0.92)
+            fig2.subplots_adjust(bottom=0.20, left=0.15, right=0.97, top=0.88)
             
             ax2.plot(time, y3, linestyle='-', color=color2_1, linewidth=1.5, label=label2_1_name)
             ax2.plot(time, y4, linestyle='-', color=color2_2, linewidth=1.5, label=label2_2_name)
             ax2.set_xlim([lower_x, upper_x])
             ax2.set_ylim([ymin, ymax * 1.2])
             ax2.axhline(0, color='black', linewidth=2.0, linestyle='--')
-            ax2.set_title('Force-Time Graph for Plate 2', fontsize=12, fontweight='bold')
-            ax2.set_xlabel("Time (s)", fontsize=10)
-            ax2.set_ylabel("Forces (N)", fontsize=10)
-            ax2.legend(loc='upper left', fontsize=9)
+            ax2.set_title('Force-Time Graph for Plate 2', fontsize=22, fontweight='bold')
+            ax2.set_xlabel("Time (s)", fontsize=20)
+            ax2.set_ylabel("Forces (N)", fontsize=20)
+            ax2.legend(loc='upper left', fontsize=18)
             ax2.grid(True, alpha=0.3)
 
         # Convert static plots to numpy arrays

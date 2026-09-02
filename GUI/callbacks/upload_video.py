@@ -7,6 +7,25 @@ from Util.ballDropDetect import ballDropDetect
 import subprocess, shutil, os
 from pathlib import Path
 
+
+def _is_readable_video(path):
+    """True if OpenCV can open the file and actually decode a frame from it.
+
+    Used instead of trusting FFmpeg's exit code: FFmpeg can write a complete,
+    valid file and still abort during teardown, and a good conversion should
+    not be thrown away because of that.
+    """
+    if not os.path.exists(path) or os.path.getsize(path) == 0:
+        return False
+    cap = cv2.VideoCapture(path)
+    try:
+        if not cap.isOpened():
+            return False
+        ok, _ = cap.read()
+        return bool(ok)
+    finally:
+        cap.release()
+
 # In GUI/callbacks/upload_video.py
 
 def uploadVideoCallback(self):
@@ -83,13 +102,40 @@ def process(self, view):
 
             cmd = [
                 exe, "-y",
+                # Frame-threaded decoding trips an assertion in some FFmpeg
+                # builds while tearing the decoder down:
+                #   Assertion fctx->async_lock failed at pthread_frame.c:173
+                # Slice threading decodes this material just as fast and does
+                # not go through that code path.
+                "-thread_type", "slice",
                 "-i", str(p),
                 "-c:v", "libx264", "-pix_fmt", "yuv420p",
                 "-c:a", "aac",
                 "-movflags", "+faststart",
                 out
             ]
-            subprocess.run(cmd, check=True)
+
+            # Let FFmpeg write straight to the console, as it did before. Its
+            # progress line uses \r to overwrite in place; capturing the pipe
+            # would hide all progress during a long conversion and make the GUI
+            # look hung.
+            result = subprocess.run(cmd)
+
+            # Judge the conversion by the file it produced, not by the exit
+            # code. The teardown assertion above aborts with a non-zero status
+            # *after* the file is fully written and the moov atom relocated,
+            # and check=True would discard a perfectly good video.
+            if not _is_readable_video(out):
+                raise RuntimeError(
+                    f"FFmpeg did not produce a readable video (exit code "
+                    f"{result.returncode}). See the FFmpeg output above."
+                )
+
+            if result.returncode != 0:
+                print(f"[WARN] FFmpeg exited with code {result.returncode}, but the output "
+                      f"file decodes correctly -- continuing. This is usually a teardown "
+                      f"assertion inside FFmpeg, not a failed conversion.")
+
             return out
          
         # --- Convert and then open the resulting MOV file ---
